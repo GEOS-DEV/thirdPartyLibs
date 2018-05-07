@@ -193,7 +193,7 @@ else()
     message("PROJECT_BINARY_DIR = ${PROJECT_BINARY_DIR}")
     ExternalProject_Add( chai
                          PREFIX ${PROJECT_BINARY_DIR}/chai
-                         GIT_REPOSITORY git@github.com:LLNL/CHAI.git
+                         GIT_REPOSITORY https://github.com/LLNL/CHAI.git
                          GIT_TAG develop
                          PATCH_COMMAND git submodule init && git submodule update                         
 #                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/CHAI-develop.zip
