@@ -194,7 +194,7 @@ else()
     ExternalProject_Add( chai
                          PREFIX ${PROJECT_BINARY_DIR}/chai
                          GIT_REPOSITORY https://github.com/LLNL/CHAI.git
-                         GIT_TAG develop
+                         GIT_TAG master
                          PATCH_COMMAND git submodule init && git submodule update                         
 #                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/CHAI-develop.zip
 #                         PATCH_COMMAND pwd && cp -r ../../../../../master/src/cmake/blt .
