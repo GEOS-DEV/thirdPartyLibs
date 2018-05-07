@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 ################################
 # GEOS_TPL
@@ -11,6 +11,13 @@ project(geosx_tpl LANGUAGES C CXX)
 include(cmake/blt/SetupBLT.cmake)
 
 include(ExternalProject)
+
+
+
+option( ENABLE_CALIPER "" OFF )
+option( ENABLE_UNCRUSTIFY "" ON )
+option( ENABLE_MATHPRESSO "" ON )
+option( RAJA_ENABLE_TBB "" OFF)
 
 
 ################################
@@ -286,7 +293,6 @@ endif()
 ################################
 # ASMJIT / MATHPRESSO
 ################################
-set(ENABLE_MATHPRESSO ON CACHE BOOL  "Enables mathpresso Plugin")
 if( ENABLE_MATHPRESSO )
 message( INFO ": setting up asmjit" )
 set(ASMJIT_LOCAL_DIR ${PROJECT_BINARY_DIR}/asmjit/src/asmjit)
