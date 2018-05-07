@@ -1,3 +1,6 @@
 [submodule "cmake/blt"]
 	path = cmake/blt
 	url = https://github.com/LLNL/blt.git
+[submodule "tpl_mirror"]
+	path = tpl_mirror
+	url = https://github.com/GEOSX/tpl_mirror.git
