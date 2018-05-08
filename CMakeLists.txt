@@ -402,7 +402,7 @@ else()
     ExternalProject_Add( trilinos
     	             PREFIX ${PROJECT_BINARY_DIR}/trilinos
 		     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/trilinos-12.10.1-Source.tar.gz
-                     BUILD_COMMAND make -j16
+                     BUILD_COMMAND make -j8
                      INSTALL_DIR ${TRILINOS_INSTALL_DIR}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
