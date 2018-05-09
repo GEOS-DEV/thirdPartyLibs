@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.5)
-
 ################################
 # GEOS_TPL
 ################################
@@ -80,7 +79,6 @@ else()
     message(INFO ": Using HDF5 found at https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz")
     message("${CMAKE_SOURCE_DIR}")
     set(HDF5_ROOT "${CMAKE_INSTALL_PREFIX}/hdf5")
-    message("HDF5_ROOT = ${HDF5_ROOT}")
 
     ExternalProject_Add( hdf5
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/hdf5-1.10.1.tar.gz
@@ -377,7 +375,9 @@ ExternalProject_Add( pugixml
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -DENABLE_SHARED_LIBS=${ENABLE_SHARED_LIBS}
+                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
 
 set( dependency_list "${dependency_list};pugixml" )
 
@@ -402,15 +402,14 @@ else()
     ExternalProject_Add( trilinos
     	             PREFIX ${PROJECT_BINARY_DIR}/trilinos
 		     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/trilinos-12.10.1-Source.tar.gz
-                     BUILD_COMMAND make -j8
+                     BUILD_COMMAND make -j16
                      INSTALL_DIR ${TRILINOS_INSTALL_DIR}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D BUILD_SHARED_LIBS:BOOL=OFF
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D TPL_ENABLE_MPI:BOOL=ON 
-                                -D BUILD_SHARED_LIBS:BOOL=OFF
+                                -D BUILD_SHARED_LIBS:BOOL=ON
                                 -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D Trilinos_ENABLE_Fortran:BOOL=OFF 
                                 -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING="" 
