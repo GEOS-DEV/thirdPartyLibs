@@ -11,12 +11,15 @@ include(cmake/blt/SetupBLT.cmake)
 
 include(ExternalProject)
 
-
+option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_UNCRUSTIFY "" ON )
 option( ENABLE_MATHPRESSO "" ON )
 option( RAJA_ENABLE_TBB "" OFF)
+option( ENABLE_HYPRE "" ON )
+
+set(NUM_PROC "4" CACHE PATH "")
 
 
 ################################
@@ -47,7 +50,7 @@ else()
     ExternalProject_Add( uncrustify
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/uncrustify-master.zip
                           PREFIX ${PROJECT_BINARY_DIR}/uncrustify
-                          BUILD_COMMAND make -j1
+                          BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install
                           INSTALL_DIR ${uncrustify_install_dir}
                           CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -88,7 +91,7 @@ else()
                                                CXX=${SERIAL_CXX_COMPILER}
                                                --enable-build-mode=production
                                                --prefix=${HDF5_ROOT}
-                                               BUILD_COMMAND make -j8
+                                               BUILD_COMMAND make -j ${NUM_PROC}
                                                INSTALL_COMMAND make install )
 
     set( dependency_list "${dependency_list};hdf5" )
@@ -124,7 +127,9 @@ else()
                                                --with-hdf5=${HDF5_ROOT}/include,${HDF5_ROOT}/lib
                                                LDFLAGS=-ldl
                                                --disable-silex 
-                          BUILD_COMMAND make -j8
+                                               --enable-shared=yes
+                                               --enable-static=yes
+                          BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
 
     set( dependency_list "${dependency_list};silo" )
@@ -156,7 +161,7 @@ else()
 #                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/RAJA-develop.zip
 #                         PATCH_COMMAND pwd && cp -r ../../../../../master/src/cmake/blt .
                          PREFIX ${PROJECT_BINARY_DIR}/raja
-                         BUILD_COMMAND make -j8
+                         BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
                          INSTALL_DIR ${raja_install_dir}
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -165,9 +170,11 @@ else()
                                     -DRAJA_ENABLE_TESTS=${RAJA_ENABLE_TESTS}
                                     -DRAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
                                     -DENABLE_OPENMP=${ENABLE_OPENMP}
-                 		                -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
+                 		            -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-)
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                        )
 
     set( dependency_list "${dependency_list};raja" )
 endif()
@@ -196,7 +203,7 @@ else()
                          PATCH_COMMAND git submodule init && git submodule update                         
 #                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/CHAI-develop.zip
 #                         PATCH_COMMAND pwd && cp -r ../../../../../master/src/cmake/blt .
-                         BUILD_COMMAND make -j8
+                         BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_DIR ${chai_install_dir}
                          INSTALL_COMMAND make install && cp -r ${PROJECT_BINARY_DIR}/chai/src/chai-build/include ${chai_install_dir}
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -205,7 +212,9 @@ else()
                                     -DENABLE_OPENMP=${ENABLE_OPENMP}
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-)
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                        )
 
     set( dependency_list "${dependency_list};chai" )
 
@@ -272,14 +281,15 @@ ExternalProject_Add( caliper
                      GIT_TAG master
                      PATCH_COMMAND git submodule init && git submodule update                         
                      URL ${CMAKE_SOURCE_DIR}/tpl_mirror/Caliper-master.zip
-                     BUILD_COMMAND make -j8
+                     BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_DIR ${CALIPER_INSTALL_DIR}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                 -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DBUILD_SHARED_LIBS:BOOL=OFF
+                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
     set( dependency_list "${dependency_list};caliper" )
@@ -303,7 +313,7 @@ ExternalProject_Add( asmjit
 #                     DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
 #                     DOWNLOAD_NAME asmjit.zip
                      URL ${CMAKE_SOURCE_DIR}/tpl_mirror/asmjit-master.zip
-                     BUILD_COMMAND make -j8
+                     BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_DIR ${ASMJIT_INSTALL_DIR}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -312,7 +322,9 @@ ExternalProject_Add( asmjit
                                 -DCMAKE_BUILD_TYPE=Release
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
- )
+                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                      )
 
 message( INFO ": setting up MathPresso" )
 set(MATHPRESSO_LOCAL_DIR ${PROJECT_BINARY_DIR}/mathpresso)
@@ -331,7 +343,7 @@ ExternalProject_Add( mathpresso
 #                     DOWNLOAD_NAME mathpresso.zip
                      URL ${CMAKE_SOURCE_DIR}/tpl_mirror/mathpresso-master.zip
                      DEPENDS asmjit 
-                     BUILD_COMMAND make -j8
+                     BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_DIR ${MATHPRESSO_INSTALL_DIR}
                      INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
                                      mkdir -p <INSTALL_DIR>/lib &&
@@ -343,6 +355,8 @@ ExternalProject_Add( mathpresso
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
 				 )
 
 set( dependency_list "${dependency_list};mathpresso" )
@@ -370,7 +384,7 @@ ExternalProject_Add( pugixml
 #                     URL_HASH MD5=0099563cb3f466fe03b10f9666c73993
 #                     DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
                      URL ${CMAKE_SOURCE_DIR}/tpl_mirror/pugixml.tar
-                     BUILD_COMMAND make -j8
+                     BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_DIR ${PUGIXML_INSTALL_DIR}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -402,7 +416,7 @@ else()
     ExternalProject_Add( trilinos
     	             PREFIX ${PROJECT_BINARY_DIR}/trilinos
 		     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/trilinos-12.10.1-Source.tar.gz
-                     BUILD_COMMAND make -j16
+                     BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_DIR ${TRILINOS_INSTALL_DIR}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
@@ -410,6 +424,7 @@ else()
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D TPL_ENABLE_MPI:BOOL=ON 
                                 -D BUILD_SHARED_LIBS:BOOL=ON
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D Trilinos_ENABLE_Fortran:BOOL=OFF 
                                 -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING="" 
@@ -464,7 +479,7 @@ ExternalProject_Add( hypre
                      GIT_REPOSITORY git@github.com:LLNL/hypre.git
                      GIT_TAG master
                      PREFIX ${HYPRE_LOCAL_DIR}
-                     BUILD_COMMAND make -j8
+                     BUILD_COMMAND make -j ${NUM_PROC}
 #                     SOURCE_DIR ${HYPRE_LOCAL_DIR}
                      SOURCE_SUBDIR src
                      INSTALL_DIR ${HYPRE_INSTALL_DIR}
@@ -475,7 +490,8 @@ ExternalProject_Add( hypre
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                 -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DBUILD_SHARED_LIBS:BOOL=OFF
+                                -DBUILD_SHARED_LIBS=ON
+                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
     set( dependency_list "${dependency_list};hypre" )
