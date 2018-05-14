@@ -476,7 +476,7 @@ message( INFO ": HYPRE_LOCAL_DIR = ${HYPRE_LOCAL_DIR}" )
 message( INFO ": HYPRE_INSTALL_DIR = ${HYPRE_INSTALL_DIR}" )
 
 ExternalProject_Add( hypre
-                     GIT_REPOSITORY git@github.com:LLNL/hypre.git
+                     GIT_REPOSITORY https://github.com/LLNL/hypre.git
                      GIT_TAG master
                      PREFIX ${HYPRE_LOCAL_DIR}
                      BUILD_COMMAND make -j ${NUM_PROC}
