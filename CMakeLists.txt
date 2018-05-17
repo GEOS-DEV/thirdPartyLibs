@@ -69,7 +69,7 @@ endif()
 # HDF5
 ################################
 if (HDF5_DIR)
-  include(../src/cmake/thirdparty/FindHDF5.cmake)
+  include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindHDF5.cmake)
   blt_register_library(NAME hdf5
                        INCLUDES ${HDF5_INCLUDE_DIRS}
                        LIBRARIES ${HDF5_LIBRARY} 
