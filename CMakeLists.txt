@@ -74,6 +74,7 @@ endif()
 ################################
 # HDF5
 ################################
+
 if( HDF5_DIR AND NOT FORCE_BUILD_HDF5 )
   include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindHDF5.cmake)
   blt_register_library(NAME hdf5
