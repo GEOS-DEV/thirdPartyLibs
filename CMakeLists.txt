@@ -17,9 +17,13 @@ option( ENABLE_CALIPER "" OFF )
 option( ENABLE_UNCRUSTIFY "" ON )
 option( ENABLE_MATHPRESSO "" ON )
 option( RAJA_ENABLE_TBB "" OFF)
-option( ENABLE_HYPRE "" ON )
+option( ENABLE_HYPRE "" OFF )
+
+option( FORCE_BUILD_HDF5 "" ON )
 
 set(NUM_PROC "4" CACHE PATH "")
+message( "MPI_C_COMPILER=${MPI_C_COMPILER}")
+message( "MPI_CXX_COMPILER=${MPI_CXX_COMPILER}")
 
 
 ################################
@@ -70,7 +74,7 @@ endif()
 ################################
 # HDF5
 ################################
-if (HDF5_DIR)
+if( HDF5_DIR AND NOT FORCE_BUILD_HDF5 )
   include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindHDF5.cmake)
   blt_register_library(NAME hdf5
                        INCLUDES ${HDF5_INCLUDE_DIRS}
@@ -87,10 +91,11 @@ else()
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/hdf5-1.10.1.tar.gz
 #                          URL https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/hdf5
-                          CONFIGURE_COMMAND ../hdf5/configure CC=${SERIAL_C_COMPILER}
-                                               CXX=${SERIAL_CXX_COMPILER}
+                          CONFIGURE_COMMAND ../hdf5/configure CC=${CMAKE_C_COMPILER}
+                                               CXX=${CMAKE_CXX_COMPILER}
                                                --enable-build-mode=production
                                                --prefix=${HDF5_ROOT}
+                                               CFLAGS=-fPIC
                                                BUILD_COMMAND make -j ${NUM_PROC}
                                                INSTALL_COMMAND make install )
 
@@ -119,15 +124,15 @@ else()
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/silo
                           INSTALL_DIR ${silo_install_dir}
-                          CONFIGURE_COMMAND ../silo/configure CC=${SERIAL_C_COMPILER}
-                                               CXX=${SERIAL_CXX_COMPILER}
+                          CONFIGURE_COMMAND ../silo/configure CC=${CMAKE_C_COMPILER}
+                                               CXX=${CMAKE_CXX_COMPILER}
                                                --prefix=${silo_install_dir}
                                                --disable-fortran
                                                --enable-optimization
                                                --with-hdf5=${HDF5_ROOT}/include,${HDF5_ROOT}/lib
                                                LDFLAGS=-ldl
                                                --disable-silex 
-                                               --enable-shared=yes
+                                               --enable-shared=no
                                                --enable-static=yes
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
@@ -468,10 +473,8 @@ endif()
 if( ENABLE_HYPRE )
 message( INFO ": setting up HYPRE" )
 set(HYPRE_LOCAL_DIR ${PROJECT_BINARY_DIR}/hypre)
-set(HYPRE_DIR ${HYPRE_LOCAL_DIR})
 set(HYPRE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/hypre)
 
-message( INFO ": HYPRE_DIR = ${HYPRE_DIR}" )
 message( INFO ": HYPRE_LOCAL_DIR = ${HYPRE_LOCAL_DIR}" )
 message( INFO ": HYPRE_INSTALL_DIR = ${HYPRE_INSTALL_DIR}" )
 
@@ -480,8 +483,8 @@ ExternalProject_Add( hypre
                      GIT_TAG master
                      PREFIX ${HYPRE_LOCAL_DIR}
                      BUILD_COMMAND make -j ${NUM_PROC}
-#                     SOURCE_DIR ${HYPRE_LOCAL_DIR}
-                     SOURCE_SUBDIR src
+                     SOURCE_DIR ${HYPRE_LOCAL_DIR}
+#                     SOURCE_SUBDIR src
                      INSTALL_DIR ${HYPRE_INSTALL_DIR}
                      INSTALL_COMMAND make install && 
                                      cp -rfp ${HYPRE_LOCAL_DIR}/src/hypre/src/hypre/include ${HYPRE_INSTALL_DIR} &&
