@@ -87,10 +87,11 @@ else()
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/hdf5-1.10.1.tar.gz
 #                          URL https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/hdf5
-                          CONFIGURE_COMMAND ../hdf5/configure CC=${SERIAL_C_COMPILER}
-                                               CXX=${SERIAL_CXX_COMPILER}
+                          CONFIGURE_COMMAND ../hdf5/configure CC=${MPI_C_COMPILER}
+                                               CXX=${MPI_CXX_COMPILER}
                                                --enable-build-mode=production
                                                --prefix=${HDF5_ROOT}
+					       --enable-parallel
                                                BUILD_COMMAND make -j ${NUM_PROC}
                                                INSTALL_COMMAND make install )
 
@@ -119,8 +120,8 @@ else()
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/silo
                           INSTALL_DIR ${silo_install_dir}
-                          CONFIGURE_COMMAND ../silo/configure CC=${SERIAL_C_COMPILER}
-                                               CXX=${SERIAL_CXX_COMPILER}
+                          CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
+                                               CXX=${MPI_CXX_COMPILER}
                                                --prefix=${silo_install_dir}
                                                --disable-fortran
                                                --enable-optimization
