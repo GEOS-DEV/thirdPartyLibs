@@ -123,7 +123,8 @@ else()
 #                         URL https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz
 #                         URL_HASH MD5=60fef9ce373daf1e9cc8320cfa509bc5
 #                         DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
+#                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
+                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.3.mpiposix_patch.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/silo
                           INSTALL_DIR ${silo_install_dir}
                           CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
@@ -134,7 +135,7 @@ else()
                                                --with-hdf5=${HDF5_ROOT}/include,${HDF5_ROOT}/lib
                                                LDFLAGS=-ldl
                                                --disable-silex 
-                                               --enable-shared=yes
+                                               --enable-shared=no
                                                --enable-static=yes
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
