@@ -17,9 +17,13 @@ option( ENABLE_CALIPER "" OFF )
 option( ENABLE_UNCRUSTIFY "" ON )
 option( ENABLE_MATHPRESSO "" ON )
 option( RAJA_ENABLE_TBB "" OFF)
-option( ENABLE_HYPRE "" ON )
+option( ENABLE_HYPRE "" OFF )
+
+option( FORCE_BUILD_HDF5 "" ON )
 
 set(NUM_PROC "4" CACHE PATH "")
+message( "MPI_C_COMPILER=${MPI_C_COMPILER}")
+message( "MPI_CXX_COMPILER=${MPI_CXX_COMPILER}")
 
 
 ################################
@@ -70,8 +74,9 @@ endif()
 ################################
 # HDF5
 ################################
-if (HDF5_DIR)
-  include(../src/cmake/thirdparty/FindHDF5.cmake)
+
+if( HDF5_DIR AND NOT FORCE_BUILD_HDF5 )
+  include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindHDF5.cmake)
   blt_register_library(NAME hdf5
                        INCLUDES ${HDF5_INCLUDE_DIRS}
                        LIBRARIES ${HDF5_LIBRARY} 
@@ -92,6 +97,7 @@ else()
                                                --enable-build-mode=production
                                                --prefix=${HDF5_ROOT}
 					       --enable-parallel
+                                               CFLAGS=-fPIC
                                                BUILD_COMMAND make -j ${NUM_PROC}
                                                INSTALL_COMMAND make install )
 
@@ -117,7 +123,8 @@ else()
 #                         URL https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz
 #                         URL_HASH MD5=60fef9ce373daf1e9cc8320cfa509bc5
 #                         DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
+#                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
+                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.3.mpiposix_patch.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/silo
                           INSTALL_DIR ${silo_install_dir}
                           CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
@@ -128,7 +135,7 @@ else()
                                                --with-hdf5=${HDF5_ROOT}/include,${HDF5_ROOT}/lib
                                                LDFLAGS=-ldl
                                                --disable-silex 
-                                               --enable-shared=yes
+                                               --enable-shared=no
                                                --enable-static=yes
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
@@ -469,10 +476,8 @@ endif()
 if( ENABLE_HYPRE )
 message( INFO ": setting up HYPRE" )
 set(HYPRE_LOCAL_DIR ${PROJECT_BINARY_DIR}/hypre)
-set(HYPRE_DIR ${HYPRE_LOCAL_DIR})
 set(HYPRE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/hypre)
 
-message( INFO ": HYPRE_DIR = ${HYPRE_DIR}" )
 message( INFO ": HYPRE_LOCAL_DIR = ${HYPRE_LOCAL_DIR}" )
 message( INFO ": HYPRE_INSTALL_DIR = ${HYPRE_INSTALL_DIR}" )
 
@@ -481,8 +486,8 @@ ExternalProject_Add( hypre
                      GIT_TAG master
                      PREFIX ${HYPRE_LOCAL_DIR}
                      BUILD_COMMAND make -j ${NUM_PROC}
-#                     SOURCE_DIR ${HYPRE_LOCAL_DIR}
-                     SOURCE_SUBDIR src
+                     SOURCE_DIR ${HYPRE_LOCAL_DIR}
+#                     SOURCE_SUBDIR src
                      INSTALL_DIR ${HYPRE_INSTALL_DIR}
                      INSTALL_COMMAND make install && 
                                      cp -rfp ${HYPRE_LOCAL_DIR}/src/hypre/src/hypre/include ${HYPRE_INSTALL_DIR} &&
