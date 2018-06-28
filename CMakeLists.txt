@@ -52,7 +52,10 @@ else()
     set(uncrustify_install_dir ${CMAKE_INSTALL_PREFIX}/uncrustify)
 
     ExternalProject_Add( uncrustify
-                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/uncrustify-master.zip
+#                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/uncrustify-master.zip
+                          GIT_REPOSITORY https://github.com/uncrustify/uncrustify.git
+                          GIT_TAG master
+ #                         PATCH_COMMAND git submodule init && git submodule update      
                           PREFIX ${PROJECT_BINARY_DIR}/uncrustify
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install
