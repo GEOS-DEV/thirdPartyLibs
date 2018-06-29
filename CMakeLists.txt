@@ -34,7 +34,7 @@ message( "MPI_CXX_COMPILER=${MPI_CXX_COMPILER}")
 
 
 
-set( dependency_list "" )
+set( dependency_list )
 ################################
 # UNCRUSTIFY
 ################################
@@ -66,7 +66,7 @@ else()
                                      -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                       )                                      
 
-    set( dependency_list "${dependency_list};uncrustify" )
+    list(APPEND dependency_list uncrustify )
 
 endif()
 endif()
@@ -88,9 +88,7 @@ if( HDF5_DIR AND NOT FORCE_BUILD_HDF5 )
 
 else()
     message(INFO ": Using HDF5 found at https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz")
-    message("${CMAKE_SOURCE_DIR}")
     set(HDF5_ROOT "${CMAKE_INSTALL_PREFIX}/hdf5")
-
     ExternalProject_Add( hdf5
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/hdf5-1.10.1.tar.gz
 #                          URL https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz
@@ -99,12 +97,109 @@ else()
                                                CXX=${MPI_CXX_COMPILER}
                                                --enable-build-mode=production
                                                --prefix=${HDF5_ROOT}
-					       --enable-parallel
+                                               --enable-parallel
                                                CFLAGS=-fPIC
-                                               BUILD_COMMAND make -j ${NUM_PROC}
-                                               INSTALL_COMMAND make install )
+                          BUILD_COMMAND make -j ${NUM_PROC}
+                          INSTALL_COMMAND make install )
 
-    set( dependency_list "${dependency_list};hdf5" )
+    list(APPEND dependency_list hdf5 )
+
+endif()
+
+
+################################
+# Conduit
+################################
+
+if( CONDUIT_DIR AND NOT FORCE_BUILD_CONDUIT )
+    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindConduit.cmake)
+    blt_register_library(NAME conduit
+                         INCLUDES ${CONDUIT_INCLUDE_DIRS}
+                         LIBRARIES ${CONDUIT_LIBRARY} 
+                         TREAT_INCLUDES_AS_SYSTEM ON )
+    message(INFO ": Using Conduit found at ${CONDUIT_DIR}")
+else()
+    set(CONDUIT_URL "https://github.com/LLNL/conduit/releases/download/v0.3.1/conduit-v0.3.1-src-with-blt.tar.gz")
+    message(INFO ": Using Conduit found at ${CONDUIT_URL}")
+    set(CONDUIT_ROOT "${CMAKE_INSTALL_PREFIX}/conduit")
+
+    ExternalProject_Add( conduit
+                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/conduit-0.3.1.tar.gz
+#                         URL ${CONDUIT_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/conduit
+                         SOURCE_SUBDIR src
+                         INSTALL_DIR ${CONDUIT_ROOT}
+                         DEPENDS hdf5
+                         CMAKE_ARGS -DENABLE_DOCS=OFF
+                                    -DENABLE_EXAMPLES=OFF
+                                    -DENABLE_FORTRAN=OFF
+                                    -DENABLE_TESTS=OFF
+                                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                    -DENABLE_MPI=${ENABLE_MPI}
+                                    -DHDF5_DIR=${HDF5_ROOT}
+                                    -DENABLE_FIND_MPI=OFF
+                                    -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+#                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+#                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+#                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+#                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install )
+
+    list(APPEND dependency_list conduit )
+
+endif()
+
+
+################################
+# Axom
+################################
+
+if( AXOM_DIR AND NOT FORCE_BUILD_AXOM )
+    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindAxom.cmake)
+    blt_register_library(NAME axom
+                         INCLUDES ${AXOM_INCLUDE_DIRS}
+                         LIBRARIES ${AXOM_LIBRARY} 
+                         TREAT_INCLUDES_AS_SYSTEM ON )
+    message(INFO ": Using Axom found at ${AXOM_DIR}")
+else()
+    set(AXOM_URL "https://lc.llnl.gov/bitbucket/rest/archive/latest/projects/ATK/repos/axom/archive?at=a48578d79ca5721971d3f7a0d9ec0f4ae7e4fc55&format=tgz")
+    message(INFO ": Using Axom found at ${AXOM_URL}")
+    set(AXOM_ROOT "${CMAKE_INSTALL_PREFIX}/axom")
+
+    ExternalProject_Add( axom
+                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/axom-0.2.9.tar.gz
+#                         URL ${AXOM_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/axom
+                         SOURCE_SUBDIR src
+                         INSTALL_DIR ${AXOM_ROOT}
+                         DEPENDS hdf5 conduit
+                         CMAKE_ARGS -DENABLE_DOCS=OFF
+                                    -DENABLE_BENCHMARKS=OFF
+                                    -DENABLE_EXAMPLES=OFF
+                                    -DENABLE_FORTRAN=OFF
+                                    -DENABLE_TESTS=OFF
+                                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                    -DENABLE_MPI=${ENABLE_MPI}
+                                    -DHDF5_DIR=${HDF5_ROOT}
+                                    -DCONDUIT_DIR=${CONDUIT_ROOT}
+                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install )
+
+    list(APPEND dependency_list axom )
 
 endif()
 
@@ -120,16 +215,15 @@ if( EXISTS ${SILO_DIR})
     endif()
 else()
     message(INFO ": Using SILO found at https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz")
-    message("${CMAKE_SOURCE_DIR}")
     set(silo_install_dir ${CMAKE_INSTALL_PREFIX}/silo)
     ExternalProject_Add( silo
 #                         URL https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz
 #                         URL_HASH MD5=60fef9ce373daf1e9cc8320cfa509bc5
 #                         DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-#                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.2-bsd.tar.gz
                           URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.3.mpiposix_patch.tar.gz
                           PREFIX ${PROJECT_BINARY_DIR}/silo
                           INSTALL_DIR ${silo_install_dir}
+                          DEPENDS hdf5
                           CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
                                                CXX=${MPI_CXX_COMPILER}
                                                --prefix=${silo_install_dir}
@@ -143,19 +237,14 @@ else()
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
 
-    set( dependency_list "${dependency_list};silo" )
+    list(APPEND dependency_list silo )
 endif()
-        
-
-
-
 
 
 ################################
 # RAJA
 ################################
 if( EXISTS ${RAJA_DIR})
-message("${RAJA_DIR}")
     message("Using system RAJA found at ${RAJA_DIR}")
     include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindRAJA.cmake)
     if (NOT RAJA_FOUND)
@@ -164,7 +253,6 @@ message("${RAJA_DIR}")
 else()
     message(INFO ": Using RAJA found at https://github.com/LLNL/RAJA/archive/develop.zip")
     set(raja_install_dir ${CMAKE_INSTALL_PREFIX}/raja)
-    message("RAJA_CMAKE_ARGS=${RAJA_CMAKE_ARGS}")
     ExternalProject_Add( raja
                          GIT_REPOSITORY https://github.com/LLNL/RAJA.git
                          GIT_TAG develop
@@ -187,10 +275,8 @@ else()
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
 
-    set( dependency_list "${dependency_list};raja" )
+    list(APPEND dependency_list raja )
 endif()
-
-
 
 
 ################################
@@ -227,7 +313,7 @@ else()
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
 
-    set( dependency_list "${dependency_list};chai" )
+    list(APPEND dependency_list chai )
 
 endif()
 
@@ -264,13 +350,9 @@ ExternalProject_Add( fparser
                                      cp fparser.hh fparser_gmpint.hh fparser_mpfr.hh fpconfig.hh ${FPARSER_INSTALL_DIR}/include;
                      )
 
-    set( dependency_list "${dependency_list};fparser" )
+    list(APPEND dependency_list fparser )
 
 endif()
-
-
-
-
 
 
 ################################
@@ -303,7 +385,7 @@ ExternalProject_Add( caliper
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
-    set( dependency_list "${dependency_list};caliper" )
+    list(APPEND dependency_list caliper )
 
 endif()
 
@@ -370,7 +452,7 @@ ExternalProject_Add( mathpresso
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
 				 )
 
-set( dependency_list "${dependency_list};mathpresso" )
+list(APPEND dependency_list mathpresso )
 
 endif()
 
@@ -404,7 +486,7 @@ ExternalProject_Add( pugixml
                                 -DENABLE_SHARED_LIBS=${ENABLE_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
 
-set( dependency_list "${dependency_list};pugixml" )
+list(APPEND dependency_list pugixml )
 
 
 
@@ -426,7 +508,7 @@ else()
     set(TRILINOS_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/trilinos)
     ExternalProject_Add( trilinos
     	             PREFIX ${PROJECT_BINARY_DIR}/trilinos
-		     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/trilinos-12.10.1-Source.tar.gz
+		             URL ${CMAKE_SOURCE_DIR}/tpl_mirror/trilinos-12.10.1-Source.tar.gz
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_DIR ${TRILINOS_INSTALL_DIR}
                      INSTALL_COMMAND make install
@@ -463,14 +545,12 @@ else()
                                 -D Trilinos_ENABLE_Boost=OFF
                                 -D Trilinos_ENABLE_STK=OFF
                                 -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON 
-				-D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
-				-D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
-				-D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
-				-D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS}
-				#set( dependency_list "${dependency_list};trilinos" 
+                                -D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
+                                -D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
+                                -D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
+                                -D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS} )
 
-)
-set( dependency_list "${dependency_list};trilinos" )
+    list(APPEND dependency_list trilinos )
 endif()
 
 ################################
@@ -503,7 +583,7 @@ ExternalProject_Add( hypre
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
-    set( dependency_list "${dependency_list};hypre" )
+    list(APPEND dependency_list hypre )
 
 endif()
 
