@@ -5,130 +5,120 @@ cmake_minimum_required(VERSION 3.5)
 project(geosx_tpl LANGUAGES C CXX)
 
 ################################
-# Include blt
+# BLT
 ################################
-include(cmake/blt/SetupBLT.cmake)
+if (DEFINED BLT_SOURCE_DIR)
+    # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
 
+    if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+        message(FATAL_ERROR "Given BLT_SOURCE_DIR does not contain SetupBLT.cmake")
+    endif()
+else()
+    # Use internal BLT if no BLT_SOURCE_DIR is given
+    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
+    if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+        message(FATAL_ERROR
+            "The BLT submodule is not present. "
+            "Run the following two commands in your git repository: \n"
+            "    git submodule init\n"
+            "    git submodule update" )
+    endif()
+endif()
+
+include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
+
+
+################################
+# General GEOSX TPL Info
+################################
 include(ExternalProject)
 
 option( BUILD_SHARED_LIBS "" OFF )
+option( RAJA_ENABLE_TBB "" OFF)
 
 option( ENABLE_CALIPER "" OFF )
-option( ENABLE_UNCRUSTIFY "" ON )
-option( ENABLE_MATHPRESSO "" ON )
-option( RAJA_ENABLE_TBB "" OFF)
-option( ENABLE_HYPRE "" OFF )
-
-option( FORCE_BUILD_HDF5 "" ON )
+option( ENABLE_TRILINOS "" ON )
 
 set(NUM_PROC "4" CACHE PATH "")
-message( "MPI_C_COMPILER=${MPI_C_COMPILER}")
-message( "MPI_CXX_COMPILER=${MPI_CXX_COMPILER}")
+set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
+set(build_list )
+set(existing_list )
 
 
-################################
-# install targets from build
-################################s
-#install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . OPTIONAL)
-#install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)
-
-
-
-set( dependency_list )
 ################################
 # UNCRUSTIFY
 ################################
-message( "ENABLE_UNCRUSTIFY = ${ENABLE_UNCRUSTIFY}")
-if( ENABLE_UNCRUSTIFY )
-if (UNCRUSTIFY_DIR)
-#  include(../src/cmake/thirdparty/FindHDF5.cmake)
-#  blt_register_library(NAME hdf5
-#                       INCLUDES ${HDF5_INCLUDE_DIRS}
-#                       LIBRARIES ${HDF5_LIBRARY} 
-#                       TREAT_INCLUDES_AS_SYSTEM ON )
+set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
+set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-0.67.tar.gz")
+
+if (EXISTS ${UNCRUSTIFY_DIR})
+    message(STATUS "Using existing Uncrustify found at ${UNCRUSTIFY_DIR}")
+    list(APPEND existing_list uncrustify )
 else()
-    message(INFO ": Using uncrustify found at github")
-    set(UNCRUSTIFY_ROOT "${CMAKE_INSTALL_PREFIX}/uncrustify")
-    set(uncrustify_install_dir ${CMAKE_INSTALL_PREFIX}/uncrustify)
+    message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
     ExternalProject_Add( uncrustify
-#                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/uncrustify-master.zip
-                          GIT_REPOSITORY https://github.com/uncrustify/uncrustify.git
-                          GIT_TAG master
- #                         PATCH_COMMAND git submodule init && git submodule update      
-                          PREFIX ${PROJECT_BINARY_DIR}/uncrustify
-                          BUILD_COMMAND make -j ${NUM_PROC}
-                          INSTALL_COMMAND make install
-                          INSTALL_DIR ${uncrustify_install_dir}
-                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                      )                                      
+                         URL ${UNCRUSTIFY_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/uncrustify
+                         INSTALL_DIR ${UNCRUSTIFY_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                     )                                      
 
-    list(APPEND dependency_list uncrustify )
-
+    list(APPEND build_list uncrustify )
 endif()
-endif()
-
-
 
 
 ################################
 # HDF5
 ################################
+set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.1.tar.gz")
 
-if( HDF5_DIR AND NOT FORCE_BUILD_HDF5 )
-  include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindHDF5.cmake)
-  blt_register_library(NAME hdf5
-                       INCLUDES ${HDF5_INCLUDE_DIRS}
-                       LIBRARIES ${HDF5_LIBRARY} 
-                       TREAT_INCLUDES_AS_SYSTEM ON )
-  message(INFO ": Using HDF5 found at ${HDF5_DIR}")
-
+if (EXISTS ${HDF5_DIR})
+    message(STATUS "Using existing HDF5 found at ${HDF5_DIR}")
+    list(APPEND existing_list hdf5 )
 else()
-    message(INFO ": Using HDF5 found at https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz")
-    set(HDF5_ROOT "${CMAKE_INSTALL_PREFIX}/hdf5")
+    message(STATUS "Building HDF5 found at ${HDF5_URL}")
+
     ExternalProject_Add( hdf5
-                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/hdf5-1.10.1.tar.gz
-#                          URL https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz
+                          URL ${HDF5_URL}
                           PREFIX ${PROJECT_BINARY_DIR}/hdf5
+                          INSTALL_DIR ${HDF5_DIR}
                           CONFIGURE_COMMAND ../hdf5/configure CC=${MPI_C_COMPILER}
                                                CXX=${MPI_CXX_COMPILER}
                                                --enable-build-mode=production
-                                               --prefix=${HDF5_ROOT}
+                                               --prefix=<INSTALL_DIR>
                                                --enable-parallel
                                                CFLAGS=-fPIC
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
 
-    list(APPEND dependency_list hdf5 )
-
+    list(APPEND build_list hdf5 )
 endif()
 
 
 ################################
 # Conduit
 ################################
+set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.1.tar.gz")
 
-if( CONDUIT_DIR AND NOT FORCE_BUILD_CONDUIT )
-    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindConduit.cmake)
-    blt_register_library(NAME conduit
-                         INCLUDES ${CONDUIT_INCLUDE_DIRS}
-                         LIBRARIES ${CONDUIT_LIBRARY} 
-                         TREAT_INCLUDES_AS_SYSTEM ON )
-    message(INFO ": Using Conduit found at ${CONDUIT_DIR}")
+if (EXISTS ${CONDUIT_DIR})
+    message(STATUS "Using existing Conduit found at ${CONDUIT_DIR}")
+    list(APPEND existing_list conduit )
 else()
-    set(CONDUIT_URL "https://github.com/LLNL/conduit/releases/download/v0.3.1/conduit-v0.3.1-src-with-blt.tar.gz")
-    message(INFO ": Using Conduit found at ${CONDUIT_URL}")
-    set(CONDUIT_ROOT "${CMAKE_INSTALL_PREFIX}/conduit")
+    message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
     ExternalProject_Add( conduit
-                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/conduit-0.3.1.tar.gz
-#                         URL ${CONDUIT_URL}
+                         URL ${CONDUIT_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/conduit
                          SOURCE_SUBDIR src
-                         INSTALL_DIR ${CONDUIT_ROOT}
+                         INSTALL_DIR ${CONDUIT_DIR}
                          DEPENDS hdf5
                          CMAKE_ARGS -DENABLE_DOCS=OFF
                                     -DENABLE_EXAMPLES=OFF
@@ -136,7 +126,12 @@ else()
                                     -DENABLE_TESTS=OFF
                                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                     -DENABLE_MPI=${ENABLE_MPI}
-                                    -DHDF5_DIR=${HDF5_ROOT}
+                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                    -DHDF5_DIR=${HDF5_DIR}
+
+# This is to work around a bug in how hdf5 is used in conduit (it exposes an MPI header)
+# Once this is fixed remove the next three lines (ENABLE_FIND_MPI and using the MPI wrappers)
+# and uncomment out the 4 after (using serial compilers and MPI wrappers separately)
                                     -DENABLE_FIND_MPI=OFF
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -144,6 +139,7 @@ else()
 #                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 #                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
 #                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+
                                     -DENABLE_OPENMP=${ENABLE_OPENMP}
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -151,33 +147,27 @@ else()
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install )
 
-    list(APPEND dependency_list conduit )
-
+    list(APPEND build_list conduit )
 endif()
 
 
 ################################
 # Axom
 ################################
+set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
 
-if( AXOM_DIR AND NOT FORCE_BUILD_AXOM )
-    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindAxom.cmake)
-    blt_register_library(NAME axom
-                         INCLUDES ${AXOM_INCLUDE_DIRS}
-                         LIBRARIES ${AXOM_LIBRARY} 
-                         TREAT_INCLUDES_AS_SYSTEM ON )
-    message(INFO ": Using Axom found at ${AXOM_DIR}")
+if (EXISTS ${AXOM_DIR})
+    message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+    list(APPEND existing_list axom )
 else()
-    set(AXOM_URL "https://lc.llnl.gov/bitbucket/rest/archive/latest/projects/ATK/repos/axom/archive?at=a48578d79ca5721971d3f7a0d9ec0f4ae7e4fc55&format=tgz")
-    message(INFO ": Using Axom found at ${AXOM_URL}")
-    set(AXOM_ROOT "${CMAKE_INSTALL_PREFIX}/axom")
+    message(STATUS "Building Axom found at ${AXOM_URL}")
 
     ExternalProject_Add( axom
-                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/axom-0.2.9.tar.gz
-#                         URL ${AXOM_URL}
+                         URL ${AXOM_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/axom
                          SOURCE_SUBDIR src
-                         INSTALL_DIR ${AXOM_ROOT}
+                         INSTALL_DIR ${AXOM_DIR}
                          DEPENDS hdf5 conduit
                          CMAKE_ARGS -DENABLE_DOCS=OFF
                                     -DENABLE_BENCHMARKS=OFF
@@ -186,8 +176,9 @@ else()
                                     -DENABLE_TESTS=OFF
                                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                     -DENABLE_MPI=${ENABLE_MPI}
-                                    -DHDF5_DIR=${HDF5_ROOT}
-                                    -DCONDUIT_DIR=${CONDUIT_ROOT}
+                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                    -DHDF5_DIR=${HDF5_DIR}
+                                    -DCONDUIT_DIR=${CONDUIT_DIR}
                                     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -DMPI_C_COMPILER=${MPI_C_COMPILER}
@@ -199,74 +190,68 @@ else()
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install )
 
-    list(APPEND dependency_list axom )
-
+    list(APPEND build_list axom )
 endif()
 
 
 ################################
 # SILO
 ################################
-if( EXISTS ${SILO_DIR})
-    message("Using system SILO found at ${SILO_DIR}")
-    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindSILO.cmake)
-    if (NOT SILO_FOUND)
-        message(FATAL_ERROR ": SILO not found in ${SILO_DIR}. Maybe you need to build it")
-    endif()
-else()
-    message(INFO ": Using SILO found at https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz")
-    set(silo_install_dir ${CMAKE_INSTALL_PREFIX}/silo)
-    ExternalProject_Add( silo
-#                         URL https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz
-#                         URL_HASH MD5=60fef9ce373daf1e9cc8320cfa509bc5
-#                         DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-                          URL ${CMAKE_SOURCE_DIR}/tpl_mirror/silo-4.10.3.mpiposix_patch.tar.gz
-                          PREFIX ${PROJECT_BINARY_DIR}/silo
-                          INSTALL_DIR ${silo_install_dir}
-                          DEPENDS hdf5
-                          CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
-                                               CXX=${MPI_CXX_COMPILER}
-                                               --prefix=${silo_install_dir}
-                                               --disable-fortran
-                                               --enable-optimization
-                                               --with-hdf5=${HDF5_ROOT}/include,${HDF5_ROOT}/lib
-                                               LDFLAGS=-ldl
-                                               --disable-silex 
-                                               --enable-shared=no
-                                               --enable-static=yes
-                          BUILD_COMMAND make -j ${NUM_PROC}
-                          INSTALL_COMMAND make install )
+set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
+set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.10.3.mpiposix_patch.tar.gz")
 
-    list(APPEND dependency_list silo )
+if (EXISTS ${SILO_DIR})
+    message(STATUS "Using existing SILO found at ${SILO_DIR}")
+    list(APPEND existing_list silo )
+else()
+    message(STATUS "Building SILO found at ${SILO_URL}")
+
+    ExternalProject_Add( silo
+                         URL ${SILO_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/silo
+                         INSTALL_DIR ${SILO_DIR}
+                         DEPENDS hdf5
+                         CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
+                                              CXX=${MPI_CXX_COMPILER}
+                                              --prefix=<INSTALL_DIR>
+                                              --disable-fortran
+                                              --enable-optimization
+                                              --with-hdf5=${HDF5_DIR}/include,${HDF5_DIR}/lib
+                                              LDFLAGS=-ldl
+                                              --disable-silex 
+                                              --enable-shared=no
+                                              --enable-static=yes
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install )
+
+    list(APPEND build_list silo )
 endif()
 
 
 ################################
 # RAJA
 ################################
-if( EXISTS ${RAJA_DIR})
-    message("Using system RAJA found at ${RAJA_DIR}")
-    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindRAJA.cmake)
-    if (NOT RAJA_FOUND)
-        message(FATAL_ERROR ": RAJA not found in ${RAJA_DIR}. Maybe you need to build it")
-    endif()    
+set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-develop.zip")
+
+if (EXISTS ${RAJA_DIR})
+    message(STATUS "Using existing RAJA found at ${RAJA_DIR}")
+    list(APPEND existing_list raja )
 else()
-    message(INFO ": Using RAJA found at https://github.com/LLNL/RAJA/archive/develop.zip")
-    set(raja_install_dir ${CMAKE_INSTALL_PREFIX}/raja)
+    message(STATUS "Building RAJA found at ${RAJA_URL}")
+
     ExternalProject_Add( raja
-                         GIT_REPOSITORY https://github.com/LLNL/RAJA.git
-                         GIT_TAG develop
-                         PATCH_COMMAND git submodule init && git submodule update                         
-#                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/RAJA-develop.zip
-#                         PATCH_COMMAND pwd && cp -r ../../../../../master/src/cmake/blt .
+                         URL ${RAJA_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/raja
+                         INSTALL_DIR ${RAJA_DIR}
+                         PATCH_COMMAND pwd && cp -r ${BLT_SOURCE_DIR} .
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
-                         INSTALL_DIR ${raja_install_dir}
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+#                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                     -DRAJA_ENABLE_CUDA=${CUDA_ENABLED}
-                                    -DRAJA_ENABLE_TESTS=${RAJA_ENABLE_TESTS}
+                                    -DENABLE_TESTS=${RAJA_ENABLE_TESTS}
                                     -DRAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
                                     -DENABLE_OPENMP=${ENABLE_OPENMP}
                  		            -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
@@ -275,34 +260,29 @@ else()
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
 
-    list(APPEND dependency_list raja )
+    list(APPEND build_list raja )
 endif()
 
 
 ################################
 # CHAI
 ################################
-if( EXISTS ${CHAI_DIR})
-    message(INFO ": Using system CHAI found at ${CHAI_DIR}")
-    include(${CMAKE_SOURCE_DIR}/cmake/thirdparty/FindCHAI.cmake)
-    if (NOT CHAI_FOUND)
-        message(FATAL_ERROR ": CHAI not found in ${CHAI_DIR}. Maybe you need to build it")
-    endif()
+set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-06_26_2018.tar.gz")
+
+if (EXISTS ${CHAI_DIR})
+    message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
+    list(APPEND existing_list chai )
 else()
-    set(chai_install_dir ${CMAKE_INSTALL_PREFIX}/chai)
-    message(INFO ": Using CHAI found at git@github.com:LLNL/CHAI.git")
-    
-    message("PROJECT_BINARY_DIR = ${PROJECT_BINARY_DIR}")
+    message(STATUS "Building CHAI found at ${CHAI_URL}")
+
     ExternalProject_Add( chai
                          PREFIX ${PROJECT_BINARY_DIR}/chai
-                         GIT_REPOSITORY https://github.com/LLNL/CHAI.git
-                         GIT_TAG master
-                         PATCH_COMMAND git submodule init && git submodule update                         
-#                         URL ${CMAKE_SOURCE_DIR}/tpl_mirror/CHAI-develop.zip
-#                         PATCH_COMMAND pwd && cp -r ../../../../../master/src/cmake/blt .
+                         URL ${CHAI_URL}
+                         INSTALL_DIR ${CHAI_DIR}
+                         PATCH_COMMAND pwd && cp -r blt src/tpl/umpire
                          BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_DIR ${chai_install_dir}
-                         INSTALL_COMMAND make install && cp -r ${PROJECT_BINARY_DIR}/chai/src/chai-build/include ${chai_install_dir}
+                         INSTALL_COMMAND make install
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -DENABLE_CUDA=${CUDA_ENABLED}
@@ -313,285 +293,241 @@ else()
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
 
-    list(APPEND dependency_list chai )
-
+    list(APPEND build_list chai )
 endif()
 
 
 ################################
 # FPARSER
 ################################
-if( USE_FPARSER )
-message( INFO ": setting up fparser" )
-set(FPARSER_LOCAL_DIR ${CMAKE_SOURCE_DIR}/fparser)
-set(FPARSER_DIR ${FPARSER_LOCAL_DIR})
-set(FPARSER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/fparser)
-set(FPARSER_INCLUDE_DIR ${fparser_install_dir}/include)
+set(FPARSER_DIR "${CMAKE_INSTALL_PREFIX}/fparser")
+set(FPARSER_URL "${TPL_MIRROR_DIR}/fparser4.5.2.zip")
 
-message( INFO ": FPARSER_DIR = ${FPARSER_DIR}" )
-message( INFO ": FPARSER_LOCAL_DIR = ${FPARSER_LOCAL_DIR}" )
-message( INFO ": FPARSER_INSTALL_DIR = ${FPARSER_INSTALL_DIR}" )
+if (EXISTS ${FPARSER_DIR})
+    message(STATUS "Using existing FPARSER found at ${FPARSER_DIR}")
+    list(APPEND existing_list fparser )
+else()
+    message(STATUS "Building FPARSER found at ${FPARSER_URL}")
 
-ExternalProject_Add( fparser 
-                     #URL http://warp.povusers.org/FunctionParser/fparser4.5.2.zip
-                     #URL_HASH MD5=60fef9ce373daf1e9cc8320cfa509bc5
-                     #DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-                     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/fparser4.5.2.zip
-                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/fparser
-                     INSTALL_DIR ${FPARSER_INSTALL_DIR}
-                     CONFIGURE_COMMAND ""
-                     BUILD_COMMAND ${CMAKE_CXX_COMPILER} -c -DFP_NO_SUPPORT_OPTIMIZER -I../fparser ../fparser/fparser.cc ../fparser/fpoptimizer.cc &&
-                                   ar rcs libfparser.a fparser.o fpoptimizer.o
-                     INSTALL_COMMAND mkdir -p ${FPARSER_INSTALL_DIR}/lib &&
-                                     cp libfparser.a ${FPARSER_INSTALL_DIR}/lib &&
-                                     cd ../fparser &&
-                                     mkdir -p ${FPARSER_INSTALL_DIR}/include && 
-                                     ls  &&
-                                     cp fparser.hh fparser_gmpint.hh fparser_mpfr.hh fpconfig.hh ${FPARSER_INSTALL_DIR}/include;
-                     )
+    ExternalProject_Add( fparser 
+                         URL ${FPARSER_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/fparser
+                         INSTALL_DIR ${FPARSER_DIR}
+                         CONFIGURE_COMMAND ""
+                         BUILD_COMMAND ${CMAKE_CXX_COMPILER} -c -DFP_NO_SUPPORT_OPTIMIZER -I../fparser ../fparser/fparser.cc ../fparser/fpoptimizer.cc &&
+                                       ar rcs libfparser.a fparser.o fpoptimizer.o
+                         INSTALL_COMMAND mkdir -p <INSTALL_DIR>/lib &&
+                                         cp libfparser.a <INSTALL_DIR>/lib &&
+                                         cd ../fparser &&
+                                         mkdir -p <INSTALL_DIR>/include && 
+                                         ls  &&
+                                         cp fparser.hh fparser_gmpint.hh fparser_mpfr.hh fpconfig.hh <INSTALL_DIR>/include;
+                         )
 
-    list(APPEND dependency_list fparser )
-
+    list(APPEND build_list fparser )
 endif()
 
 
 ################################
 # CALIPER
 ################################
-message( "ENABLE_CALIPER = ${ENABLE_CALIPER}" )
-if( ENABLE_CALIPER )
-message( INFO ": setting up caliper" )
-set(CALIPER_LOCAL_DIR ${PROJECT_BINARY_DIR}/caliper)
-set(CALIPER_DIR ${CALIPER_LOCAL_DIR})
-set(CALIPER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/caliper)
+if (NOT ENABLE_CALIPER)
+    message(STATUS "CALIPER disabled")
+else()
+    set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-1.6.0.zip")
 
-message( INFO ": CALIPER_DIR = ${CALIPER_DIR}" )
-message( INFO ": CALIPER_LOCAL_DIR = ${CALIPER_LOCAL_DIR}" )
-message( INFO ": CALIPER_INSTALL_DIR = ${CALIPER_INSTALL_DIR}" )
+    if (EXISTS ${CALIPER_DIR})
+        message(STATUS "Using existing CALIPER found at ${CALIPER_DIR}")
+        list(APPEND existing_list caliper )
+    else()
+        message(STATUS "Building CALIPER found at ${CALIPER_URL}")
 
-ExternalProject_Add( caliper
-                     GIT_REPOSITORY git@github.com:LLNL/Caliper.git
-                     GIT_TAG master
-                     PATCH_COMMAND git submodule init && git submodule update                         
-                     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/Caliper-master.zip
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_DIR ${CALIPER_INSTALL_DIR}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+        ExternalProject_Add( caliper
+                             URL ${CALIPER_URL}
+                             PREFIX ${PROJECT_BINARY_DIR}/caliper
+                             INSTALL_DIR ${CALIPER_DIR}
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
-    list(APPEND dependency_list caliper )
-
+        list(APPEND build_list caliper )
+    endif()
 endif()
 
 
-
 ################################
-# ASMJIT / MATHPRESSO
+# MATHPRESSO/ASMJIT
 ################################
-if( ENABLE_MATHPRESSO )
-message( INFO ": setting up asmjit" )
-set(ASMJIT_LOCAL_DIR ${PROJECT_BINARY_DIR}/asmjit/src/asmjit)
-set(ASMJIT_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/asmjit)
+set(MATHPRESSO_DIR "${CMAKE_INSTALL_PREFIX}/mathpresso")
+set(MATHPRESSO_URL "${TPL_MIRROR_DIR}/mathpresso-2015-12-15.tar.gz")
+set(ASMJIT_URL "${TPL_MIRROR_DIR}/asmjit-2016-07-20.tar.gz")
 
-ExternalProject_Add( asmjit
-                     PREFIX ${PROJECT_BINARY_DIR}/asmjit
-#                     URL https://github.com/asmjit/asmjit/archive/master.zip
-#                     URL_HASH MD5=3c0b3190d422240b075dfc667a081a3a
-#                     DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-#                     DOWNLOAD_NAME asmjit.zip
-                     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/asmjit-master.zip
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_DIR ${ASMJIT_INSTALL_DIR}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DBUILD_SHARED_LIBS:BOOL=OFF
-                                -DCMAKE_BUILD_TYPE=Release
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                      )
+if (EXISTS ${MATHPRESSO_DIR})
+    message(STATUS "Using existing MATHPRESSO found at ${MATHPRESSO_DIR}")
+    list(APPEND existing_list mathpresso )
+else()
+    message(STATUS "Building MATHPRESSO found at ${MATHPRESSO_URL}")
 
-message( INFO ": setting up MathPresso" )
-set(MATHPRESSO_LOCAL_DIR ${PROJECT_BINARY_DIR}/mathpresso)
-set(MATHPRESSO_DIR ${MATHPRESSO_LOCAL_DIR})
-set(MATHPRESSO_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/mathpresso)
-
-message( INFO ": MATHPRESSO_DIR = ${MATHPRESSO_DIR}" )
-message( INFO ": MATHPRESSO_LOCAL_DIR = ${MATHPRESSO_LOCAL_DIR}" )
-message( INFO ": MATHPRESSO_INSTALL_DIR = ${MATHPRESSO_INSTALL_DIR}" )
-
-ExternalProject_Add( mathpresso
-                     PREFIX ${PROJECT_BINARY_DIR}/mathpresso
-#                     URL https://github.com/kobalicek/mathpresso/archive/master.zip
-#                     URL_HASH MD5=b43212cafeab5e0e2ef5b87c29c15df1
-#                     DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-#                     DOWNLOAD_NAME mathpresso.zip
-                     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/mathpresso-master.zip
-                     DEPENDS asmjit 
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_DIR ${MATHPRESSO_INSTALL_DIR}
-                     INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
-                                     mkdir -p <INSTALL_DIR>/lib &&
-                                     make INSTALL_DIR=<INSTALL_DIR> install &&
-                                     cp libmathpresso.a <INSTALL_DIR>/lib/
-                     CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
-                                -DASMJIT_DIR=${ASMJIT_LOCAL_DIR}
-                                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-				 )
-
-list(APPEND dependency_list mathpresso )
-
+    ExternalProject_Add( mathpresso
+                         URL ${MATHPRESSO_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/mathpresso
+                         INSTALL_DIR ${MATHPRESSO_DIR}
+                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && tar -xzvf ${ASMJIT_URL}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
+                                         mkdir -p <INSTALL_DIR>/lib &&
+                                         make INSTALL_DIR=<INSTALL_DIR> install &&
+                                         cp libmathpresso.a <INSTALL_DIR>/lib/
+                         CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
+                                    -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
+                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                        )
+                                    
+    list(APPEND build_list mathpresso )
 endif()
-
 
 
 ################################
 # PUGIXML
 ################################
-message( INFO ": setting up pugixml" )
-set(PUGIXML_LOCAL_DIR ${PROJECT_BINARY_DIR}/pugixml)
-set(PUGIXML_DIR ${PUGIXML_LOCAL_DIR})
-set(PUGIXML_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/pugixml)
+set(PUGIXML_DIR "${CMAKE_INSTALL_PREFIX}/pugixml")
+set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.8.0.tar.gz")
 
-message( INFO ": PUGIXML_DIR = ${PUGIXML_DIR}" )
-message( INFO ": PUGIXML_LOCAL_DIR = ${PUGIXML_LOCAL_DIR}" )
-message( INFO ": PUGIXML_INSTALL_DIR = ${PUGIXML_INSTALL_DIR}" )
+if (EXISTS ${PUGIXML_DIR})
+    message(STATUS "Using existing PUGIXML found at ${PUGIXML_DIR}")
+    list(APPEND existing_list pugixml )
+else()
+    message(STATUS "Building PUGIXML found at ${PUGIXML_URL}")
 
-ExternalProject_Add( pugixml
-                     PREFIX ${PROJECT_BINARY_DIR}/pugixml
-#                     URL https://github.com/zeux/pugixml/archive/master.zip
-#                     DOWNLOAD_NAME pugixml.zip
-#                     URL_HASH MD5=0099563cb3f466fe03b10f9666c73993
-#                     DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/mirror
-                     URL ${CMAKE_SOURCE_DIR}/tpl_mirror/pugixml.tar
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_DIR ${PUGIXML_INSTALL_DIR}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DENABLE_SHARED_LIBS=${ENABLE_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
+    ExternalProject_Add( pugixml
+                         PREFIX ${PROJECT_BINARY_DIR}/pugixml
+                         URL ${PUGIXML_URL}
+                         INSTALL_DIR ${PUGIXML_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
 
-list(APPEND dependency_list pugixml )
-
-
+    list(APPEND build_list pugixml )
+endif()
 
 
 ################################
 # TRILINOS
 ################################
+if (ENABLE_TRILINOS)
+    set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-12.10.1-Source.tar.gz")
 
+    if (EXISTS ${TRILINOS_DIR})
+        message(STATUS "Using existing TRILINOS found at ${TRILINOS_DIR}")
+        list(APPEND existing_list trilinos )
+    else()
+        message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
-message( INFO ": TRILINOS_DIR ${TRILINOS_DIR}" ) 
+        ExternalProject_Add( trilinos
+                             PREFIX ${PROJECT_BINARY_DIR}/trilinos
+                             URL ${TRILINOS_URL}
+                             INSTALL_DIR ${TRILINOS_DIR}
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                        -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -D TPL_ENABLE_MPI:BOOL=ON 
+                                        -D BUILD_SHARED_LIBS:BOOL=ON
+                                        -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                        -D Trilinos_ENABLE_Fortran:BOOL=OFF 
+                                        -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING="" 
+                                        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE 
+                                        -D Trilinos_ENABLE_TESTS:BOOL=OFF 
+                                        -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=FALSE 
+                                        -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=ON 
+                                        -D Trilinos_ENABLE_Epetra:BOOL=ON 
+                                        -D Trilinos_ENABLE_EpetraExt:BOOL=ON 
+                                        -D Trilinos_ENABLE_Tpetra:BOOL=ON 
+                                        -D Trilinos_ENABLE_Jpetra:BOOL=ON 
+                                        -D Trilinos_ENABLE_Kokkos:BOOL=ON 
+                                        -D Trilinos_ENABLE_Mesquite:BOOL=ON 
+                                        -D Trilinos_ENABLE_Sacado:BOOL=ON 
+                                        -D Trilinos_ENABLE_Stratimikos:BOOL=ON 
+                                        -D Trilinos_ENABLE_Amesos:BOOL=ON 
+                                        -D Trilinos_ENABLE_AztecOO:BOOL=ON 
+                                        -D Trilinos_ENABLE_Ifpack:BOOL=ON 
+                                        -D Trilinos_ENABLE_Teuchos:BOOL=ON 
+                                        -D Trilinos_ENABLE_ML:BOOL=ON 
+                                        -D Trilinos_ENABLE_Intrepid:BOOL=ON 
+                                        -D Trilinos_ENABLE_Shards:BOOL=ON 
+                                        -D Trilinos_ENABLE_Pamgen:BOOL=ON 
+                                        -D Trilinos_ENABLE_Thyra:BOOL=ON 
+                                        -D Trilinos_ENABLE_Boost=OFF
+                                        -D Trilinos_ENABLE_STK=OFF
+                                        -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
+                                        -D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
+                                        -D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
+                                        -D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
+                                        -D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS} )
 
-if (EXISTS "${TRILINOS_DIR}")
-
-else()
-
-    message( INFO ": setting up TRILINOS (thirparty/CmakeList.txt)" )
-    set(TRILINOS_LOCAL_DIR ${PROJECT_BINARY_DIR}/trilinos)
-    set(TRILINOS_DIR ${TRILINOS_LOCAL_DIR})
-    set(TRILINOS_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/trilinos)
-    ExternalProject_Add( trilinos
-    	             PREFIX ${PROJECT_BINARY_DIR}/trilinos
-		             URL ${CMAKE_SOURCE_DIR}/tpl_mirror/trilinos-12.10.1-Source.tar.gz
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_DIR ${TRILINOS_INSTALL_DIR}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D TPL_ENABLE_MPI:BOOL=ON 
-                                -D BUILD_SHARED_LIBS:BOOL=ON
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                -D Trilinos_ENABLE_Fortran:BOOL=OFF 
-                                -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING="" 
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE 
-                                -D Trilinos_ENABLE_TESTS:BOOL=OFF 
-                                -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=FALSE 
-                                -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=ON 
-                                -D Trilinos_ENABLE_Epetra:BOOL=ON 
-                                -D Trilinos_ENABLE_EpetraExt:BOOL=ON 
-                                -D Trilinos_ENABLE_Tpetra:BOOL=ON 
-                                -D Trilinos_ENABLE_Jpetra:BOOL=ON 
-                                -D Trilinos_ENABLE_Kokkos:BOOL=ON 
-                                -D Trilinos_ENABLE_Mesquite:BOOL=ON 
-                                -D Trilinos_ENABLE_Sacado:BOOL=ON 
-                                -D Trilinos_ENABLE_Stratimikos:BOOL=ON 
-                                -D Trilinos_ENABLE_Amesos:BOOL=ON 
-                                -D Trilinos_ENABLE_AztecOO:BOOL=ON 
-                                -D Trilinos_ENABLE_Ifpack:BOOL=ON 
-                                -D Trilinos_ENABLE_Teuchos:BOOL=ON 
-                                -D Trilinos_ENABLE_ML:BOOL=ON 
-                                -D Trilinos_ENABLE_Intrepid:BOOL=ON 
-                                -D Trilinos_ENABLE_Shards:BOOL=ON 
-                                -D Trilinos_ENABLE_Pamgen:BOOL=ON 
-                                -D Trilinos_ENABLE_Thyra:BOOL=ON 
-                                -D Trilinos_ENABLE_Boost=OFF
-                                -D Trilinos_ENABLE_STK=OFF
-                                -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON 
-                                -D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
-                                -D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
-                                -D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
-                                -D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS} )
-
-    list(APPEND dependency_list trilinos )
+        list(APPEND build_list trilinos )
+    endif()
 endif()
+
 
 ################################
 # HYPRE
 ################################
-if( ENABLE_HYPRE )
-message( INFO ": setting up HYPRE" )
-set(HYPRE_LOCAL_DIR ${PROJECT_BINARY_DIR}/hypre)
-set(HYPRE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/hypre)
+set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.14.0.tar.gz")
 
-message( INFO ": HYPRE_LOCAL_DIR = ${HYPRE_LOCAL_DIR}" )
-message( INFO ": HYPRE_INSTALL_DIR = ${HYPRE_INSTALL_DIR}" )
+if (EXISTS ${HYPRE_DIR})
+    message(STATUS "Using existing HYPRE found at ${HYPRE_DIR}")
+    list(APPEND existing_list hypre )
+else()
+    message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
-ExternalProject_Add( hypre
-                     GIT_REPOSITORY https://github.com/LLNL/hypre.git
-                     GIT_TAG master
-                     PREFIX ${HYPRE_LOCAL_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     SOURCE_DIR ${HYPRE_LOCAL_DIR}
-#                     SOURCE_SUBDIR src
-                     INSTALL_DIR ${HYPRE_INSTALL_DIR}
-                     INSTALL_COMMAND make install && 
-                                     cp -rfp ${HYPRE_LOCAL_DIR}/src/hypre/src/hypre/include ${HYPRE_INSTALL_DIR} &&
-                                     cp -rfp ${HYPRE_LOCAL_DIR}/src/hypre/src/hypre/lib ${HYPRE_INSTALL_DIR}
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DBUILD_SHARED_LIBS=ON
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+    ExternalProject_Add( hypre
+                         PREFIX ${PROJECT_BINARY_DIR}/hypre
+                         URL ${HYPRE_URL}
+                         INSTALL_DIR ${HYPRE_DIR}
+                         SOURCE_SUBDIR src
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DBUILD_SHARED_LIBS=ON
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DHYPRE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
-    list(APPEND dependency_list hypre )
-
+    list(APPEND build_list hypre )
 endif()
 
 
-message("dependency_list=${dependency_list}")
+################################
+# Create target that builds all dependencies
+################################
+message(STATUS "Existing= ${existing_list}")
+message(STATUS "Building= ${build_list}")
 
 blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
                     
-add_dependencies( tpl ${dependency_list} )
-
+add_dependencies( tpl ${build_list} )
