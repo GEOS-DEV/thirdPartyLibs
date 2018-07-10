@@ -106,7 +106,7 @@ endif()
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.1.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.2.tar.gz")
 
 if (EXISTS ${CONDUIT_DIR})
     message(STATUS "Using existing Conduit found at ${CONDUIT_DIR}")
