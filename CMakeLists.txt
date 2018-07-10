@@ -125,6 +125,7 @@ else()
                                     -DENABLE_FORTRAN=OFF
                                     -DENABLE_TESTS=OFF
                                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DENABLE_MPI=${ENABLE_MPI}
                                     -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                     -DHDF5_DIR=${HDF5_DIR}
@@ -175,6 +176,7 @@ else()
                                     -DENABLE_FORTRAN=OFF
                                     -DENABLE_TESTS=OFF
                                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DENABLE_MPI=${ENABLE_MPI}
                                     -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                     -DHDF5_DIR=${HDF5_DIR}
@@ -249,6 +251,7 @@ else()
                          INSTALL_COMMAND make install
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
 #                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                     -DRAJA_ENABLE_CUDA=${CUDA_ENABLED}
                                     -DENABLE_TESTS=${RAJA_ENABLE_TESTS}
@@ -285,6 +288,7 @@ else()
                          INSTALL_COMMAND make install
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DENABLE_CUDA=${CUDA_ENABLED}
                                     -DENABLE_OPENMP=${ENABLE_OPENMP}
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -351,6 +355,7 @@ else()
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                         -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                         -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -389,6 +394,7 @@ else()
                                     -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
                                     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -419,6 +425,7 @@ else()
                          INSTALL_COMMAND make install
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
@@ -512,7 +519,8 @@ else()
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                     -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -DBUILD_SHARED_LIBS=ON
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DHYPRE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
