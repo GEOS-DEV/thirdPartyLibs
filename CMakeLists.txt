@@ -234,7 +234,7 @@ endif()
 # RAJA
 ################################
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-develop.zip")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-0.6.0rc3.tar.gz")
 
 if (EXISTS ${RAJA_DIR})
     message(STATUS "Using existing RAJA found at ${RAJA_DIR}")
