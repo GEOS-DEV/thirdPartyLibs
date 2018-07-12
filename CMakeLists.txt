@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 ################################
-# GEOS_TPL
+# GEOS_TPL - TODO fix for CORI
 ################################
 project(geosx_tpl LANGUAGES C CXX)
 
