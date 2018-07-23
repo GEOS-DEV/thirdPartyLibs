@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 ################################
-# GEOS_TPL - TODO fix for CORI
+# GEOS_TPL
 ################################
 project(geosx_tpl LANGUAGES C CXX)
 
@@ -94,6 +94,7 @@ else()
                                                --enable-build-mode=production
                                                --prefix=<INSTALL_DIR>
                                                --enable-parallel
+                                               --enable-shared=no
                                                CFLAGS=-fPIC
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
@@ -273,12 +274,11 @@ endif()
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
 set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
 
-if (EXISTS ${CHAI_DIR})
+if ( CHAI_DIR )
     message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
     list(APPEND existing_list chai )
 else()
     message(STATUS "Building CHAI found at ${CHAI_URL}")
-
     ExternalProject_Add( chai
                          PREFIX ${PROJECT_BINARY_DIR}/chai
                          URL ${CHAI_URL}
@@ -294,6 +294,7 @@ else()
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DENABLE_TESTS=OFF
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
 
