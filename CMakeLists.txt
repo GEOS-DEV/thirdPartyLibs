@@ -271,7 +271,7 @@ endif()
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-06_26_2018.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
 
 if (EXISTS ${CHAI_DIR})
     message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
