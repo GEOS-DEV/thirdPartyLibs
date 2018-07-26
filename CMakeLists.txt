@@ -39,7 +39,8 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "6" CACHE PATH "")
+
+set(NUM_PROC "16" CACHE PATH "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
 set(build_list )
 set(existing_list )
@@ -77,7 +78,7 @@ endif()
 # HDF5
 ################################
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.1.tar.gz")
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.8.21.tar.gz")
 
 if (EXISTS ${HDF5_DIR})
     message(STATUS "Using existing HDF5 found at ${HDF5_DIR}")
