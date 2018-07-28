@@ -39,7 +39,7 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "6" CACHE PATH "")
+set(NUM_PROC "16" CACHE PATH "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
 set(build_list )
 set(existing_list )
@@ -271,13 +271,13 @@ endif()
 ################################
 # CHAI
 ################################
-set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
-
-if ( CHAI_DIR )
+    message(STATUS "CHAI DIR IS SET TO ${CHAI_DIR}")
+if (EXISTS ${CHAI_DIR})
     message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
     list(APPEND existing_list chai )
 else()
+    set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
+    set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
     message(STATUS "Building CHAI found at ${CHAI_URL}")
     ExternalProject_Add( chai
                          PREFIX ${PROJECT_BINARY_DIR}/chai
