@@ -76,6 +76,7 @@ endif()
 ################################
 # HDF5
 ################################
+set( HDF5_DEPENDENCIES "" )
 if (EXISTS ${HDF5_DIR})
     message(STATUS "Using existing HDF5 found at ${HDF5_DIR}")
     list(APPEND existing_list hdf5 )
@@ -98,6 +99,7 @@ else()
                           BUILD_COMMAND make -j ${NUM_PROC}
                           INSTALL_COMMAND make install )
 
+    list(APPEND HDF5_DEPENDENCIES hdf5 )
     list(APPEND build_list hdf5 )
 endif()
 
@@ -119,7 +121,7 @@ else()
                          PREFIX ${PROJECT_BINARY_DIR}/conduit
                          SOURCE_SUBDIR src
                          INSTALL_DIR ${CONDUIT_DIR}
-                         DEPENDS hdf5
+                         DEPENDS ${HDF5_DEPENDENCIES}
                          CMAKE_ARGS -DENABLE_DOCS=OFF
                                     -DENABLE_EXAMPLES=OFF
                                     -DENABLE_FORTRAN=OFF
@@ -169,7 +171,7 @@ else()
                          PREFIX ${PROJECT_BINARY_DIR}/axom
                          SOURCE_SUBDIR src
                          INSTALL_DIR ${AXOM_DIR}
-                         DEPENDS hdf5 conduit
+                         DEPENDS ${HDF5_DEPENDENCIES} conduit
                          CMAKE_ARGS -DENABLE_DOCS=OFF
                                     -DENABLE_BENCHMARKS=OFF
                                     -DENABLE_EXAMPLES=OFF
@@ -212,7 +214,7 @@ else()
                          URL ${SILO_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/silo
                          INSTALL_DIR ${SILO_DIR}
-                         DEPENDS hdf5
+                         DEPENDS ${HDF5_DEPENDENCIES}
                          CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
                                               CXX=${MPI_CXX_COMPILER}
                                               --prefix=<INSTALL_DIR>
