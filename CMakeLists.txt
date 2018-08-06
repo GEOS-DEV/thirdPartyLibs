@@ -277,7 +277,7 @@ if (EXISTS ${CHAI_DIR})
     list(APPEND existing_list chai )
 else()
     set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-    set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
+    set(CHAI_URL "${TPL_MIRROR_DIR}/chai-08_01_2018.tar.gz")
     message(STATUS "Building CHAI found at ${CHAI_URL}")
 
     ExternalProject_Add( chai
