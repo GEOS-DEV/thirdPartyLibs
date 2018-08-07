@@ -360,7 +360,7 @@ else()
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                         -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                         -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DWITH_PAPI=${ENABLE_PAPI}
                                         -DPAPI_PREFIX=${PAPI_PREFIX}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
