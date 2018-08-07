@@ -81,7 +81,7 @@ if (EXISTS ${HDF5_DIR})
     message(STATUS "Using existing HDF5 found at ${HDF5_DIR}")
     list(APPEND existing_list hdf5 )
 else()
-    set(HDF5_DIR"${CMAKE_INSTALL_PREFIX}/hdf5")
+    set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
     set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.8.21.tar.gz")
     message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
