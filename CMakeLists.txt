@@ -341,7 +341,7 @@ if (NOT ENABLE_CALIPER)
     message(STATUS "CALIPER disabled")
 else()
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-1.6.0.zip")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-08-06-2018.tar.gz")
 
     if (EXISTS ${CALIPER_DIR})
         message(STATUS "Using existing CALIPER found at ${CALIPER_DIR}")
@@ -360,7 +360,9 @@ else()
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                         -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                         -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DWITH_PAPI=${ENABLE_PAPI}
+                                        -DPAPI_PREFIX=${PAPI_PREFIX}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
 
