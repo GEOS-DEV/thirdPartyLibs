@@ -221,7 +221,7 @@ else()
                                               --disable-fortran
                                               --enable-optimization
                                               --with-hdf5=${HDF5_DIR}/include,${HDF5_DIR}/lib
-                                              LDFLAGS=-ldl
+                                              LIBS=-ldl
                                               --disable-silex 
                                               --enable-shared=no
                                               --enable-static=yes
