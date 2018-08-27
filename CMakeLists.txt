@@ -455,7 +455,7 @@ if (ENABLE_TRILINOS)
                              PREFIX ${PROJECT_BINARY_DIR}/trilinos
                              URL ${TRILINOS_URL}
                              INSTALL_DIR ${TRILINOS_DIR}
-                             BUILD_COMMAND make -j ${NUM_PROC}
+                             BUILD_COMMAND make VERBOSE=1 -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                         -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
