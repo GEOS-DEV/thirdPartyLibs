@@ -39,7 +39,7 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "8" CACHE PATH "")
+set(NUM_PROC "4" CACHE PATH "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
 set(build_list )
 set(existing_list )
@@ -456,7 +456,7 @@ if (ENABLE_TRILINOS)
                              URL ${TRILINOS_URL}
                              INSTALL_DIR ${TRILINOS_DIR}
                              BUILD_COMMAND make VERBOSE=1 -j ${NUM_PROC}
-                             INSTALL_COMMAND make install
+                             INSTALL_COMMAND make VERBOSE=1 install
                              CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                         -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
