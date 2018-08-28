@@ -82,7 +82,8 @@ if (EXISTS ${HDF5_DIR})
     list(APPEND existing_list hdf5 )
 else()
     set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-    set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.8.21.tar.gz")
+#    set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.8.21.tar.gz")
+    set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")    
     message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
     ExternalProject_Add( hdf5
@@ -455,8 +456,8 @@ if (ENABLE_TRILINOS)
                              PREFIX ${PROJECT_BINARY_DIR}/trilinos
                              URL ${TRILINOS_URL}
                              INSTALL_DIR ${TRILINOS_DIR}
-                             BUILD_COMMAND make VERBOSE=1 -j ${NUM_PROC}
-                             INSTALL_COMMAND make VERBOSE=1 install
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
                              CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                         -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
