@@ -39,7 +39,7 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "8" CACHE PATH "")
+set(NUM_PROC "3" CACHE PATH "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
 set(build_list )
 set(existing_list )
@@ -82,7 +82,8 @@ if (EXISTS ${HDF5_DIR})
     list(APPEND existing_list hdf5 )
 else()
     set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-    set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.8.21.tar.gz")
+#    set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.8.21.tar.gz")
+    set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")    
     message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
     ExternalProject_Add( hdf5
@@ -221,7 +222,7 @@ else()
                                               --disable-fortran
                                               --enable-optimization
                                               --with-hdf5=${HDF5_DIR}/include,${HDF5_DIR}/lib
-                                              LDFLAGS=-ldl
+                                              LIBS=-ldl
                                               --disable-silex 
                                               --enable-shared=no
                                               --enable-static=yes
