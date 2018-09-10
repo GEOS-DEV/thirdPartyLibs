@@ -155,44 +155,86 @@ endif()
 ################################
 # Axom
 ################################
-set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
+if (ENABLE_TRIBOL)
+   set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+   set(AXOM_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/axom.git")
+   set(AXOM_TAG "ale3d")
 
-if (EXISTS ${AXOM_DIR})
-    message(STATUS "Using existing Axom found at ${AXOM_DIR}")
-    list(APPEND existing_list axom )
+   if (EXISTS ${AXOM_DIR})
+       message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+       list(APPEND existing_list axom )
+   else()
+       message(STATUS "Building Axom found at ${AXOM_TAG}")
+
+       ExternalProject_Add( axom
+                            DOWNLOAD_COMMAND git clone ${AXOM_REPO}
+                            UPDATE_COMMAND git checkout ${AXOM_TAG}
+                            PREFIX ${PROJECT_BINARY_DIR}/axom
+                            SOURCE_SUBDIR src
+                            INSTALL_DIR ${AXOM_DIR}
+                            DEPENDS hdf5 conduit
+                            CMAKE_ARGS -DENABLE_DOCS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DENABLE_MPI=${ENABLE_MPI}
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DHDF5_DIR=${HDF5_DIR}
+                                       -DCONDUIT_DIR=${CONDUIT_DIR}
+                                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install )
+   endif()
 else()
-    message(STATUS "Building Axom found at ${AXOM_URL}")
+   set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+   set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
 
-    ExternalProject_Add( axom
-                         URL ${AXOM_URL}
-                         PREFIX ${PROJECT_BINARY_DIR}/axom
-                         SOURCE_SUBDIR src
-                         INSTALL_DIR ${AXOM_DIR}
-                         DEPENDS hdf5 conduit
-                         CMAKE_ARGS -DENABLE_DOCS=OFF
-                                    -DENABLE_BENCHMARKS=OFF
-                                    -DENABLE_EXAMPLES=OFF
-                                    -DENABLE_FORTRAN=OFF
-                                    -DENABLE_TESTS=OFF
-                                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                    -DENABLE_MPI=${ENABLE_MPI}
-                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                    -DHDF5_DIR=${HDF5_DIR}
-                                    -DCONDUIT_DIR=${CONDUIT_DIR}
-                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                         BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_COMMAND make install )
+   if (EXISTS ${AXOM_DIR})
+       message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+       list(APPEND existing_list axom )
+   else()
+       message(STATUS "Building Axom found at ${AXOM_URL}")
 
-    list(APPEND build_list axom )
+       ExternalProject_Add( axom
+                            URL ${AXOM_URL}
+                            PREFIX ${PROJECT_BINARY_DIR}/axom
+                            SOURCE_SUBDIR src
+                            INSTALL_DIR ${AXOM_DIR}
+                            DEPENDS hdf5 conduit
+                            CMAKE_ARGS -DENABLE_DOCS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DENABLE_MPI=${ENABLE_MPI}
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DHDF5_DIR=${HDF5_DIR}
+                                       -DCONDUIT_DIR=${CONDUIT_DIR}
+                                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install )
+
+       list(APPEND build_list axom )
+   endif()
 endif()
 
 
@@ -270,34 +312,68 @@ endif()
 ################################
 # CHAI
 ################################
-set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
+if (ENABLE_TRIBOL)
+   set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
+   set(CHAI_REPO "ssh://git@rz-stash.llnl.gov:7999/cudale/chai.git")
+   set(CHAI_TAG "ale3d")
 
-if (EXISTS ${CHAI_DIR})
-    message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
-    list(APPEND existing_list chai )
+   if (EXISTS ${CHAI_DIR})
+       message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
+       list(APPEND existing_list chai )
+   else()
+       message(STATUS "Building CHAI found at ${CHAI_TAG}")
+
+       ExternalProject_Add( chai
+                            PREFIX ${PROJECT_BINARY_DIR}/chai
+                            GIT_REPOSITORY ${CHAI_REPO}
+                            GIT_TAG ${CHAI_TAG}
+                            INSTALL_DIR ${CHAI_DIR}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install
+                            CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DCHAI_BLT_REL_DIR=${BLT_SOURCE_DIR}
+                                       -DENABLE_CUDA=${CUDA_ENABLED}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                           )
+
+       list(APPEND build_list chai )
+   endif()
 else()
-    message(STATUS "Building CHAI found at ${CHAI_URL}")
+   set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
+   set(CHAI_URL "${TPL_MIRROR_DIR}/chai-07_16_2018.tar.gz")
 
-    ExternalProject_Add( chai
-                         PREFIX ${PROJECT_BINARY_DIR}/chai
-                         URL ${CHAI_URL}
-                         INSTALL_DIR ${CHAI_DIR}
-                         PATCH_COMMAND pwd && cp -r blt src/tpl/umpire
-                         BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_COMMAND make install
-                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                    -DENABLE_CUDA=${CUDA_ENABLED}
-                                    -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                        )
+   if (EXISTS ${CHAI_DIR})
+       message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
+       list(APPEND existing_list chai )
+   else()
+       message(STATUS "Building CHAI found at ${CHAI_URL}")
 
-    list(APPEND build_list chai )
+       ExternalProject_Add( chai
+                            PREFIX ${PROJECT_BINARY_DIR}/chai
+                            URL ${CHAI_URL}
+                            INSTALL_DIR ${CHAI_DIR}
+                            PATCH_COMMAND pwd && cp -r blt src/tpl/umpire
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install
+                            CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DENABLE_CUDA=${CUDA_ENABLED}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                           )
+
+       list(APPEND build_list chai )
+   endif()
 endif()
 
 
@@ -527,6 +603,174 @@ else()
 
     list(APPEND build_list hypre )
 endif()
+
+################################
+# TRIBOL
+################################
+if (ENABLE_TRIBOL)
+    set(TRIBOL_DIR "${CMAKE_INSTALL_PREFIX}/tribol")
+    set(TRIBOL_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/tribol.git")
+    set(TRIBOL_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${TRIBOL_DIR})
+        message(STATUS "Using existing TRIBOL found at ${TRIBOL_DIR}")
+        list(APPEND existing_list tribol)
+    else()
+        message(STATUS "Building TRIBOL found at ${TRIBOL_TAG}")
+
+        ExternalProject_Add( tribol
+                             PREFIX ${PROJECT_BINARY_DIR}/tribol
+                             DOWNLOAD_COMMAND git clone ${TRIBOL_REPO}
+                             UPDATE_COMMAND git checkout ${TRIBOL_TAG}
+                             INSTALL_DIR ${TRIBOL_DIR}
+                             DEPENDS axom
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DTRIBOL_USE_EXTERNAL_AXOM:BOOL=TRUE
+                                        -DAXOM_DIR=${AXOM_DIR}
+                                        -DENABLE_TESTS=OFF
+                                        -DENABLE_EXAMPLES=OFF
+                                        -DENABLE_DOCS=OFF)
+
+        list(APPEND build_list tribol)
+    endif()
+
+    set(LLNL_GLOBALID_DIR "${CMAKE_INSTALL_PREFIX}/LLNL_GlobalID")
+    set(LLNL_GLOBALID_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/LLNL_GlobalID.git")
+    set(LLNL_GLOBALID_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${LLNL_GLOBALID_DIR})
+        message(STATUS "Using existing LLNL_GLOBALID found at ${LLNL_GLOBALID_DIR}")
+        list(APPEND existing_list LLNL_GlobalID)
+    else()
+        message(STATUS "Building LLNL_GLOBALID found at ${LLNL_GLOBALID_TAG}")
+
+        ExternalProject_Add( LLNL_GlobalID
+                             PREFIX ${PROJECT_BINARY_DIR}/LLNL_GlobalID
+                             GIT_REPOSITORY ${LLNL_GLOBALID_REPO}
+                             GIT_TAG ${LLNL_GLOBALID_TAG}
+                             INSTALL_DIR ${LLNL_GLOBALID_DIR}
+                             CONFIGURE_COMMAND pwd
+                             BUILD_COMMAND pwd
+                             INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
+                                             cp <SOURCE_DIR>/LLNL_GlobalID.h <INSTALL_DIR>/include/ &&
+                                             cp <SOURCE_DIR>/LLNL_GlobalID_mpi.h <INSTALL_DIR>/include/)
+        list(APPEND build_list LLNL_GlobalID)
+    endif()
+
+    set(RXB_DIR "${CMAKE_INSTALL_PREFIX}/rxb")
+    set(RXB_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/rxb.git")
+    set(RXB_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${RXB_DIR})
+        message(STATUS "Using existing RXB found at ${RXB_DIR}")
+        list(APPEND existing_list rxb)
+    else()
+        message(STATUS "Building RXB found at ${RXB_TAG}")
+
+        ExternalProject_Add( rxb
+                             PREFIX ${PROJECT_BINARY_DIR}/rxb
+                             GIT_REPOSITORY ${RXB_REPO}
+                             GIT_TAG ${RXB_TAG}
+                             INSTALL_DIR ${RXB_DIR}
+                             DEPENDS LLNL_GlobalID
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DENABLE_RIB=OFF
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list rxb)
+    endif()
+
+    set(VISTA_DIR "${CMAKE_INSTALL_PREFIX}/vista")
+    set(VISTA_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/vista.git")
+    set(VISTA_TAG "ale3d")
+
+    if (EXISTS ${VISTA_DIR})
+        message(STATUS "Using existing VISTA found at ${VISTA_DIR}")
+        list(APPEND existing_list vista)
+    else()
+        message(STATUS "Building VISTA found at ${VISTA_TAG}")
+
+        ExternalProject_Add( vista
+                             PREFIX ${PROJECT_BINARY_DIR}/vista
+                             GIT_REPOSITORY ${VISTA_REPO}
+                             GIT_TAG ${VISTA_TAG}
+                             INSTALL_DIR ${VISTA_DIR}
+                             DEPENDS LLNL_GlobalID chai
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                        -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DVISTA_BLT_REL_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DCHAI_DIR=${CHAI_DIR}
+                                        -DHDF5_DIR=${HDF5_DIR}
+                                        -DSILO_DIR=${SILO_DIR}
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list vista)
+    endif()
+
+    set(WORLDS_CORE_DIR "${CMAKE_INSTALL_PREFIX}/worlds_core")
+    set(WORLDS_CORE_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/worlds_core.git")
+    set(WORLDS_CORE_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${WORLDS_CORE_DIR})
+        message(STATUS "Using existing WORLDS_CORE found at ${WORLDS_CORE_DIR}")
+        list(APPEND existing_list worlds_core)
+    else()
+        message(STATUS "Building WORLDS_CORE found at ${WORLDS_CORE_TAG}")
+
+        ExternalProject_Add( worlds_core
+                             PREFIX ${PROJECT_BINARY_DIR}/worlds_core
+                             GIT_REPOSITORY ${WORLDS_CORE_REPO}
+                             GIT_TAG ${WORLDS_CORE_TAG}
+                             INSTALL_DIR ${WORLDS_CORE_DIR}
+                             DEPENDS rxb vista LLNL_GlobalID chai
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DENABLE_MPI:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DRXB_DIR=${RXB_DIR}
+                                        -DVISTA_DIR=${VISTA_DIR}
+                                        -DCHAI_DIR=${CHAI_DIR}
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list worlds_core)
+    endif()
+
+endif()
+
 
 
 ################################
