@@ -178,6 +178,14 @@ if (ENABLE_TRIBOL)
                                        -DENABLE_EXAMPLES=OFF
                                        -DENABLE_FORTRAN=OFF
                                        -DENABLE_TESTS=OFF
+                                       -DENABLE_ALL_COMPONENTS=OFF
+                                       -DENABLE_LUMBERJACK=ON
+                                       -DENABLE_MINT=ON
+                                       -DENABLE_PRIMAL=ON
+                                       -DENABLE_QUEST=ON
+                                       -DENABLE_SIDRE=ON
+                                       -DENABLE_SLAM=ON
+                                       -DENABLE_SLIC=ON
                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                        -DENABLE_MPI=${ENABLE_MPI}
@@ -621,9 +629,9 @@ if (ENABLE_TRIBOL)
         ExternalProject_Add( tribol
                              PREFIX ${PROJECT_BINARY_DIR}/tribol
                              DOWNLOAD_COMMAND git clone ${TRIBOL_REPO}
-                             UPDATE_COMMAND git checkout ${TRIBOL_TAG}
+                             UPDATE_COMMAND git checkout ${TRIBOL_TAG} && git pull
                              INSTALL_DIR ${TRIBOL_DIR}
-                             DEPENDS axom
+                             DEPENDS axom conduit hdf5
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -636,7 +644,10 @@ if (ENABLE_TRIBOL)
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DTRIBOL_USE_EXTERNAL_AXOM:BOOL=TRUE
+                                        -DTRIBOL_ENABLE_SIDRE:BOOL=TRUE
                                         -DAXOM_DIR=${AXOM_DIR}
+                                        -DCONDUIT_DIR=${CONDUIT_DIR}
+                                        -DHDF5_DIR=${HDF5_DIR}
                                         -DENABLE_TESTS=OFF
                                         -DENABLE_EXAMPLES=OFF
                                         -DENABLE_DOCS=OFF)
