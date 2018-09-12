@@ -643,6 +643,7 @@ if (ENABLE_TRIBOL)
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                         -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -704,6 +705,7 @@ if (ENABLE_TRIBOL)
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                         -DENABLE_MPI:BOOL=TRUE
                                         -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
@@ -736,6 +738,7 @@ if (ENABLE_TRIBOL)
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                         -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
@@ -743,6 +746,7 @@ if (ENABLE_TRIBOL)
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DCMAKE_DEBUG_POSTFIX=
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
                                         -DSILO_DIR=${SILO_DIR}
@@ -770,6 +774,7 @@ if (ENABLE_TRIBOL)
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
