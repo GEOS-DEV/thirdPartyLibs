@@ -192,6 +192,7 @@ else()
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DAXOM_ENABLE_LUMBERJACK=ON
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install )
 
