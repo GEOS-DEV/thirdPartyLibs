@@ -439,9 +439,9 @@ else()
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_CXX_FLAGS=-fpermissive
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                        -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DWITH_MPI=FALSE
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
@@ -733,7 +733,7 @@ if (ENABLE_TRIBOL)
                              GIT_REPOSITORY ${VISTA_REPO}
                              GIT_TAG ${VISTA_TAG}
                              INSTALL_DIR ${VISTA_DIR}
-                             DEPENDS LLNL_GlobalID chai
+                             DEPENDS LLNL_GlobalID chai silo
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
