@@ -636,9 +636,7 @@ if (ENABLE_TRIBOL)
                              INSTALL_DIR ${TRIBOL_DIR}
                              DEPENDS axom conduit hdf5
                              BUILD_COMMAND make -j ${NUM_PROC}
-                             INSTALL_COMMAND make install &&
-                                             mkdir -p <INSTALL_DIR>/include &&
-                                             cp -r <BINARY_DIR>/include/tribol <INSTALL_DIR>/include
+                             INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
