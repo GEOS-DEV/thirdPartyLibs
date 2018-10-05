@@ -305,6 +305,10 @@ else()
 endif()
 
 
+
+
+
+
 ################################
 # FPARSER
 ################################
@@ -502,11 +506,115 @@ if (ENABLE_TRILINOS)
 endif()
 
 
+
+
+
+################################
+# METIS
+################################
+set(METIS_DIR "${CMAKE_INSTALL_PREFIX}/metis")
+set(METIS_URL "${TPL_MIRROR_DIR}/metis-5.1.0.tar.gz")
+
+if (EXISTS ${METIS_DIR})
+    message(STATUS "Using existing METIS found at ${METIS_DIR}")
+    list(APPEND existing_list metis )
+else()
+    message(STATUS "Building METIS found at ${METIS_URL}")
+
+    ExternalProject_Add( metis
+                         PREFIX ${PROJECT_BINARY_DIR}/metis
+                         URL ${METIS_URL}
+                         INSTALL_DIR ${METIS_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+
+    list(APPEND build_list metis )
+endif()
+
+
+################################
+# PARMETIS
+################################
+set(PARMETIS_DIR "${CMAKE_INSTALL_PREFIX}/parmetis")
+set(PARMETIS_URL "${TPL_MIRROR_DIR}/parmetis-4.0.3.tar.gz")
+
+if (EXISTS ${PARMETIS_DIR})
+    message(STATUS "Using existing PARMETIS found at ${PARMETIS_DIR}")
+    list(APPEND existing_list metis )
+else()
+    message(STATUS "Building PARMETIS found at ${PARMETIS_URL}")
+
+    ExternalProject_Add( parmetis
+                         PREFIX ${PROJECT_BINARY_DIR}/parmetis
+                         URL ${PARMETIS_URL}
+                         INSTALL_DIR ${PARMETIS_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DPARMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+
+    list(APPEND build_list parmetis )
+endif()
+
+
+################################
+# SUPERLU
+################################
+set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
+set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
+
+if (EXISTS ${SUPERLU_DIR})
+    message(STATUS "Using existing SUPERLU found at ${SUPERLU_DIR}")
+    list(APPEND existing_list superlu_dist )
+else()
+    message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
+
+    ExternalProject_Add( superlu_dist
+                         PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
+                         URL ${SUPERLU_URL}
+                         INSTALL_DIR ${SUPERLU_DIR}
+                         SOURCE_SUBDIR src
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         DEPENDS parmetis
+                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+
+    list(APPEND build_list superlu_dist )
+endif()
+
+
+
+
+
 ################################
 # HYPRE
 ################################
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.14.0.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
 
 if (EXISTS ${HYPRE_DIR})
     message(STATUS "Using existing HYPRE found at ${HYPRE_DIR}")
@@ -519,6 +627,7 @@ else()
                          URL ${HYPRE_URL}
                          INSTALL_DIR ${HYPRE_DIR}
                          SOURCE_SUBDIR src
+                         DEPENDS superlu_dist
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
