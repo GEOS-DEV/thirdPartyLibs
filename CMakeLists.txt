@@ -159,7 +159,7 @@ endif()
 # Axom
 ################################
 set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
+set(AXOM_URL "${TPL_MIRROR_DIR}/axom-10-5-2018.tar.gz")
 
 if (EXISTS ${AXOM_DIR})
     message(STATUS "Using existing Axom found at ${AXOM_DIR}")
