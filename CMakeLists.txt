@@ -572,7 +572,7 @@ endif()
 set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
 set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
 
-if ( false ) #EXISTS ${SUPERLU_DIR})
+if (EXISTS ${SUPERLU_DIR})
     message(STATUS "Using existing SUPERLU found at ${SUPERLU_DIR}")
     list(APPEND existing_list superlu_dist )
 else()
@@ -607,35 +607,46 @@ endif()
 ################################
 # HYPRE
 ################################
-#set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-#set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
-#
-#if (EXISTS ${HYPRE_DIR})
-#    message(STATUS "Using existing HYPRE found at ${HYPRE_DIR}")
-#    list(APPEND existing_list hypre )
-#else()
-#    message(STATUS "Building HYPRE found at ${HYPRE_URL}")
-#
-#    ExternalProject_Add( hypre
-#                         PREFIX ${PROJECT_BINARY_DIR}/hypre
-#                         URL ${HYPRE_URL}
-#                         INSTALL_DIR ${HYPRE_DIR}
-#                         SOURCE_SUBDIR src
-#                         DEPENDS superlu_dist
-#                         BUILD_COMMAND make -j ${NUM_PROC}
-#                         INSTALL_COMMAND make install
-#                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-#                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-#                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
-#                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-#                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-#                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-#                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-#                                    -DHYPRE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-#                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
-#
-#    list(APPEND build_list hypre )
-#endif()
+
+#./configure --prefix=${CMAKE_INSTALL_PREFIX}/hypre
+#            --enable-bigint
+#            --with-dsuperlu
+#            --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
+#            --with-extra-incpath="${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include"
+#            --with-dsuperlu-lib="${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a;${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a"
+#            CC={MPI_C_COMPILER}
+#            CXX=${MPI_CXX_COMPILER}
+#            FC=${MPI_Fortran_COMPILER}
+
+set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
+
+if (false)#EXISTS ${HYPRE_DIR})
+    message(STATUS "Using existing HYPRE found at ${HYPRE_DIR}")
+    list(APPEND existing_list hypre )
+else()
+    message(STATUS "Building HYPRE found at ${HYPRE_URL}")
+
+    ExternalProject_Add( hypre
+                         URL ${HYPRE_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/hypre
+                         INSTALL_DIR ${HYPRE_DIR}
+                         DEPENDS superlu_dist
+                         CONFIGURE_COMMAND ../hypre/src/configure CC=${MPI_C_COMPILER}
+                                              CXX=${MPI_CXX_COMPILER}
+                                              FC=${MPI_Fortran_COMPILER}
+                                              --prefix=<INSTALL_DIR>
+                                              --enable-bigint
+                                              --with-dsuperlu 
+                                              --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include 
+                                              --with-extra-incpath="${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include" 
+                                              --with-dsuperlu-lib="${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a;${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a"
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install 
+                      )
+
+    list(APPEND build_list hypre )
+endif()
 
 
 ################################
