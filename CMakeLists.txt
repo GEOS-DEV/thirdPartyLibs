@@ -578,24 +578,15 @@ if ( false ) #EXISTS ${SUPERLU_DIR})
 else()
     message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
 
-    set( PARMETIS_INCLUDE_DIRS "${CMAKE_INSTALL_PREFIX}/parmetis/include|${CMAKE_INSTALL_PREFIX}/metis/include" )
-    set( PARMETIS_LIBRARIES "${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a|${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a" )
-
-#-DTPL_PARMETIS_INCLUDE_DIRS:STRING="${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include"
-#                                    -DTPL_PARMETIS_LIBRARIES:STRING="${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a"
-                                    #-DTPL_PARMETIS_INCLUDE_DIRS="${CMAKE_INSTALL_PREFIX}/parmetis/include"
-                                    #-DTPL_PARMETIS_LIBRARIES="${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/parmetis/lib/metis.a"
-
-#string(REPLACE ";" "|" CMAKE_PREFIX_PATH_ALT_SEP "${CMAKE_PREFIX_PATH}")
-
     ExternalProject_Add( superlu_dist
                          PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
                          URL ${SUPERLU_URL}
                          INSTALL_DIR ${SUPERLU_DIR}
-                         BUILD_COMMAND make VERBOSE=1
+                         BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
-#                         DEPENDS parmetis metis
-			  LIST_SEPARATOR |
+                         DEPENDS parmetis metis
+                         CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
+                                          -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
                          CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                     -DXSDK_INDEX_SIZE=64
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
@@ -603,13 +594,8 @@ else()
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>				    
-				    -DTPL_PARMETIS_INCLUDE_DIRS=${PARMETIS_INCLUDE_DIRS}
-                                    -DTPL_PARMETIS_LIBRARIES=${PARMETIS_LIBRARIES}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 			)
-                         #CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=" ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include "
-                                    #      -DTPL_PARMETIS_LIBRARIES:STRING="${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a "
-                                    #)
 
     list(APPEND build_list superlu_dist )
 endif()
