@@ -567,7 +567,7 @@ endif()
 
 
 ################################
-# SUPERLU
+# SUPERLU --
 ################################
 set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
 set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
