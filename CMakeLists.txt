@@ -608,16 +608,6 @@ endif()
 # HYPRE
 ################################
 
-#./configure --prefix=${CMAKE_INSTALL_PREFIX}/hypre
-#            --enable-bigint
-#            --with-dsuperlu
-#            --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
-#            --with-extra-incpath="${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include"
-#            --with-dsuperlu-lib="${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a;${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a"
-#            CC={MPI_C_COMPILER}
-#            CXX=${MPI_CXX_COMPILER}
-#            FC=${MPI_Fortran_COMPILER}
-
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
 set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
 
@@ -632,15 +622,15 @@ else()
                          PREFIX ${PROJECT_BINARY_DIR}/hypre
                          INSTALL_DIR ${HYPRE_DIR}
                          DEPENDS superlu_dist
-                         CONFIGURE_COMMAND ../hypre/src/configure CC=${MPI_C_COMPILER}
+                         BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
+                         CONFIGURE_COMMAND ./configure CC=${MPI_C_COMPILER}
                                               CXX=${MPI_CXX_COMPILER}
                                               FC=${MPI_Fortran_COMPILER}
                                               --prefix=<INSTALL_DIR>
                                               --enable-bigint
                                               --with-dsuperlu 
-                                              --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include 
-                                              --with-extra-incpath="${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include" 
-                                              --with-dsuperlu-lib="${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a;${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/metis.a"
+                                              --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
+                                              --with-dsuperlu-lib=${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install 
                       )
