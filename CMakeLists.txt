@@ -159,7 +159,7 @@ endif()
 # Axom
 ################################
 set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
+set(AXOM_URL "${TPL_MIRROR_DIR}/axom-10-5-2018.tar.gz")
 
 if (EXISTS ${AXOM_DIR})
     message(STATUS "Using existing Axom found at ${AXOM_DIR}")
@@ -368,6 +368,7 @@ else()
                                         -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DWITH_PAPI=${ENABLE_PAPI}
+                                        -DWITH_MPI=true
                                         -DPAPI_PREFIX=${PAPI_PREFIX}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
