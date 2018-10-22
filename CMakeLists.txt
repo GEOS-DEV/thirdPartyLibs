@@ -364,6 +364,7 @@ else()
                                         -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DWITH_PAPI=${ENABLE_PAPI}
+                                        -DWITH_MPI=true
                                         -DPAPI_PREFIX=${PAPI_PREFIX}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
