@@ -39,7 +39,7 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "3" CACHE PATH "")
+set(NUM_PROC "8" CACHE PATH "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
 set(build_list )
 set(existing_list )
@@ -305,6 +305,10 @@ else()
 endif()
 
 
+
+
+
+
 ################################
 # FPARSER
 ################################
@@ -503,34 +507,134 @@ if (ENABLE_TRILINOS)
 endif()
 
 
+
+
+
+################################
+# PARMETIS
+# (also METIS is built; note that the idx_t data type is defined to be 
+#  64 bit signed integer)
+################################
+set(PARMETIS_DIR "${CMAKE_INSTALL_PREFIX}/parmetis")
+set(METIS_DIR "${CMAKE_INSTALL_PREFIX}/metis")
+set(PARMETIS_URL "${TPL_MIRROR_DIR}/parmetis-4.0.3-IDXTYPEWIDTH_64.tar.gz")
+
+if (EXISTS ${PARMETIS_DIR})
+    message(STATUS "Using existing PARMETIS found at ${PARMETIS_DIR}")
+    message(STATUS "Using existing METIS found at ${METIS_DIR}")
+    list(APPEND existing_list parmetis )
+    list(APPEND existing_list metis )
+else()
+    message(STATUS "Building PARMETIS found at ${PARMETIS_URL}")
+
+    ExternalProject_Add( parmetis
+                         PREFIX ${PROJECT_BINARY_DIR}/parmetis
+                         URL ${PARMETIS_URL}
+                         INSTALL_DIR ${PARMETIS_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -DGKLIB_PATH=../parmetis/metis/GKlib
+                                    -DMETIS_PATH=../parmetis/metis
+                                    -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DPARMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+
+    list(APPEND build_list parmetis )
+
+    message(STATUS "Building METIS found at ${PARMETIS_URL}")
+
+    ExternalProject_Add( metis
+                         PREFIX ${PROJECT_BINARY_DIR}/metis
+                         URL ${PARMETIS_URL}
+                         INSTALL_DIR ${METIS_DIR}
+                         SOURCE_SUBDIR metis
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -DGKLIB_PATH=../metis/metis/GKlib
+                                    -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+
+    list(APPEND build_list metis )
+endif()
+
+
+################################
+# SUPERLU --
+################################
+set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
+set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
+
+if (EXISTS ${SUPERLU_DIR})
+    message(STATUS "Using existing SUPERLU found at ${SUPERLU_DIR}")
+    list(APPEND existing_list superlu_dist )
+else()
+    message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
+
+    ExternalProject_Add( superlu_dist
+                         PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
+                         URL ${SUPERLU_URL}
+                         INSTALL_DIR ${SUPERLU_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
+                         DEPENDS parmetis metis
+                         CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
+                                          -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
+                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -DXSDK_INDEX_SIZE=64
+                                    -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+			)
+
+    list(APPEND build_list superlu_dist )
+endif()
+
+
+
+
+
 ################################
 # HYPRE
 ################################
-set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.14.0.tar.gz")
 
-if (EXISTS ${HYPRE_DIR})
+set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
+
+if (false)#EXISTS ${HYPRE_DIR})
     message(STATUS "Using existing HYPRE found at ${HYPRE_DIR}")
     list(APPEND existing_list hypre )
 else()
     message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
     ExternalProject_Add( hypre
-                         PREFIX ${PROJECT_BINARY_DIR}/hypre
                          URL ${HYPRE_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/hypre
                          INSTALL_DIR ${HYPRE_DIR}
-                         SOURCE_SUBDIR src
+                         DEPENDS superlu_dist
+                         BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
+                         CONFIGURE_COMMAND ./configure CC=${MPI_C_COMPILER}
+                                              CXX=${MPI_CXX_COMPILER}
+                                              FC=${MPI_Fortran_COMPILER}
+                                              --prefix=<INSTALL_DIR>
+                                              --enable-bigint
+                                              --with-dsuperlu 
+                                              --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
+                                              --with-dsuperlu-lib=${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a
                          BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_COMMAND make install
-                         CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                    -DHYPRE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+                         INSTALL_COMMAND make install 
+                      )
 
     list(APPEND build_list hypre )
 endif()
@@ -545,4 +649,4 @@ message(STATUS "Building= ${build_list}")
 blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
                     
-add_dependencies( tpl ${build_list} )
+add_dependencies( tpl ${build_list}  )
