@@ -538,6 +538,8 @@ else()
                                     -DMETIS_PATH=../parmetis/metis
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DPARMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -558,6 +560,8 @@ else()
                                     -DGKLIB_PATH=../metis/metis/GKlib
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -592,6 +596,8 @@ else()
                                     -DXSDK_INDEX_SIZE=64
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
