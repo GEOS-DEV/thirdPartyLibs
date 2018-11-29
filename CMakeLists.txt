@@ -638,6 +638,9 @@ else()
                                               --with-dsuperlu 
                                               --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
                                               --with-dsuperlu-lib=${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a
+                                              CFLAGS=-fPIC
+                                              CXXFLAGS=-fPIC
+                                              FCFLAGS=-fPIC
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install 
                       )
