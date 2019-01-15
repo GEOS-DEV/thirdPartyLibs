@@ -279,7 +279,8 @@ if (EXISTS ${CHAI_DIR})
     list(APPEND existing_list chai )
 else()
     set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-    set(CHAI_URL "${TPL_MIRROR_DIR}/chai-08_01_2018.tar.gz")
+#    set(CHAI_URL "${TPL_MIRROR_DIR}/chai_0cbdf30.tar.gz")
+    set(CHAI_URL "${TPL_MIRROR_DIR}/chai-20190116.tar.gz")
     message(STATUS "Building CHAI found at ${CHAI_URL}")
 
     ExternalProject_Add( chai
@@ -539,6 +540,7 @@ else()
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                                     -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -582,12 +584,11 @@ if (EXISTS ${SUPERLU_DIR})
     list(APPEND existing_list superlu_dist )
 else()
     message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
-
     ExternalProject_Add( superlu_dist
                          PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
                          URL ${SUPERLU_URL}
                          INSTALL_DIR ${SUPERLU_DIR}
-                         BUILD_COMMAND make -j ${NUM_PROC}
+                         BUILD_COMMAND make -j VERBOSE=1
                          INSTALL_COMMAND make install
                          DEPENDS parmetis metis
                          CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
@@ -596,6 +597,7 @@ else()
                                     -DXSDK_INDEX_SIZE=64
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
@@ -632,7 +634,7 @@ else()
                          BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                          CONFIGURE_COMMAND ./configure CC=${MPI_C_COMPILER}
                                               CXX=${MPI_CXX_COMPILER}
-                                              FC=${MPI_Fortran_COMPILER}
+                                              FC=${CMAKE_Fortran_COMPILER}
                                               --prefix=<INSTALL_DIR>
                                               --enable-bigint
                                               --with-dsuperlu 
