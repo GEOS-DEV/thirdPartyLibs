@@ -25,6 +25,7 @@ else()
     endif()
 endif()
 
+set( ENABLE_UNCRUSTIFY "OFF" CACHE PATH "" FORCE )
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 
@@ -39,7 +40,7 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "8" CACHE PATH "")
+set(NUM_PROC "16" CACHE PATH "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
 set(build_list )
 set(existing_list )
