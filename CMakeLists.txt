@@ -540,9 +540,13 @@ else()
                                     -DMETIS_PATH=../parmetis/metis
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                    -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DMPI_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                    -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                                     -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DPARMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -598,9 +602,12 @@ else()
                                     -DXSDK_INDEX_SIZE=64
                                     -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -DMPI_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                     -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -635,7 +642,7 @@ else()
                          BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                          CONFIGURE_COMMAND ./configure CC=${MPI_C_COMPILER}
                                               CXX=${MPI_CXX_COMPILER}
-                                              FC=${CMAKE_Fortran_COMPILER}
+                                              FC=${MPI_Fortran_COMPILER}
                                               --prefix=<INSTALL_DIR>
                                               --enable-bigint
                                               --with-dsuperlu 
