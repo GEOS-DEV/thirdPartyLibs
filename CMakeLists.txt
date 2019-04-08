@@ -566,6 +566,42 @@ ExternalProject_Add( hypre
 
 list(APPEND build_list hypre )
 
+
+################################
+# LAPACK_SUITE
+# It contains also
+#   * Level 1, 2, and 3 BLAS; CBLAS, a C interface to the BLAS
+#   * CBLAS (C interface to the BLAS)
+#   * LAPACKE (C interface to LAPACK)
+################################
+set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
+set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
+
+message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
+
+ExternalProject_Add( lapack_suite
+                     PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
+                     URL ${LAPACK_SUITE_URL}
+                     INSTALL_DIR ${LAPACK_SUITE_DIR}
+                     BUILD_COMMAND make -j VERBOSE=1
+                     INSTALL_COMMAND make install
+                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -DCBLAS=ON
+                                -DLAPACKE=ON
+                                -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                   )
+
+list(APPEND build_list lapack_suite )
+
+
 ################################
 # Create target that builds all dependencies
 ################################
