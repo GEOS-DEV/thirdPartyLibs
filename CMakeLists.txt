@@ -172,7 +172,7 @@ if (ENABLE_TRIBOL)
                             PREFIX ${PROJECT_BINARY_DIR}/axom
                             SOURCE_SUBDIR src
                             INSTALL_DIR ${AXOM_DIR}
-                            DEPENDS hdf5 conduit
+                            DEPENDS hdf5 conduit umpire
                             CMAKE_ARGS -DENABLE_DOCS=OFF
                                        -DENABLE_BENCHMARKS=OFF
                                        -DENABLE_EXAMPLES=OFF
@@ -192,6 +192,7 @@ if (ENABLE_TRIBOL)
                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                        -DHDF5_DIR=${HDF5_DIR}
                                        -DCONDUIT_DIR=${CONDUIT_DIR}
+                                       -DUMPIRE_DIR=${UMPIRE_DIR}
                                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                        -DMPI_C_COMPILER=${MPI_C_COMPILER}
@@ -321,8 +322,40 @@ endif()
 # CHAI
 ################################
 if (ENABLE_TRIBOL)
+   set(UMPIRE_DIR "${CMAKE_INSTALL_PREFIX}/umpire")
+   set(UMPIRE_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/umpire.git")
+   set(UMPIRE_TAG "ale3d")
+
+   if (EXISTS ${UMPIRE_DIR})
+       message(STATUS "Using existing UMPIRE found at ${UMPIRE_DIR}")
+       list(APPEND existing_list umpire)
+   else()
+       message(STATUS "Building UMPIRE found at ${UMPIRE_TAG}")
+
+       ExternalProject_Add( umpire
+                            PREFIX ${PROJECT_BINARY_DIR}/umpire
+                            GIT_REPOSITORY ${UMPIRE_REPO}
+                            GIT_TAG ${UMPIRE_TAG}
+                            INSTALL_DIR ${UMPIRE_DIR}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install
+                            CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                       -DCMAKE_DEBUG_POSTFIX=)
+
+       list(APPEND build_list umpire)
+   endif()
+
    set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-   set(CHAI_REPO "ssh://git@rz-stash.llnl.gov:7999/cudale/chai.git")
+   set(CHAI_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/chai.git")
    set(CHAI_TAG "ale3d")
 
    if (EXISTS ${CHAI_DIR})
@@ -336,18 +369,22 @@ if (ENABLE_TRIBOL)
                             GIT_REPOSITORY ${CHAI_REPO}
                             GIT_TAG ${CHAI_TAG}
                             INSTALL_DIR ${CHAI_DIR}
+                            DEPENDS umpire
                             BUILD_COMMAND make -j ${NUM_PROC}
                             INSTALL_COMMAND make install
                             CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                       -DCHAI_BLT_REL_DIR=${BLT_SOURCE_DIR}
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -Dumpire_DIR=${UMPIRE_DIR} 
+                                       -DDISABLE_RM=ON -DENABLE_PICK=ON -DENABLE_IMPLICIT_CONVERSIONS=ON
                                        -DENABLE_CUDA=${CUDA_ENABLED}
                                        -DENABLE_OPENMP=${ENABLE_OPENMP}
                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                       -DDISABLE_RM=ON
                            )
 
        list(APPEND build_list chai )
@@ -682,6 +719,41 @@ if (ENABLE_TRIBOL)
         list(APPEND build_list LLNL_GlobalID)
     endif()
 
+    set(RAVI_DIR "${CMAKE_INSTALL_PREFIX}/ravi")
+    set(RAVI_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/ravi.git")
+    set(RAVI_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${RAVI_DIR})
+        message(STATUS "Using existing RAVI found at ${RAVI_DIR}")
+        list(APPEND existing_list ravi)
+    else()
+        message(STATUS "Building RAVI found at ${RAVI_TAG}")
+
+        ExternalProject_Add( ravi
+                             PREFIX ${PROJECT_BINARY_DIR}/ravi
+                             GIT_REPOSITORY ${RAVI_REPO}
+                             GIT_TAG ${RAVI_TAG}
+                             INSTALL_DIR ${RAVI_DIR}
+                             DEPENDS chai umpire raja LLNL_GlobalID
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DCHAI_DIR=${CHAI_DIR}
+                                        -DRAJA_DIR=${RAJA_DIR}
+                                        -DUMPIRE_DIR=${UMPIRE_DIR}
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list ravi)
+    endif()
+
     set(RXB_DIR "${CMAKE_INSTALL_PREFIX}/rxb")
     set(RXB_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/rxb.git")
     set(RXB_TAG "feature/benliu/slideWorld")
@@ -692,7 +764,7 @@ if (ENABLE_TRIBOL)
     else()
         message(STATUS "Building RXB found at ${RXB_TAG}")
 
-        ExternalProject_Add( rxb
+        ExternalProject_Add( rxb 
                              PREFIX ${PROJECT_BINARY_DIR}/rxb
                              GIT_REPOSITORY ${RXB_REPO}
                              GIT_TAG ${RXB_TAG}
@@ -747,6 +819,7 @@ if (ENABLE_TRIBOL)
                                         -DCMAKE_DEBUG_POSTFIX=
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
+                                        -DRAJA_DIR=${RAJA_DIR}
                                         -DSILO_DIR=${SILO_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
