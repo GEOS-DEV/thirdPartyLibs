@@ -153,101 +153,6 @@ endif()
 
 
 ################################
-# Axom
-################################
-if (ENABLE_TRIBOL)
-   set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-   set(AXOM_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/axom.git")
-   set(AXOM_TAG "ale3d")
-
-   if (EXISTS ${AXOM_DIR})
-       message(STATUS "Using existing Axom found at ${AXOM_DIR}")
-       list(APPEND existing_list axom )
-   else()
-       message(STATUS "Building Axom found at ${AXOM_TAG}")
-
-       ExternalProject_Add( axom
-                            DOWNLOAD_COMMAND git clone ${AXOM_REPO}
-                            UPDATE_COMMAND git checkout ${AXOM_TAG}
-                            PREFIX ${PROJECT_BINARY_DIR}/axom
-                            SOURCE_SUBDIR src
-                            INSTALL_DIR ${AXOM_DIR}
-                            DEPENDS hdf5 conduit umpire
-                            CMAKE_ARGS -DENABLE_DOCS=OFF
-                                       -DENABLE_BENCHMARKS=OFF
-                                       -DENABLE_EXAMPLES=OFF
-                                       -DENABLE_FORTRAN=OFF
-                                       -DENABLE_TESTS=OFF
-                                       -DENABLE_ALL_COMPONENTS=OFF
-                                       -DENABLE_LUMBERJACK=ON
-                                       -DENABLE_MINT=ON
-                                       -DENABLE_PRIMAL=ON
-                                       -DENABLE_QUEST=ON
-                                       -DENABLE_SIDRE=ON
-                                       -DENABLE_SLAM=ON
-                                       -DENABLE_SLIC=ON
-                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                       -DENABLE_MPI=${ENABLE_MPI}
-                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                       -DHDF5_DIR=${HDF5_DIR}
-                                       -DCONDUIT_DIR=${CONDUIT_DIR}
-                                       -DUMPIRE_DIR=${UMPIRE_DIR}
-                                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                       -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                            BUILD_COMMAND make -j ${NUM_PROC}
-                            INSTALL_COMMAND make install )
-   endif()
-else()
-   set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-   set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
-
-   if (EXISTS ${AXOM_DIR})
-       message(STATUS "Using existing Axom found at ${AXOM_DIR}")
-       list(APPEND existing_list axom )
-   else()
-       message(STATUS "Building Axom found at ${AXOM_URL}")
-
-       ExternalProject_Add( axom
-                            URL ${AXOM_URL}
-                            PREFIX ${PROJECT_BINARY_DIR}/axom
-                            SOURCE_SUBDIR src
-                            INSTALL_DIR ${AXOM_DIR}
-                            DEPENDS hdf5 conduit
-                            CMAKE_ARGS -DENABLE_DOCS=OFF
-                                       -DENABLE_BENCHMARKS=OFF
-                                       -DENABLE_EXAMPLES=OFF
-                                       -DENABLE_FORTRAN=OFF
-                                       -DENABLE_TESTS=OFF
-                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                       -DENABLE_MPI=${ENABLE_MPI}
-                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                       -DHDF5_DIR=${HDF5_DIR}
-                                       -DCONDUIT_DIR=${CONDUIT_DIR}
-                                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                       -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                            BUILD_COMMAND make -j ${NUM_PROC}
-                            INSTALL_COMMAND make install )
-
-       list(APPEND build_list axom )
-   endif()
-endif()
-
-
-################################
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
@@ -349,6 +254,15 @@ if (ENABLE_TRIBOL)
                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                       -DENABLE_CUDA=OFF
+                                       -DENABLE_C=ON
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_GMOCK=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_TOOLS=OFF
+                                       -DENABLE_OPENMP=OFF
                                        -DCMAKE_DEBUG_POSTFIX=)
 
        list(APPEND build_list umpire)
@@ -356,7 +270,7 @@ if (ENABLE_TRIBOL)
 
    set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
    set(CHAI_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/chai.git")
-   set(CHAI_TAG "ale3d")
+   set(CHAI_TAG "feature/benliu/slideWorld")
 
    if (EXISTS ${CHAI_DIR})
        message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
@@ -376,10 +290,15 @@ if (ENABLE_TRIBOL)
                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                       -Dumpire_DIR=${UMPIRE_DIR} 
+                                       -DUMPIRE_DIR=${UMPIRE_DIR}/share/umpire/cmake
+                                       -Dumpire_DIR=${UMPIRE_DIR}/share/umpire/cmake
                                        -DDISABLE_RM=ON -DENABLE_PICK=ON -DENABLE_IMPLICIT_CONVERSIONS=ON
                                        -DENABLE_CUDA=${CUDA_ENABLED}
                                        -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DENABLE_TESTS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_GMOCK=OFF
+                                       -DENABLE_EXAMPLES=OFF
                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -418,6 +337,102 @@ else()
                            )
 
        list(APPEND build_list chai )
+   endif()
+endif()
+
+
+################################
+# Axom
+################################
+if (ENABLE_TRIBOL)
+   set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+   set(AXOM_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/axom.git")
+   set(AXOM_TAG "ale3d")
+
+   if (EXISTS ${AXOM_DIR})
+       message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+       list(APPEND existing_list axom )
+   else()
+       message(STATUS "Building Axom found at ${AXOM_TAG}")
+
+       ExternalProject_Add( axom
+                            DOWNLOAD_COMMAND git clone ${AXOM_REPO}
+                            UPDATE_COMMAND git checkout ${AXOM_TAG}
+                            PREFIX ${PROJECT_BINARY_DIR}/axom
+                            SOURCE_SUBDIR src
+                            INSTALL_DIR ${AXOM_DIR}
+                            DEPENDS hdf5 conduit raja
+                            CMAKE_ARGS -DENABLE_DOCS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DAXOM_ENABLE_ALL_COMPONENTS=OFF
+                                       -DAXOM_ENABLE_LUMBERJACK=ON
+                                       -DAXOM_ENABLE_MINT=ON
+                                       -DAXOM_ENABLE_PRIMAL=ON
+                                       -DAXOM_ENABLE_QUEST=ON
+                                       -DAXOM_ENABLE_SIDRE=ON
+                                       -DAXOM_ENABLE_SLAM=ON
+                                       -DAXOM_ENABLE_SLIC=ON
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DENABLE_MPI=${ENABLE_MPI}
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DHDF5_DIR=${HDF5_DIR}
+                                       -DCONDUIT_DIR=${CONDUIT_DIR}
+                                       -DUMPIRE_DIR=
+                                       -DRAJA_DIR=${RAJA_DIR}
+                                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install )
+   endif()
+else()
+   set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+   set(AXOM_URL "${TPL_MIRROR_DIR}/axom-0.2.9.tar.gz")
+
+   if (EXISTS ${AXOM_DIR})
+       message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+       list(APPEND existing_list axom )
+   else()
+       message(STATUS "Building Axom found at ${AXOM_URL}")
+
+       ExternalProject_Add( axom
+                            URL ${AXOM_URL}
+                            PREFIX ${PROJECT_BINARY_DIR}/axom
+                            SOURCE_SUBDIR src
+                            INSTALL_DIR ${AXOM_DIR}
+                            DEPENDS hdf5 conduit
+                            CMAKE_ARGS -DENABLE_DOCS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DENABLE_MPI=${ENABLE_MPI}
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DHDF5_DIR=${HDF5_DIR}
+                                       -DCONDUIT_DIR=${CONDUIT_DIR}
+                                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install )
+
+       list(APPEND build_list axom )
    endif()
 endif()
 
@@ -671,7 +686,7 @@ if (ENABLE_TRIBOL)
                              DOWNLOAD_COMMAND git clone ${TRIBOL_REPO}
                              UPDATE_COMMAND git checkout ${TRIBOL_TAG} && git pull
                              INSTALL_DIR ${TRIBOL_DIR}
-                             DEPENDS axom conduit hdf5
+                             DEPENDS axom conduit hdf5 umpire
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -803,7 +818,7 @@ if (ENABLE_TRIBOL)
                              GIT_REPOSITORY ${VISTA_REPO}
                              GIT_TAG ${VISTA_TAG}
                              INSTALL_DIR ${VISTA_DIR}
-                             DEPENDS LLNL_GlobalID chai silo
+                             DEPENDS LLNL_GlobalID chai silo ravi
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -812,7 +827,7 @@ if (ENABLE_TRIBOL)
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                        -DVISTA_BLT_REL_DIR=${BLT_SOURCE_DIR}
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -820,6 +835,7 @@ if (ENABLE_TRIBOL)
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
                                         -DRAJA_DIR=${RAJA_DIR}
+                                        -DRAVI_DIR=${RAVI_DIR}
                                         -DSILO_DIR=${SILO_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
@@ -841,7 +857,7 @@ if (ENABLE_TRIBOL)
                              GIT_REPOSITORY ${WORLDS_CORE_REPO}
                              GIT_TAG ${WORLDS_CORE_TAG}
                              INSTALL_DIR ${WORLDS_CORE_DIR}
-                             DEPENDS rxb vista LLNL_GlobalID chai
+                             DEPENDS rxb vista LLNL_GlobalID chai ravi
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -857,6 +873,7 @@ if (ENABLE_TRIBOL)
                                         -DRXB_DIR=${RXB_DIR}
                                         -DVISTA_DIR=${VISTA_DIR}
                                         -DCHAI_DIR=${CHAI_DIR}
+                                        -DRAVI_DIR=${RAVI_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
         list(APPEND build_list worlds_core)
