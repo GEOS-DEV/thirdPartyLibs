@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 ################################
 # GEOS_TPL
 ################################
-project(geosx_tpl LANGUAGES C CXX)
+project(geosx_tpl LANGUAGES C CXX Fortran)
 
 ################################
 # BLT
@@ -76,18 +76,18 @@ set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 ExternalProject_Add( hdf5
-                      URL ${HDF5_URL}
-                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
-                      INSTALL_DIR ${HDF5_DIR}
-                      CONFIGURE_COMMAND ../hdf5/configure CC=${MPI_C_COMPILER}
-                                           CXX=${MPI_CXX_COMPILER}
-                                           --enable-build-mode=production
-                                           --prefix=<INSTALL_DIR>
-                                           --enable-parallel
-                                           --enable-shared=no
-                                           CFLAGS=-fPIC
-                      BUILD_COMMAND make -j ${NUM_PROC}
-                      INSTALL_COMMAND make install )
+                     URL ${HDF5_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/hdf5
+                     INSTALL_DIR ${HDF5_DIR}
+                     CONFIGURE_COMMAND ../hdf5/configure CC=${MPI_C_COMPILER}
+                                          CXX=${MPI_CXX_COMPILER}
+                                          --enable-build-mode=production
+                                          --prefix=<INSTALL_DIR>
+                                          --enable-parallel
+                                          --enable-shared=no
+                                          CFLAGS=-fPIC
+                     BUILD_COMMAND make -j ${NUM_PROC}
+                     INSTALL_COMMAND make install )
 
 list(APPEND HDF5_DEPENDENCIES hdf5 )
 list(APPEND build_list hdf5 )
@@ -126,7 +126,7 @@ ExternalProject_Add( conduit
 #                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 #                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
 #                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DENABLE_OPENMP=${ENABLE_OPENMP}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -171,6 +171,7 @@ ExternalProject_Add( axom
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DAXOM_ENABLE_LUMBERJACK=ON
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install )
 
@@ -221,6 +222,7 @@ ExternalProject_Add( raja
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
 #                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                 -DRAJA_ENABLE_CUDA=${CUDA_ENABLED}
@@ -252,6 +254,7 @@ ExternalProject_Add( chai
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DENABLE_CUDA=${CUDA_ENABLED}
                                 -DENABLE_OPENMP=${ENABLE_OPENMP}
@@ -311,6 +314,7 @@ else()
                          INSTALL_COMMAND make install
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                     -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -346,7 +350,9 @@ ExternalProject_Add( mathpresso
                      CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
                                 -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
                                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
@@ -372,14 +378,15 @@ ExternalProject_Add( pugixml
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
 
 list(APPEND build_list pugixml )
-
 
 ################################
 # TRILINOS
@@ -398,6 +405,7 @@ if (ENABLE_TRILINOS)
                          INSTALL_COMMAND make install
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D TPL_ENABLE_MPI:BOOL=ON 
                                     -D BUILD_SHARED_LIBS:BOOL=ON
@@ -438,8 +446,6 @@ if (ENABLE_TRILINOS)
 endif()
 
 
-
-
 ################################
 # PARMETIS
 # (also METIS is built; note that the idx_t data type is defined to be 
@@ -469,6 +475,7 @@ ExternalProject_Add( parmetis
                                 -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DPARMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -525,6 +532,7 @@ ExternalProject_Add( superlu_dist
                                 -DMPI_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -543,6 +551,10 @@ set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
+set(HYPRE_C_FLAGS="-fPIC ${CMAKE_C_FLAGS}")
+set(HYPRE_CXX_FLAGS="-fPIC ${CMAKE_CXX_FLAGS}")
+set(HYPRE_Fortran_FLAGS="-fPIC ${CMAKE_Fortran_FLAGS}")
+
 ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
@@ -557,10 +569,10 @@ ExternalProject_Add( hypre
                                           --with-dsuperlu 
                                           --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
                                           --with-dsuperlu-lib=${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a
-                                          CFLAGS=-fPIC
-                                          CXXFLAGS=-fPIC
-                                          FCFLAGS=-fPIC
-                     BUILD_COMMAND make -j ${NUM_PROC}
+                                          CFLAGS=${HYPRE_C_FLAGS}
+                                          CXXFLAGS=${HYPRE_CXX_FLAGS}
+                                          FCFLAGS=${HYPRE_Fortran_FLAGS}
+                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                      INSTALL_COMMAND make install 
                   )
 
@@ -578,12 +590,13 @@ set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
 set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
 
 message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
+message(STATUS "CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 
 ExternalProject_Add( lapack_suite
                      PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
                      URL ${LAPACK_SUITE_URL}
                      INSTALL_DIR ${LAPACK_SUITE_DIR}
-                     BUILD_COMMAND make -j VERBOSE=1
+                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -DCBLAS=ON
@@ -593,6 +606,7 @@ ExternalProject_Add( lapack_suite
                                 -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
