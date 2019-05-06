@@ -615,6 +615,29 @@ ExternalProject_Add( lapack_suite
 
 list(APPEND build_list lapack_suite )
 
+################################
+# PETSC
+################################
+
+set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
+set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.10.2.tar.gz")
+
+if (false)
+else()
+    message(STATUS "Building PETSC found at ${PETSC_URL}")
+
+    ExternalProject_Add( petsc
+                         URL ${PETSC_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
+                         INSTALL_DIR ${PETSC_INSTALL_DIR}
+			 CONFIGURE_COMMAND cd ../petsc && ./configure --prefix=<INSTALL_DIR> --download-ml --download-mumps --download-scalapack --download-hypre   
+                         BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
+			 INSTALL_COMMAND cd ../petsc && make install
+                      )
+
+    list(APPEND build_list petsc )
+endif()
+
 
 ################################
 # Create target that builds all dependencies
