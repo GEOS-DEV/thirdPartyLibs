@@ -41,7 +41,7 @@ option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
 set(NUM_PROC "16" CACHE STRING "")
-set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tpl_mirror")
+set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
 
