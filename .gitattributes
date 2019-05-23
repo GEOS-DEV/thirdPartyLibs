@@ -1,0 +1,2 @@
+tplMirror/*.gz filter=lfs diff=lfs merge=lfs -text
+tplMirror/*.zip filter=lfs diff=lfs merge=lfs -text
