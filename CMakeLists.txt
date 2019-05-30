@@ -200,6 +200,7 @@ ExternalProject_Add( silo
                                           --disable-silex 
                                           --enable-shared=no
                                           --enable-static=yes
+                                          --build=${SILO_BUILD_TYPE}
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install )
 
@@ -224,12 +225,14 @@ ExternalProject_Add( raja
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-#                                    -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                -DRAJA_ENABLE_CUDA=${CUDA_ENABLED}
+                                -DRAJA_ENABLE_CUDA=${ENABLE_CUDA}
+                                -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -DCUDA_ARCH=${CUDA_ARCH}
                                 -DENABLE_TESTS=${RAJA_ENABLE_TESTS}
                                 -DRAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
                                 -DENABLE_OPENMP=${ENABLE_OPENMP}
-             		            -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
+                                -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -256,7 +259,10 @@ ExternalProject_Add( chai
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DENABLE_CUDA=${CUDA_ENABLED}
+                                -DENABLE_CUDA=${ENABLE_CUDA}
+                                -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -DCUDA_ARCH=${CUDA_ARCH}
                                 -DENABLE_OPENMP=${ENABLE_OPENMP}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
@@ -298,7 +304,7 @@ list(APPEND build_list fparser )
 ################################
 # CALIPER
 ################################
-if (NOT ENABLE_CALIPER)
+if (DEFINED ENABLE_CALIPER AND NOT ENABLE_CALIPER)
     message(STATUS "CALIPER disabled")
 else()
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
@@ -332,35 +338,39 @@ endif()
 ################################
 # MATHPRESSO/ASMJIT
 ################################
-set(MATHPRESSO_DIR "${CMAKE_INSTALL_PREFIX}/mathpresso")
-set(MATHPRESSO_URL "${TPL_MIRROR_DIR}/mathpresso-2015-12-15.tar.gz")
-set(ASMJIT_URL "${TPL_MIRROR_DIR}/asmjit-2016-07-20.tar.gz")
-message(STATUS "Building MATHPRESSO found at ${MATHPRESSO_URL}")
+if (DEFINED ENABLE_MATHPRESSO AND NOT ENABLE_MATHPRESSO)
+    message(STATUS "MATHPRESSO disabled")
+else()
+    set(MATHPRESSO_DIR "${CMAKE_INSTALL_PREFIX}/mathpresso")
+    set(MATHPRESSO_URL "${TPL_MIRROR_DIR}/mathpresso-2015-12-15.tar.gz")
+    set(ASMJIT_URL "${TPL_MIRROR_DIR}/asmjit-2016-07-20.tar.gz")
+    message(STATUS "Building MATHPRESSO found at ${MATHPRESSO_URL}")
 
-ExternalProject_Add( mathpresso
-                     URL ${MATHPRESSO_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/mathpresso
-                     INSTALL_DIR ${MATHPRESSO_DIR}
-                     PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && tar -xzvf ${ASMJIT_URL}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
-                                     mkdir -p <INSTALL_DIR>/lib &&
-                                     make INSTALL_DIR=<INSTALL_DIR> install &&
-                                     cp libmathpresso.a <INSTALL_DIR>/lib/
-                     CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
-                                -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
-                                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                    )
-                                
-list(APPEND build_list mathpresso )
+    ExternalProject_Add( mathpresso
+                         URL ${MATHPRESSO_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/mathpresso
+                         INSTALL_DIR ${MATHPRESSO_DIR}
+                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && tar -xzvf ${ASMJIT_URL}
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
+                                         mkdir -p <INSTALL_DIR>/lib &&
+                                         make INSTALL_DIR=<INSTALL_DIR> install &&
+                                         cp libmathpresso.a <INSTALL_DIR>/lib/
+                         CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
+                                    -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
+                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                        )
+                                    
+    list(APPEND build_list mathpresso )
+endif()
 
 
 ################################
@@ -389,13 +399,62 @@ ExternalProject_Add( pugixml
 list(APPEND build_list pugixml )
 
 ################################
+# LAPACK_SUITE
+# It contains also
+#   * Level 1, 2, and 3 BLAS; CBLAS, a C interface to the BLAS
+#   * CBLAS (C interface to the BLAS)
+#   * LAPACKE (C interface to LAPACK)
+################################
+if (DEFINED ENABLE_LAPACK_SUITE AND NOT ENABLE_LAPACK_SUITE)
+    message("LAPACK_SUITE disabled")
+    set(TRILINOS_DEPENDS "")
+else()
+    set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
+    set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
+
+    message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
+    message(STATUS "CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
+
+    ExternalProject_Add( lapack_suite
+                         PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
+                         URL ${LAPACK_SUITE_URL}
+                         INSTALL_DIR ${LAPACK_SUITE_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -DCBLAS=ON
+                                    -DLAPACKE=ON
+                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                    -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                    )
+
+    # Use the lapack_suite for trilinos. The last define is a hack.
+    set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                            -D BLAS_LIBRARY_DIRS=${LAPACK_SUITE_DIR}/lib64
+                            -D LAPACK_LIBRARY_DIRS=${LAPACK_SUITE_DIR}/lib64
+                            -D HAVE_dggsvd3_POST=1
+                            )
+    
+    set(TRILINOS_DEPENDS lapack_suite)
+    list(APPEND build_list lapack_suite)
+endif()
+
+################################
 # TRILINOS
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-12.10.1-Source.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-14-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
+    message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
 
     ExternalProject_Add( trilinos
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
@@ -403,6 +462,7 @@ if (ENABLE_TRILINOS)
                          INSTALL_DIR ${TRILINOS_DIR}
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
+                         DEPENDS ${TRILINOS_DEPENDS}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -411,18 +471,19 @@ if (ENABLE_TRILINOS)
                                     -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                     -D Trilinos_ENABLE_Fortran:BOOL=OFF 
                                     -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING="" 
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE 
-                                    -D Trilinos_ENABLE_TESTS:BOOL=OFF 
-                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=FALSE 
+                                    -D Trilinos_ENABLE_TESTS:BOOL=OFF
+                                    -D Trilinos_ENABLE_Gtest:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF 
                                     -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=ON 
                                     -D Trilinos_ENABLE_Epetra:BOOL=ON 
                                     -D Trilinos_ENABLE_EpetraExt:BOOL=ON 
                                     -D Trilinos_ENABLE_Tpetra:BOOL=ON 
                                     -D Trilinos_ENABLE_Jpetra:BOOL=ON 
                                     -D Trilinos_ENABLE_Kokkos:BOOL=ON 
-                                    -D Trilinos_ENABLE_Mesquite:BOOL=ON 
                                     -D Trilinos_ENABLE_Sacado:BOOL=ON 
                                     -D Trilinos_ENABLE_Stratimikos:BOOL=ON 
                                     -D Trilinos_ENABLE_Amesos:BOOL=ON 
@@ -434,13 +495,16 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_Shards:BOOL=ON 
                                     -D Trilinos_ENABLE_Pamgen:BOOL=ON 
                                     -D Trilinos_ENABLE_Thyra:BOOL=ON 
-                                    -D Trilinos_ENABLE_Boost=OFF
                                     -D Trilinos_ENABLE_STK=OFF
                                     -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
-                                    -D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
-                                    -D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
-                                    -D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
-                                    -D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS} )
+                                    # -D BLAS_LIBRARY_DIRS=${TRILINOS_BLAS_LIBRARY_DIRS}
+                                    # -D LAPACK_LIBRARY_DIRS=${TRILINOS_LAPACK_LIBRARY_DIRS}
+                                    # -D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
+                                    # -D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
+                                    # -D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
+                                    # -D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS}
+                                    ${TRILINOS_EXTRA_ARGS}
+                        )
 
     list(APPEND build_list trilinos )
 endif()
@@ -468,10 +532,9 @@ ExternalProject_Add( parmetis
                                 -DMETIS_PATH=../parmetis/metis
                                 -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                                 -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                 -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DMPI_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                 -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -526,10 +589,9 @@ ExternalProject_Add( superlu_dist
                                 -DXSDK_INDEX_SIZE=64
                                 -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                                 -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                 -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DMPI_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
@@ -537,7 +599,7 @@ ExternalProject_Add( superlu_dist
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-		)
+        )
 
 list(APPEND build_list superlu_dist )
 
@@ -563,7 +625,7 @@ ExternalProject_Add( hypre
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND ./configure CC=${MPI_C_COMPILER}
                                           CXX=${MPI_CXX_COMPILER}
-                                          FC=${MPI_Fortran_COMPILER}
+                                          FC=${CMAKE_Fortran_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --enable-bigint
                                           --with-dsuperlu 
@@ -577,43 +639,6 @@ ExternalProject_Add( hypre
                   )
 
 list(APPEND build_list hypre )
-
-
-################################
-# LAPACK_SUITE
-# It contains also
-#   * Level 1, 2, and 3 BLAS; CBLAS, a C interface to the BLAS
-#   * CBLAS (C interface to the BLAS)
-#   * LAPACKE (C interface to LAPACK)
-################################
-set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
-set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
-
-message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
-message(STATUS "CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
-
-ExternalProject_Add( lapack_suite
-                     PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
-                     URL ${LAPACK_SUITE_URL}
-                     INSTALL_DIR ${LAPACK_SUITE_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                -DCBLAS=ON
-                                -DLAPACKE=ON
-                                -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DCMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
-                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                   )
-
-list(APPEND build_list lapack_suite )
 
 
 ################################
