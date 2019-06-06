@@ -41,8 +41,115 @@ option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
 set(NUM_PROC "16" CACHE STRING "")
+message(STATUS "Build command = make -j ${NUM_PROC}")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+
+string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
+string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
+set(C_FLAGS_NO_WARNINGS "${C_FLAGS_NO_WARNINGS} -w")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+
+string(REPLACE "-Wall" "" CXX_FLAGS_NO_WARNINGS ${CMAKE_CXX_FLAGS})
+string(REPLACE "-Wextra" "" CXX_FLAGS_NO_WARNINGS ${CXX_FLAGS_NO_WARNINGS})
+set(CXX_FLAGS_NO_WARNINGS "${CXX_FLAGS_NO_WARNINGS} -w")
+
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+
+################################
+# LAPACK_SUITE
+# It contains also
+#   * Level 1, 2, and 3 BLAS; CBLAS, a C interface to the BLAS
+#   * CBLAS (C interface to the BLAS)
+#   * LAPACKE (C interface to LAPACK)
+################################
+if (DEFINED ENABLE_LAPACK_SUITE AND NOT ENABLE_LAPACK_SUITE)
+    message(STATUS "LAPACK_SUITE disabled")
+    set(TRILINOS_DEPENDS "")
+else()
+    set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
+    set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
+
+    message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
+    message(STATUS "CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
+
+    ExternalProject_Add( lapack_suite
+                         PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
+                         URL ${LAPACK_SUITE_URL}
+                         INSTALL_DIR ${LAPACK_SUITE_DIR}
+                         BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
+                         INSTALL_COMMAND make install
+                         CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -DCBLAS=ON
+                                    -DLAPACKE=ON
+                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                    -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                    )
+
+    # Use the lapack_suite for trilinos. The last define is a hack.
+    set(BLAS_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib64 CACHE PATH "")
+    set(BLAS_LIBRARY_NAMES blas CACHE STRING "")
+
+    set(LAPACK_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib64 CACHE PATH "")
+    set(LAPACK_LIBRARY_NAMES lapack CACHE STRING "")
+
+    set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                            -D HAVE_dggsvd3_POST=1
+                            )
+
+    set(SUPERLU_BLAS_LIBRARIES "-Wl,-rpath -Wl,${BLAS_LIBRARY_DIRS} -l${BLAS_LIBRARY_NAMES}")
+    set(SUPERLU_LAPACK_LIBRARIES "-Wl,-rpath -Wl,${LAPACK_LIBRARY_DIRS} -l${LAPACK_LIBRARY_NAMES}")
+    
+    set(MATH_LIBRARIES lapack_suite)
+    list(APPEND build_list lapack_suite)
+endif()
+
+
+################################
+# MKL
+################################
+if (DEFINED ENABLE_MKL AND ENABLE_MKL)
+    message(STATUS "MKL enabled")
+
+    if (NOT DEFINED MKL_ROOT)
+        message(FATAL_ERROR "MKL is enabled but MKL_ROOT is not defined.")
+    endif()
+
+    if (NOT DEFINED MKL_LIBRARY_NAMES)
+        message(FATAL_ERROR "MKL is enabled but MKL_LIBRARY_NAMES is not defined.")
+    endif()
+
+    set(BLAS_LIBRARY_DIRS ${MKL_ROOT}/lib CACHE PATH "")
+    set(BLAS_LIBRARY_NAMES ${MKL_LIBRARY_NAMES} CACHE STRING "")
+
+    set(LAPACK_LIBRARY_DIRS ${MKL_ROOT}/lib CACHE PATH "")
+    set(LAPACK_LIBRARY_NAMES ${MKL_LIBRARY_NAMES} CACHE STRING "")
+
+    set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                            -D TPL_ENABLE_MKL:BOOL=ON
+                            -D MKL_LIBRARY_DIRS:FILEPATH=${MKL_ROOT}/lib
+                            -D MKL_LIBRARY_NAMES:STRING=${MKL_LIBRARY_NAMES}
+                            -D MKL_INCLUDE_DIRS:FILEPATH=${MKL_ROOT}/include
+                            )
+    
+    set(SUPERLU_BLAS_LIBRARIES ${BLAS_LIBRARY_DIRS}/${BLAS_LIBRARY_NAMES})
+    set(SUPERLU_LAPACK_LIBRARIES ${LAPACK_LIBRARY_DIRS}/${LAPACK_LIBRARY_NAMES})
+endif()
+
+message(STATUS "BLAS_LIBRARY_DIRS = ${BLAS_LIBRARY_DIRS}")
+message(STATUS "BLAS_LIBRARY_NAMES = ${BLAS_LIBRARY_NAMES}")
+message(STATUS "LAPACK_LIBRARY_DIRS = ${LAPACK_LIBRARY_DIRS}")
+message(STATUS "LAPACK_LIBRARY_NAMES = ${LAPACK_LIBRARY_NAMES}")
 
 
 ################################
@@ -399,54 +506,6 @@ ExternalProject_Add( pugixml
 list(APPEND build_list pugixml )
 
 ################################
-# LAPACK_SUITE
-# It contains also
-#   * Level 1, 2, and 3 BLAS; CBLAS, a C interface to the BLAS
-#   * CBLAS (C interface to the BLAS)
-#   * LAPACKE (C interface to LAPACK)
-################################
-if (DEFINED ENABLE_LAPACK_SUITE AND NOT ENABLE_LAPACK_SUITE)
-    message("LAPACK_SUITE disabled")
-    set(TRILINOS_DEPENDS "")
-else()
-    set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
-    set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
-
-    message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
-    message(STATUS "CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
-
-    ExternalProject_Add( lapack_suite
-                         PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
-                         URL ${LAPACK_SUITE_URL}
-                         INSTALL_DIR ${LAPACK_SUITE_DIR}
-                         BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                         INSTALL_COMMAND make install
-                         CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=RELEASE
-                                    -DCBLAS=ON
-                                    -DLAPACKE=ON
-                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                                    -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                    )
-
-    # Use the lapack_suite for trilinos. The last define is a hack.
-    set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                            -D BLAS_LIBRARY_DIRS=${LAPACK_SUITE_DIR}/lib64
-                            -D LAPACK_LIBRARY_DIRS=${LAPACK_SUITE_DIR}/lib64
-                            -D HAVE_dggsvd3_POST=1
-                            )
-    
-    set(TRILINOS_DEPENDS lapack_suite)
-    list(APPEND build_list lapack_suite)
-endif()
-
-################################
 # TRILINOS
 ################################
 if (ENABLE_TRILINOS)
@@ -456,16 +515,20 @@ if (ENABLE_TRILINOS)
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
     message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
 
+    string(REPLACE "-Wall" "" TRILINOS_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    string(REPLACE "-Wextra" "" TRILINOS_CXX_FLAGS ${TRILINOS_CXX_FLAGS})
+    set(TRILINOS_CXX_FLAGS "${TRILINOS_CXX_FLAGS} -w")
+
     ExternalProject_Add( trilinos
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
                          INSTALL_DIR ${TRILINOS_DIR}
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
-                         DEPENDS ${TRILINOS_DEPENDS}
+                         DEPENDS ${MATH_LIBRARIES}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                    -D CMAKE_CXX_FLAGS=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D TPL_ENABLE_MPI:BOOL=ON 
                                     -D BUILD_SHARED_LIBS:BOOL=ON
@@ -497,12 +560,10 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_Thyra:BOOL=ON 
                                     -D Trilinos_ENABLE_STK=OFF
                                     -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
-                                    # -D BLAS_LIBRARY_DIRS=${TRILINOS_BLAS_LIBRARY_DIRS}
-                                    # -D LAPACK_LIBRARY_DIRS=${TRILINOS_LAPACK_LIBRARY_DIRS}
-                                    # -D TPL_BLAS_LIBRARIES=${TRILINOS_TPL_BLAS_LIBRARIES}
-                                    # -D TPL_BLAS_INCLUDE_DIRS=${TRILINOS_TPL_BLAS_INCLUDE_DIRS}
-                                    # -D TPL_LAPACK_LIBRARIES=${TRILINOS_TPL_LAPACK_LIBRARIES}
-                                    # -D TPL_LAPACK_INCLUDE_DIRS=${TRILINOS_TPL_LAPACK_INCLUDE_DIRS}
+                                    -D BLAS_LIBRARY_DIRS:FILEPATH=${BLAS_LIBRARY_DIRS}
+                                    -D BLAS_LIBRARY_NAMES:STRING=${BLAS_LIBRARY_NAMES}
+                                    -D LAPACK_LIBRARY_DIRS:FILEPATH=${LAPACK_LIBRARY_DIRS}
+                                    -D LAPACK_LIBRARY_NAMES:STRING=${LAPACK_LIBRARY_NAMES}
                                     ${TRILINOS_EXTRA_ARGS}
                         )
 
@@ -582,23 +643,25 @@ ExternalProject_Add( superlu_dist
                      INSTALL_DIR ${SUPERLU_DIR}
                      BUILD_COMMAND make -j VERBOSE=1
                      INSTALL_COMMAND make install
-                     DEPENDS parmetis metis
+                     DEPENDS parmetis metis ${MATH_LIBRARIES}
                      CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
                                       -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                -DXSDK_INDEX_SIZE=64
-                                -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                                -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DSUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D XSDK_INDEX_SIZE=64
+                                -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                -D MPI_C_COMPILER=${MPI_C_COMPILER}
+                                -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D SUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D TPL_BLAS_LIBRARIES=${SUPERLU_BLAS_LIBRARIES}
+                                -D TPL_LAPACK_LIBRARIES=${SUPERLU_LAPACK_LIBRARIES}
         )
 
 list(APPEND build_list superlu_dist )
@@ -613,21 +676,25 @@ set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.15.0.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
-set(HYPRE_C_FLAGS="-fPIC ${CMAKE_C_FLAGS}")
-set(HYPRE_CXX_FLAGS="-fPIC ${CMAKE_CXX_FLAGS}")
-set(HYPRE_Fortran_FLAGS="-fPIC ${CMAKE_Fortran_FLAGS}")
+set(HYPRE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
+set(HYPRE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
+set(HYPRE_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
 
 ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
                      INSTALL_DIR ${HYPRE_DIR}
-                     DEPENDS superlu_dist
+                     DEPENDS superlu_dist ${MATH_LIBRARIES}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND ./configure CC=${MPI_C_COMPILER}
                                           CXX=${MPI_CXX_COMPILER}
                                           FC=${CMAKE_Fortran_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --enable-bigint
+                                          --with-blas-lib-dirs=${BLAS_LIBRARY_DIRS}
+                                          --with-blas-libs=${BLAS_LIBRARY_NAMES}
+                                          --with-lapack-lib-dirs=${LAPACK_LIBRARY_DIRS}
+                                          --with-lapack-libs=${LAPACK_LIBRARY_NAMES}
                                           --with-dsuperlu 
                                           --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
                                           --with-dsuperlu-lib=${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a
