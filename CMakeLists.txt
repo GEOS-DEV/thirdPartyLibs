@@ -163,7 +163,7 @@ message(STATUS "LAPACK_LIBRARY_NAMES = ${LAPACK_LIBRARY_NAMES}")
 # UNCRUSTIFY
 ################################
 set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
-set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-0.67.tar.gz")
+set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-0.69.0.tar.gz")
 message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
@@ -174,11 +174,31 @@ ExternalProject_Add( uncrustify
                      INSTALL_COMMAND make install
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                  )
 
 list(APPEND build_list uncrustify )
+
+################################
+# ASTYLE
+################################
+set(ASTYLE_DIR "${CMAKE_INSTALL_PREFIX}/astlye")
+set(ASTYLE_URL "${TPL_MIRROR_DIR}/astyle_3.1_linux.tar.gz")
+message(STATUS "Building uncrustify found at ${ASTYLE_URL}")
+
+ExternalProject_Add( astyle
+                     URL ${ASTYLE_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/astyle
+                     BUILD_COMMAND make -j ${NUM_PROC}
+                     INSTALL_DIR ${ASTYLE_DIR}
+                     INSTALL_COMMAND make DESTDIR=${ASTYLE_DIR} install
+                     CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                )
+                                 
+list(APPEND build_list astyle )
 
 
 ################################
