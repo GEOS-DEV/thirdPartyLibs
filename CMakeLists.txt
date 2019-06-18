@@ -82,18 +82,18 @@ else()
                          INSTALL_DIR ${LAPACK_SUITE_DIR}
                          BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                          INSTALL_COMMAND make install
-                         CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=RELEASE
-                                    -DCBLAS=ON
-                                    -DLAPACKE=ON
-                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                                    -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -D CBLAS=ON
+                                    -D LAPACKE=ON
+                                    -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -D CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                    -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                    -D CMAKE_Fortran_COMPILER_ID=${CMAKE_Fortran_COMPILER_ID}
+                                    -D CMAKE_EXE_LINKER_FLAGS=${BLT_EXE_LINKER_FLAGS}
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                     )
 
     # Check if system is using lib or lib64 as default library installation path
@@ -345,31 +345,30 @@ list(APPEND build_list silo )
 # RAJA
 ################################
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-0.6.0rc3.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.8.0.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
-                     PATCH_COMMAND pwd && cp -r ${BLT_SOURCE_DIR} .
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DRAJA_ENABLE_CUDA=${ENABLE_CUDA}
-                                -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
-                                -DCUDA_ARCH=${CUDA_ARCH}
-                                -DENABLE_TESTS=${RAJA_ENABLE_TESTS}
-                                -DRAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
-                                -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D RAJA_ENABLE_CUDA=${ENABLE_CUDA}
+                                -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -D CUDA_ARCH=${CUDA_ARCH}
+                                -D ENABLE_TESTS=${RAJA_ENABLE_TESTS}
+                                -D RAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
+                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
+                                -D RAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                     )
 
 list(APPEND build_list raja )
