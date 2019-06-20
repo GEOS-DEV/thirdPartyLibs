@@ -40,24 +40,32 @@ option( RAJA_ENABLE_TBB "" OFF)
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 
-set(NUM_PROC "16" CACHE STRING "")
-message(STATUS "Build command = make -j ${NUM_PROC}")
+option( ENABLE_NINJA "" OFF )
+
+set(NUM_PROC "" CACHE STRING "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "" FORCE)
 
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
 string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
 set(C_FLAGS_NO_WARNINGS "${C_FLAGS_NO_WARNINGS} -w")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-
 string(REPLACE "-Wall" "" CXX_FLAGS_NO_WARNINGS ${CMAKE_CXX_FLAGS})
 string(REPLACE "-Wextra" "" CXX_FLAGS_NO_WARNINGS ${CXX_FLAGS_NO_WARNINGS})
 set(CXX_FLAGS_NO_WARNINGS "${CXX_FLAGS_NO_WARNINGS} -w")
 
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+if (ENABLE_NINJA)
+    message(STATUS "Ninja is enabled")
+    set(TPL_BUILD_COMMAND ninja)
+    set(TPL_INSTALL_COMMAND ninja install)
+    set(TPL_GENERATOR Ninja)
+else()
+    set(TPL_BUILD_COMMAND make -j ${NUM_PROC})
+    set(TPL_INSTALL_COMMAND make install)
+    set(TPL_GENERATOR "Unix Makefiles")
+endif()
+
+message(STATUS "Build command = ${TPL_BUILD_COMMAND}")
 
 ################################
 # LAPACK_SUITE
@@ -74,14 +82,14 @@ else()
     set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
 
     message(STATUS "Building LAPACK_SUITE found at ${LAPACK_SUITE_URL}")
-    message(STATUS "CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
 
     ExternalProject_Add( lapack_suite
                          PREFIX ${PROJECT_BINARY_DIR}/lapack_suite
                          URL ${LAPACK_SUITE_URL}
                          INSTALL_DIR ${LAPACK_SUITE_DIR}
-                         BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                         INSTALL_COMMAND make install
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                     -D CBLAS=ON
                                     -D LAPACKE=ON
@@ -170,8 +178,9 @@ ExternalProject_Add( uncrustify
                      URL ${UNCRUSTIFY_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/uncrustify
                      INSTALL_DIR ${UNCRUSTIFY_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -197,7 +206,7 @@ ExternalProject_Add( astyle
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 )
-                                 
+
 list(APPEND build_list astyle )
 
 
@@ -240,6 +249,9 @@ ExternalProject_Add( conduit
                      SOURCE_SUBDIR src
                      INSTALL_DIR ${CONDUIT_DIR}
                      DEPENDS ${HDF5_DEPENDENCIES}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -DENABLE_DOCS=OFF
                                 -DENABLE_EXAMPLES=OFF
                                 -DENABLE_FORTRAN=OFF
@@ -265,8 +277,7 @@ ExternalProject_Add( conduit
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install )
+                                )
 
 list(APPEND build_list conduit )
 
@@ -285,29 +296,33 @@ ExternalProject_Add( axom
                      SOURCE_SUBDIR src
                      INSTALL_DIR ${AXOM_DIR}
                      DEPENDS ${HDF5_DEPENDENCIES} conduit
-                     CMAKE_ARGS -DENABLE_DOCS=OFF
-                                -DENABLE_BENCHMARKS=OFF
-                                -DENABLE_EXAMPLES=OFF
-                                -DENABLE_FORTRAN=OFF
-                                -DENABLE_TESTS=OFF
-                                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DENABLE_MPI=${ENABLE_MPI}
-                                -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                -DHDF5_DIR=${HDF5_DIR}
-                                -DCONDUIT_DIR=${CONDUIT_DIR}
-                                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DMPI_C_COMPILER=${MPI_C_COMPILER}
-                                -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DAXOM_ENABLE_LUMBERJACK=ON
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install )
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -D ENABLE_DOCS=OFF
+                                -D ENABLE_BENCHMARKS=OFF
+                                -D ENABLE_EXAMPLES=OFF
+                                -D ENABLE_FORTRAN=OFF
+                                -D ENABLE_TESTS=OFF
+                                -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D ENABLE_MPI=${ENABLE_MPI}
+                                -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                -D HDF5_DIR=${HDF5_DIR}
+                                -D CONDUIT_DIR=${CONDUIT_DIR}
+                                -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D MPI_C_COMPILER=${MPI_C_COMPILER}
+                                -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D AXOM_ENABLE_LUMBERJACK=ON
+                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                )
 
 list(APPEND build_list axom )
 
@@ -342,39 +357,6 @@ list(APPEND build_list silo )
 
 
 ################################
-# RAJA
-################################
-set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.8.0.tar.gz")
-message(STATUS "Building RAJA found at ${RAJA_URL}")
-
-ExternalProject_Add( raja
-                     URL ${RAJA_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/raja
-                     INSTALL_DIR ${RAJA_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -D RAJA_ENABLE_CUDA=${ENABLE_CUDA}
-                                -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
-                                -D CUDA_ARCH=${CUDA_ARCH}
-                                -D ENABLE_TESTS=${RAJA_ENABLE_TESTS}
-                                -D RAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
-                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
-                                -D RAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                    )
-
-list(APPEND build_list raja )
-
-
-################################
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
@@ -386,28 +368,68 @@ ExternalProject_Add( chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
                      PATCH_COMMAND pwd && cp -r blt src/tpl/umpire
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-                                -DENABLE_CUDA=${ENABLE_CUDA}
-                                -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
-                                -DCUDA_ARCH=${CUDA_ARCH}
-                                -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DENABLE_TESTS=OFF
-                                -DENABLE_DOCS=OFF
-                                -DENABLE_DOXYGEN=OFF
-                                -DENABLE_SPHINX=OFF
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D ENABLE_TESTS=OFF
+                                -D ENABLE_DOCS=OFF
+                                -D ENABLE_DOXYGEN=OFF
+                                -D ENABLE_SPHINX=OFF
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                     )
 
 list(APPEND build_list chai )
+
+
+################################
+# RAJA
+################################
+set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.8.0.tar.gz")
+message(STATUS "Building RAJA found at ${RAJA_URL}")
+
+ExternalProject_Add( raja
+                     URL ${RAJA_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/raja
+                     INSTALL_DIR ${RAJA_DIR}
+                     DEPENDS chai
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CUDA_ARCH:CACHE=${CUDA_ARCH}
+                                -D ENABLE_TESTS:BOOL=OFF
+                                -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
+                                -D ENABLE_CHAI:BOOL=TRUE
+                                -D umpire_DIR:PATH=${CHAI_DIR}/share/umpire/cmake
+                                -D chai_DIR:PATH=${CHAI_DIR}/share/chai/cmake
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                    )
+
+list(APPEND build_list raja )
+
 
 ################################
 # FPARSER
@@ -449,8 +471,9 @@ else()
                          URL ${CALIPER_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/caliper
                          INSTALL_DIR ${CALIPER_DIR}
-                         BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_COMMAND make install
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -484,7 +507,8 @@ else()
                          PREFIX ${PROJECT_BINARY_DIR}/mathpresso
                          INSTALL_DIR ${MATHPRESSO_DIR}
                          PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && tar -xzvf ${ASMJIT_URL}
-                         BUILD_COMMAND make -j ${NUM_PROC}
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
                          INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
                                          mkdir -p <INSTALL_DIR>/lib &&
                                          make INSTALL_DIR=<INSTALL_DIR> install &&
@@ -518,8 +542,9 @@ ExternalProject_Add( pugixml
                      PREFIX ${PROJECT_BINARY_DIR}/pugixml
                      URL ${PUGIXML_URL}
                      INSTALL_DIR ${PUGIXML_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -549,9 +574,10 @@ if (ENABLE_TRILINOS)
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
                          INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_COMMAND make install
                          DEPENDS ${MATH_LIBRARIES}
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS=${TRILINOS_CXX_FLAGS}
@@ -560,7 +586,7 @@ if (ENABLE_TRILINOS)
                                     -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                    -D ENABLE_OPENMP=${ENABLE_OPENMP}
+                                    -D Trilinos_ENABLE_OpenMP=${ENABLE_OPENMP}
                                     -D Trilinos_ENABLE_Fortran:BOOL=OFF
                                     -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
@@ -571,7 +597,6 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_Epetra:BOOL=ON
                                     -D Trilinos_ENABLE_EpetraExt:BOOL=ON
                                     -D Trilinos_ENABLE_Tpetra:BOOL=ON
-                                    -D Trilinos_ENABLE_Jpetra:BOOL=ON
                                     -D Trilinos_ENABLE_Kokkos:BOOL=ON
                                     -D Trilinos_ENABLE_Sacado:BOOL=ON
                                     -D Trilinos_ENABLE_Stratimikos:BOOL=ON
@@ -612,8 +637,9 @@ ExternalProject_Add( parmetis
                      PREFIX ${PROJECT_BINARY_DIR}/parmetis
                      URL ${PARMETIS_URL}
                      INSTALL_DIR ${PARMETIS_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -DGKLIB_PATH=../parmetis/metis/GKlib
                                 -DMETIS_PATH=../parmetis/metis
@@ -628,8 +654,8 @@ ExternalProject_Add( parmetis
                                 -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DPARMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                )
 
 list(APPEND build_list parmetis )
 
@@ -640,8 +666,9 @@ ExternalProject_Add( metis
                      URL ${PARMETIS_URL}
                      INSTALL_DIR ${METIS_DIR}
                      SOURCE_SUBDIR metis
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -DGKLIB_PATH=../metis/metis/GKlib
                                 -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
@@ -650,8 +677,8 @@ ExternalProject_Add( metis
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DMETIS_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> )
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                )
 
 list(APPEND build_list metis )
 
@@ -667,8 +694,9 @@ ExternalProject_Add( superlu_dist
                      PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
                      URL ${SUPERLU_URL}
                      INSTALL_DIR ${SUPERLU_DIR}
-                     BUILD_COMMAND make -j VERBOSE=1
-                     INSTALL_COMMAND make install
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      DEPENDS parmetis metis ${MATH_LIBRARIES}
                      CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
                                       -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
@@ -684,7 +712,6 @@ ExternalProject_Add( superlu_dist
                                 -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D SUPERLU_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D TPL_BLAS_LIBRARIES=${SUPERLU_BLAS_LIBRARIES}
                                 -D TPL_LAPACK_LIBRARIES=${SUPERLU_LAPACK_LIBRARIES}
