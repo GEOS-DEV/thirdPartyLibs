@@ -96,11 +96,18 @@ else()
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                     )
 
+    # Check if system is using lib or lib64 as default library installation path
+    get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+    set(LIBSUFFIX "")
+    if (${LIB64} STREQUAL TRUE AND ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+        set(LIBSUFFIX 64)
+    endif()
+
     # Use the lapack_suite for trilinos. The last define is a hack.
-    set(BLAS_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib64 CACHE PATH "")
+    set(BLAS_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib${LIBSUFFIX} CACHE PATH "")
     set(BLAS_LIBRARY_NAMES blas CACHE STRING "")
 
-    set(LAPACK_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib64 CACHE PATH "")
+    set(LAPACK_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib${LIBSUFFIX} CACHE PATH "")
     set(LAPACK_LIBRARY_NAMES lapack CACHE STRING "")
 
     set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -109,7 +116,7 @@ else()
 
     set(SUPERLU_BLAS_LIBRARIES "-Wl,-rpath -Wl,${BLAS_LIBRARY_DIRS} -l${BLAS_LIBRARY_NAMES}")
     set(SUPERLU_LAPACK_LIBRARIES "-Wl,-rpath -Wl,${LAPACK_LIBRARY_DIRS} -l${LAPACK_LIBRARY_NAMES}")
-    
+
     set(MATH_LIBRARIES lapack_suite)
     list(APPEND build_list lapack_suite)
 endif()
@@ -141,7 +148,7 @@ if (DEFINED ENABLE_MKL AND ENABLE_MKL)
                             -D MKL_LIBRARY_NAMES:STRING=${MKL_LIBRARY_NAMES}
                             -D MKL_INCLUDE_DIRS:FILEPATH=${MKL_ROOT}/include
                             )
-    
+
     set(SUPERLU_BLAS_LIBRARIES ${BLAS_LIBRARY_DIRS}/${BLAS_LIBRARY_NAMES})
     set(SUPERLU_LAPACK_LIBRARIES ${LAPACK_LIBRARY_DIRS}/${LAPACK_LIBRARY_NAMES})
 endif()
@@ -169,7 +176,7 @@ ExternalProject_Add( uncrustify
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                 )                                      
+                                 )
 
 list(APPEND build_list uncrustify )
 
@@ -179,7 +186,7 @@ list(APPEND build_list uncrustify )
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")    
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 ExternalProject_Add( hdf5
@@ -304,7 +311,7 @@ ExternalProject_Add( silo
                                           --enable-optimization
                                           --with-hdf5=${HDF5_DIR}/include,${HDF5_DIR}/lib
                                           LIBS=-ldl
-                                          --disable-silex 
+                                          --disable-silex
                                           --enable-shared=no
                                           --enable-static=yes
                                           --build=${SILO_BUILD_TYPE}
@@ -339,7 +346,7 @@ ExternalProject_Add( raja
                                 -DENABLE_TESTS=${RAJA_ENABLE_TESTS}
                                 -DRAJA_ENABLE_TBB=${RAJA_ENABLE_TBB}
                                 -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP} 
+                                -DRAJA_ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -390,7 +397,7 @@ set(FPARSER_DIR "${CMAKE_INSTALL_PREFIX}/fparser")
 set(FPARSER_URL "${TPL_MIRROR_DIR}/fparser4.5.2.zip")
 message(STATUS "Building FPARSER found at ${FPARSER_URL}")
 
-ExternalProject_Add( fparser 
+ExternalProject_Add( fparser
                      URL ${FPARSER_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/fparser
                      INSTALL_DIR ${FPARSER_DIR}
@@ -400,7 +407,7 @@ ExternalProject_Add( fparser
                      INSTALL_COMMAND mkdir -p <INSTALL_DIR>/lib &&
                                      cp libfparser.a <INSTALL_DIR>/lib &&
                                      cd ../fparser &&
-                                     mkdir -p <INSTALL_DIR>/include && 
+                                     mkdir -p <INSTALL_DIR>/include &&
                                      ls  &&
                                      cp fparser.hh fparser_gmpint.hh fparser_mpfr.hh fpconfig.hh <INSTALL_DIR>/include;
                      )
@@ -475,7 +482,7 @@ else()
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
-                                    
+
     list(APPEND build_list mathpresso )
 endif()
 
@@ -530,34 +537,34 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D TPL_ENABLE_MPI:BOOL=ON 
+                                    -D TPL_ENABLE_MPI:BOOL=ON
                                     -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                     -D ENABLE_OPENMP=${ENABLE_OPENMP}
-                                    -D Trilinos_ENABLE_Fortran:BOOL=OFF 
-                                    -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING="" 
-                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE 
+                                    -D Trilinos_ENABLE_Fortran:BOOL=OFF
+                                    -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                     -D Trilinos_ENABLE_TESTS:BOOL=OFF
                                     -D Trilinos_ENABLE_Gtest:BOOL=OFF
-                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF 
-                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=ON 
-                                    -D Trilinos_ENABLE_Epetra:BOOL=ON 
-                                    -D Trilinos_ENABLE_EpetraExt:BOOL=ON 
-                                    -D Trilinos_ENABLE_Tpetra:BOOL=ON 
-                                    -D Trilinos_ENABLE_Jpetra:BOOL=ON 
-                                    -D Trilinos_ENABLE_Kokkos:BOOL=ON 
-                                    -D Trilinos_ENABLE_Sacado:BOOL=ON 
-                                    -D Trilinos_ENABLE_Stratimikos:BOOL=ON 
-                                    -D Trilinos_ENABLE_Amesos:BOOL=ON 
-                                    -D Trilinos_ENABLE_AztecOO:BOOL=ON 
-                                    -D Trilinos_ENABLE_Ifpack:BOOL=ON 
-                                    -D Trilinos_ENABLE_Teuchos:BOOL=ON 
-                                    -D Trilinos_ENABLE_ML:BOOL=ON 
-                                    -D Trilinos_ENABLE_Intrepid:BOOL=ON 
-                                    -D Trilinos_ENABLE_Shards:BOOL=ON 
-                                    -D Trilinos_ENABLE_Pamgen:BOOL=ON 
-                                    -D Trilinos_ENABLE_Thyra:BOOL=ON 
+                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=ON
+                                    -D Trilinos_ENABLE_Epetra:BOOL=ON
+                                    -D Trilinos_ENABLE_EpetraExt:BOOL=ON
+                                    -D Trilinos_ENABLE_Tpetra:BOOL=ON
+                                    -D Trilinos_ENABLE_Jpetra:BOOL=ON
+                                    -D Trilinos_ENABLE_Kokkos:BOOL=ON
+                                    -D Trilinos_ENABLE_Sacado:BOOL=ON
+                                    -D Trilinos_ENABLE_Stratimikos:BOOL=ON
+                                    -D Trilinos_ENABLE_Amesos:BOOL=ON
+                                    -D Trilinos_ENABLE_AztecOO:BOOL=ON
+                                    -D Trilinos_ENABLE_Ifpack:BOOL=ON
+                                    -D Trilinos_ENABLE_Teuchos:BOOL=ON
+                                    -D Trilinos_ENABLE_ML:BOOL=ON
+                                    -D Trilinos_ENABLE_Intrepid:BOOL=ON
+                                    -D Trilinos_ENABLE_Shards:BOOL=ON
+                                    -D Trilinos_ENABLE_Pamgen:BOOL=ON
+                                    -D Trilinos_ENABLE_Thyra:BOOL=ON
                                     -D Trilinos_ENABLE_STK=OFF
                                     -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
                                     -D BLAS_LIBRARY_DIRS:FILEPATH=${BLAS_LIBRARY_DIRS}
@@ -573,7 +580,7 @@ endif()
 
 ################################
 # PARMETIS
-# (also METIS is built; note that the idx_t data type is defined to be 
+# (also METIS is built; note that the idx_t data type is defined to be
 #  64 bit signed integer)
 ################################
 set(PARMETIS_DIR "${CMAKE_INSTALL_PREFIX}/parmetis")
@@ -695,14 +702,14 @@ ExternalProject_Add( hypre
                                           --with-blas-libs=${BLAS_LIBRARY_NAMES}
                                           --with-lapack-lib-dirs=${LAPACK_LIBRARY_DIRS}
                                           --with-lapack-libs=${LAPACK_LIBRARY_NAMES}
-                                          --with-dsuperlu 
+                                          --with-dsuperlu
                                           --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include
                                           --with-dsuperlu-lib=${CMAKE_INSTALL_PREFIX}/superlu_dist/lib64/libsuperlu_dist.a
                                           CFLAGS=${HYPRE_C_FLAGS}
                                           CXXFLAGS=${HYPRE_CXX_FLAGS}
                                           FCFLAGS=${HYPRE_Fortran_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                     INSTALL_COMMAND make install 
+                     INSTALL_COMMAND make install
                   )
 
 list(APPEND build_list hypre )
@@ -715,5 +722,5 @@ message(STATUS "Building= ${build_list}")
 
 blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
-                    
+
 add_dependencies( tpl ${build_list}  )
