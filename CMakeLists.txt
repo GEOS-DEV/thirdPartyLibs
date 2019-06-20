@@ -199,9 +199,10 @@ message(STATUS "Building uncrustify found at ${ASTYLE_URL}")
 ExternalProject_Add( astyle
                      URL ${ASTYLE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/astyle
-                     BUILD_COMMAND make -j ${NUM_PROC}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_DIR ${ASTYLE_DIR}
-                     INSTALL_COMMAND make DESTDIR=${ASTYLE_DIR} install
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND} DESTDIR=${ASTYLE_DIR} install
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -511,7 +512,7 @@ else()
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
                                          mkdir -p <INSTALL_DIR>/lib &&
-                                         make INSTALL_DIR=<INSTALL_DIR> install &&
+                                         ${TPL_INSTALL_COMMAND} INSTALL_DIR=<INSTALL_DIR> install &&
                                          cp libmathpresso.a <INSTALL_DIR>/lib/
                          CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
                                     -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
