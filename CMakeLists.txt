@@ -73,8 +73,10 @@ message(STATUS "Build command = ${TPL_BUILD_COMMAND}")
 #   * CBLAS (C interface to the BLAS)
 #   * LAPACKE (C interface to LAPACK)
 ################################
-if (DEFINED ENABLE_LAPACK_SUITE AND ENABLE_LAPACK_SUITE)
-
+if (DEFINED ENABLE_LAPACK_SUITE AND NOT ENABLE_LAPACK_SUITE)
+    include( cmake/thirdparty/Find_BLAS.cmake )
+    include( cmake/thirdparty/Find_LAPACK.cmake )
+else()
     set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
     set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
 
@@ -102,6 +104,22 @@ if (DEFINED ENABLE_LAPACK_SUITE AND ENABLE_LAPACK_SUITE)
                     )
     set( LAPACK_DIR ${LAPACK_SUITE_DIR} )
     set( BLAS_DIR ${LAPACK_SUITE_DIR} )
+
+    # Check if system is using lib or lib64 as default library installation path
+    set( BLAS_DIR ${LAPACK_SUITE_DIR} )
+    get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+    set(MATH_LIBRARIES lapack_suite)
+    set(LIBSUFFIX "")
+    if (${LIB64} STREQUAL TRUE AND ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+        set(LIBSUFFIX 64)
+    endif()
+    
+    set(BLAS_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib${LIBSUFFIX} CACHE PATH "")
+    set(BLAS_LIBRARY_NAMES blas CACHE STRING "")
+
+    set(LAPACK_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib${LIBSUFFIX} CACHE PATH "")
+    set(LAPACK_LIBRARY_NAMES lapack CACHE STRING "")
+
     set(MATH_LIBRARIES lapack_suite)
 
     set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -111,22 +129,20 @@ if (DEFINED ENABLE_LAPACK_SUITE AND ENABLE_LAPACK_SUITE)
 
 endif()
 
-include( cmake/thirdparty/Find_BLAS.cmake )
-include( cmake/thirdparty/Find_LAPACK.cmake )
 
 set(BLAS_LIBRARY_DIRS ${BLAS_LIBRARY_DIRS} CACHE PATH "")
 set(LAPACK_LIBRARY_DIRS ${LAPACK_LIBRARY_DIR} CACHE PATH "")
 
 
 string( FIND ${LAPACK_LIBRARY_NAMES} "mkl" MKL )
-if ( MKL )
+if ( NOT ${MKL} EQUAL -1 )
     message(STATUS "MKL enabled")
 
     set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
                             -D TPL_ENABLE_MKL:BOOL=ON
-                            -D MKL_LIBRARY_DIRS:FILEPATH=${MKL_ROOT}/lib
-                            -D MKL_LIBRARY_NAMES:STRING=${MKL_LIBRARY_NAMES}
-                            -D MKL_INCLUDE_DIRS:FILEPATH=${MKL_ROOT}/include
+                            -D MKL_LIBRARY_DIRS:FILEPATH=${LAPACK_LIBRARY_DIRS}
+                            -D MKL_LIBRARY_NAMES:STRING=${LAPACK_LIBRARY_NAMES}
+                            -D MKL_INCLUDE_DIRS:FILEPATH=${LAPACK_INCLUDE_DIRS}
                             )
 
     set(SUPERLU_BLAS_LIBRARIES ${BLAS_LIBRARIES} )
