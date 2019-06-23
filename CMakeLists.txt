@@ -25,9 +25,7 @@ else()
     endif()
 endif()
 
-set( ENABLE_UNCRUSTIFY "OFF" CACHE PATH "" FORCE )
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
-
 
 ################################
 # General GEOSX TPL Info
@@ -67,6 +65,7 @@ endif()
 
 message(STATUS "Build command = ${TPL_BUILD_COMMAND}")
 
+
 ################################
 # LAPACK_SUITE
 # It contains also
@@ -74,9 +73,9 @@ message(STATUS "Build command = ${TPL_BUILD_COMMAND}")
 #   * CBLAS (C interface to the BLAS)
 #   * LAPACKE (C interface to LAPACK)
 ################################
-if (DEFINED ENABLE_LAPACK_SUITE AND NOT ENABLE_LAPACK_SUITE)
-    message(STATUS "LAPACK_SUITE disabled")
-    set(TRILINOS_DEPENDS "")
+if ( NOT ENABLE_LAPACK_SUITE)
+    include( cmake/thirdparty/Find_BLAS.cmake )
+    include( cmake/thirdparty/Find_LAPACK.cmake )
 else()
     set(LAPACK_SUITE_DIR "${CMAKE_INSTALL_PREFIX}/lapack_suite")
     set(LAPACK_SUITE_URL "${TPL_MIRROR_DIR}/lapack-3.8.0-WITHLAPACKH.tar.gz")
@@ -103,6 +102,8 @@ else()
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                     )
+    set( LAPACK_DIR ${LAPACK_SUITE_DIR} )
+    set( BLAS_DIR ${LAPACK_SUITE_DIR} )
 
     # Check if system is using lib or lib64 as default library installation path
     get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
@@ -110,61 +111,44 @@ else()
     if (${LIB64} STREQUAL TRUE AND ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
         set(LIBSUFFIX 64)
     endif()
-
-    # Use the lapack_suite for trilinos. The last define is a hack.
+    
     set(BLAS_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib${LIBSUFFIX} CACHE PATH "")
     set(BLAS_LIBRARY_NAMES blas CACHE STRING "")
 
     set(LAPACK_LIBRARY_DIRS ${LAPACK_SUITE_DIR}/lib${LIBSUFFIX} CACHE PATH "")
     set(LAPACK_LIBRARY_NAMES lapack CACHE STRING "")
 
+    set(MATH_LIBRARIES lapack_suite)
+
     set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
                             -D HAVE_dggsvd3_POST=1
                             )
-
-    set(SUPERLU_BLAS_LIBRARIES "-Wl,-rpath -Wl,${BLAS_LIBRARY_DIRS} -l${BLAS_LIBRARY_NAMES}")
-    set(SUPERLU_LAPACK_LIBRARIES "-Wl,-rpath -Wl,${LAPACK_LIBRARY_DIRS} -l${LAPACK_LIBRARY_NAMES}")
-
-    set(MATH_LIBRARIES lapack_suite)
     list(APPEND build_list lapack_suite)
+
 endif()
 
 
-################################
-# MKL
-################################
-if (DEFINED ENABLE_MKL AND ENABLE_MKL)
-    message(STATUS "MKL enabled")
+set(BLAS_LIBRARY_DIRS ${BLAS_LIBRARY_DIR} CACHE PATH "")
+set(LAPACK_LIBRARY_DIRS ${LAPACK_LIBRARY_DIR} CACHE PATH "")
 
-    if (NOT DEFINED MKL_ROOT)
-        message(FATAL_ERROR "MKL is enabled but MKL_ROOT is not defined.")
+if( ${ENABLE_MKL} )
+    string( FIND ${LAPACK_LIBRARY_NAMES} "mkl" MKL )
+    if ( NOT ${MKL} EQUAL -1 )
+        message(STATUS "MKL enabled")
+
+       set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                -D TPL_ENABLE_MKL:BOOL=ON
+                                -D MKL_LIBRARY_DIRS:FILEPATH=${LAPACK_LIBRARY_DIRS}
+                                -D MKL_LIBRARY_NAMES:STRING=${LAPACK_LIBRARY_NAMES}
+                                -D MKL_INCLUDE_DIRS:FILEPATH=${LAPACK_INCLUDE_DIR}
+                                )
+        set(SUPERLU_BLAS_LIBRARIES ${BLAS_LIBRARIES} )
+        set(SUPERLU_LAPACK_LIBRARIES ${LAPACK_LIBRARIES} )
+    else()
+        set(SUPERLU_BLAS_LIBRARIES "-Wl,-rpath -Wl,${BLAS_LIBRARY_DIRS} -l${BLAS_LIBRARY_NAMES}")
+        set(SUPERLU_LAPACK_LIBRARIES "-Wl,-rpath -Wl,${LAPACK_LIBRARY_DIRS} -l${LAPACK_LIBRARY_NAMES}")
     endif()
-
-    if (NOT DEFINED MKL_LIBRARY_NAMES)
-        message(FATAL_ERROR "MKL is enabled but MKL_LIBRARY_NAMES is not defined.")
-    endif()
-
-    set(BLAS_LIBRARY_DIRS ${MKL_ROOT}/lib CACHE PATH "")
-    set(BLAS_LIBRARY_NAMES ${MKL_LIBRARY_NAMES} CACHE STRING "")
-
-    set(LAPACK_LIBRARY_DIRS ${MKL_ROOT}/lib CACHE PATH "")
-    set(LAPACK_LIBRARY_NAMES ${MKL_LIBRARY_NAMES} CACHE STRING "")
-
-    set(TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                            -D TPL_ENABLE_MKL:BOOL=ON
-                            -D MKL_LIBRARY_DIRS:FILEPATH=${MKL_ROOT}/lib
-                            -D MKL_LIBRARY_NAMES:STRING=${MKL_LIBRARY_NAMES}
-                            -D MKL_INCLUDE_DIRS:FILEPATH=${MKL_ROOT}/include
-                            )
-
-    set(SUPERLU_BLAS_LIBRARIES ${BLAS_LIBRARY_DIRS}/${BLAS_LIBRARY_NAMES})
-    set(SUPERLU_LAPACK_LIBRARIES ${LAPACK_LIBRARY_DIRS}/${LAPACK_LIBRARY_NAMES})
 endif()
-
-message(STATUS "BLAS_LIBRARY_DIRS = ${BLAS_LIBRARY_DIRS}")
-message(STATUS "BLAS_LIBRARY_NAMES = ${BLAS_LIBRARY_NAMES}")
-message(STATUS "LAPACK_LIBRARY_DIRS = ${LAPACK_LIBRARY_DIRS}")
-message(STATUS "LAPACK_LIBRARY_NAMES = ${LAPACK_LIBRARY_NAMES}")
 
 
 ################################
@@ -769,3 +753,4 @@ blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
 
 add_dependencies( tpl ${build_list}  )
+
