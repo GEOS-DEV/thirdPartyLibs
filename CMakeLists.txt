@@ -97,7 +97,7 @@ list(APPEND build_list uncrustify )
 ################################
 # ASTYLE
 ################################
-set(ASTYLE_DIR "${CMAKE_INSTALL_PREFIX}/astlye")
+set(ASTYLE_DIR "${CMAKE_INSTALL_PREFIX}/astyle")
 set(ASTYLE_URL "${TPL_MIRROR_DIR}/astyle_3.1_linux.tar.gz")
 message(STATUS "Building uncrustify found at ${ASTYLE_URL}")
 
