@@ -378,16 +378,11 @@ if (ENABLE_CALIPER)
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -D CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                    -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                    -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                    -D CMAKE_BUILD_TYPE=RELEASE
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -D WITH_MPI:BOOL=TRUE
                                     -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                    -D WITH_MPI:BOOL=TRUE
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D WITH_PAPI=${ENABLE_PAPI}
