@@ -635,6 +635,8 @@ ExternalProject_Add( superlu_dist
                                 -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                 -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                -D MPI_C_COMPILER=${MPI_C_COMPILER}
+                                -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                 -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                 -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
