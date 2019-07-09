@@ -632,8 +632,8 @@ ExternalProject_Add( superlu_dist
                                       -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D XSDK_INDEX_SIZE=64
-                                -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                 -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                                 -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                 -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -696,7 +696,7 @@ ExternalProject_Add( hypre
                      INSTALL_DIR ${HYPRE_DIR}
                      DEPENDS superlu_dist
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_for_geosx && source ${PROJECT_BINARY_DIR}/config_for_geosx
+                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_for_geosx && . ${PROJECT_BINARY_DIR}/config_for_geosx
                      BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                      INSTALL_COMMAND make install
                    )
