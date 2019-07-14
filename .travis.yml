@@ -47,6 +47,6 @@ before_script:
 script: 
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2
-      cd build-darwin-clang-debug;
+      cd build-darwin-clang-release;
       make -j1;
     fi
