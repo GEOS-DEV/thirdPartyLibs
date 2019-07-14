@@ -43,10 +43,17 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew install openmpi > /dev/null 2>&1;
       brew install git-lfs > /dev/null 2>&1;
+      brew install gdrive;
+      git lfs install;
+      git lfs pull;
+      sudo mkdir ~/.gdrive;
+      sudo wget -O ~/.gdrive/token_v2.json https://www.dropbox.com/s/72lwwyivpzkocww/token_v2.json;
     fi
 script: 
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2
+      python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2;
       cd build-darwin-clang-release;
       make -j1;
+      tar -cvf install-darwin-clang-release.tar install-darwin-clang-release;
+      gdrive upload install-darwin-clang-release.tar;
     fi
