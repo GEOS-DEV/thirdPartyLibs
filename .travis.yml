@@ -53,7 +53,7 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2;
       cd build-darwin-clang-release;
-      make -j1;
+      make hdf5 conduit axom silo chai raja fparser mathpresso pugixml metis parmetis superlu hypre;
       tar -cvf install-darwin-clang-release.tar install-darwin-clang-release;
       gdrive upload install-darwin-clang-release.tar;
     fi
