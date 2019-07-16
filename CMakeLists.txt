@@ -295,6 +295,8 @@ if (ENABLE_TRIBOL)
                                        -DDISABLE_RM=ON -DENABLE_PICK=ON -DENABLE_IMPLICIT_CONVERSIONS=ON
                                        -DENABLE_CUDA=${CUDA_ENABLED}
                                        -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DENABLE_DOCS=OFF
+                                       -DENABLE_DOCUMENTATION=OFF
                                        -DENABLE_TESTS=OFF
                                        -DENABLE_BENCHMARKS=OFF
                                        -DENABLE_GMOCK=OFF
@@ -346,7 +348,9 @@ endif()
 ################################
 if (ENABLE_TRIBOL)
    set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-   set(AXOM_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/axom.git")
+   #set(AXOM_REPO "ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git")
+   #set(AXOM_TAG "develop")
+   set(AXOM_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/axom.git")
    set(AXOM_TAG "ale3d")
 
    if (EXISTS ${AXOM_DIR})
@@ -372,7 +376,7 @@ if (ENABLE_TRIBOL)
                                        -DAXOM_ENABLE_MINT=ON
                                        -DAXOM_ENABLE_PRIMAL=ON
                                        -DAXOM_ENABLE_QUEST=ON
-                                       -DAXOM_ENABLE_SIDRE=ON
+                                       -DAXOM_ENABLE_SIDRE=OFF
                                        -DAXOM_ENABLE_SLAM=ON
                                        -DAXOM_ENABLE_SLIC=ON
                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -382,11 +386,12 @@ if (ENABLE_TRIBOL)
                                        -DHDF5_DIR=${HDF5_DIR}
                                        -DCONDUIT_DIR=${CONDUIT_DIR}
                                        -DUMPIRE_DIR=
-                                       -DRAJA_DIR=${RAJA_DIR}
+                                       -DRAJA_DIR=
                                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                        -DMPI_C_COMPILER=${MPI_C_COMPILER}
                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DCMAKE_CXX_FLAGS=-std=c++14
                                        -DENABLE_OPENMP=${ENABLE_OPENMP}
                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -692,7 +697,7 @@ if (ENABLE_TRIBOL)
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                        -DCMAKE_CXX_FLAGS=-std=c++14
                                         -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                         -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
@@ -700,10 +705,11 @@ if (ENABLE_TRIBOL)
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DTRIBOL_USE_EXTERNAL_AXOM:BOOL=TRUE
-                                        -DTRIBOL_ENABLE_SIDRE:BOOL=TRUE
+                                        -DTRIBOL_ENABLE_SIDRE:BOOL=FALSE
                                         -DAXOM_DIR=${AXOM_DIR}
                                         -DCONDUIT_DIR=${CONDUIT_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
+                                        -DRAJA_DIR=${RAJA_DIR}
                                         -DENABLE_TESTS=OFF
                                         -DENABLE_EXAMPLES=OFF
                                         -DENABLE_DOCS=OFF)
