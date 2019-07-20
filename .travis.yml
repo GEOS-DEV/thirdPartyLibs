@@ -41,12 +41,12 @@ jobs:
 #    - sudo wget -O ~/.gdrive/token_v2.json https://www.dropbox.com/s/72lwwyivpzkocww/token_v2.json
 
     script: 
-    - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=3
+    - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=4
 #    - gdrive download install-darwin-clang-release.tar
     - tar -xvf install-darwin-clang-release.tar
     - rm install-darwin-clang-release.tar
     - cd build-darwin-clang-release
-    - make trilinos
+    - travis_wait 180 make trilinos
     - cd ..
 #    - tar -cvf install-darwin-clang-release.tar install-darwin-clang-release
 #    - gdrive upload install-darwin-clang-release.tar
