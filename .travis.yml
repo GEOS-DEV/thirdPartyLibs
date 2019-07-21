@@ -43,8 +43,8 @@ jobs:
     script: 
     - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=4
 #    - gdrive download install-darwin-clang-release.tar
-    - tar -xvf install-darwin-clang-release.tar
-    - rm install-darwin-clang-release.tar
+#    - tar -xvf install-darwin-clang-release.tar
+#    - rm install-darwin-clang-release.tar
     - cd build-darwin-clang-release
     - travis_wait 180 make trilinos
     - cd ..
