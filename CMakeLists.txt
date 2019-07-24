@@ -182,6 +182,7 @@ ExternalProject_Add( conduit
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -DBLT_CXX_STD:STRING=c++11
                                 )
 
 list(APPEND build_list conduit )
@@ -227,6 +228,7 @@ ExternalProject_Add( axom
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D AXOM_ENABLE_LUMBERJACK=ON
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D BLT_CXX_STD:STRING=c++11
                                 )
 
 list(APPEND build_list axom )
