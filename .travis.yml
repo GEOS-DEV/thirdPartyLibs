@@ -1,52 +1,74 @@
 language: cpp
-env:
-  global:
-  - OMP_NUM_THREADS=3
-  - DO_BUILD=yes
-  - DO_TEST=yes
-  - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On -DBLT_CXX_STD=c++14 -DENABLE_WARNINGS_AS_ERRORS=ON"
-matrix:
+stages:
+  - build1
+jobs:
   include:
-  - os: osx
+  - stage: build1
+    os: osx
     osx_image: xcode10.2
-    env:
-    - GEOSX_TPL_DIR=/Users/travis/build/GEOSX/thirdPartyLibs/install-default-release
-  - compiler: clang6-LC-toss3
-    sudo: required
+    before_script:
+    - brew install openmpi > /dev/null 2>&1
+    - brew install git-lfs > /dev/null 2>&1
+    - git lfs install
+    - git lfs pull
+    script: 
+    - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+    - cd build-darwin-clang-release
+    - make hdf5 conduit axom silo chai raja fparser mathpresso pugixml metis parmetis superlu_dist hypre uncrustify
+
+  - stage: build1
+    os: linux
+    dist: bionic
     services: docker
-    dist: trusty
-    env:
-    - IMG=clang6-LC-toss3
-    - GEOSX_TPL_DIR=/home/geosx/thirdPartyLibs/install-default-release
-  - compiler: clang7-LC-toss3
     sudo: required
-    services: docker
-    dist: trusty
-    env:
-    - IMG=clang7-LC-toss3
-    - GEOSX_TPL_DIR=/home/geosx/thirdPartyLibs/install-default-release
-  - compiler: gcc7-ubuntu18
-    sudo: required
-    services: docker
-    dist: trusty
+    compiler: gcc7-ubuntu18
     env:
     - IMG=gcc7-ubuntu18
-    - GEOSX_TPL_DIR=/home/geosx/thirdPartyLibs/install-default-release
-  - compiler: gcc8-ubuntu18
-    sudo: required
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    
+  - stage: build1
+    os: linux
+    dist: bionic
     services: docker
-    dist: trusty
+    sudo: required
+    compiler: gcc8-ubuntu18
     env:
     - IMG=gcc8-ubuntu18
-    - GEOSX_TPL_DIR=/home/geosx/thirdPartyLibs/install-default-release
-before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew install openmpi > /dev/null 2>&1;
-      brew install git-lfs > /dev/null 2>&1;
-    fi
-script: 
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2
-      cd build-darwin-clang-debug;
-      make -j1;
-    fi
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+
+  - stage: build1
+    os: linux
+    dist: bionic
+    services: docker
+    sudo: required
+    compiler: clang6-LC-toss3
+    env:
+    - IMG=clang6-LC-toss3
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    
+  - stage: build1
+    os: linux
+    dist: bionic
+    services: docker
+    sudo: required
+    compiler: clang7-LC-toss3
+    env:
+    - IMG=clang7-LC-toss3
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    
