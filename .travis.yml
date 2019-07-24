@@ -29,4 +29,5 @@ jobs:
     - cd docker
     - cp buildtpl.sh gcc8-ubuntu18
     - docker build --tag geosx/compiler:gcc8-ubuntu18 gcc8-ubuntu18
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:gcc8-ubuntu18 /home/geosx/buildtpl.sh
     
