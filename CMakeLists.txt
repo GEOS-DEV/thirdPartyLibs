@@ -188,6 +188,7 @@ list(APPEND build_list conduit )
 
 
 ################################
+if (NOT ENABLE_TRIBOL)
 set(AXOM_URL "${TPL_MIRROR_DIR}/axom-10-5-2018.tar.gz")
 
 message(STATUS "Building Axom found at ${AXOM_URL}")
@@ -227,6 +228,7 @@ ExternalProject_Add( axom
                                 )
 
 list(APPEND build_list axom )
+endif()
 
 
 ################################
@@ -261,6 +263,96 @@ list(APPEND build_list silo )
 ################################
 # CHAI
 ################################
+if (ENABLE_TRIBOL)
+   set(TPL_CXX_GID64 ${TPL_CXX_STANDARD})
+   list(APPEND TPL_CXX_GID64 -DGLOBALID_IS_64BIT=1)
+
+   set(UMPIRE_DIR "${CMAKE_INSTALL_PREFIX}/umpire")
+   set(UMPIRE_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/umpire.git")
+   set(UMPIRE_TAG "ale3d")
+
+   if (EXISTS ${UMPIRE_DIR})
+       message(STATUS "Using existing UMPIRE found at ${UMPIRE_DIR}")
+       list(APPEND existing_list umpire)
+   else()
+       message(STATUS "Building UMPIRE found at ${UMPIRE_TAG}")
+
+       ExternalProject_Add( umpire
+                            PREFIX ${PROJECT_BINARY_DIR}/umpire
+                            GIT_REPOSITORY ${UMPIRE_REPO}
+                            GIT_TAG ${UMPIRE_TAG}
+                            INSTALL_DIR ${UMPIRE_DIR}
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install
+                            CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                       -DENABLE_CUDA=OFF
+                                       -DENABLE_C=ON
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_GMOCK=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_TOOLS=OFF
+                                       -DENABLE_OPENMP=OFF
+                                       -DCMAKE_DEBUG_POSTFIX=)
+
+       list(APPEND build_list umpire)
+   endif()
+
+   set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
+   set(CHAI_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/chai.git")
+   set(CHAI_TAG "feature/benliu/slideWorld")
+
+   if (EXISTS ${CHAI_DIR})
+       message(STATUS "Using existing CHAI found at ${CHAI_DIR}")
+       list(APPEND existing_list chai )
+   else()
+       message(STATUS "Building CHAI found at ${CHAI_TAG}")
+
+       ExternalProject_Add( chai
+                            PREFIX ${PROJECT_BINARY_DIR}/chai
+                            GIT_REPOSITORY ${CHAI_REPO}
+                            GIT_TAG ${CHAI_TAG}
+                            INSTALL_DIR ${CHAI_DIR}
+                            DEPENDS umpire
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install
+                            CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                       -DUMPIRE_DIR=${UMPIRE_DIR}/share/umpire/cmake
+                                       -Dumpire_DIR=${UMPIRE_DIR}/share/umpire/cmake
+                                       -DENABLE_PICK=ON
+                                       -DENABLE_IMPLICIT_CONVERSIONS=ON
+                                       -DENABLE_INNER_INIT=OFF
+                                       -DENABLE_CUDA=${CUDA_ENABLED}
+                                       -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                       -DENABLE_DOCS=OFF
+                                       -DENABLE_DOCUMENTATION=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_GMOCK=OFF
+                                       -DENABLE_EXAMPLES:BOOL=OFF
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                           )
+
+       list(APPEND build_list chai )
+   endif()
+else()
+
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
 set(CHAI_URL "${TPL_MIRROR_DIR}/chai-bugfix-corbett-memory-leak-4-5-19.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
@@ -293,6 +385,7 @@ ExternalProject_Add( chai
                     )
 
 list(APPEND build_list chai )
+endif()
 
 
 ################################
@@ -321,6 +414,8 @@ ExternalProject_Add( raja
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CUDA_ARCH:CACHE=${CUDA_ARCH}
                                 -D ENABLE_TESTS:BOOL=OFF
+                                -D ENABLE_EXAMPLES:BOOL=OFF
+                                -D ENABLE_EXERCISES:BOOL=OFF
                                 -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
                                 -D ENABLE_CHAI:BOOL=TRUE
                                 -D umpire_DIR:PATH=${CHAI_DIR}/share/umpire/cmake
@@ -704,8 +799,58 @@ list(APPEND build_list hypre )
 # TRIBOL
 ################################
 if (ENABLE_TRIBOL)
-    set(TPL_CXX_GID64 ${TPL_CXX_STANDARD})
-    list(APPEND TPL_CXX_GID64 -DGLOBALID_IS_64BIT=1)
+    set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+    set(AXOM_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/axom.git")
+    set(AXOM_TAG "ale3d")
+
+    if (EXISTS ${AXOM_DIR})
+        message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+        list(APPEND existing_list axom )
+    else()
+        message(STATUS "Building Axom found at ${AXOM_TAG}")
+
+        ExternalProject_Add( axom
+                             DOWNLOAD_COMMAND git clone ${AXOM_REPO}
+                             UPDATE_COMMAND git checkout ${AXOM_TAG}
+                             PREFIX ${PROJECT_BINARY_DIR}/axom
+                             SOURCE_SUBDIR src
+                             INSTALL_DIR ${AXOM_DIR}
+                             DEPENDS hdf5 conduit raja
+                             CMAKE_ARGS -DENABLE_DOCS=OFF
+                                        -DENABLE_BENCHMARKS=OFF
+                                        -DENABLE_EXAMPLES=OFF
+                                        -DENABLE_FORTRAN=OFF
+                                        -DENABLE_TESTS=OFF
+                                        -DAXOM_ENABLE_ALL_COMPONENTS=OFF
+                                        -DAXOM_ENABLE_LUMBERJACK=ON
+                                        -DAXOM_ENABLE_MINT=ON
+                                        -DAXOM_ENABLE_PRIMAL=ON
+                                        -DAXOM_ENABLE_QUEST=ON
+                                        -DAXOM_ENABLE_SIDRE=ON
+                                        -DAXOM_ENABLE_SLAM=ON
+                                        -DAXOM_ENABLE_SLIC=ON
+                                        -DAXOM_MINT_USE_SIDRE:BOOL=FALSE
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DENABLE_MPI=${ENABLE_MPI}
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DHDF5_DIR=${HDF5_DIR}
+                                        -DCONDUIT_DIR=${CONDUIT_DIR}
+                                        -DUMPIRE_DIR=
+                                        -DRAJA_DIR=
+                                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_CXX_FLAGS=-std=c++14
+                                        -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install )
+        list(APPEND build_list axom )
+    endif()
 
     set(TRIBOL_DIR "${CMAKE_INSTALL_PREFIX}/tribol")
     set(TRIBOL_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/tribol.git")
@@ -722,7 +867,7 @@ if (ENABLE_TRIBOL)
                              DOWNLOAD_COMMAND git clone ${TRIBOL_REPO}
                              UPDATE_COMMAND git checkout ${TRIBOL_TAG} && git pull
                              INSTALL_DIR ${TRIBOL_DIR}
-                             DEPENDS axom conduit hdf5 umpire
+                             DEPENDS axom conduit hdf5
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -786,7 +931,7 @@ if (ENABLE_TRIBOL)
                              GIT_REPOSITORY ${RAVI_REPO}
                              GIT_TAG ${RAVI_TAG}
                              INSTALL_DIR ${RAVI_DIR}
-                             DEPENDS chai umpire raja LLNL_GlobalID
+                             DEPENDS chai raja LLNL_GlobalID
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -798,9 +943,9 @@ if (ENABLE_TRIBOL)
                                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DUMPIRE_DIR=${UMPIRE_DIR}
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DRAJA_DIR=${RAJA_DIR}
-                                        -DUMPIRE_DIR=${UMPIRE_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
         list(APPEND build_list ravi)
@@ -842,7 +987,7 @@ if (ENABLE_TRIBOL)
 
     set(VISTA_DIR "${CMAKE_INSTALL_PREFIX}/vista")
     set(VISTA_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/vista.git")
-    set(VISTA_TAG "ale3d")
+    set(VISTA_TAG "feature/benliu/slideWorld")
 
     if (EXISTS ${VISTA_DIR})
         message(STATUS "Using existing VISTA found at ${VISTA_DIR}")
@@ -869,6 +1014,7 @@ if (ENABLE_TRIBOL)
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DCMAKE_DEBUG_POSTFIX=
+                                        -DENABLE_VISTA_TV_DEBUG:BOOL=FALSE
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
                                         -DRAJA_DIR=${RAJA_DIR}
