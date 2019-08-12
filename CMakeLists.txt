@@ -704,7 +704,6 @@ ExternalProject_Add( hypre
                    )
 
 list(APPEND build_list hypre )
-list(APPEND build_list lapack_suite )
 
 ################################
 # PETSC
