@@ -1,0 +1,74 @@
+language: cpp
+stages:
+  - build1
+jobs:
+  include:
+  - stage: build1
+    os: osx
+    osx_image: xcode10.2
+    before_script:
+    - brew install openmpi > /dev/null 2>&1
+    - brew install git-lfs > /dev/null 2>&1
+    - git lfs install
+    - git lfs pull
+    script: 
+    - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+    - cd build-darwin-clang-release
+    - make hdf5 conduit axom silo chai raja fparser mathpresso pugixml metis parmetis superlu_dist hypre uncrustify
+
+  - stage: build1
+    os: linux
+    dist: bionic
+    services: docker
+    sudo: required
+    compiler: gcc7-ubuntu18
+    env:
+    - IMG=gcc7-ubuntu18
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    
+  - stage: build1
+    os: linux
+    dist: bionic
+    services: docker
+    sudo: required
+    compiler: gcc8-ubuntu18
+    env:
+    - IMG=gcc8-ubuntu18
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+
+  - stage: build1
+    os: linux
+    dist: bionic
+    services: docker
+    sudo: required
+    compiler: clang6-LC-toss3
+    env:
+    - IMG=clang6-LC-toss3
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    
+  - stage: build1
+    os: linux
+    dist: bionic
+    services: docker
+    sudo: required
+    compiler: clang7-LC-toss3
+    env:
+    - IMG=clang7-LC-toss3
+    script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    
