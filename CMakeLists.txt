@@ -332,6 +332,7 @@ if (ENABLE_TRIBOL)
                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                        -DUMPIRE_DIR=${UMPIRE_DIR}/share/umpire/cmake
                                        -Dumpire_DIR=${UMPIRE_DIR}/share/umpire/cmake
+                                       -DDISABLE_RM=ON
                                        -DENABLE_PICK=ON
                                        -DENABLE_IMPLICIT_CONVERSIONS=ON
                                        -DENABLE_INNER_INIT=OFF
