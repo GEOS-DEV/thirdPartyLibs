@@ -7,6 +7,7 @@ ENV CXX=g++-8
 ENV FC=gfortran-8
 ENV OMPI_CC=gcc-8
 ENV OMPI_CXX=g++-8
+ENV OMPI_MPIFC=gfortran-8
 ENV OMPI_MPIF77=gfortran-8
 ENV OMPI_MPIF90=gfortran-8
 ENV MPICC=/usr/bin/mpicc

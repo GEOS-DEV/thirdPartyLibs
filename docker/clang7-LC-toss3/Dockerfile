@@ -7,6 +7,7 @@ ENV CXX=/usr/tce/packages/clang/clang-7.0.0/bin/clang++
 ENV FC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
 ENV OMPI_CC=/usr/tce/packages/clang/clang-7.0.0/bin/clang
 ENV OMPI_CXX=/usr/tce/packages/clang/clang-7.0.0/bin/clang++
+ENV OMPI_MPIFC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
 ENV OMPI_MPIF77=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
 ENV OMPI_MPIF90=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
 ENV MPICC=/usr/lib64/openmpi/bin/mpicc
