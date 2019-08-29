@@ -724,6 +724,9 @@ else()
 			 CONFIGURE_COMMAND cd ../petsc && ./configure 
                            --prefix=<INSTALL_DIR>  
                            --download-scalapack 
+                           --CC=${CMAKE_C_COMPILER}
+                           --CXX=${CMAKE_CXX_COMPILER}
+                           --FC=${CMAKE_Fortran_COMPILER}
                            --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre 
                            --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist 
                            --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis 
