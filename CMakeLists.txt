@@ -720,6 +720,9 @@ else()
 			 CONFIGURE_COMMAND cd ../petsc && ./configure 
                            --prefix=<INSTALL_DIR>  
                            --download-scalapack 
+                           --CC=${MPI_C_COMPILER}
+                           --CXX=${MPI_CXX_COMPILER}
+                           --FC=${MPI_Fortran_COMPILER}
                            --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre 
                            --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist 
                            --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis 

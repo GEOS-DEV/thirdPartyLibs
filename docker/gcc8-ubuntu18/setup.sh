@@ -2,7 +2,7 @@
 set -e
 set -x
 
-
+sudo apt-get -qq install -y bison flex
 sudo apt-get -qq install -y --no-install-recommends \
      g++-${gccver} \
     && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${gccver} 100 \
