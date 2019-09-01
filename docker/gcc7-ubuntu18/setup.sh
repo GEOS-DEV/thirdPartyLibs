@@ -2,7 +2,6 @@
 set -e
 set -x
 
-sudo apt-get -qq install -y bison flex
 sudo apt-get --assume-yes install gfortran-7
 cd /usr/bin
 sudo ln -s gfortran-7 gfortran

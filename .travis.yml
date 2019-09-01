@@ -29,6 +29,7 @@ jobs:
     - cp buildtpl.sh $IMG
     - docker build --tag geosx/compiler:$IMG $IMG
     - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+
     
   - stage: build1
     os: linux
@@ -57,6 +58,7 @@ jobs:
     - cp buildtpl.sh $IMG
     - docker build --tag geosx/compiler:$IMG $IMG
     - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+
     
   - stage: build1
     os: linux
@@ -71,4 +73,5 @@ jobs:
     - cp buildtpl.sh $IMG
     - docker build --tag geosx/compiler:$IMG $IMG
     - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+
     
