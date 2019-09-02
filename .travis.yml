@@ -10,9 +10,12 @@ linuxBuild: &linuxBuild
   script: 
     - cd docker
     - cp buildtpl.sh $IMG
-    - git clone --branch develop  --depth 1 --recurse-submodules https://github.com/GEOSX/GEOSX.git 
+    - git clone --branch develop  --depth 1 git@github.com:GEOSX/GEOSX.git
+    - cd GEOSX
+    - git submodule update --init --recursive src/coreComponents/cxx-utilities src/cmake/blt src/externalComponents/PVTPackage src/externalComponents/PAMELA src/coreComponents/fileIO/coupling/hdf5_interface
+    - cd ..
     - docker build --tag geosx/compiler:$IMG $IMG
-    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
 
 linuxDeploy: &linuxDeploy
   stage: deploy
