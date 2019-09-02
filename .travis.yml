@@ -1,77 +1,84 @@
 language: cpp
+
+
+linuxBuild: &linuxBuild
+  stage: build
+  os: linux
+  dist: bionic
+  services: docker
+  sudo: required
+  script: 
+    - cd docker
+    - cp buildtpl.sh $IMG
+    - git clone --branch develop  --depth 1 --recurse-submodules https://github.com/GEOSX/GEOSX.git 
+    - docker build --tag geosx/compiler:$IMG $IMG
+    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+
+linuxDeploy: &linuxDeploy
+  stage: deploy
+  script:
+    - echo DEPLOY ${IMG}
+  
 stages:
-  - build1
+  - build
+  - deploy  
+
 jobs:
   include:
-  - stage: build1
-    os: osx
-    osx_image: xcode10.2
-    before_script:
-    - brew install openmpi > /dev/null 2>&1
-    - brew install git-lfs > /dev/null 2>&1
-    - git lfs install
-    - git lfs pull
-    script: 
-    - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
-    - cd build-darwin-clang-release
-    - make hdf5 conduit axom silo chai raja fparser mathpresso pugixml metis parmetis superlu_dist hypre uncrustify petsc trilinos
+    - stage: build
+      os: osx
+      osx_image: xcode10.2
+      before_script:
+      - brew install openmpi > /dev/null 2>&1
+      - brew install git-lfs > /dev/null 2>&1
+      - git lfs install
+      - git lfs pull
+      script: 
+      - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+      - cd build-darwin-clang-release
+      - make
+    - stage: deploy
+      script:
+      - echo DEPLOY OSX
 
-  - stage: build1
-    os: linux
-    dist: bionic
-    services: docker
-    sudo: required
-    compiler: gcc7-ubuntu18
-    env:
-    - IMG=gcc7-ubuntu18
-    script: 
-    - cd docker
-    - cp buildtpl.sh $IMG
-    - docker build --tag geosx/compiler:$IMG $IMG
-    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - <<: *linuxBuild
+      compiler: gcc7-ubuntu18
+      env:
+      - IMG=gcc7-ubuntu18
 
-    
-  - stage: build1
-    os: linux
-    dist: bionic
-    services: docker
-    sudo: required
-    compiler: gcc8-ubuntu18
-    env:
-    - IMG=gcc8-ubuntu18
-    script: 
-    - cd docker
-    - cp buildtpl.sh $IMG
-    - docker build --tag geosx/compiler:$IMG $IMG
-    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - <<: *linuxDeploy
+      compiler: gcc7-ubuntu18
+      env:
+      - IMG=gcc7-ubuntu18
 
-  - stage: build1
-    os: linux
-    dist: bionic
-    services: docker
-    sudo: required
-    compiler: clang6-LC-toss3
-    env:
-    - IMG=clang6-LC-toss3
-    script: 
-    - cd docker
-    - cp buildtpl.sh $IMG
-    - docker build --tag geosx/compiler:$IMG $IMG
-    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - <<: *linuxBuild    
+      compiler: gcc8-ubuntu18
+      env:
+      - IMG=gcc8-ubuntu18
+    - <<: *linuxDeploy
+      compiler: gcc8-ubuntu18
+      env:
+      - IMG=gcc8-ubuntu18
 
-    
-  - stage: build1
-    os: linux
-    dist: bionic
-    services: docker
-    sudo: required
-    compiler: clang7-LC-toss3
-    env:
-    - IMG=clang7-LC-toss3
-    script: 
-    - cd docker
-    - cp buildtpl.sh $IMG
-    - docker build --tag geosx/compiler:$IMG $IMG
-    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo  geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - <<: *linuxBuild
+      compiler: clang6-LC-toss3
+      env:
+      - IMG=clang6-LC-toss3
+
+    - <<: *linuxDeploy
+      compiler: clang6-LC-toss3
+      env:
+      - IMG=clang6-LC-toss3
+
+    - <<: *linuxBuild
+      compiler: clang7-LC-toss3
+      env:
+      - IMG=clang7-LC-toss3  
+  
+    - <<: *linuxDeploy
+      compiler: clang7-LC-toss3
+      env:
+      - IMG=clang7-LC-toss3
+  
 
     
