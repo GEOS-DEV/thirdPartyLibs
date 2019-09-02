@@ -7,15 +7,19 @@ linuxBuild: &linuxBuild
   dist: bionic
   services: docker
   sudo: required
-  script: 
-    - cd docker
-    - cp buildtpl.sh $IMG
-    - git clone --branch develop  --depth 1 git@github.com:GEOSX/GEOSX.git
+  install:
+    - git clone --branch develop --depth 1 git@github.com:GEOSX/GEOSX.git
     - cd GEOSX
     - git submodule update --init --recursive src/coreComponents/cxx-utilities src/cmake/blt src/externalComponents/PVTPackage src/externalComponents/PAMELA src/coreComponents/fileIO/coupling/hdf5_interface
     - cd ..
-    - docker build --tag geosx/compiler:$IMG $IMG
-    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - cp -rf docker ..
+    - cd ../docker/$IMG
+    - cp -rf ${TRAVIS_BUILD_DIR} .
+    - cd ..
+  script: 
+    - docker build --tag geosx/compiler:$IMG $IMG  
+#    - docker run -v GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
+#    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
 
 linuxDeploy: &linuxDeploy
   stage: deploy
@@ -28,60 +32,57 @@ stages:
 
 jobs:
   include:
-    - stage: build
-      os: osx
-      osx_image: xcode10.2
-      before_script:
-      - brew install openmpi > /dev/null 2>&1
-      - brew install git-lfs > /dev/null 2>&1
-      - git lfs install
-      - git lfs pull
-      script: 
-      - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
-      - cd build-darwin-clang-release
-      - make
-    - stage: deploy
-      script:
-      - echo DEPLOY OSX
+#     - stage: build
+#       os: osx
+#       osx_image: xcode10.2
+#       before_script:
+#       - brew install openmpi > /dev/null 2>&1
+#       - brew install git-lfs > /dev/null 2>&1
+#       - git lfs install
+#       - git lfs pull
+#       script: 
+#       - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+#       - cd build-darwin-clang-release
+#       - make
+#     - stage: deploy
+#       script:
+#       - echo DEPLOY OSX
 
-    - <<: *linuxBuild
-      compiler: gcc7-ubuntu18
-      env:
-      - IMG=gcc7-ubuntu18
-
-    - <<: *linuxDeploy
-      compiler: gcc7-ubuntu18
-      env:
-      - IMG=gcc7-ubuntu18
-
-    - <<: *linuxBuild    
-      compiler: gcc8-ubuntu18
-      env:
-      - IMG=gcc8-ubuntu18
-    - <<: *linuxDeploy
-      compiler: gcc8-ubuntu18
-      env:
-      - IMG=gcc8-ubuntu18
+#     - <<: *linuxBuild
+#       compiler: gcc7-ubuntu18
+#       env:
+#       - IMG=gcc7-ubuntu18
+#     - <<: *linuxDeploy
+#       compiler: gcc7-ubuntu18
+#       env:
+#       - IMG=gcc7-ubuntu18
+# 
+#     - <<: *linuxBuild    
+#       compiler: gcc8-ubuntu18
+#       env:
+#       - IMG=gcc8-ubuntu18
+#     - <<: *linuxDeploy
+#       compiler: gcc8-ubuntu18
+#       env:
+#       - IMG=gcc8-ubuntu18
 
     - <<: *linuxBuild
       compiler: clang6-LC-toss3
       env:
       - IMG=clang6-LC-toss3
-
     - <<: *linuxDeploy
       compiler: clang6-LC-toss3
       env:
       - IMG=clang6-LC-toss3
 
-    - <<: *linuxBuild
-      compiler: clang7-LC-toss3
-      env:
-      - IMG=clang7-LC-toss3  
-  
-    - <<: *linuxDeploy
-      compiler: clang7-LC-toss3
-      env:
-      - IMG=clang7-LC-toss3
+#     - <<: *linuxBuild
+#       compiler: clang7-LC-toss3
+#       env:
+#       - IMG=clang7-LC-toss3  
+#     - <<: *linuxDeploy
+#       compiler: clang7-LC-toss3
+#       env:
+#       - IMG=clang7-LC-toss3
   
 
     
