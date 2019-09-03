@@ -16,23 +16,28 @@ ENV MPIFC=/usr/lib64/openmpi/bin/mpifort
 ENV MPIEXEC=/usr/lib64/openmpi/bin/mpirun
 ARG GEOSXCI_GITHUB_PAT=local
 ENV GEOSXCI_GITHUB_PAT ${GEOSXCI_GITHUB_PAT}
+ARG TRAVIS_COMMIT=local
+ENV TRAVIS_COMMIT ${TRAVIS_COMMIT}
 
 USER geosx
 WORKDIR /home/geosx
 
 COPY clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm
 COPY clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
-#COPY thirdPartyLibs /home/geosx/thirdPartyLibs_repo
 
-RUN echo ${GEOSXCI_GITHUB_PAT}
-RUN sudo yum -y install clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
-RUN rm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm
-RUN rm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
-RUN cd /home/geosx/thirdPartyLibs_repo ; ls ; ls scripts
-RUN python /home/geosx/thirdPartyLibs_repo/scripts/config-build.py -hc /home/geosx/thirdPartyLibs_repo/host-configs/default.cmake -bt Release -DNUM_PROC:STRING=2 --buildpath /home/geosx/thirdPartyLibs/build-default-release --installpath /home/geosx/thirdPartyLibs/install-default-release
-RUN cd /home/geosx/thirdPartyLibs/build-default-release
-#RUN make
-RUN cd ~
-RUN sudo rm -rf /home/geosx/thirdPartyLibs_repo
-RUN sudo rm -rf /home/geosx/thirdPartyLibs/build-default-release
+RUN sudo yum -y install clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm &&\
+    rm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm &&\
+    rm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
+
+RUN git clone --depth=50  https://${GEOSXCI_GITHUB_PAT}@github.com/GEOSX/thirdPartyLibs.git  /home/geosx/thirdPartyLibs_repo &&\
+    cd /home/geosx/thirdPartyLibs_repo  &&\
+    git fetch origin +refs/pull/*:refs/origin/pull/* &&\
+    git checkout -f ${TRAVIS_COMMIT} &&\
+    git submodule update --init --recursive
+
+RUN python /home/geosx/thirdPartyLibs_repo/scripts/config-build.py -hc /home/geosx/thirdPartyLibs_repo/host-configs/default.cmake -bt Release -DNUM_PROC:STRING=2 --buildpath /home/geosx/thirdPartyLibs/build-default-release --installpath /home/geosx/thirdPartyLibs/install-default-release &&\
+    cd /home/geosx/thirdPartyLibs/build-default-release &&\
+    make &&\
+    cd ~ &&\
+    sudo rm -rf /home/geosx/thirdPartyLibs_repo /home/geosx/thirdPartyLibs/build-default-release
 
