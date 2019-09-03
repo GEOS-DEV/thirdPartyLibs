@@ -18,7 +18,7 @@ linuxBuild: &linuxBuild
     - cd ..
   script: 
     - docker build --tag geosx/compiler:$IMG $IMG  
-#    - docker run -v GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
+    - docker run -v GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /home/geosx/buildgeosx.sh
 #    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
 
 linuxDeploy: &linuxDeploy
