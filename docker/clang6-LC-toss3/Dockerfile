@@ -14,22 +14,25 @@ ENV MPICC=/usr/lib64/openmpi/bin/mpicc
 ENV MPICXX=/usr/lib64/openmpi/bin/mpicxx
 ENV MPIFC=/usr/lib64/openmpi/bin/mpifort
 ENV MPIEXEC=/usr/lib64/openmpi/bin/mpirun
+ARG GEOSXCI_GITHUB_PAT=local
+ENV GEOSXCI_GITHUB_PAT ${GEOSXCI_GITHUB_PAT}
 
 USER geosx
 WORKDIR /home/geosx
 
 COPY clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm
 COPY clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
-COPY thirdPartyLibs /home/geosx/thirdPartyLibs_repo
+#COPY thirdPartyLibs /home/geosx/thirdPartyLibs_repo
 
+RUN echo ${GEOSXCI_GITHUB_PAT}
 RUN sudo yum -y install clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
 RUN rm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm
 RUN rm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
 RUN cd /home/geosx/thirdPartyLibs_repo ; ls ; ls scripts
 RUN python /home/geosx/thirdPartyLibs_repo/scripts/config-build.py -hc /home/geosx/thirdPartyLibs_repo/host-configs/default.cmake -bt Release -DNUM_PROC:STRING=2 --buildpath /home/geosx/thirdPartyLibs/build-default-release --installpath /home/geosx/thirdPartyLibs/install-default-release
 RUN cd /home/geosx/thirdPartyLibs/build-default-release
-RUN make
+#RUN make
 RUN cd ~
-RUN rm -rf /home/geosx/thirdPartyLibs_repo
-RUN rm -rf /home/geosx/thirdPartyLibs/build-default-release
+RUN sudo rm -rf /home/geosx/thirdPartyLibs_repo
+RUN sudo rm -rf /home/geosx/thirdPartyLibs/build-default-release
 

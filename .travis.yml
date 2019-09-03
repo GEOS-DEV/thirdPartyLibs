@@ -1,6 +1,5 @@
 language: cpp
 
-
 linuxBuild: &linuxBuild
   stage: build
   os: linux
@@ -8,24 +7,35 @@ linuxBuild: &linuxBuild
   services: docker
   sudo: required
   install:
+    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    - sudo apt-get update
+    - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+    - docker --version 
+    - echo TRAVIS_BRANCH=${TRAVIS_BRANCH}
+    - echo TRAVIS_COMMIT=${TRAVIS_COMMIT}
+    - echo TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}
+    - cd ${TRAVIS_BUILD_DIR}
+    - cd ..
+    - cp ${TRAVIS_BUILD_DIR}/docker/$IMG/* .
+  script: 
+    - docker build --build-arg GEOSXCI_GITHUB_PAT=${GEOSXCI_GITHUB_PAT} --tag geosx/compiler:$IMG .
+  after_success:
+    - cd ${TRAVIS_BUILD_DIR}
     - git clone --branch develop --depth 1 git@github.com:GEOSX/GEOSX.git
     - cd GEOSX
     - git submodule update --init --recursive src/coreComponents/cxx-utilities src/cmake/blt src/externalComponents/PVTPackage src/externalComponents/PAMELA src/coreComponents/fileIO/coupling/hdf5_interface
     - cd ..
-    - cp -rf docker ..
-    - cd ../docker/$IMG
-    - cp -rf ${TRAVIS_BUILD_DIR} .
-    - cd ..
-  script: 
-    - docker build --tag geosx/compiler:$IMG $IMG  
-    - docker run -v GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /home/geosx/buildgeosx.sh
+    - docker run -v GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /bin/bash -c "python scripts/config-build.py -hc host-configs/default.cmake -bt Release --buildpath /home/geosx/GEOSX/build-default-release --installpath /home/geosx/GEOSX/install-default-release -DGEOSX_TPL_ROOT_DIR:PATH=/home/geosx/thirdPartyLibs/install-default-release; cd /home/geosx/GEOSX/build-default-release ; make"
 #    - docker run -v ${TRAVIS_BUILD_DIR}:/home/geosx/thirdPartyLibs_repo geosx/compiler:$IMG /home/geosx/buildtpl.sh
 
 linuxDeploy: &linuxDeploy
   stage: deploy
   script:
     - echo DEPLOY ${IMG}
-  
+
+
+
 stages:
   - build
   - deploy  
