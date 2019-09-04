@@ -41,39 +41,41 @@ stages:
 
 jobs:
   include:
-#     - stage: build
-#       os: osx
-#       osx_image: xcode10.2
-#       before_script:
-#       - brew install openmpi > /dev/null 2>&1
-#       - brew install git-lfs > /dev/null 2>&1
-#       - git lfs install
-#       - git lfs pull
-#       script: 
-#       - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
-#       - cd build-darwin-clang-release
-#       - make
-#     - stage: deploy
-#       script:
-#       - echo DEPLOY OSX
+    - stage: build
+      os: osx
+      osx_image: xcode10.2
+      before_script:
+      - brew install openmpi > /dev/null 2>&1
+      - brew install git-lfs > /dev/null 2>&1
+      - git lfs install
+      - git lfs pull
+      script: 
+      - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+      - cd build-darwin-clang-release
+      - make
+    - stage: deploy
+      script:
+      - echo DEPLOY OSX
 
-#     - <<: *linuxBuild
-#       compiler: gcc7-ubuntu18
-#       env:
-#       - IMG=gcc7-ubuntu18
-#     - <<: *linuxDeploy
-#       compiler: gcc7-ubuntu18
-#       env:
-#       - IMG=gcc7-ubuntu18
-# 
-#     - <<: *linuxBuild    
-#       compiler: gcc8-ubuntu18
-#       env:
-#       - IMG=gcc8-ubuntu18
-#     - <<: *linuxDeploy
-#       compiler: gcc8-ubuntu18
-#       env:
-#       - IMG=gcc8-ubuntu18
+    - <<: *linuxBuild
+      compiler: gcc7-ubuntu18
+      env:
+      - IMG=gcc7-ubuntu18
+      - CMAKE_BUILD_TYPE=Release
+    - <<: *linuxDeploy
+      compiler: gcc7-ubuntu18
+      env:
+      - IMG=gcc7-ubuntu18
+
+    - <<: *linuxBuild    
+      compiler: gcc8-ubuntu18
+      env:
+      - IMG=gcc8-ubuntu18
+      - CMAKE_BUILD_TYPE=Release
+    - <<: *linuxDeploy
+      compiler: gcc8-ubuntu18
+      env:
+      - IMG=gcc8-ubuntu18
 
     - <<: *linuxBuild
       compiler: clang6-LC-toss3
@@ -85,14 +87,15 @@ jobs:
       env:
       - IMG=clang6-LC-toss3
 
-#     - <<: *linuxBuild
-#       compiler: clang7-LC-toss3
-#       env:
-#       - IMG=clang7-LC-toss3  
-#     - <<: *linuxDeploy
-#       compiler: clang7-LC-toss3
-#       env:
-#       - IMG=clang7-LC-toss3
+    - <<: *linuxBuild
+      compiler: clang7-LC-toss3
+      env:
+      - IMG=clang7-LC-toss3  
+      - CMAKE_BUILD_TYPE=Release
+    - <<: *linuxDeploy
+      compiler: clang7-LC-toss3
+      env:
+      - IMG=clang7-LC-toss3
   
 
     
