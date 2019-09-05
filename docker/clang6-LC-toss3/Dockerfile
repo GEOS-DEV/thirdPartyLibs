@@ -31,6 +31,7 @@ RUN sudo yum -y install clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm &&\
 
 RUN git clone --depth=50  https://${GEOSXCI_GITHUB_PAT}@github.com/GEOSX/thirdPartyLibs.git  /home/geosx/thirdPartyLibs_repo &&\
     cd /home/geosx/thirdPartyLibs_repo  &&\
+    git lfs install &&\
     git fetch origin +refs/pull/*:refs/origin/pull/* &&\
     git checkout -f ${TRAVIS_COMMIT} &&\
     git submodule update --init --recursive
