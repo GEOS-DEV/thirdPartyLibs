@@ -29,13 +29,14 @@ RUN sudo apt-get --assume-yes install gfortran-7 &&\
     sudo ln -s g90 &&\
     sudo apt-get --assume-yes install openmpi-bin libopenmpi-dev
 
-RUN git clone --depth=50  https://${GEOSXCI_GITHUB_PAT}@github.com/GEOSX/thirdPartyLibs.git  /home/geosx/thirdPartyLibs_repo &&\
-    cd /home/geosx/thirdPartyLibs_repo  &&\
-    git lfs install &&\
-    git fetch origin +refs/pull/*:refs/origin/pull/* &&\
-    git checkout -f ${TRAVIS_COMMIT} &&\
-    git submodule update --init --recursive
+#RUN git clone --depth=50  https://${GEOSXCI_GITHUB_PAT}@github.com/GEOSX/thirdPartyLibs.git  /home/geosx/thirdPartyLibs_repo &&\
+#    cd /home/geosx/thirdPartyLibs_repo  &&\
+#    git lfs install &&\
+#    git fetch origin +refs/pull/*:refs/origin/pull/* &&\
+#    git checkout -f ${TRAVIS_COMMIT} &&\
+#    git submodule update --init --recursive
 
+COPY thirdPartyLibs /home/geosx/thirdPartyLibs_repo
 RUN python /home/geosx/thirdPartyLibs_repo/scripts/config-build.py -hc /home/geosx/thirdPartyLibs_repo/host-configs/default.cmake -bt Release -DNUM_PROC:STRING=2 --buildpath /home/geosx/thirdPartyLibs/build-default-release --installpath /home/geosx/thirdPartyLibs/install-default-release &&\
     cd /home/geosx/thirdPartyLibs/build-default-release &&\
     make &&\
