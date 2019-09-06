@@ -11,23 +11,17 @@ linuxBuild: &linuxBuild
     - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     - sudo apt-get update
     - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-    - echo TRAVIS_BRANCH=${TRAVIS_BRANCH}
-    - echo TRAVIS_COMMIT=${TRAVIS_COMMIT}
-    - echo TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}
-    - echo TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}
-    - echo TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}
     - cd ${TRAVIS_BUILD_DIR}
     - cd ..
     - cp ${TRAVIS_BUILD_DIR}/docker/$IMG/* .
   script: 
     - docker build --build-arg GEOSXCI_GITHUB_PAT=${GEOSXCI_GITHUB_PAT} --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT} --tag geosx/compiler:$IMG .
-  after_success:
     - cd ${TRAVIS_BUILD_DIR}
     - git clone --branch develop --depth 1 git@github.com:GEOSX/GEOSX.git
     - cd GEOSX
     - git submodule update --init --recursive src/coreComponents/cxx-utilities src/cmake/blt src/externalComponents/PVTPackage src/externalComponents/PAMELA src/coreComponents/fileIO/coupling/hdf5_interface
     - cd ..
-    - docker run -v ${TRAVIS_BUILD_DIR}/GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /bin/bash -c 'cd /home/geosx; mkdir GEOSX_build; cd GEOSX_build; cmake -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_Fortran_COMPILER=${FC} -DENABLE_MPI=ON -DMPI_C_COMPILER=${MPICC} -DMPI_CXX_COMPILER=${MPICXX} -DMPI_Fortran_COMPILER=${MPIFC} -DMPIEXEC=${MPIEXEC} -DMPIEXEC_EXECUTABLE=${MPIEXEC} -DGEOSX_TPL_DIR:PATH=/home/geosx/thirdPartyLibs/install-default-release -DENABLE_SPHINX:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} /home/geosx/GEOSX_repo/src ; make'
+    - docker run -v ${TRAVIS_BUILD_DIR}/GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /bin/bash -c 'cd /home/geosx; mkdir GEOSX_build; cd GEOSX_build; cmake -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_Fortran_COMPILER=${FC} -DENABLE_MPI=ON -DMPI_C_COMPILER=${MPICC} -DMPI_CXX_COMPILER=${MPICXX} -DMPI_Fortran_COMPILER=${MPIFC} -DMPIEXEC=${MPIEXEC} -DMPIEXEC_EXECUTABLE=${MPIEXEC} -DGEOSX_TPL_DIR:PATH=/home/geosx/thirdPartyLibs/install-default-release -DENABLE_SPHINX:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} /home/geosx/GEOSX_repo/src ; make ; make test'
 linuxDeploy: &linuxDeploy
   stage: deploy
   script:
