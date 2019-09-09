@@ -715,8 +715,6 @@ else()
 
     if (ENABLE_OPENMP)
         set(PETSC_OPENMP_FLAG --with-openmp=1)
-#        find_package(OpenMP REQUIRED) # Find the package
-#        target_link_libraries(${PROJECT_NAME} ${OpenMP_CXX_LIBRARIES}) # Link against it for C++
     endif()
 
 
@@ -737,6 +735,7 @@ else()
                            --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
                            --download-ptscotch 
                            --with-64-bit-indices=1
+			   --known-mpi-int64_t=0
                            ${PETSC_OPENMP_FLAG}
                          BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
 			 INSTALL_COMMAND cd ../petsc && make install
