@@ -712,6 +712,14 @@ if (false)
 else()
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
+
+    if (ENABLE_OPENMP)
+        set(PETSC_OPENMP_FLAG --with-openmp=1)
+#        find_package(OpenMP REQUIRED) # Find the package
+#        target_link_libraries(${PROJECT_NAME} ${OpenMP_CXX_LIBRARIES}) # Link against it for C++
+    endif()
+
+
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
@@ -723,12 +731,13 @@ else()
                            --CC=${MPI_C_COMPILER}
                            --CXX=${MPI_CXX_COMPILER}
                            --FC=${MPI_Fortran_COMPILER}
-                           --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre 
+                           --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre
                            --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist 
                            --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis 
                            --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
                            --download-ptscotch 
-                           --with-64-bit-indices   
+                           --with-64-bit-indices=1
+                           ${PETSC_OPENMP_FLAG}
                          BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
 			 INSTALL_COMMAND cd ../petsc && make install
                       )
