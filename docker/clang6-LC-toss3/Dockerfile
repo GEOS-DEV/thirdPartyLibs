@@ -2,28 +2,26 @@ FROM geosx/compiler:LC-toss3
 
 LABEL maintainer="Randolph Settgast <settgast1@llnl.gov>"
 
-ENV CC=/usr/tce/packages/clang/clang-6.0.1/bin/clang
-ENV CXX=/usr/tce/packages/clang/clang-6.0.1/bin/clang++
-ENV FC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV OMPI_CC=/usr/tce/packages/clang/clang-6.0.1/bin/clang
-ENV OMPI_CXX=/usr/tce/packages/clang/clang-6.0.1/bin/clang++
-ENV OMPI_MPIFC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV OMPI_MPIF77=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV OMPI_MPIF90=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV MPICC=/usr/lib64/openmpi/bin/mpicc
-ENV MPICXX=/usr/lib64/openmpi/bin/mpicxx
-ENV MPIFC=/usr/lib64/openmpi/bin/mpifort
-ENV MPIEXEC=/usr/lib64/openmpi/bin/mpirun
-ARG GEOSXCI_GITHUB_PAT=local
-ENV GEOSXCI_GITHUB_PAT ${GEOSXCI_GITHUB_PAT}
-ARG TRAVIS_COMMIT=local
-ENV TRAVIS_COMMIT ${TRAVIS_COMMIT}
+#ARG GEOSXCI_GITHUB_PAT=local TRAVIS_COMMIT=local
+ENV CC=/usr/tce/packages/clang/clang-6.0.1/bin/clang \
+    CXX=/usr/tce/packages/clang/clang-6.0.1/bin/clang++ \
+    FC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    OMPI_CC=/usr/tce/packages/clang/clang-6.0.1/bin/clang \
+    OMPI_CXX=/usr/tce/packages/clang/clang-6.0.1/bin/clang++ \
+    OMPI_MPIFC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    OMPI_MPIF77=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    OMPI_MPIF90=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    MPICC=/usr/lib64/openmpi/bin/mpicc \
+    MPICXX=/usr/lib64/openmpi/bin/mpicxx \
+    MPIFC=/usr/lib64/openmpi/bin/mpifort \
+    MPIEXEC=/usr/lib64/openmpi/bin/mpirun 
+#    GEOSXCI_GITHUB_PAT ${GEOSXCI_GITHUB_PAT} \
+#    TRAVIS_COMMIT ${TRAVIS_COMMIT}
 
 USER geosx
 WORKDIR /home/geosx
 
-COPY clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm
-COPY clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
+COPY clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm /home/geosx/
 
 RUN sudo yum -y install clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm &&\
     rm /home/geosx/clang-6.0.1-public-1-1.tce.ch6_2.x86_64.rpm &&\

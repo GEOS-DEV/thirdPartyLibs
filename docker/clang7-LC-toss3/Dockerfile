@@ -2,22 +2,18 @@ FROM geosx/compiler:LC-toss3
 
 LABEL maintainer="Randolph Settgast <settgast1@llnl.gov>"
 
-ENV CC=/usr/tce/packages/clang/clang-7.0.0/bin/clang
-ENV CXX=/usr/tce/packages/clang/clang-7.0.0/bin/clang++
-ENV FC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV OMPI_CC=/usr/tce/packages/clang/clang-7.0.0/bin/clang
-ENV OMPI_CXX=/usr/tce/packages/clang/clang-7.0.0/bin/clang++
-ENV OMPI_MPIFC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV OMPI_MPIF77=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV OMPI_MPIF90=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-ENV MPICC=/usr/lib64/openmpi/bin/mpicc
-ENV MPICXX=/usr/lib64/openmpi/bin/mpicxx
-ENV MPIFC=/usr/lib64/openmpi/bin/mpifort
-ENV MPIEXEC=/usr/lib64/openmpi/bin/mpirun
-ARG GEOSXCI_GITHUB_PAT=local
-ENV GEOSXCI_GITHUB_PAT ${GEOSXCI_GITHUB_PAT}
-ARG TRAVIS_COMMIT=local
-ENV TRAVIS_COMMIT ${TRAVIS_COMMIT}
+ENV CC=/usr/tce/packages/clang/clang-7.0.0/bin/clang \
+    CXX=/usr/tce/packages/clang/clang-7.0.0/bin/clang++ \
+    FC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    OMPI_CC=/usr/tce/packages/clang/clang-7.0.0/bin/clang \
+    OMPI_CXX=/usr/tce/packages/clang/clang-7.0.0/bin/clang++ \
+    OMPI_MPIFC=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    OMPI_MPIF77=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    OMPI_MPIF90=/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran \
+    MPICC=/usr/lib64/openmpi/bin/mpicc \
+    MPICXX=/usr/lib64/openmpi/bin/mpicxx \
+    MPIFC=/usr/lib64/openmpi/bin/mpifort \
+    MPIEXEC=/usr/lib64/openmpi/bin/mpirun
 
 USER geosx
 WORKDIR /home/geosx

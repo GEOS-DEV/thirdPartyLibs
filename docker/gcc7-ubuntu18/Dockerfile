@@ -1,23 +1,19 @@
 FROM geosx/compiler:ubuntu18
 
 LABEL maintainer="Randolph Settgast <settgast1@llnl.gov>"
-ENV gccver=7
-ENV CC=gcc
-ENV CXX=g++
-ENV FC=gfortran
-ENV OMPI_CC=gcc
-ENV OMPI_CXX=g++
-ENV OMPI_MPIFC=gfortran
-ENV OMPI_MPIF77=gfortran
-ENV OMPI_MPIF90=gfortran
-ENV MPICC=/usr/bin/mpicc
-ENV MPICXX=/usr/bin/mpicxx
-ENV MPIFC=/usr/bin/mpifort
-ENV MPIEXEC=/usr/bin/mpirun
-ARG GEOSXCI_GITHUB_PAT=local
-ENV GEOSXCI_GITHUB_PAT ${GEOSXCI_GITHUB_PAT}
-ARG TRAVIS_COMMIT=local
-ENV TRAVIS_COMMIT ${TRAVIS_COMMIT}
+ENV gccver=7 \
+    CC=gcc \
+    CXX=g++ \
+    FC=gfortran \
+    OMPI_CC=gcc \
+    OMPI_CXX=g++ \
+    OMPI_MPIFC=gfortran \
+    OMPI_MPIF77=gfortran \
+    OMPI_MPIF90=gfortran \
+    MPICC=/usr/bin/mpicc \
+    MPICXX=/usr/bin/mpicxx \
+    MPIFC=/usr/bin/mpifort \
+    MPIEXEC=/usr/bin/mpirun
 
 USER geosx
 WORKDIR /home/geosx
