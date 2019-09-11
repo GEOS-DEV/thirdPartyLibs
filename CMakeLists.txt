@@ -700,7 +700,7 @@ message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
 set(HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
 set(HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-set(HYPRE_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS_RELEASE}")
+set(HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
 
 
 if( ${ENABLE_MPI} )
@@ -762,7 +762,7 @@ ExternalProject_Add( hypre
                      INSTALL_DIR ${HYPRE_DIR}
                      DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_for_geosx && . ${PROJECT_BINARY_DIR}/config_for_geosx
+                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
                      BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                      INSTALL_COMMAND make install
                    )
@@ -780,9 +780,19 @@ if (false)
 else()
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
+    set(PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
+    set(PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+    set(PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
 
     if (ENABLE_OPENMP)
         set(PETSC_OPENMP_FLAG --with-openmp=1)
+        set(PETSC_C_FLAGS "${PETSC_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(PETSC_CXX_FLAGS "${PETSC_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(PETSC_Fortran_FLAGS "${PETSC_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+
+        if(PETSC_OMP_DIR)
+            set(PETSC_OMP_DIR_FLAG --with-openmp-dir=${PETSC_OMP_DIR})
+        endif()
     endif()
 
     if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -802,29 +812,40 @@ else()
         set( PETSC_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
         set( PETSC_MPI_FLAG "--with-mpi=0" )
-        set( PETSC_DEPENDS metis;hypre )
+        set( PETSC_DEPENDS metis )
     endif()
 
+string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
+string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
+
+file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
+./configure \
+--prefix=${PETSC_INSTALL_DIR} \
+--CC=${PETSC_C_COMPILER} \
+--CFLAGS=\"${PETSC_C_FLAGS}\" \
+--CXX=${PETSC_CXX_COMPILER} \
+--CXXFLAGS=\"${PETSC_CXX_FLAGS}\" \
+--FC=${PETSC_Fortran_COMPILER} \
+--FFLAGS=\"${PETSC_Fortran_FLAGS}\" \
+--with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis \
+--with-64-bit-indices=1 \
+--known-mpi-int64_t=0 \
+--with-blas-lib=\"${PETSC_BLAS_LIBS}\" \
+--with-lapack-lib=\"${PETSC_LAPACK_LIBS}\" \
+${PETSC_DEBUG_FLAG} \
+${PETSC_OPENMP_FLAG} \
+${PETSC_OMP_DIR_FLAG} \
+${PETSC_MPI_FLAG}\n")
 
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
                          DEPENDS ${PETSC_DEPENDS}
                          INSTALL_DIR ${PETSC_INSTALL_DIR}
-                         CONFIGURE_COMMAND cd ../petsc && ./configure 
-                           --prefix=<INSTALL_DIR>  
-                           --CC=${PETSC_C_COMPILER}
-                           --CXX=${PETSC_CXX_COMPILER}
-                           --FC=${PETSC_Fortran_COMPILER}
-                           --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
-                           --with-64-bit-indices=1
-                           --known-mpi-int64_t=0
-                           ${PETSC_DEBUG_FLAG}
-                           ${PETSC_OPENMP_FLAG}
-                           ${PETSC_MPI_FLAG}
+                         CONFIGURE_COMMAND cd ../petsc && cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx 
                          BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
                          INSTALL_COMMAND cd ../petsc && make install
-                      )
+                        )
 
     list(APPEND build_list petsc )
 endif()
@@ -838,4 +859,3 @@ blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
 
 add_dependencies( tpl ${build_list}  )
-
