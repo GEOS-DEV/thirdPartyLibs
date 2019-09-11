@@ -17,7 +17,7 @@ cd build
 or_die cmake \
            -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_Fortran_COMPILER=${FC} \
            -DENABLE_MPI=ON -DMPI_C_COMPILER=${MPICC} -DMPI_CXX_COMPILER=${MPICXX} -DMPI_Fortran_COMPILER=${MPIFC} -DMPIEXEC=${MPIEXEC} -DMPIEXEC_EXECUTABLE=${MPIEXEC} \
-           -DGEOSX_TPL_DIR=/home/geosx/thirdPartyLibs/install-default-release \
+           -DGEOSX_TPL_DIR=/home/geosx/thirdPartyLibs/install-environment-release \
            -DENABLE_SPHINX=OFF \
            -DCMAKE_BUILD_TYPE=Release \
            ../src
