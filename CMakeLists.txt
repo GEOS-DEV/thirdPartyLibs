@@ -43,6 +43,8 @@ set(NUM_PROC "16" CACHE STRING "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
+set( CMAKE_VERBOSE_MAKEFILE BOOL OFF "" )
+
 # Set up C flags
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
 string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
@@ -162,7 +164,7 @@ ExternalProject_Add( conduit
                                 -DENABLE_FORTRAN=OFF
                                 -DENABLE_TESTS=OFF
                                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -DENABLE_MPI=${ENABLE_MPI}
                                 -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                 -DHDF5_DIR=${HDF5_DIR}
@@ -211,7 +213,7 @@ ExternalProject_Add( axom
                                 -D ENABLE_FORTRAN=OFF
                                 -D ENABLE_TESTS=OFF
                                 -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_MPI=${ENABLE_MPI}
                                 -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                 -D HDF5_DIR=${HDF5_DIR}
@@ -283,7 +285,7 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
@@ -320,7 +322,7 @@ ExternalProject_Add( raja
                                 -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
@@ -381,7 +383,7 @@ if (ENABLE_CALIPER)
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D WITH_MPI:BOOL=TRUE
                                     -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -422,7 +424,7 @@ else()
                                     -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -452,7 +454,7 @@ ExternalProject_Add( pugixml
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
@@ -520,7 +522,7 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_OpenMP:BOOL=${ENABLE_OPENMP}
                                     -D Trilinos_ENABLE_Fortran:BOOL=ON
                                     -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
-                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D Trilinos_ENABLE_TESTS:BOOL=OFF
                                     -D Trilinos_ENABLE_Gtest:BOOL=OFF
                                     -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
@@ -573,7 +575,7 @@ ExternalProject_Add( parmetis
                                 -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 )
@@ -598,7 +600,7 @@ ExternalProject_Add( metis
                                 -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 )
@@ -641,7 +643,7 @@ ExternalProject_Add( superlu_dist
                                 -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                 -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D enable_openmp=${ENABLE_OPENMP}
