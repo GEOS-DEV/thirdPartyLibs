@@ -125,17 +125,28 @@ set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
 set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
+if( ${ENABLE_MPI} )
+  set( HDF5_C_COMPILER ${MPI_C_COMPILER} )
+  set( HDF5_CXX_COMPILER ${MPI_CXX_COMPILER} )
+  set( HDF5_ENABLE_PARALLEL "--enable-parallel")
+else()
+  set( HDF5_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( HDF5_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+  set( HDF5_ENABLE_PARALLEL "")
+endif()
+
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
-                     CONFIGURE_COMMAND ../hdf5/configure CC=${MPI_C_COMPILER}
-                                          CXX=${MPI_CXX_COMPILER}
-                                          --enable-build-mode=production
-                                          --prefix=<INSTALL_DIR>
-                                          --enable-parallel
-                                          --enable-shared=no
-                                          CFLAGS=-fPIC
+                     CONFIGURE_COMMAND ../hdf5/configure
+                                       CC=${HDF5_C_COMPILER}
+                                       CXX=${HDF5_CXX_COMPILER}
+                                       --enable-build-mode=production
+                                       --prefix=<INSTALL_DIR>
+                                       ${HDF5_ENABLE_PARALLEL}
+                                       --enable-shared=no
+                                       CFLAGS=-fPIC
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install )
 
@@ -149,6 +160,14 @@ list(APPEND build_list hdf5 )
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
 set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.2.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
+
+if( ${ENABLE_MPI} )
+  set( CONDUIT_C_COMPILER ${MPI_C_COMPILER} )
+  set( CONDUIT_CXX_COMPILER ${MPI_CXX_COMPILER} )
+else()
+  set( CONDUIT_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( CONDUIT_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+endif()
 
 ExternalProject_Add( conduit
                      URL ${CONDUIT_URL}
@@ -173,8 +192,8 @@ ExternalProject_Add( conduit
 # Once this is fixed remove the next three lines (ENABLE_FIND_MPI and using the MPI wrappers)
 # and uncomment out the 4 after (using serial compilers and MPI wrappers separately)
                                 -DENABLE_FIND_MPI=OFF
-                                -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -DCMAKE_C_COMPILER=${CONDUIT_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${CONDUIT_CXX_COMPILER}
 #                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 #                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 #                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
@@ -214,12 +233,12 @@ ExternalProject_Add( axom
                                 -D ENABLE_TESTS=OFF
                                 -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D ENABLE_MPI=${ENABLE_MPI}
                                 -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                 -D HDF5_DIR=${HDF5_DIR}
                                 -D CONDUIT_DIR=${CONDUIT_DIR}
                                 -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D ENABLE_MPI=${ENABLE_MPI}
                                 -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                 -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                 -D CMAKE_BUILD_TYPE:STRING=RELEASE
@@ -243,13 +262,15 @@ set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
 set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.10.3.mpiposix_patch.tar.gz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
+
 ExternalProject_Add( silo
                      URL ${SILO_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
                      DEPENDS ${HDF5_DEPENDENCIES}
-                     CONFIGURE_COMMAND ../silo/configure CC=${MPI_C_COMPILER}
-                                          CXX=${MPI_CXX_COMPILER}
+                     CONFIGURE_COMMAND ../silo/configure
+                                          CC=${HDF5_C_COMPILER}
+                                          CXX=${HDF5_CXX_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --disable-fortran
                                           --enable-optimization
@@ -384,7 +405,7 @@ if (ENABLE_CALIPER)
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                    -D WITH_MPI:BOOL=TRUE
+                                    -D WITH_MPI:BOOL=${ENABLE_MPI}
                                     -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -497,6 +518,16 @@ if (ENABLE_TRILINOS)
 
     message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
 
+    if( ${ENABLE_MPI} )
+      set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
+      set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
+      set( TRILINOS_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    else()
+      set( TRILINOS_C_COMPILER ${CMAKE_C_COMPILER} )
+      set( TRILINOS_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+      set( TRILINOS_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    endif()
+
     ExternalProject_Add( trilinos
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
@@ -506,17 +537,17 @@ if (ENABLE_TRILINOS)
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
                                           -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
-                         CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${MPI_C_COMPILER}
+                         CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}
                                     -D CMAKE_C_FLAGS:STRING=${TRILINOS_C_FLAGS}
                                     -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-                                    -D CMAKE_CXX_COMPILER:PATH=${MPI_CXX_COMPILER}
+                                    -D CMAKE_CXX_COMPILER:PATH=${TRILINOS_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_Fortran_COMPILER:PATH=${CMAKE_Fortran_COMPILER}
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D TPL_ENABLE_MPI:BOOL=ON
+                                    -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
                                     -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D Trilinos_ENABLE_OpenMP:BOOL=${ENABLE_OPENMP}
@@ -526,7 +557,7 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_TESTS:BOOL=OFF
                                     -D Trilinos_ENABLE_Gtest:BOOL=OFF
                                     -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
-				    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
                                     -D Trilinos_ENABLE_Epetra:BOOL=ON
                                     -D Trilinos_ENABLE_EpetraExt:BOOL=ON
                                     -D Trilinos_ENABLE_Tpetra:BOOL=ON
@@ -553,34 +584,38 @@ endif()
 # (also METIS is built; note that the idx_t data type is defined to be
 #  64 bit signed integer)
 ################################
+
 set(PARMETIS_DIR "${CMAKE_INSTALL_PREFIX}/parmetis")
 set(METIS_DIR "${CMAKE_INSTALL_PREFIX}/metis")
 set(PARMETIS_URL "${TPL_MIRROR_DIR}/parmetis-4.0.3-IDXTYPEWIDTH_64.tar.gz")
-
-message(STATUS "Building PARMETIS found at ${PARMETIS_URL}")
-
-ExternalProject_Add( parmetis
-                     PREFIX ${PROJECT_BINARY_DIR}/parmetis
-                     URL ${PARMETIS_URL}
-                     INSTALL_DIR ${PARMETIS_DIR}
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                     CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                -D GKLIB_PATH=../parmetis/metis/GKlib
-                                -D METIS_PATH=../parmetis/metis
-                                -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
-                                -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-                                -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
-                                -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                )
-
-list(APPEND build_list parmetis )
+  
+if( ${ENABLE_MPI} )
+  message(STATUS "Building PARMETIS found at ${PARMETIS_URL}")
+  
+  ExternalProject_Add( parmetis
+                       PREFIX ${PROJECT_BINARY_DIR}/parmetis
+                       URL ${PARMETIS_URL}
+                       INSTALL_DIR ${PARMETIS_DIR}
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                  -D GKLIB_PATH=../parmetis/metis/GKlib
+                                  -D METIS_PATH=../parmetis/metis
+                                  -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                  -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+                                  -D ENABLE_MPI:BOOL=ON
+                                  -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                  -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                  -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                  -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                  )
+  
+  list(APPEND build_list parmetis )
+endif()
 
 message(STATUS "Building METIS found at ${PARMETIS_URL}")
 
@@ -594,8 +629,8 @@ ExternalProject_Add( metis
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D GKLIB_PATH=../metis/metis/GKlib
-                                -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                 -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
@@ -611,45 +646,48 @@ list(APPEND build_list metis )
 ################################
 # SUPERLU --
 ################################
-set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
-
-set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
-set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
-
-message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
-ExternalProject_Add( superlu_dist
-                     PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
-                     URL ${SUPERLU_URL}
-                     INSTALL_DIR ${SUPERLU_DIR}
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                     CMAKE_GENERATOR ${TPL_GENERATOR}
-                     DEPENDS parmetis metis
-                     CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
-                                      -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
-                                      -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
-                                      -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
-                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                -D XSDK_INDEX_SIZE=64
-                                -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                                -D MPI_C_COMPILER=${MPI_C_COMPILER}
-                                -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
-                                -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-                                -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
-                                -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
-                                -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D enable_openmp=${ENABLE_OPENMP}
-        )
-
-list(APPEND build_list superlu_dist )
+if( ${ENABLE_MPI} )
+  set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
+  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
+  
+  set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
+  set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
+  
+  message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
+  ExternalProject_Add( superlu_dist
+                       PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
+                       URL ${SUPERLU_URL}
+                       INSTALL_DIR ${SUPERLU_DIR}
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       DEPENDS parmetis metis
+                       CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
+                                        -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
+                                        -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                                        -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                  -D XSDK_INDEX_SIZE=64
+                                  -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                  -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                  -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                  -D ENABLE_MPI:BOOL=${ENABLE_MPI}
+                                  -D MPI_C_COMPILER=${MPI_C_COMPILER}
+                                  -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+                                  -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                  -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                  -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
+                                  -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                  -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                  -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                  -D enable_openmp=${ENABLE_OPENMP}
+          )
+  
+  list(APPEND build_list superlu_dist )
+endif()
 
 ################################
 # HYPRE
@@ -664,7 +702,19 @@ set(HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
 set(HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
 set(HYPRE_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS_RELEASE}")
 
-set(HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
+
+if( ${ENABLE_MPI} )
+  set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
+  set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
+  set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+  set( HYPRE_DEPENDS "superlu_dist" )
+  set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
+else()
+  set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+  set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+  set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
+endif()
 
 if (ENABLE_OPENMP)
     set(HYPRE_OPENMP_FLAG --with-openmp)
@@ -673,28 +723,44 @@ if (ENABLE_OPENMP)
     set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
 endif()
 
-file(WRITE ${PROJECT_BINARY_DIR}/config_for_geosx "\
-./configure \
-CC=${MPI_C_COMPILER} \
-CFLAGS=\"${HYPRE_C_FLAGS}\" \
-CXX=${MPI_CXX_COMPILER} \
-CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-FC=${CMAKE_Fortran_COMPILER} \
-FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
---prefix=${HYPRE_DIR} \
---enable-bigint \
---with-blas-lib=\"${BLAS_LINK_LINE}\" \
---with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
---with-dsuperlu \
---with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
---with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
-${HYPRE_OPENMP_FLAG}\n")
+if( ${ENABLE_MPI} )
+  file(WRITE ${PROJECT_BINARY_DIR}/config_for_geosx "\
+  ./configure \
+  CC=${MPI_C_COMPILER} \
+  CFLAGS=\"${HYPRE_C_FLAGS}\" \
+  CXX=${HYPRE_CXX_COMPILER} \
+  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
+  FC=${HYPRE_Fortran_COMPILER} \
+  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  --prefix=${HYPRE_DIR} \
+  --enable-bigint \
+  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
+  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
+  --with-dsuperlu \
+  --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
+  --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
+  ${HYPRE_OPENMP_FLAG}\n")
+else()
+  file(WRITE ${PROJECT_BINARY_DIR}/config_for_geosx "\
+  ./configure \
+  CC=${MPI_C_COMPILER} \
+  CFLAGS=\"${HYPRE_C_FLAGS}\" \
+  CXX=${HYPRE_CXX_COMPILER} \
+  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
+  FC=${HYPRE_Fortran_COMPILER} \
+  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  --prefix=${HYPRE_DIR} \
+  --enable-bigint \
+  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
+  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
+  ${HYPRE_OPENMP_FLAG}\n")
+endif()
 
 ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
                      INSTALL_DIR ${HYPRE_DIR}
-                     DEPENDS superlu_dist
+                     DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_for_geosx && . ${PROJECT_BINARY_DIR}/config_for_geosx
                      BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
@@ -725,28 +791,39 @@ else()
         set(PETSC_DEBUG_FLAG --with-debugging=0)
     endif()
 
+    if( ${ENABLE_MPI} )
+        set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
+        set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
+        set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+        set( PETSC_MPI_FLAG "--with-mpi=0 --download-ptscotch --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre --with-blaslapack-dir=${MKL_ROOT}")
+        set( PETSC_DEPENDS parmetis metis superlu_dist hypre )
+    else()
+        set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
+        set( PETSC_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+        set( PETSC_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+        set( PETSC_MPI_FLAG "--with-mpi=0" )
+        set( PETSC_DEPENDS metis;hypre )
+    endif()
+
+
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
-                         DEPENDS parmetis metis superlu_dist hypre
+                         DEPENDS ${PETSC_DEPENDS}
                          INSTALL_DIR ${PETSC_INSTALL_DIR}
-			 CONFIGURE_COMMAND cd ../petsc && ./configure 
+                         CONFIGURE_COMMAND cd ../petsc && ./configure 
                            --prefix=<INSTALL_DIR>  
-                           --download-scalapack 
-                           --CC=${MPI_C_COMPILER}
-                           --CXX=${MPI_CXX_COMPILER}
-                           --FC=${MPI_Fortran_COMPILER}
-                           --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre
-                           --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist 
-                           --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis 
+                           --CC=${PETSC_C_COMPILER}
+                           --CXX=${PETSC_CXX_COMPILER}
+                           --FC=${PETSC_Fortran_COMPILER}
                            --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
-                           --download-ptscotch 
                            --with-64-bit-indices=1
                            --known-mpi-int64_t=0
                            ${PETSC_DEBUG_FLAG}
                            ${PETSC_OPENMP_FLAG}
+                           ${PETSC_MPI_FLAG}
                          BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
-			 INSTALL_COMMAND cd ../petsc && make install
+                         INSTALL_COMMAND cd ../petsc && make install
                       )
 
     list(APPEND build_list petsc )
