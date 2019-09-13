@@ -28,9 +28,9 @@ RUN sudo yum -y install clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm &&\
     rm /home/geosx/clang-6.0.1-1-1.tce.ch6_2.x86_64.rpm
 
 COPY thirdPartyLibs /home/geosx/thirdPartyLibs_repo
-RUN python /home/geosx/thirdPartyLibs_repo/scripts/config-build.py -hc /home/geosx/thirdPartyLibs_repo/host-configs/default.cmake -bt Release -DNUM_PROC:STRING=2 --buildpath /home/geosx/thirdPartyLibs/build-default-release --installpath /home/geosx/thirdPartyLibs/install-default-release &&\
-    cd /home/geosx/thirdPartyLibs/build-default-release &&\
+RUN python /home/geosx/thirdPartyLibs_repo/scripts/config-build.py -hc /home/geosx/thirdPartyLibs_repo/host-configs/environment.cmake -bt Release -DNUM_PROC:STRING=2 --buildpath /home/geosx/thirdPartyLibs/build-environment-release --installpath /home/geosx/thirdPartyLibs/install-environment-release &&\
+    cd /home/geosx/thirdPartyLibs/build-environment-release &&\
     make &&\
     cd ~ &&\
-    sudo rm -rf /home/geosx/thirdPartyLibs_repo /home/geosx/thirdPartyLibs/build-default-release 
+    sudo rm -rf /home/geosx/thirdPartyLibs_repo /home/geosx/thirdPartyLibs/build-environment-release 
 
