@@ -115,10 +115,9 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
 # Any tool specific to building GEOSX shall be installed in this stage.
 
-ARG GEOSX_SRC_DIR=/tmp/GEOSX
-ARG GEOSX_BUILD_DIR=/tmp/build
-
 # FIXME the following lines must not be in the TPL build...
+# ARG GEOSX_SRC_DIR=/tmp/GEOSX
+# ARG GEOSX_BUILD_DIR=/tmp/build
 # WORKDIR $GEOSX_SRC_DIR
 # RUN git clone https://${GIT_USER}:${GIT_PASSWORD}@github.com/GEOSX/GEOSX.git .
 # RUN git lfs install && git submodule init && git submodule update
