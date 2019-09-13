@@ -719,6 +719,11 @@ else()
         set(PETSC_OPENMP_FLAG --with-openmp=1)
     endif()
 
+    if (CMAKE_BUILD_TYPE MATCHES Debug)
+        set(PETSC_DEBUG_FLAG --with-debugging=1)
+    else()
+        set(PETSC_DEBUG_FLAG --with-debugging=0)
+    endif()
 
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
@@ -737,7 +742,8 @@ else()
                            --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
                            --download-ptscotch 
                            --with-64-bit-indices=1
-			   --known-mpi-int64_t=0
+                           --known-mpi-int64_t=0
+                           ${PETSC_DEBUG_FLAG}
                            ${PETSC_OPENMP_FLAG}
                          BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
 			 INSTALL_COMMAND cd ../petsc && make install
