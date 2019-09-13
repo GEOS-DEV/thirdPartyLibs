@@ -646,7 +646,7 @@ list(APPEND build_list metis )
 ################################
 # SUPERLU --
 ################################
-if( ${ENABLE_MPI} )
+if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
   
@@ -668,9 +668,9 @@ if( ${ENABLE_MPI} )
                                         -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
                        CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                   -D XSDK_INDEX_SIZE=64
-                                  -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                  -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                  -D CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                                  -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                  -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D CMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                   -D ENABLE_MPI:BOOL=${ENABLE_MPI}
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
