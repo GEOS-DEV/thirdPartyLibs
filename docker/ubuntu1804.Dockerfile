@@ -2,11 +2,11 @@
 FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
 
 # FIXME FROM resets the ARGs
-# FIXME peut-etre pas si c'est dans la ligne de commande...
+# FIXME maybe not if from the command line
 ENV GCC_MAJOR_VERSION=8 \
     GEOSX_TPL_DIR=/opt/GEOSX_TPL
 
-# Do not apt-get upgrade (ask thre mainainer if you really think so;ething should be upgraded)
+# Do not apt-get upgrade (ask thre maintainer if you really think so;ething should be upgraded)
 RUN apt-get update
 
 # ca-certificates is necessary to perform https clones
@@ -107,7 +107,7 @@ RUN python ${TPL_SRC_DIR}/scripts/config-build.py \
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
-# Last step is setting everything so offert a complete slave for building GEOSX.
+# Last step is setting everything for a complete slave for building GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
 # I extract the deployed TPLs from the TPL building stqge.
