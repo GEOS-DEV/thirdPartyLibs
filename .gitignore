@@ -1,3 +1,5 @@
 build-*
 install-*
-
+.cproject
+.project
+.pydevproject
