@@ -805,7 +805,6 @@ else()
         set( PETSC_DEPENDS metis;hypre )
     endif()
 
-
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
@@ -819,8 +818,8 @@ else()
                            --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
                            --with-64-bit-indices=1
                            --known-mpi-int64_t=0
-                           --with-blas-lib=${BLAS_LIBRARIES}
-                           --with-lapack-lib=${LAPACK_LIBRARIES}
+                           --with-blas-lib="${BLAS_LIBRARIES_STRING}"
+                           --with-lapack-lib="${LAPACK_LIBRARIES_STRING}"
                            ${PETSC_DEBUG_FLAG}
                            ${PETSC_OPENMP_FLAG}
                            ${PETSC_MPI_FLAG}
