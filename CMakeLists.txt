@@ -795,7 +795,7 @@ else()
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre --with-blaslapack-dir=${MKL_ROOT}")
+        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre")
         set( PETSC_DEPENDS parmetis metis superlu_dist hypre )
     else()
         set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
@@ -819,6 +819,8 @@ else()
                            --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis 
                            --with-64-bit-indices=1
                            --known-mpi-int64_t=0
+                           --with-blas-lib=${BLAS_LIBRARIES}
+                           --with-lapack-lib=${LAPACK_LIBRARIES}
                            ${PETSC_DEBUG_FLAG}
                            ${PETSC_OPENMP_FLAG}
                            ${PETSC_MPI_FLAG}
