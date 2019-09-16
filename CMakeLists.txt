@@ -724,7 +724,7 @@ if (ENABLE_OPENMP)
 endif()
 
 if( ${ENABLE_MPI} )
-  file(WRITE ${PROJECT_BINARY_DIR}/config_for_geosx "\
+  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
   CC=${MPI_C_COMPILER} \
   CFLAGS=\"${HYPRE_C_FLAGS}\" \
@@ -741,7 +741,7 @@ if( ${ENABLE_MPI} )
   --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
   ${HYPRE_OPENMP_FLAG}\n")
 else()
-  file(WRITE ${PROJECT_BINARY_DIR}/config_for_geosx "\
+  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
   CC=${MPI_C_COMPILER} \
   CFLAGS=\"${HYPRE_C_FLAGS}\" \
