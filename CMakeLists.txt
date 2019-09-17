@@ -158,7 +158,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.2.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.4.0-src-with-blt.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -213,7 +213,7 @@ list(APPEND build_list conduit )
 # Axom
 ################################
 set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-set(AXOM_URL "${TPL_MIRROR_DIR}/axom-10-5-2018.tar.gz")
+set(AXOM_URL "${TPL_MIRROR_DIR}/Axom-v0.3.1.tar.gz")
 
 message(STATUS "Building Axom found at ${AXOM_URL}")
 
@@ -327,7 +327,7 @@ list(APPEND build_list chai )
 # RAJA
 ################################
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.8.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.9.0.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
 ExternalProject_Add( raja
