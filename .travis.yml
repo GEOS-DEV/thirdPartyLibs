@@ -15,17 +15,23 @@ linuxBuild: &linuxBuild
     - cd ..
     - cp ${TRAVIS_BUILD_DIR}/docker/$IMG/* .
   script: 
-    - docker build --build-arg GEOSXCI_GITHUB_PAT=${GEOSXCI_GITHUB_PAT} --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT} --tag geosx/compiler:$IMG .
+    - DOCKER_TAG=geosx/compiler:$IMG-"$(date +%F)"
+    - echo $DOCKER_TAG
+    - docker build --build-arg GEOSXCI_GITHUB_PAT=${GEOSXCI_GITHUB_PAT} --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT} --tag $DOCKER_TAG .
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker push $DOCKER_TAG
 #    - cd ${TRAVIS_BUILD_DIR}
 #    - git clone --branch develop --depth 1 git@github.com:GEOSX/GEOSX.git
 #    - cd GEOSX
 #    - git submodule update --init --recursive src/coreComponents/cxx-utilities src/cmake/blt src/externalComponents/PVTPackage src/externalComponents/PAMELA src/externalComponents/GEOSX_PTP src/coreComponents/fileIO/coupling/hdf5_interface 
 #    - cd ..
 #    - docker run -v ${TRAVIS_BUILD_DIR}/GEOSX:/home/geosx/GEOSX_repo geosx/compiler:$IMG /bin/bash -c 'cd /home/geosx; mkdir GEOSX_build; cd GEOSX_build; cmake -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_Fortran_COMPILER=${FC} -DENABLE_MPI=ON -DMPI_C_COMPILER=${MPICC} -DMPI_CXX_COMPILER=${MPICXX} -DMPI_Fortran_COMPILER=${MPIFC} -DMPIEXEC=${MPIEXEC} -DMPIEXEC_EXECUTABLE=${MPIEXEC} -DGEOSX_TPL_DIR:PATH=/home/geosx/thirdPartyLibs/install-default-release -DENABLE_SPHINX:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} /home/geosx/GEOSX_repo/src ; make ; make test'
+
 linuxDeploy: &linuxDeploy
   stage: deploy
   script:
-    - echo DEPLOY ${IMG}
+
+
 
 
 
