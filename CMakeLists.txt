@@ -64,7 +64,7 @@ if (ENABLE_NINJA)
     set(TPL_INSTALL_COMMAND ninja install)
     set(TPL_GENERATOR Ninja)
 else()
-    set(TPL_BUILD_COMMAND make -j ${NUM_PROC})
+    set(TPL_BUILD_COMMAND make -j ${NUM_PROC} )
     set(TPL_INSTALL_COMMAND make install)
     set(TPL_GENERATOR "Unix Makefiles")
 endif()
@@ -217,6 +217,12 @@ set(AXOM_URL "${TPL_MIRROR_DIR}/Axom-v0.3.1.tar.gz")
 
 message(STATUS "Building Axom found at ${AXOM_URL}")
 
+if( ${ENABLE_MPI} )
+    set( AXOM_ENABLE_LUMBERJACK ON )
+else()
+    set( AXOM_ENABLE_LUMBERJACK OFF )
+endif()
+
 ExternalProject_Add( axom
                      URL ${AXOM_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/axom
@@ -226,12 +232,12 @@ ExternalProject_Add( axom
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -D ENABLE_DOCS=OFF
-                                -D ENABLE_BENCHMARKS=OFF
-                                -D ENABLE_EXAMPLES=OFF
+                     CMAKE_ARGS -D AXOM_ENABLE_DOCS=OFF
+                                -D AXOM_ENABLE_BENCHMARKS=OFF
+                                -D AXOM_ENABLE_EXAMPLES=OFF
                                 -D ENABLE_FORTRAN=OFF
-                                -D ENABLE_TESTS=OFF
-                                -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                -D AXOM_ENABLE_TESTS=OFF
+                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                 -D HDF5_DIR=${HDF5_DIR}
@@ -239,15 +245,17 @@ ExternalProject_Add( axom
                                 -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D ENABLE_MPI=${ENABLE_MPI}
+                                -D AXOM_ENABLE_ALL_COMPONENTS:BOOL=OFF
                                 -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                 -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D AXOM_ENABLE_LUMBERJACK=ON
+                                -D AXOM_ENABLE_SLIC=ON
+                                -D AXOM_ENABLE_SIDRE=ON
+                                -D AXOM_ENABLE_LUMBERJACK=${AXOM_ENABLE_LUMBERJACK}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -D BLT_CXX_STD:STRING=c++11
                                 )
