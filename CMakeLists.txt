@@ -781,11 +781,10 @@ list(APPEND build_list hypre )
 # PETSC
 ################################
 
-set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.10.2.tar.gz")
+if( ENABLE_PETSC )
+    set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.10.2.tar.gz")
 
-if (false)
-else()
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
     set(PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
