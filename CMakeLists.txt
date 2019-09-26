@@ -269,7 +269,7 @@ if (ENABLE_TRIBOL)
 
    set(UMPIRE_DIR "${CMAKE_INSTALL_PREFIX}/umpire")
    set(UMPIRE_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/umpire.git")
-   set(UMPIRE_TAG "ale3d")
+   set(UMPIRE_TAG "feature/benliu/slideWorld")
 
    if (EXISTS ${UMPIRE_DIR})
        message(STATUS "Using existing UMPIRE found at ${UMPIRE_DIR}")
@@ -802,7 +802,7 @@ list(APPEND build_list hypre )
 if (ENABLE_TRIBOL)
     set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
     set(AXOM_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/axom.git")
-    set(AXOM_TAG "ale3d")
+    set(AXOM_TAG "feature/benliu/slideWorld")
 
     if (EXISTS ${AXOM_DIR})
         message(STATUS "Using existing Axom found at ${AXOM_DIR}")
@@ -1015,7 +1015,8 @@ if (ENABLE_TRIBOL)
                                         -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                         -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                         -DCMAKE_DEBUG_POSTFIX=
-                                        -DENABLE_VISTA_TV_DEBUG:BOOL=FALSE
+                                        -DENABLE_VISTA_TV_DEBUG:BOOL=TRUE
+                                        -DEXTERNAL_VISTA_TV_DEBUG:BOOL=TRUE
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
                                         -DRAJA_DIR=${RAJA_DIR}
