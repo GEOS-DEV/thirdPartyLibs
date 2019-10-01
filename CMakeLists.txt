@@ -791,15 +791,17 @@ if( ENABLE_PETSC )
     set(PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
     set(PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
 
-    if (ENABLE_OPENMP)
-        set(PETSC_OPENMP_FLAG --with-openmp=1)
-        set(PETSC_C_FLAGS "${PETSC_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set(PETSC_CXX_FLAGS "${PETSC_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(PETSC_Fortran_FLAGS "${PETSC_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
-
-        if(PETSC_OMP_DIR)
-            set(PETSC_OMP_DIR_FLAG --with-openmp-dir=${PETSC_OMP_DIR})
-        endif()
+    # Josh White 9/29/19: Petsc OpenMP support appears to cause problems with Clang6 builds. 
+    # Going to disable this feature for the moment (--with-openmp=0)
+    # TODO: Find cross-compiler workaround for Petsc OpenMP support
+    if (ENABLE_OPENMP) 
+        set(PETSC_OPENMP_FLAG --with-openmp=0)
+        #set(PETSC_C_FLAGS "${PETSC_C_FLAGS} ${OpenMP_C_FLAGS}")
+        #set(PETSC_CXX_FLAGS "${PETSC_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        #set(PETSC_Fortran_FLAGS "${PETSC_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+        #if(PETSC_OMP_DIR)
+        #    set(PETSC_OMP_DIR_FLAG --with-openmp-dir=${PETSC_OMP_DIR})
+        #endif()
     endif()
 
     if (CMAKE_BUILD_TYPE MATCHES Debug)
