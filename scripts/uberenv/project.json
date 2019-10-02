@@ -1,0 +1,6 @@
+{
+"package_name" : "geosx",
+"uberenv_package_name" : "uberenv-geosx",
+"spack_url": "https://github.com/spack/spack.git",
+"spack_branch": "develop"
+}
