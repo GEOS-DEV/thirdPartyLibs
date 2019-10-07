@@ -13,6 +13,7 @@ from google.oauth2 import service_account
 from google.cloud import storage
 from google.auth.transport.requests import AuthorizedSession
 
+from requests.utils import quote
 
 TPL_BUCKET_NAME = "geosx"
 
@@ -32,8 +33,10 @@ def upload_metadata(blob, service_account_file):
     metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"]}}
     credentials = service_account.Credentials.from_service_account_file(service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",))
     authed_session = AuthorizedSession(credentials)
-    url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (blob.bucket.name, blob.name)
-    authed_session.patch(url, json=metadata)
+    url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (quote(blob.bucket.name, safe=""), quote(blob.name, safe=""))
+    req = authed_session.patch(url, json=metadata)
+    if not req.ok:
+        raise ValueError(req.reason)
 
 
 def upload_tpl(fp, fp_size, destination_blob_name, service_account_file, bucket_name=TPL_BUCKET_NAME):
