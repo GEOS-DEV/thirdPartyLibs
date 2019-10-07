@@ -34,7 +34,7 @@ jobs:
     before_script:
     - brew install openmpi > /dev/null 2>&1
     - brew install git-lfs > /dev/null 2>&1
-    - pip install -q google-cloud-datastore
+    - pip install -q google-cloud-storage
     - git lfs install
     - git lfs pull
     script:
