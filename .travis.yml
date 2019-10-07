@@ -34,12 +34,12 @@ jobs:
     before_script:
     - brew install openmpi > /dev/null 2>&1
     - brew install git-lfs > /dev/null 2>&1
+    - pip install -q google-cloud-datastore
     - git lfs install
     - git lfs pull
     script:
     - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake
       -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
-    - pip install google-cloud-datastore
     - python macosx_TPL_mngt.py build-darwin-clang-release geosx-key.json
     - cd build-darwin-clang-release
     - make
