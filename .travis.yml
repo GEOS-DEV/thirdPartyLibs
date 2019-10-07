@@ -41,6 +41,8 @@ jobs:
     - jq ".type" geosx-key.json
     - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake
       -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+    - pip install google-cloud-datastore
+    - ls install-darwin-clang-release
     - cd build-darwin-clang-release
     - make
   - stage: deploy
