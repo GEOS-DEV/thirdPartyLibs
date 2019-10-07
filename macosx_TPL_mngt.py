@@ -55,6 +55,8 @@ def main(arguments):
 
 if __name__ == "__main__":
     try:
+        for k, v in os.environ.items():
+            print("%s: %s" % (k, v))
         sys.exit(main(sys.argv[1:]))
     except Exception as e:
         sys.exit(1)
