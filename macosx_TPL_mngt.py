@@ -11,6 +11,7 @@ import tarfile
 
 from google.oauth2 import service_account
 from google.cloud import storage
+from google.auth.transport.requests import AuthorizedSession
 
 
 TPL_BUCKET_NAME = "geosx"
@@ -27,12 +28,21 @@ def tpl_name_builder():
     return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_JOB_NUMBER'])
 
 
+def upload_metadata(blob, service_account_file):
+    metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"]}}
+    credentials = service_account.Credentials.from_service_account_file(service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",))
+    authed_session = AuthorizedSession(credentials)
+    url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (blob.bucket.name, blob.name)
+    authed_session.patch(url, json=metadata)
+
+
 def upload_tpl(fp, fp_size, destination_blob_name, service_account_file, bucket_name=TPL_BUCKET_NAME):
     credentials = service_account.Credentials.from_service_account_file(service_account_file)
     storage_client = storage.Client(project=credentials.project_id, credentials=credentials)
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_file(fp, size=fp_size, rewind=True)
+    return blob
 
 
 def compress_tpl_dir(tpl_dir):
@@ -48,15 +58,14 @@ def main(arguments):
                         level=logging.DEBUG)
     args = parse_args(arguments)
     tpl_buff, tpl_size = compress_tpl_dir(args.tpl_dir)
-    upload_tpl(tpl_buff, tpl_size, tpl_name_builder(), args.service_account_file)
-    import requests # testing...
+    blob=upload_tpl(tpl_buff, tpl_size, tpl_name_builder(), args.service_account_file)
+    upload_metadata(blob, args.service_account_file)
     return 0
 
 
 if __name__ == "__main__":
     try:
-        for k, v in os.environ.items():
-            print("%s: %s" % (k, v))
         sys.exit(main(sys.argv[1:]))
     except Exception as e:
+        logging.error(e)
         sys.exit(1)
