@@ -32,17 +32,15 @@ jobs:
     os: osx
     osx_image: xcode10.2
     before_script:
-    - brew install jq > /dev/null 2>&1
     - brew install openmpi > /dev/null 2>&1
     - brew install git-lfs > /dev/null 2>&1
     - git lfs install
     - git lfs pull
     script:
-    - jq ".type" geosx-key.json
     - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake
       -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
     - pip install google-cloud-datastore
-    - ls install-darwin-clang-release
+    - python macosx_TPL_mngt.py build-darwin-clang-release geosx-key.json
     - cd build-darwin-clang-release
     - make
   - stage: deploy
