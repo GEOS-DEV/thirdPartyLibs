@@ -34,13 +34,13 @@ def old_tpl_in_pr_predicate(blob):
     try:
         return blob.metadata['TRAVIS_PULL_REQUEST'] == os.environ["TRAVIS_PULL_REQUEST"]
     except Exception:
-        logging.warning('Could not retrieve metainformation for blob "%s" in bucket ""%s.' % (blob.name, blob.bucket.name))
+        logging.warning('Could not retrieve metainformation for blob "%s" in bucket "%s".' % (blob.name, blob.bucket.name))
         return False
 
 
 def build_credentials(service_account_file):
     return service_account.Credentials.from_service_account_file(
-               service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.read_write",)
+               service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",)
                                                                 )
 
 
@@ -49,7 +49,7 @@ def build_storage_client(credentials):
 
 
 def upload_metadata(blob, credentials):
-    metadata = {"metadata":{"TRAVIS_PULL_REQUEST": "876"}}
+    metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"]}}
     authed_session = AuthorizedSession(credentials)
     url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (quote(blob.bucket.name, safe=""), quote(blob.name, safe=""))
     req = authed_session.patch(url, json=metadata)
@@ -98,5 +98,4 @@ if __name__ == "__main__":
         sys.exit(main(sys.argv[1:]))
     except Exception as e:
         logging.error(repr(e))
-        raise e
         sys.exit(1)
