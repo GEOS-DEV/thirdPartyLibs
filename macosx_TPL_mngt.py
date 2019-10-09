@@ -20,6 +20,11 @@ TPL_BUCKET_NAME = "geosx"
 
 
 def parse_args(arguments):
+    """
+    Parse the command line arguments provided as input.
+    We do not let argparse fetch them itself.
+    Returns an arparse structure.
+    """
     parser = argparse.ArgumentParser(description="Uploading the TPL for MACOSX so they can be reused for GEOSX.")
     parser.add_argument("tpl_dir", metavar="TPL_DIR", help="Path to the TPL folder")
     parser.add_argument("service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file.")
@@ -27,10 +32,18 @@ def parse_args(arguments):
 
 
 def tpl_name_builder():
+    """
+    Builds and returns the GCP blob name (mostly from environment variables).
+    """
     return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_JOB_NUMBER'])
 
 
 def old_tpl_in_pr_predicate(blob):
+    """
+    A predicate to check if the given CGP blob may be deleted from its bucket.
+    For the moment we only delete the blobs coming from the same pull request
+    because we can assume they cannot be used by client code.
+    """
     try:
         return blob.metadata['TRAVIS_PULL_REQUEST'] == os.environ["TRAVIS_PULL_REQUEST"]
     except Exception:
@@ -39,16 +52,27 @@ def old_tpl_in_pr_predicate(blob):
 
 
 def build_credentials(service_account_file):
+    """
+    Builds and returns the GCP credentials from the JSON config file (decyphered by travis).
+    """
     return service_account.Credentials.from_service_account_file(
                service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",)
                                                                 )
 
 
 def build_storage_client(credentials):
+    """
+    Builds and returns the GCP storage client.
+    This functions requires GCP credentials.
+    """
     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
 def upload_metadata(blob, credentials):
+    """
+    Uploads the metadata of the blob. These metadata can be used to delete the old blobs
+    (instead of relying on an implicit convention for the blob name).
+    """
     metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"]}}
     authed_session = AuthorizedSession(credentials)
     url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (quote(blob.bucket.name, safe=""), quote(blob.name, safe=""))
@@ -58,12 +82,25 @@ def upload_metadata(blob, credentials):
 
 
 def remove_old_blobs(storage_client, blob_filter, bucket_name=TPL_BUCKET_NAME):
+    """
+    Removes the olb GCP blobs from the GCP bucket `bucket_name`.
+    This functions reliese on the predicate `blob_filter` to select the blocs to delete.
+    """
     bucket = storage_client.get_bucket(bucket_name)
     for b in filter(blob_filter, bucket.list_blobs()):
         logging.info('Removing blob "%s" from bucket "%s"' % (b.name, bucket.name))
-        # b.delete()
+        b.delete()
+
 
 def upload_tpl(fp, fp_size, destination_blob_name, storage_client, bucket_name=TPL_BUCKET_NAME):
+    """
+    Uploads the content of the file-like instance `fp` of size `fp_size (in bytes)`
+    to the blob `destination_blob_name` into the `bucket_name` GCP bucket.
+    No assumptiom on the `fp` position is done and it will me rewinded anyhow
+    and `fp_size` bytes will be read.
+
+    Returns the created blob instance.
+    """
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_file(fp, size=fp_size, rewind=True)
@@ -71,6 +108,10 @@ def upload_tpl(fp, fp_size, destination_blob_name, storage_client, bucket_name=T
 
 
 def compress_tpl_dir(tpl_dir):
+    """
+    Tar (no compression for binaries) the `tpl_dir` file or direcory name.
+    The resulting archive is returned in a 2-tuple as a file-like object alonside its size (in bytes). 
+    """
     fp = BytesIO()
     with tarfile.open(mode="w|", fileobj=fp) as tar:
         tar.add(tpl_dir)
@@ -79,8 +120,12 @@ def compress_tpl_dir(tpl_dir):
 
 
 def main(arguments):
+    """
+    Uploads the bucket and its metainformation, detetes some old blobs (but not all).
+    The `arguments` are the command line arguments (excluding the program itself).
+    """
     logging.basicConfig(format='[%(asctime)s][%(levelname)s] %(message)s',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     args = parse_args(arguments)
     tpl_buff, tpl_size = compress_tpl_dir(args.tpl_dir)
 
