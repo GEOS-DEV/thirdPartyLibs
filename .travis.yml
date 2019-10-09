@@ -40,9 +40,9 @@ jobs:
     script:
     - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake
       -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
-    - python macosx_TPL_mngt.py build-darwin-clang-release geosx-key.json
     - cd build-darwin-clang-release
     - make
+    - cd ${TRAVIS_BUILD_DIR} && python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json
   - stage: deploy
     script:
     - echo DEPLOY OSX
