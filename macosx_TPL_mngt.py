@@ -73,7 +73,8 @@ def upload_metadata(blob, credentials):
     Uploads the metadata of the blob. These metadata can be used to delete the old blobs
     (instead of relying on an implicit convention for the blob name).
     """
-    metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"]}}
+    metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"],
+                            "TRAVIS_BUILD_NUMBER": os.environ["TRAVIS_BUILD_NUMBER"]}}
     authed_session = AuthorizedSession(credentials)
     url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (quote(blob.bucket.name, safe=""), quote(blob.name, safe=""))
     req = authed_session.patch(url, json=metadata)
