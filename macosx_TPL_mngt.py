@@ -124,6 +124,7 @@ def main(arguments):
     """
     Uploads the bucket and its metainformation, detetes some old blobs (but not all).
     The `arguments` are the command line arguments (excluding the program itself).
+    Returns 0 in case of succes of throws.
     """
     logging.basicConfig(format='[%(asctime)s][%(levelname)s] %(message)s',
                         level=logging.INFO)
