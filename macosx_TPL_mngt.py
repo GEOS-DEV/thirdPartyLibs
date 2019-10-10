@@ -35,7 +35,7 @@ def tpl_name_builder():
     """
     Builds and returns the GCP blob name (mostly from environment variables).
     """
-    return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_JOB_NUMBER'])
+    return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_BUILD_NUMBER'])
 
 
 def old_tpl_in_pr_predicate(blob):
@@ -88,8 +88,8 @@ def remove_old_blobs(storage_client, blob_filter, bucket_name=TPL_BUCKET_NAME):
     """
     bucket = storage_client.get_bucket(bucket_name)
     for b in filter(blob_filter, bucket.list_blobs()):
-        logging.info('Removing blob "%s" from bucket "%s"' % (b.name, bucket.name))
         b.delete()
+        logging.info('Removed blob "%s" from bucket "%s"' % (b.name, bucket.name))
 
 
 def upload_tpl(fp, fp_size, destination_blob_name, storage_client, bucket_name=TPL_BUCKET_NAME):
@@ -132,9 +132,11 @@ def main(arguments):
     credentials = build_credentials(args.service_account_file)
     storage_client = build_storage_client(credentials)
 
+    blob_name = tpl_name_builder()
     remove_old_blobs(storage_client, old_tpl_in_pr_predicate)
-    blob = upload_tpl(tpl_buff, tpl_size, tpl_name_builder(), storage_client)
+    blob = upload_tpl(tpl_buff, tpl_size, blob_name, storage_client)
     upload_metadata(blob, credentials)
+    logging.info('Uploaded blob "%s" from bucket "%s"' % (blob.name, blob.bucket.name))
     return 0
 
 
