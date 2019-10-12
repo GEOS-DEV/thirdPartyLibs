@@ -105,6 +105,7 @@ def upload_tpl(fp, fp_size, destination_blob_name, storage_client, bucket_name=T
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_file(fp, size=fp_size, rewind=True)
+    blob.make_public()
     return blob
 
 
@@ -138,7 +139,7 @@ def main(arguments):
     remove_old_blobs(storage_client, old_tpl_in_pr_predicate)
     blob = upload_tpl(tpl_buff, tpl_size, blob_name, storage_client)
     upload_metadata(blob, credentials)
-    logging.info('Uploaded blob "%s" from bucket "%s"' % (blob.name, blob.bucket.name))
+    logging.info('Uploaded blob "%s" to bucket "%s"' % (blob.name, blob.bucket.name))
     return 0
 
 
