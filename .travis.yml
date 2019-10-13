@@ -39,7 +39,7 @@ jobs:
         - make
     - stage: deploy
       before_script:
-        - pip install -q google-cloud-storage
+        - pip install -q --user google-cloud-storage
       script:
         - cd ${TRAVIS_BUILD_DIR} && python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json
     - <<: *linuxBuild
