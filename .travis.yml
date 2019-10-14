@@ -29,18 +29,17 @@ jobs:
       os: osx
       osx_image: xcode10.2
       before_script:
+        - set -e
         - brew install openmpi > /dev/null 2>&1
         - brew install git-lfs > /dev/null 2>&1
         - git lfs install
         - git lfs pull
-      script: 
+        - pip install -q google-cloud-storage
+      script:
+        - set -e
         - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
         - cd build-darwin-clang-release
         - make
-    - stage: deploy
-      before_script:
-        - pip install -q --user --upgrade google-cloud-storage pyasn1 pyasn1-modules
-      script:
         - cd ${TRAVIS_BUILD_DIR} && python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json
     - <<: *linuxBuild
       compiler: gcc7-ubuntu18
