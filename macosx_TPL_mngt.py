@@ -34,6 +34,8 @@ def parse_args(arguments):
 def tpl_name_builder():
     """
     Builds and returns the GCP blob name (mostly from environment variables).
+    Before modifying this function, keep in mind that GEOSX uses this naming convention to download the tarball.
+    Consider modifying GEOSX accordingly.
     """
     return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_BUILD_NUMBER'])
 
