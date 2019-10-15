@@ -29,14 +29,12 @@ jobs:
       os: osx
       osx_image: xcode10.2
       before_script:
-        - set -e
         - brew install openmpi > /dev/null 2>&1
         - brew install git-lfs > /dev/null 2>&1
         - git lfs install
         - git lfs pull
         - pip install -q google-cloud-storage
       script:
-        - set -e
         - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
         - cd ${TRAVIS_BUILD_DIR}/build-darwin-clang-release
         - make
