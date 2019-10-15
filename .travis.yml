@@ -38,7 +38,7 @@ jobs:
       script:
         - set -e
         - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
-        - cd build-darwin-clang-release
+        - cd ${TRAVIS_BUILD_DIR}/build-darwin-clang-release
         - make
         - cd ${TRAVIS_BUILD_DIR} && python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json
     - <<: *linuxBuild
