@@ -22,7 +22,6 @@ linuxBuild: &linuxBuild
     - docker push $DOCKER_TAG
 stages:
   - build
-  - deploy
 jobs:
   include:
     - stage: build
