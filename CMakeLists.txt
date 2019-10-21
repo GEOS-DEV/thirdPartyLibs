@@ -122,7 +122,7 @@ list(APPEND build_list astyle )
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "https://www.hdfgroup.org/package/hdf5-1-10-5-tar-gz/?wpdmdl=13571&refresh=5dae28376134f1571694647")
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.5.tar.gz")    
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
@@ -137,7 +137,6 @@ endif()
 
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
-                     URL_MD5 e115eeb66e944fa7814482415dd21cc4
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
                      CONFIGURE_COMMAND ../hdf5/configure
