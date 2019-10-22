@@ -122,7 +122,7 @@ list(APPEND build_list astyle )
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.3.tar.gz")
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.5.tar.gz")    
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
