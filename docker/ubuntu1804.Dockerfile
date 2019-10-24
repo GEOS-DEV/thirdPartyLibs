@@ -51,9 +51,8 @@ RUN apt-get -y --no-install-recommends install \
 RUN apt-get install -y --no-install-recommends \
     python
 
-# FIXME Why original was relative and/or absolute path?
-ENV CC=gcc-${GCC_MAJOR_VERSION} \
-    CXX=g++-${GCC_MAJOR_VERSION} \
+ENV CC=/usr/bin/gcc-${GCC_MAJOR_VERSION} \
+    CXX=/usr/bin/g++-${GCC_MAJOR_VERSION} \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
