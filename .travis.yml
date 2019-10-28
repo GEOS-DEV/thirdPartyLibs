@@ -1,3 +1,5 @@
+language: minimal
+
 jobs:
   include:
   - stage: build
