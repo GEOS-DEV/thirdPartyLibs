@@ -872,7 +872,11 @@ ExternalProject_Add( vtk
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -DVTK_BUILD_ALL_MODULES:STRING=OFF
+                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -DCMAKE_BUILD_TYPE:STRING=RELEASE
+                                -DVTK_BUILD_ALL_MODULES:STRING=OFF
                                 -DVTK_LEGACY_REMOVE:STRING=ON
                                 -DVTK_BUILD_TESTING:STRING=OFF
                                 -DVTK_BUILD_EXAMPLES:STRING=OFF
@@ -881,10 +885,6 @@ ExternalProject_Add( vtk
                                 -DVTK_USE_TK:STRING=NO
                                 -DVTK_ENABLE_LOGGING:STRING=OFF
                                 -DVTK_MODULE_ENABLE_VTK_IOParallelXML:STRING=YES
-                                -DCMAKE_BUILD_TYPE:STRING=RELEASE
-                                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                      )
 
 list(APPEND build_list vtk )
