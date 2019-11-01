@@ -29,8 +29,11 @@ jobs:
       osx_image: xcode10.2
       before_script:
         # Brew being some kind of a rolling release distribution,
-        # it is not obvious the get version of open-mpi we want.
-        - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/1e1370e0fddf2970695ab2e3b12ed5f24eb71819
+        # it is not immediate to get the version of open-mpi we want.
+        # We use the specific revision of the openmpi 4.0.2 upgrade.
+        # (The revision is identified through its git commit hash.)
+        - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
+        - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
         - brew install ${BREW_URL}/Formula/open-mpi.rb > /dev/null 2>&1
         - brew install ${BREW_URL}/Formula/git-lfs.rb > /dev/null 2>&1
         - git lfs install
@@ -40,7 +43,12 @@ jobs:
         - python ${TRAVIS_BUILD_DIR}/scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
         - cd ${TRAVIS_BUILD_DIR}/build-darwin-clang-release
         - make
-        - cd ${TRAVIS_BUILD_DIR} && python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json
+        - cd ${TRAVIS_BUILD_DIR}
+          # We store the brew hash alongside the TPL so the client (i.e. GEOSX) may have a consistent installation.
+          # You shall modify the file name and position carefuly since the client code relies
+          # on this information to extract the hash.
+        - echo -n ${BREW_HASH} > install-darwin-clang-release/brew_hash.txt
+        - python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json
     - <<: *linuxBuild
       compiler: gcc7-ubuntu18
       env:
