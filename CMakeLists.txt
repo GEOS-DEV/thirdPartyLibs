@@ -858,6 +858,35 @@ ${PETSC_MPI_FLAG}\n")
 endif()
 
 ################################
+# VTK
+################################
+set(VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk")
+set(VTK_URL "${TPL_MIRROR_DIR}/VTK-8.2.0.tar.gz")
+
+message(STATUS "Building VTK found at ${VTK_URL}")
+
+ExternalProject_Add( vtk
+                     PREFIX ${PROJECT_BINARY_DIR}/vtk
+                     URL ${VTK_URL}
+                     INSTALL_DIR ${VTK_DIR}
+                     BUILD_COMMAND make -j ${NUM_PROC}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -DVTK_BUILD_ALL_MODULES:STRING=OFF
+                                -DVTK_LEGACY_REMOVE:STRING=ON
+                                -DVTK_BUILD_TESTING:STRING=OFF
+                                -DVTK_BUILD_EXAMPLES:STRING=OFF
+                                -DVTK_WRAP_PYTHON:STRING=NO
+                                -DVTK_WRAP_JAVA:STRING=NO
+                                -DVTK_USE_TK:STRING=NO
+                                -DVTK_ENABLE_LOGGING:STRING=OFF
+                                -DVTK_MODULE_ENABLE_VTK_IOParallelXML:STRING=YES
+                                -DCMAKE_BUILD_TYPE::STRING=RELEASE
+                     )
+
+list(APPEND build_list vtk )
+
+################################
 # Create target that builds all dependencies
 ################################
 message(STATUS "Building= ${build_list}")
