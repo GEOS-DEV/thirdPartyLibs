@@ -870,7 +870,7 @@ ExternalProject_Add( vtk
                      URL ${VTK_URL}
                      INSTALL_DIR ${VTK_DIR}
                      BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     INSTALL_COMMAND make DESTDIR=${VTK_DIR} install
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -DVTK_BUILD_ALL_MODULES:STRING=OFF
                                 -DVTK_LEGACY_REMOVE:STRING=ON
