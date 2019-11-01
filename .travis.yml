@@ -31,8 +31,8 @@ jobs:
         # Brew being some kind of a rolling release distribution,
         # it is not obvious the get version of open-mpi we want.
         - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/1e1370e0fddf2970695ab2e3b12ed5f24eb71819
-        - brew install ${BREW_URL}/Formula/open-mpi.rb 
-        - brew install ${BREW_URL}/git-lfs > /dev/null 2>&1
+        - brew install ${BREW_URL}/Formula/open-mpi.rb > /dev/null 2>&1
+        - brew install ${BREW_URL}/Formula/git-lfs.rb > /dev/null 2>&1
         - git lfs install
         - git lfs pull
         - pip install -q google-cloud-storage
