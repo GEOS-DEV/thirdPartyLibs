@@ -870,7 +870,7 @@ ExternalProject_Add( vtk
                      URL ${VTK_URL}
                      INSTALL_DIR ${VTK_DIR}
                      BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make DESTDIR=${VTK_DIR} install
+                     INSTALL_COMMAND make install
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -DVTK_BUILD_ALL_MODULES:STRING=OFF
                                 -DVTK_LEGACY_REMOVE:STRING=ON
@@ -881,7 +881,10 @@ ExternalProject_Add( vtk
                                 -DVTK_USE_TK:STRING=NO
                                 -DVTK_ENABLE_LOGGING:STRING=OFF
                                 -DVTK_MODULE_ENABLE_VTK_IOParallelXML:STRING=YES
-                                -DCMAKE_BUILD_TYPE::STRING=RELEASE
+                                -DCMAKE_BUILD_TYPE:STRING=RELEASE
+                                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_INSTALL_PREFIX:PATH=${VTK_DIR}
                      )
 
 list(APPEND build_list vtk )
