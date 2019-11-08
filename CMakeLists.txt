@@ -158,7 +158,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.4.0-src-with-blt.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.5.0-src-with-blt.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -254,7 +254,6 @@ ExternalProject_Add( axom
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D AXOM_ENABLE_SLIC=ON
-                                -D AXOM_ENABLE_SIDRE=ON
                                 -D AXOM_ENABLE_LUMBERJACK=${AXOM_ENABLE_LUMBERJACK}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -D BLT_CXX_STD:STRING=c++11
@@ -295,17 +294,52 @@ list(APPEND build_list silo )
 
 
 ################################
+# RAJA
+################################
+set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.10.1.tar.gz")
+message(STATUS "Building RAJA found at ${RAJA_URL}")
+
+ExternalProject_Add( raja
+                     URL ${RAJA_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/raja
+                     INSTALL_DIR ${RAJA_DIR}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CUDA_ARCH:CACHE=${CUDA_ARCH}
+                                -D ENABLE_TESTS:BOOL=OFF
+                                -D ENABLE_EXAMPLES:BOOL=OFF
+                                -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                    )
+
+list(APPEND build_list raja )
+
+
+################################
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-bugfix-corbett-memory-leak-4-5-19.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-corbett-changes-for-geosx.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
-                     PATCH_COMMAND pwd && cp -r blt src/tpl/umpire
+                     DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -322,51 +356,17 @@ ExternalProject_Add( chai
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D ENABLE_TESTS=OFF
+                                -D ENABLE_BENCHMARKS=OFF
+                                -D ENABLE_EXAMPLES=OFF
                                 -D ENABLE_DOCS=OFF
                                 -D ENABLE_DOXYGEN=OFF
                                 -D ENABLE_SPHINX=OFF
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D ENABLE_RAJA_PLUGIN=ON
+                                -D RAJA_DIR=${RAJA_DIR}/share/raja/cmake
                     )
 
 list(APPEND build_list chai )
-
-
-################################
-# RAJA
-################################
-set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.9.0.tar.gz")
-message(STATUS "Building RAJA found at ${RAJA_URL}")
-
-ExternalProject_Add( raja
-                     URL ${RAJA_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/raja
-                     INSTALL_DIR ${RAJA_DIR}
-                     DEPENDS chai
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                     CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
-                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
-                                -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
-                                -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CUDA_ARCH:CACHE=${CUDA_ARCH}
-                                -D ENABLE_TESTS:BOOL=OFF
-                                -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
-                                -D ENABLE_CHAI:BOOL=TRUE
-                                -D umpire_DIR:PATH=${CHAI_DIR}/share/umpire/cmake
-                                -D chai_DIR:PATH=${CHAI_DIR}/share/chai/cmake
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                    )
-
-list(APPEND build_list raja )
 
 
 ################################
