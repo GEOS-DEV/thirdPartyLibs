@@ -19,31 +19,26 @@ geosx_osx_build: &geosx_osx_build
   - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
   - cd build-darwin-clang-release
   - make
-  before_deploy:
+    # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
+    # And `after_success` does not fail the build in case of error.
   - pip install -q google-cloud-storage
   - cd ${TRAVIS_BUILD_DIR}
   - openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  deploy:
-    provider: script
-    script: python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json ${BREW_HASH}
-    on:
-      all_branches: true
-    skip_cleanup: true
+  - python macosx_TPL_mngt.py install-darwin-clang-release geosx-key.json ${BREW_HASH}
 
 geosx_linux_build: &geosx_linux_build
   stage: build
   os: linux
   services: docker
-  # The deployment will push a DOCKER_IMG:DOCKER_TAG image.
-  # These variables shall be defined by the "yaml derived classes".
-  before_deploy:
-  - echo "$TOTOGAZ_DOCKER_PASSWORD" | docker login -u "$TOTOGAZ_DOCKER_USERNAME" --password-stdin
-  deploy: # Note that https://github.com/travis-ci/dpl/pull/1068 prevents to use multiple command lines, this is mainly why we use before_deploy.
-    provider: script
-    script: docker push ${DOCKER_IMG}:${DOCKER_TAG}
-    on:
-      all_branches: true
-    skip_cleanup: true
+  script:
+    # This script will build and push a DOCKER_IMG:DOCKER_TAG image build from DOCKERFILE with DOCKER_BUILD_ARG build arguments.
+    # Unless DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
+  - DOCKER_TAG=${TRAVIS_BUILD_NUMBER}
+  - docker build --build-arg ${DOCKER_BUILD_ARG} --tag ${DOCKER_IMG}:${DOCKER_TAG} -f ${DOCKERFILE} .
+    # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
+    # And `after_success` does not fail the build in case of error.
+  - echo "${TOTOGAZ_DOCKER_PASSWORD}" | docker login -u "${TOTOGAZ_DOCKER_USERNAME}" --password-stdin
+  - docker push ${DOCKER_IMG}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build
   # The ubuntu_build relies on the GCC_MAJOR_VERSION env variable to select the compiler version.
@@ -53,24 +48,20 @@ geosx_ubuntu_build: &geosx_ubuntu_build
     # We save memory for the docker context
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
-  script:
-    # Remove this (and the deployment script) in favour of https://github.com/travis-ci/dpl/pull/1091 when intergated.
+    # Defining what we are going to build
   - DOCKER_IMG=totogaz/ubuntu18.04-gcc${GCC_MAJOR_VERSION}
-  #- DOCKER_TAG=gcc${GCC_MAJOR_VERSION}-ubuntu18-$(date +%F)
-  - DOCKER_TAG=${TRAVIS_BUILD_NUMBER}
-  - docker build --build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION} --tag ${DOCKER_IMG}:${DOCKER_TAG} -f docker/gcc-ubuntu1804/Dockerfile .
+  - DOCKER_BUILD_ARG="GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
+  - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
 
 geosx_centos_build: &geosx_centos_build
   <<: *geosx_linux_build
   before_script:
     # This .dockerignore can be slightly improved for rpms
   - echo .git > .dockerignore
-  script:
-    # Remove this in favour of https://github.com/travis-ci/dpl/pull/1091 when intergated.
-  - DOCKER_IMG=totogaz/centos7.5.1804-clang${CLANG_VERSION}
-  #- DOCKER_TAG=gcc${GCC_MAJOR_VERSION}-ubuntu18-$(date +%F)
-  - DOCKER_TAG=${TRAVIS_BUILD_NUMBER}
-  - docker build --build-arg CLANG_VERSION=${CLANG_VERSION} --tag ${DOCKER_IMG}:${DOCKER_TAG} -f docker/clang-LC-toss3/Dockerfile .
+    # Defining what we are going to build
+  - DOCKER_IMG=totogaz/ubuntu18.04-gcc${GCC_MAJOR_VERSION}
+  - DOCKER_BUILD_ARG="CLANG_VERSION=${CLANG_VERSION}"
+  - DOCKERFILE=docker/clang-LC-toss3/Dockerfile
 
 jobs:
   include:
