@@ -15,6 +15,8 @@ ENV gccver=7 \
     MPIFC=/usr/bin/mpifort \
     MPIEXEC=/usr/bin/mpirun
 
+RUN sudo apt-get update
+
 USER geosx
 WORKDIR /home/geosx
 
