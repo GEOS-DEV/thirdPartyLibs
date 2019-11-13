@@ -5,9 +5,9 @@ geosx_osx_build: &geosx_osx_build
   os: osx
   osx_image: xcode10.2
   install:
-  # it is not immediate to get the version of open-mpi we want.
-  # We use the specific revision of the openmpi 4.0.2 upgrade.
-  # (The revision is identified through its git commit hash.)
+    # it is not immediate to get the version of open-mpi we want.
+    # We use the specific revision of the openmpi 4.0.2 upgrade.
+    # (The revision is identified through its git commit hash.)
   - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - brew install ${BREW_URL}/Formula/open-mpi.rb > /dev/null 2>&1
@@ -16,7 +16,7 @@ geosx_osx_build: &geosx_osx_build
   - git lfs install
   - git lfs pull
   script:
-  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=2 -DENABLE_CALIPER:BOOL=OFF
+  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DENABLE_CALIPER:BOOL=OFF
   - cd build-darwin-clang-release
   - make
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
@@ -31,14 +31,14 @@ geosx_linux_build: &geosx_linux_build
   os: linux
   services: docker
   script:
-    # This script will build and push a DOCKER_IMG:DOCKER_TAG image build from DOCKERFILE with DOCKER_BUILD_ARG build arguments.
+    # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE with DOCKER_BUILD_ARG build arguments.
     # Unless DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
   - DOCKER_TAG=${TRAVIS_BUILD_NUMBER}
-  - docker build --build-arg ${DOCKER_BUILD_ARG} --tag ${DOCKER_IMG}:${DOCKER_TAG} -f ${DOCKERFILE} .
+  - docker build --build-arg ${DOCKER_BUILD_ARG} --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} -f ${DOCKERFILE} .
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
     # And `after_success` does not fail the build in case of error.
   - echo "${TOTOGAZ_DOCKER_PASSWORD}" | docker login -u "${TOTOGAZ_DOCKER_USERNAME}" --password-stdin
-  - docker push ${DOCKER_IMG}:${DOCKER_TAG}
+  - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build
   # The ubuntu_build relies on the GCC_MAJOR_VERSION env variable to select the compiler version.
@@ -49,7 +49,7 @@ geosx_ubuntu_build: &geosx_ubuntu_build
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
     # Defining what we are going to build
-  - DOCKER_IMG=totogaz/ubuntu18.04-gcc${GCC_MAJOR_VERSION}
+  - DOCKER_REPOSITORY=totogaz/ubuntu18.04-gcc${GCC_MAJOR_VERSION}
   - DOCKER_BUILD_ARG="GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
   - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
 
@@ -59,7 +59,7 @@ geosx_centos_build: &geosx_centos_build
     # This .dockerignore can be slightly improved for rpms
   - echo .git > .dockerignore
     # Defining what we are going to build
-  - DOCKER_IMG=totogaz/ubuntu18.04-gcc${GCC_MAJOR_VERSION}
+  - DOCKER_REPOSITORY=totogaz/centos7.5.1804-clang${CLANG_VERSION}
   - DOCKER_BUILD_ARG="CLANG_VERSION=${CLANG_VERSION}"
   - DOCKERFILE=docker/clang-LC-toss3/Dockerfile
 
