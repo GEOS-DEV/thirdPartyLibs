@@ -46,6 +46,7 @@ set(build_list )
 set( CMAKE_VERBOSE_MAKEFILE BOOL OFF "" )
 
 # Set up C flags
+set(CMAKE_C_STANDARD 99)
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
 string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
 set(C_FLAGS_NO_WARNINGS "${C_FLAGS_NO_WARNINGS} -w")
@@ -237,6 +238,7 @@ ExternalProject_Add( axom
                                 -D AXOM_ENABLE_EXAMPLES=OFF
                                 -D ENABLE_FORTRAN=OFF
                                 -D AXOM_ENABLE_TESTS=OFF
+                                -D ENABLE_TESTS:BOOL=OFF
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
@@ -682,6 +684,7 @@ if( ENABLE_MPI )
                                   -D ENABLE_MPI:BOOL=${ENABLE_MPI}
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+				  -D CMAKE_C_STANDARD=99
                                   -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                   -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
