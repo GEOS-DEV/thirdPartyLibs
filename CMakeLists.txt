@@ -46,7 +46,6 @@ set(build_list )
 set( CMAKE_VERBOSE_MAKEFILE BOOL OFF "" )
 
 # Set up C flags
-set(CMAKE_C_STANDARD 99)
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
 string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
 set(C_FLAGS_NO_WARNINGS "${C_FLAGS_NO_WARNINGS} -w")
@@ -92,7 +91,7 @@ ExternalProject_Add( uncrustify
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                -DCMAKE_CXX_STANDARD=11
                                  )
 
 list(APPEND build_list uncrustify )
@@ -111,7 +110,7 @@ ExternalProject_Add( astyle
                      INSTALL_DIR ${ASTYLE_DIR}
                      INSTALL_COMMAND make DESTDIR=${ASTYLE_DIR} install
                      CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                -DCMAKE_CXX_STANDARD=11
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 )
 
@@ -457,7 +456,7 @@ else()
                                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                    -DCMAKE_CXX_STANDARD=11
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
@@ -684,7 +683,7 @@ if( ENABLE_MPI )
                                   -D ENABLE_MPI:BOOL=${ENABLE_MPI}
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-				  -D CMAKE_C_STANDARD=99
+                                  -D CMAKE_C_STANDARD=99
                                   -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                   -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
