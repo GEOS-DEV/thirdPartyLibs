@@ -38,7 +38,7 @@ def tpl_name_builder():
     Before modifying this function, keep in mind that GEOSX uses this naming convention to download the tarball.
     Consider modifying GEOSX accordingly.
     """
-    return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_BUILD_NUMBER'])
+    return "TPL/%s-%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_PULL_REQUEST'], os.environ['TRAVIS_BUILD_NUMBER'])
 
 
 def old_tpl_in_pr_predicate(blob):
