@@ -400,7 +400,7 @@ list(APPEND build_list fparser )
 ################################
 if (ENABLE_CALIPER)
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-v2.2.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.2.0.tar.gz")
 
     message(STATUS "Building CALIPER found at ${CALIPER_URL}")
 
