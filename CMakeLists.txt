@@ -338,6 +338,7 @@ message(STATUS "Building CHAI found at ${CHAI_URL}")
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
+                     PATCH ${TPL_MIRROR_DIR}/chai-CMakeLists.txt.patch
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}

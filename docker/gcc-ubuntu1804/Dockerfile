@@ -62,7 +62,7 @@ ENV FC=/usr/bin/gfortran-${GCC_MAJOR_VERSION} \
 ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
-    libtbb-dev \ 
+    libtbb-dev \
     gfortran-${GCC_MAJOR_VERSION} \
     bc \
     file \
