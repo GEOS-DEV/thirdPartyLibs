@@ -67,7 +67,9 @@ RUN apt-get install -y --no-install-recommends \
     bc \
     file \
     bison \
-    flex
+    flex \
+# GEOSX patches some tpl. Remove when it's not the case anymore.
+    patch
 
 # Temporary local variables dedicated to the TPL build
 ARG TMP_DIR=/tmp

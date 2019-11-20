@@ -61,7 +61,8 @@ RUN yum -y install \
     bc \
     file \
     bison \
-    flex
+    flex \
+    patch
 
 ARG TMP_DIR
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
