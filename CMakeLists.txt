@@ -78,7 +78,7 @@ include( cmake/thirdparty/FindMathLibraries.cmake )
 # UNCRUSTIFY
 ################################
 set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
-set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-0.69.0.tar.gz")
+set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-uncrustify-0.70.0.tar.gz")
 message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
@@ -400,7 +400,7 @@ list(APPEND build_list fparser )
 ################################
 if (ENABLE_CALIPER)
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-v2.1.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-v2.2.0.tar.gz")
 
     message(STATUS "Building CALIPER found at ${CALIPER_URL}")
 
