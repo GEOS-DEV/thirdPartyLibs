@@ -34,7 +34,15 @@ geosx_linux_build: &geosx_linux_build
     # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE with DOCKER_BUILD_ARG build arguments.
     # Unless DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
   - DOCKER_TAG=${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}
-  - docker build --build-arg ${DOCKER_BUILD_ARG} --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} -f ${DOCKERFILE} .
+  - docker build
+    --build-arg ${DOCKER_BUILD_ARG}
+    --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+    --file ${DOCKERFILE}
+    --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)
+    --label "org.opencontainers.image.source=https://github.com/GEOSX/thirdPartyLibs"    
+    --label "org.opencontainers.image.revision=${TRAVIS_COMMIT}"
+    --label "org.opencontainers.image.title=Building environment for GEOSX"
+    .
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
     # And `after_success` does not fail the build in case of error.
   - echo "${TOTOGAZ_DOCKER_PASSWORD}" | docker login -u "${TOTOGAZ_DOCKER_USERNAME}" --password-stdin
