@@ -38,7 +38,7 @@ geosx_linux_build: &geosx_linux_build
     --build-arg ${DOCKER_BUILD_ARG}
     --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG}
     --file ${DOCKERFILE}
-    --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)
+    --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)"
     --label "org.opencontainers.image.source=https://github.com/GEOSX/thirdPartyLibs"    
     --label "org.opencontainers.image.revision=${TRAVIS_COMMIT}"
     --label "org.opencontainers.image.title=Building environment for GEOSX"
