@@ -1,4 +1,4 @@
-# There are far fewer comments on this version than on ubuntu's Dockerfile.
+# There are far fewer comments on this Dockerfile than on ubuntu's Dockerfile.
 # The pattern is equivalent so refer to ubuntu for description.
 # Only details that are specific to centos shall be underlined here.
 ARG TMP_DIR=/tmp
