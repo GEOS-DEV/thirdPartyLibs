@@ -339,6 +339,7 @@ ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
+                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/Umpire-b78dd50.patch
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -499,6 +500,10 @@ if (ENABLE_TRILINOS)
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
+    if (NOT DEFINED TRILINOS_BUILD_COMMAND)
+        set(TRILINOS_BUILD_COMMAND ${TPL_BUILD_COMMAND})
+    endif()
+
     set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
     set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
 
@@ -540,7 +545,7 @@ if (ENABLE_TRILINOS)
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
                          INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         BUILD_COMMAND ${TRILINOS_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
@@ -784,6 +789,7 @@ list(APPEND build_list hypre )
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
     set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.10.2.tar.gz")
+    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-6.0.6-p1.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
@@ -812,7 +818,7 @@ if( ENABLE_PETSC )
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre")
+        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-hypre-dir=${CMAKE_INSTALL_PREFIX}/hypre")
         set( PETSC_DEPENDS parmetis metis superlu_dist hypre )
     else()
         set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
