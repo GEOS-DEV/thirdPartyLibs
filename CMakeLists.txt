@@ -92,6 +92,7 @@ ExternalProject_Add( uncrustify
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                                 -DCMAKE_CXX_STANDARD=11
+                                -DNoGitVersionString:BOOL=ON
                                  )
 
 list(APPEND build_list uncrustify )
