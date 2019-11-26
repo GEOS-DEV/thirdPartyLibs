@@ -102,7 +102,7 @@ list(APPEND build_list uncrustify )
 ################################
 set(ASTYLE_DIR "${CMAKE_INSTALL_PREFIX}/astyle")
 set(ASTYLE_URL "${TPL_MIRROR_DIR}/astyle_3.1_linux.tar.gz")
-message(STATUS "Building uncrustify found at ${ASTYLE_URL}")
+message(STATUS "Building AStyle found at ${ASTYLE_URL}")
 
 ExternalProject_Add( astyle
                      URL ${ASTYLE_URL}
@@ -117,6 +117,33 @@ ExternalProject_Add( astyle
 
 list(APPEND build_list astyle )
 
+
+################################
+# Doxygen
+################################
+
+if( ENABLE_DOXYGEN )
+
+  set(DOXYGEN_DIR "${CMAKE_INSTALL_PREFIX}/doxygen")
+  set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen-1.8.13.tar.gz")
+  message(STATUS "Building Doxygen found at ${DOXYGEN_URL}")
+
+  ExternalProject_Add( doxygen
+                       URL ${DOXYGEN_URL}
+                       PREFIX ${PROJECT_BINARY_DIR}/doxygen
+                       INSTALL_DIR ${DOXYGEN_DIR}
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                  -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                                  -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                  )
+
+  list(APPEND build_list doxygen )
+
+endif()
 
 ################################
 # HDF5
