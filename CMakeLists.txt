@@ -78,7 +78,7 @@ include( cmake/thirdparty/FindMathLibraries.cmake )
 # UNCRUSTIFY
 ################################
 set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
-set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-0.69.0.tar.gz")
+set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-uncrustify-0.70.0.tar.gz")
 message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
@@ -91,7 +91,8 @@ ExternalProject_Add( uncrustify
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                -DCMAKE_CXX_STANDARD=11
+                                -DNoGitVersionString:BOOL=ON
                                  )
 
 list(APPEND build_list uncrustify )
@@ -110,7 +111,7 @@ ExternalProject_Add( astyle
                      INSTALL_DIR ${ASTYLE_DIR}
                      INSTALL_COMMAND make DESTDIR=${ASTYLE_DIR} install
                      CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                -DCMAKE_CXX_STANDARD=11
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 )
 
@@ -237,6 +238,7 @@ ExternalProject_Add( axom
                                 -D AXOM_ENABLE_EXAMPLES=OFF
                                 -D ENABLE_FORTRAN=OFF
                                 -D AXOM_ENABLE_TESTS=OFF
+                                -D ENABLE_TESTS:BOOL=OFF
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
@@ -400,7 +402,7 @@ list(APPEND build_list fparser )
 ################################
 if (ENABLE_CALIPER)
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-v2.1.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.2.0.tar.gz")
 
     message(STATUS "Building CALIPER found at ${CALIPER_URL}")
 
@@ -456,7 +458,7 @@ else()
                                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                     -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                    -DCMAKE_CXX_STANDARD=11
                                     -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
@@ -687,6 +689,7 @@ if( ENABLE_MPI )
                                   -D ENABLE_MPI:BOOL=${ENABLE_MPI}
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D CMAKE_C_STANDARD=99
                                   -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                   -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
