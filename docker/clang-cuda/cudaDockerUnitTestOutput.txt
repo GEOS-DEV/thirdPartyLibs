@@ -1,0 +1,722 @@
+UpdateCTestConfiguration  from :/tmp/build/DartConfiguration.tcl
+Parse Config file:/tmp/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/tmp/build/DartConfiguration.tcl
+Parse Config file:/tmp/build/DartConfiguration.tcl
+Test project /tmp/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+      Start  1: blt_gtest_smoke
+
+1: Test command: /tmp/build/tests/blt_gtest_smoke
+1: Test timeout computed to be: 1500
+1: Running main() from gtest_main.cc
+1: [==========] Running 2 tests from 1 test case.
+1: [----------] Global test environment set-up.
+1: [----------] 2 tests from blt_gtest_smoke
+1: [ RUN      ] blt_gtest_smoke.basic_assert_example
+1: [       OK ] blt_gtest_smoke.basic_assert_example (0 ms)
+1: [ RUN      ] blt_gtest_smoke.death_test
+1: Note: Death tests disabled in this configuration.
+1: 
+1: [WARNING] /tmp/GEOSX/src/cmake/blt/tests/smoke/blt_gtest_smoke.cpp:33:: Death tests are not supported on this platform.
+1: Statement 'exit(1)' cannot be verified.
+1: [       OK ] blt_gtest_smoke.death_test (0 ms)
+1: [----------] 2 tests from blt_gtest_smoke (0 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 2 tests from 1 test case ran. (0 ms total)
+1: [  PASSED  ] 2 tests.
+ 1/54 Test  #1: blt_gtest_smoke ...............................   Passed    0.00 sec
+test 2
+      Start  2: blt_mpi_smoke
+
+2: Test command: /usr/bin/mpirun "-n" "4" "--allow-run-as-root" "/tmp/build/tests/blt_mpi_smoke"
+2: Test timeout computed to be: 1500
+2: Count should be equal to rank size
+2: Count = 4, Size = 4
+ 2/54 Test  #2: blt_mpi_smoke .................................   Passed    0.18 sec
+test 3
+      Start  3: blt_cuda_smoke
+
+3: Test command: /tmp/build/tests/blt_cuda_smoke
+3: Test timeout computed to be: 1500
+ 3/54 Test  #3: blt_cuda_smoke ................................   Passed    0.00 sec
+test 4
+      Start  4: blt_cuda_runtime_smoke
+
+4: Test command: /tmp/build/tests/blt_cuda_runtime_smoke
+4: Test timeout computed to be: 1500
+ 4/54 Test  #4: blt_cuda_runtime_smoke ........................   Passed    0.00 sec
+test 5
+      Start  5: blt_cuda_mpi_smoke
+
+5: Test command: /usr/bin/mpirun "-n" "4" "--allow-run-as-root" "/tmp/build/tests/blt_cuda_mpi_smoke"
+5: Test timeout computed to be: 1500
+5: Count should be equal to rank size
+5: Count = 4, Size = 4
+ 5/54 Test  #5: blt_cuda_mpi_smoke ............................   Passed    0.18 sec
+test 6
+      Start  6: testUncrustifyCheck_common
+
+6: Test command: /usr/bin/make "common_uncrustify_check"
+6: Test timeout computed to be: 1500
+6: Running uncrustify source code formatting checks.
+6: FAIL: ../GEOSX/src/coreComponents/common/DataTypes.cpp (File size changed from 1198 to 1160)
+6: FAIL: ../GEOSX/src/coreComponents/common/unitTests/testDataTypes.cpp (File size changed from 1777 to 1732)
+6: FAIL: ../GEOSX/src/coreComponents/common/unitTests/testStackTrace.cpp (File size changed from 2690 to 2587)
+6: FAIL: ../GEOSX/src/coreComponents/common/DataTypes.hpp (File size changed from 44978 to 43604)
+6: FAIL: ../GEOSX/src/coreComponents/common/GeosxMacros.hpp (File size changed from 2844 to 2750)
+6: FAIL: ../GEOSX/src/coreComponents/common/TimingMacros.hpp (File size changed from 3694 to 3591)
+6: Parsing: ../GEOSX/src/coreComponents/common/DataTypes.cpp as language CPP
+6: Parsing: ../GEOSX/src/coreComponents/common/unitTests/testDataTypes.cpp as language CPP
+6: Parsing: ../GEOSX/src/coreComponents/common/unitTests/testStackTrace.cpp as language CPP
+6: Parsing: ../GEOSX/src/coreComponents/common/DataTypes.hpp as language CPP
+6: Parsing: ../GEOSX/src/coreComponents/common/GeosxMacros.hpp as language CPP
+6: Parsing: ../GEOSX/src/coreComponents/common/TimingMacros.hpp as language CPP
+6: coreComponents/common/CMakeFiles/common_uncrustify_check.dir/build.make:57: recipe for target 'coreComponents/common/CMakeFiles/common_uncrustify_check' failed
+6: make[3]: *** [coreComponents/common/CMakeFiles/common_uncrustify_check] Error 1
+6: CMakeFiles/Makefile2:3052: recipe for target 'coreComponents/common/CMakeFiles/common_uncrustify_check.dir/all' failed
+6: make[2]: *** [coreComponents/common/CMakeFiles/common_uncrustify_check.dir/all] Error 2
+6: CMakeFiles/Makefile2:3059: recipe for target 'coreComponents/common/CMakeFiles/common_uncrustify_check.dir/rule' failed
+6: make[1]: *** [coreComponents/common/CMakeFiles/common_uncrustify_check.dir/rule] Error 2
+6: Makefile:1085: recipe for target 'common_uncrustify_check' failed
+6: make: *** [common_uncrustify_check] Error 2
+ 6/54 Test  #6: testUncrustifyCheck_common ....................***Failed    0.24 sec
+test 7
+      Start  7: testUncrustifyCheck_dataRepository
+
+7: Test command: /usr/bin/make "dataRepository_uncrustify_check"
+7: Test timeout computed to be: 1500
+7: Running uncrustify source code formatting checks.
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/ConduitRestart.cpp (File size changed from 3140 to 3036)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/ExecutableGroup.cpp (File size changed from 1599 to 1561)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/Group.cpp (File size changed from 15730 to 15179)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/Wrapper.cpp (File size changed from 792 to 767)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/WrapperBase.cpp (File size changed from 3720 to 3608)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testBufferOps.cpp (File size changed from 2516 to 2462)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testDefaultValue.cpp (File size changed from 1906 to 1855)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testObjectCatalog.cpp (File size changed from 3193 to 3077)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testReferenceWrapper.cpp (File size changed from 2978 to 2847)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testRestartBasic.cpp (File size changed from 8059 to 7775)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testRestartExtended.cpp (File size changed from 17963 to 17458)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testWrapper.cpp (File size changed from 5886 to 5734)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/unitTests/testXmlWrapper.cpp (File size changed from 4822 to 4670)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/xmlWrapper.cpp (File size changed from 2438 to 2359)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/BufferOps.hpp (File size changed from 24388 to 23828)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/BufferOps_inline.hpp (File size changed from 51811 to 50245)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/ConduitRestart.hpp (File size changed from 3023 to 2925)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/DefaultValue.hpp (File size changed from 4300 to 4163)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/ExecutableGroup.hpp (File size changed from 4029 to 3911)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/Group.hpp (File size changed from 57767 to 56074)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/InputFlags.hpp (File size changed from 3628 to 3482)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/KeyIndexT.hpp (File size changed from 4138 to 3981)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/KeyNames.hpp (File size changed from 2570 to 2496)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/MappedVector.hpp (File size changed from 16640 to 16069)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/ObjectCatalog.hpp (File size changed from 22048 to 21382)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/ReferenceWrapper.hpp (File size changed from 7823 to 7545)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/RestartFlags.hpp (File size changed from 3419 to 3279)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/Wrapper.hpp (File size changed from 22649 to 21815)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/WrapperBase.hpp (File size changed from 12381 to 11929)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/WrapperHelpers.hpp (File size changed from 13861 to 13450)
+7: FAIL: ../GEOSX/src/coreComponents/dataRepository/xmlWrapper.hpp (File size changed from 9464 to 9200)
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/ConduitRestart.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/ExecutableGroup.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/Group.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/Wrapper.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/WrapperBase.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testBufferOps.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testDefaultValue.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testObjectCatalog.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testReferenceWrapper.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testRestartBasic.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testRestartExtended.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testWrapper.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/unitTests/testXmlWrapper.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/xmlWrapper.cpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/BufferOps.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/BufferOps_inline.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/ConduitRestart.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/DefaultValue.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/ExecutableGroup.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/Group.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/InputFlags.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/KeyIndexT.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/KeyNames.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/MappedVector.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/ObjectCatalog.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/ReferenceWrapper.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/RestartFlags.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/Wrapper.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/WrapperBase.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/WrapperHelpers.hpp as language CPP
+7: Parsing: ../GEOSX/src/coreComponents/dataRepository/xmlWrapper.hpp as language CPP
+7: coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check.dir/build.make:57: recipe for target 'coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check' failed
+7: make[3]: *** [coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check] Error 1
+7: CMakeFiles/Makefile2:4012: recipe for target 'coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check.dir/all' failed
+7: make[2]: *** [coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check.dir/all] Error 2
+7: CMakeFiles/Makefile2:4019: recipe for target 'coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check.dir/rule' failed
+7: make[1]: *** [coreComponents/dataRepository/CMakeFiles/dataRepository_uncrustify_check.dir/rule] Error 2
+7: Makefile:1371: recipe for target 'dataRepository_uncrustify_check' failed
+7: make: *** [dataRepository_uncrustify_check] Error 2
+ 7/54 Test  #7: testUncrustifyCheck_dataRepository ............***Failed    1.14 sec
+test 8
+      Start  8: testArray
+
+8: Test command: /tmp/build/tests/testArray
+8: Test timeout computed to be: 1500
+8: terminate called after throwing an instance of 'umpire::util::Exception'
+8:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+ 8/54 Test  #8: testArray .....................................***Exception: Other  0.00 sec
+test 9
+      Start  9: testArrayOfArrays
+
+9: Test command: /tmp/build/tests/testArrayOfArrays
+9: Test timeout computed to be: 1500
+9: terminate called after throwing an instance of 'umpire::util::Exception'
+9:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+ 9/54 Test  #9: testArrayOfArrays .............................***Exception: Other  0.00 sec
+test 10
+      Start 10: testArrayOfSets
+
+10: Test command: /tmp/build/tests/testArrayOfSets
+10: Test timeout computed to be: 1500
+10: terminate called after throwing an instance of 'umpire::util::Exception'
+10:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+10/54 Test #10: testArrayOfSets ...............................***Exception: Other  0.01 sec
+test 11
+      Start 11: testArrayUtilities
+
+11: Test command: /tmp/build/tests/testArrayUtilities
+11: Test timeout computed to be: 1500
+11: terminate called after throwing an instance of 'umpire::util::Exception'
+11:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+11/54 Test #11: testArrayUtilities ............................***Exception: Other  0.00 sec
+test 12
+      Start 12: testArrayView
+
+12: Test command: /tmp/build/tests/testArrayView
+12: Test timeout computed to be: 1500
+12: terminate called after throwing an instance of 'umpire::util::Exception'
+12:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+12/54 Test #12: testArrayView .................................***Exception: Other  0.00 sec
+test 13
+      Start 13: testChaiVector
+
+13: Test command: /tmp/build/tests/testChaiVector
+13: Test timeout computed to be: 1500
+13: terminate called after throwing an instance of 'umpire::util::Exception'
+13:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+13/54 Test #13: testChaiVector ................................***Exception: Other  0.00 sec
+test 14
+      Start 14: testCRSMatrix
+
+14: Test command: /tmp/build/tests/testCRSMatrix
+14: Test timeout computed to be: 1500
+14: terminate called after throwing an instance of 'umpire::util::Exception'
+14:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+14/54 Test #14: testCRSMatrix .................................***Exception: Other  0.00 sec
+test 15
+      Start 15: testFloatingPointExceptions
+
+15: Test command: /tmp/build/tests/testFloatingPointExceptions
+15: Test timeout computed to be: 1500
+15: Running main() from gtest_main.cc
+15: [==========] Running 4 tests from 1 test case.
+15: [----------] Global test environment set-up.
+15: [----------] 4 tests from TestFloatingPointEnvironment
+15: [ RUN      ] TestFloatingPointEnvironment.test_FE_UNDERFLOW_flush
+15: 
+15: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testFloatingPointExceptions.cpp:38:: Death tests are not supported on this platform.
+15: Statement 'uf_test(2.2250738585072014e-308, 2)' cannot be verified.
+15: [       OK ] TestFloatingPointEnvironment.test_FE_UNDERFLOW_flush (0 ms)
+15: [ RUN      ] TestFloatingPointEnvironment.test_FE_DIVBYZERO
+15: 
+15: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testFloatingPointExceptions.cpp:50:: Death tests are not supported on this platform.
+15: Statement 'func3(0.0)' cannot be verified.
+15: [       OK ] TestFloatingPointEnvironment.test_FE_DIVBYZERO (0 ms)
+15: [ RUN      ] TestFloatingPointEnvironment.test_FE_OVERFLOW
+15: 
+15: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testFloatingPointExceptions.cpp:57:: Death tests are not supported on this platform.
+15: Statement 'of_test(2,1.7976931348623157e+308)' cannot be verified.
+15: [       OK ] TestFloatingPointEnvironment.test_FE_OVERFLOW (0 ms)
+15: [ RUN      ] TestFloatingPointEnvironment.test_FE_INVALID
+15: 
+15: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testFloatingPointExceptions.cpp:63:: Death tests are not supported on this platform.
+15: Statement 'invalid_test(0.0)' cannot be verified.
+15: [       OK ] TestFloatingPointEnvironment.test_FE_INVALID (0 ms)
+15: [----------] 4 tests from TestFloatingPointEnvironment (0 ms total)
+15: 
+15: [----------] Global test environment tear-down
+15: [==========] 4 tests from 1 test case ran. (0 ms total)
+15: [  PASSED  ] 4 tests.
+15/54 Test #15: testFloatingPointExceptions ...................   Passed    0.01 sec
+test 16
+      Start 16: testHelpers
+
+16: Test command: /tmp/build/tests/testHelpers
+16: Test timeout computed to be: 1500
+16: terminate called after throwing an instance of 'umpire::util::Exception'
+16:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+16/54 Test #16: testHelpers ...................................***Exception: Other  0.01 sec
+test 17
+      Start 17: testIntegerConversion
+
+17: Test command: /tmp/build/tests/testIntegerConversion
+17: Test timeout computed to be: 1500
+17: [==========] Running 3 tests from 1 test case.
+17: [----------] Global test environment set-up.
+17: [----------] 3 tests from IntegerConversion
+17: [ RUN      ] IntegerConversion.unsignedToSigned
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:39:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<int32>(source1)' cannot be verified.
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:42:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<int64>(source3)' cannot be verified.
+17: [       OK ] IntegerConversion.unsignedToSigned (0 ms)
+17: [ RUN      ] IntegerConversion.signedToUnsigned
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:52:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<uint32>(source0)' cannot be verified.
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:53:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<uint64>(source1)' cannot be verified.
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:54:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<uint32>(source3)' cannot be verified.
+17: [       OK ] IntegerConversion.signedToUnsigned (0 ms)
+17: [ RUN      ] IntegerConversion.sameSign
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:64:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<int32>(source1)' cannot be verified.
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:71:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<int32>(source3)' cannot be verified.
+17: 
+17: [WARNING] /tmp/GEOSX/src/coreComponents/cxx-utilities/src/tests/testIntegerConversion.cpp:78:: Death tests are not supported on this platform.
+17: Statement 'integer_conversion<uint32>(source5)' cannot be verified.
+17: [       OK ] IntegerConversion.sameSign (0 ms)
+17: [----------] 3 tests from IntegerConversion (0 ms total)
+17: 
+17: [----------] Global test environment tear-down
+17: [==========] 3 tests from 1 test case ran. (0 ms total)
+17: [  PASSED  ] 3 tests.
+17/54 Test #17: testIntegerConversion .........................   Passed    0.01 sec
+test 18
+      Start 18: testSFINAE
+
+18: Test command: /tmp/build/tests/testSFINAE
+18: Test timeout computed to be: 1500
+18: Running main() from gtest_main.cc
+18: [==========] Running 8 tests from 1 test case.
+18: [----------] Global test environment set-up.
+18: [----------] 8 tests from test_sfinae
+18: [ RUN      ] test_sfinae.test_has_datamember
+18: [       OK ] test_sfinae.test_has_datamember (0 ms)
+18: [ RUN      ] test_sfinae.test_has_staticdatamember
+18: [       OK ] test_sfinae.test_has_staticdatamember (0 ms)
+18: [ RUN      ] test_sfinae.test_has_memberfunction_name
+18: [       OK ] test_sfinae.test_has_memberfunction_name (0 ms)
+18: [ RUN      ] test_sfinae.test_has_memberfunction_variant
+18: [       OK ] test_sfinae.test_has_memberfunction_variant (0 ms)
+18: [ RUN      ] test_sfinae.test_has_memberfunction
+18: [       OK ] test_sfinae.test_has_memberfunction (0 ms)
+18: [ RUN      ] test_sfinae.test_has_staticmemberfunction
+18: [       OK ] test_sfinae.test_has_staticmemberfunction (0 ms)
+18: [ RUN      ] test_sfinae.test_has_enum
+18: [       OK ] test_sfinae.test_has_enum (0 ms)
+18: [ RUN      ] test_sfinae.test_has_alias
+18: [       OK ] test_sfinae.test_has_alias (0 ms)
+18: [----------] 8 tests from test_sfinae (1 ms total)
+18: 
+18: [----------] Global test environment tear-down
+18: [==========] 8 tests from 1 test case ran. (2 ms total)
+18: [  PASSED  ] 8 tests.
+18/54 Test #18: testSFINAE ....................................   Passed    0.01 sec
+test 19
+      Start 19: testSortedArray
+
+19: Test command: /tmp/build/tests/testSortedArray
+19: Test timeout computed to be: 1500
+19: terminate called after throwing an instance of 'umpire::util::Exception'
+19:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+19/54 Test #19: testSortedArray ...............................***Exception: Other  0.00 sec
+test 20
+      Start 20: testSortedArrayManipulation
+
+20: Test command: /tmp/build/tests/testSortedArrayManipulation
+20: Test timeout computed to be: 1500
+20: terminate called after throwing an instance of 'umpire::util::Exception'
+20:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+20/54 Test #20: testSortedArrayManipulation ...................***Exception: Other  0.00 sec
+test 21
+      Start 21: testSparsityPattern
+
+21: Test command: /tmp/build/tests/testSparsityPattern
+21: Test timeout computed to be: 1500
+21: terminate called after throwing an instance of 'umpire::util::Exception'
+21:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+21/54 Test #21: testSparsityPattern ...........................***Exception: Other  0.01 sec
+test 22
+      Start 22: testStackArray
+
+22: Test command: /tmp/build/tests/testStackArray
+22: Test timeout computed to be: 1500
+22: terminate called after throwing an instance of 'umpire::util::Exception'
+22:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+22/54 Test #22: testStackArray ................................***Exception: Other  0.00 sec
+test 23
+      Start 23: testStringUtilities
+
+23: Test command: /tmp/build/tests/testStringUtilities
+23: Test timeout computed to be: 1500
+23: Running main() from gtest_main.cc
+23: [==========] Running 1 test from 1 test case.
+23: [----------] Global test environment set-up.
+23: [----------] 1 test from testStringUtilties
+23: [ RUN      ] testStringUtilties.testDemangle
+23: [       OK ] testStringUtilties.testDemangle (0 ms)
+23: [----------] 1 test from testStringUtilties (0 ms total)
+23: 
+23: [----------] Global test environment tear-down
+23: [==========] 1 test from 1 test case ran. (0 ms total)
+23: [  PASSED  ] 1 test.
+23/54 Test #23: testStringUtilities ...........................   Passed    0.00 sec
+test 24
+      Start 24: testPermutation
+
+24: Test command: /tmp/build/tests/testPermutation
+24: Test timeout computed to be: 1500
+24: terminate called after throwing an instance of 'umpire::util::Exception'
+24:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+24/54 Test #24: testPermutation ...............................***Exception: Other  0.00 sec
+test 25
+      Start 25: testDataTypes
+
+25: Test command: /tmp/build/tests/testDataTypes
+25: Test timeout computed to be: 1500
+25: terminate called after throwing an instance of 'umpire::util::Exception'
+25:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+25/54 Test #25: testDataTypes .................................***Exception: Other  0.00 sec
+test 26
+      Start 26: testStackTrace
+
+26: Test command: /tmp/build/tests/testStackTrace
+26: Test timeout computed to be: 1500
+26: Running main() from gtest_main.cc
+26: [==========] Running 1 test from 1 test case.
+26: [----------] Global test environment set-up.
+26: [----------] 1 test from testStackTrace
+26: [ RUN      ] testStackTrace.uncaughtException
+26: [       OK ] testStackTrace.uncaughtException (0 ms)
+26: [----------] 1 test from testStackTrace (0 ms total)
+26: 
+26: [----------] Global test environment tear-down
+26: [==========] 1 test from 1 test case ran. (0 ms total)
+26: [  PASSED  ] 1 test.
+26/54 Test #26: testStackTrace ................................   Passed    0.00 sec
+test 27
+      Start 27: testLAOperations
+
+27: Test command: /usr/bin/mpirun "-n" "2" "--allow-run-as-root" "/tmp/build/tests/testLAOperations" "-x" "2"
+27: Test timeout computed to be: 1500
+27: terminate called after throwing an instance of 'umpire::util::Exception'
+27:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+27: terminate called after throwing an instance of 'umpire::util::Exception'
+27:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+27: --------------------------------------------------------------------------
+27: mpirun noticed that process rank 0 with PID 0 on node 86f92b916716 exited on signal 6 (Aborted).
+27: --------------------------------------------------------------------------
+27/54 Test #27: testLAOperations ..............................***Failed    1.07 sec
+test 28
+      Start 28: testArrayLAOperations
+
+28: Test command: /usr/bin/mpirun "-n" "2" "--allow-run-as-root" "/tmp/build/tests/testArrayLAOperations" "-x" "2"
+28: Test timeout computed to be: 1500
+28: terminate called after throwing an instance of 'terminate called after throwing an instance of 'umpire::util::Exception'
+28:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+28: umpire::util::Exception'
+28:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+28: --------------------------------------------------------------------------
+28: mpirun noticed that process rank 1 with PID 0 on node 86f92b916716 exited on signal 6 (Aborted).
+28: --------------------------------------------------------------------------
+28/54 Test #28: testArrayLAOperations .........................***Failed    1.06 sec
+test 29
+      Start 29: testKrylovSolvers
+
+29: Test command: /usr/bin/mpirun "-n" "2" "--allow-run-as-root" "/tmp/build/tests/testKrylovSolvers" "-x" "2"
+29: Test timeout computed to be: 1500
+29: terminate called after throwing an instance of 'umpire::util::Exception'
+29: terminate called after throwing an instance of '  what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+29: umpire::util::Exception'
+29:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+29: --------------------------------------------------------------------------
+29: mpirun noticed that process rank 0 with PID 0 on node 86f92b916716 exited on signal 6 (Aborted).
+29: --------------------------------------------------------------------------
+29/54 Test #29: testKrylovSolvers .............................***Failed    1.06 sec
+test 30
+      Start 30: testDofManager
+
+30: Test command: /usr/bin/mpirun "-n" "2" "--allow-run-as-root" "/tmp/build/tests/testDofManager" "-x" "2"
+30: Test timeout computed to be: 1500
+30: terminate called after throwing an instance of 'umpire::util::Exception'
+30:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+30: terminate called after throwing an instance of 'umpire::util::Exception'
+30:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+30: --------------------------------------------------------------------------
+30: mpirun noticed that process rank 0 with PID 0 on node 86f92b916716 exited on signal 6 (Aborted).
+30: --------------------------------------------------------------------------
+30/54 Test #30: testDofManager ................................***Failed    2.06 sec
+test 31
+      Start 31: testLAIHelperFunctions
+
+31: Test command: /usr/bin/mpirun "-n" "2" "--allow-run-as-root" "/tmp/build/tests/testLAIHelperFunctions" "-x" "2"
+31: Test timeout computed to be: 1500
+31: terminate called after throwing an instance of 'terminate called after throwing an instance of 'umpire::util::Exception'
+31:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+31: umpire::util::Exception'
+31:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+31: --------------------------------------------------------------------------
+31: mpirun noticed that process rank 1 with PID 0 on node 86f92b916716 exited on signal 6 (Aborted).
+31: --------------------------------------------------------------------------
+31/54 Test #31: testLAIHelperFunctions ........................***Failed    1.06 sec
+test 32
+      Start 32: testGeosxTraits
+
+32: Test command: /tmp/build/tests/testGeosxTraits
+32: Test timeout computed to be: 1500
+32: terminate called after throwing an instance of 'umpire::util::Exception'
+32:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+32/54 Test #32: testGeosxTraits ...............................***Exception: Other  0.00 sec
+test 33
+      Start 33: testDefaultValue
+
+33: Test command: /tmp/build/tests/testDefaultValue
+33: Test timeout computed to be: 1500
+33: terminate called after throwing an instance of 'umpire::util::Exception'
+33:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+33/54 Test #33: testDefaultValue ..............................***Exception: Other  0.03 sec
+test 34
+      Start 34: testObjectCatalog
+
+34: Test command: /tmp/build/tests/testObjectCatalog
+34: Test timeout computed to be: 1500
+34: terminate called after throwing an instance of 'umpire::util::Exception'
+34:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+34/54 Test #34: testObjectCatalog .............................***Exception: Other  0.03 sec
+test 35
+      Start 35: testRestartBasic
+
+35: Test command: /tmp/build/tests/testRestartBasic
+35: Test timeout computed to be: 1500
+35: terminate called after throwing an instance of 'umpire::util::Exception'
+35:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+35/54 Test #35: testRestartBasic ..............................***Exception: Other  0.03 sec
+test 36
+      Start 36: testRestartExtended
+
+36: Test command: /tmp/build/tests/testRestartExtended
+36: Test timeout computed to be: 1500
+36: terminate called after throwing an instance of 'umpire::util::Exception'
+36:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+36/54 Test #36: testRestartExtended ...........................***Exception: Other  0.03 sec
+test 37
+      Start 37: testWrapper
+
+37: Test command: /tmp/build/tests/testWrapper
+37: Test timeout computed to be: 1500
+37: terminate called after throwing an instance of 'umpire::util::Exception'
+37:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+37/54 Test #37: testWrapper ...................................***Exception: Other  0.03 sec
+test 38
+      Start 38: testXmlWrapper
+
+38: Test command: /tmp/build/tests/testXmlWrapper
+38: Test timeout computed to be: 1500
+38: terminate called after throwing an instance of 'umpire::util::Exception'
+38:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+38/54 Test #38: testXmlWrapper ................................***Exception: Other  0.03 sec
+test 39
+      Start 39: testBufferOps
+
+39: Test command: /tmp/build/tests/testBufferOps
+39: Test timeout computed to be: 1500
+39: terminate called after throwing an instance of 'umpire::util::Exception'
+39:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+39/54 Test #39: testBufferOps .................................***Exception: Other  0.03 sec
+test 40
+      Start 40: testRecursiveFieldApplication
+
+40: Test command: /tmp/build/tests/testRecursiveFieldApplication
+40: Test timeout computed to be: 1500
+40: terminate called after throwing an instance of 'umpire::util::Exception'
+40:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+40/54 Test #40: testRecursiveFieldApplication .................***Exception: Other  0.04 sec
+test 41
+      Start 41: testMeshGeneration
+
+41: Test command: /tmp/build/tests/testMeshGeneration
+41: Test timeout computed to be: 1500
+41: terminate called after throwing an instance of 'umpire::util::Exception'
+41:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+41/54 Test #41: testMeshGeneration ............................***Exception: Other  0.04 sec
+test 42
+      Start 42: testLinearElasticIsotropic
+
+42: Test command: /tmp/build/tests/testLinearElasticIsotropic
+42: Test timeout computed to be: 1500
+42: terminate called after throwing an instance of 'umpire::util::Exception'
+42:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+42/54 Test #42: testLinearElasticIsotropic ....................***Exception: Other  0.03 sec
+test 43
+      Start 43: testLinearElasticAnisotropic
+
+43: Test command: /tmp/build/tests/testLinearElasticAnisotropic
+43: Test timeout computed to be: 1500
+43: terminate called after throwing an instance of 'umpire::util::Exception'
+43:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+43/54 Test #43: testLinearElasticAnisotropic ..................***Exception: Other  0.03 sec
+test 44
+      Start 44: testRelPerm
+
+44: Test command: /tmp/build/tests/testRelPerm
+44: Test timeout computed to be: 1500
+44: terminate called after throwing an instance of 'umpire::util::Exception'
+44:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+44/54 Test #44: testRelPerm ...................................***Exception: Other  0.03 sec
+test 45
+      Start 45: testCapillaryPressure
+
+45: Test command: /tmp/build/tests/testCapillaryPressure
+45: Test timeout computed to be: 1500
+45: terminate called after throwing an instance of 'umpire::util::Exception'
+45:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+45/54 Test #45: testCapillaryPressure .........................***Exception: Other  0.03 sec
+test 46
+      Start 46: testMultiFluid
+
+46: Test command: /tmp/build/tests/testMultiFluid
+46: Test timeout computed to be: 1500
+46: terminate called after throwing an instance of 'umpire::util::Exception'
+46:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+46/54 Test #46: testMultiFluid ................................***Exception: Other  0.03 sec
+test 47
+      Start 47: testStencilCollection
+
+47: Test command: /tmp/build/tests/testStencilCollection
+47: Test timeout computed to be: 1500
+47: terminate called after throwing an instance of 'umpire::util::Exception'
+47:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+47/54 Test #47: testStencilCollection .........................***Exception: Other  0.00 sec
+test 48
+      Start 48: testPAMELAImport
+
+48: Test command: /tmp/build/tests/testPAMELAImport "/tmp/GEOSX/src/coreComponents/meshUtilities/unitTests"
+48: Test timeout computed to be: 1500
+48: terminate called after throwing an instance of 'umpire::util::Exception'
+48:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+48/54 Test #48: testPAMELAImport ..............................***Exception: Other  0.03 sec
+test 49
+      Start 49: testSinglePhaseFlowKernels
+
+49: Test command: /tmp/build/tests/testSinglePhaseFlowKernels "/tmp/GEOSX/src/coreComponents/physicsSolvers/fluidFlow/unitTests"
+49: Test timeout computed to be: 1500
+49: terminate called after throwing an instance of 'umpire::util::Exception'
+49:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+49/54 Test #49: testSinglePhaseFlowKernels ....................***Exception: Other  0.03 sec
+test 50
+      Start 50: testCompMultiphaseFlow
+
+50: Test command: /tmp/build/tests/testCompMultiphaseFlow "/tmp/GEOSX/src/coreComponents/physicsSolvers/fluidFlow/unitTests"
+50: Test timeout computed to be: 1500
+50: terminate called after throwing an instance of 'umpire::util::Exception'
+50:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+50/54 Test #50: testCompMultiphaseFlow ........................***Exception: Other  0.04 sec
+test 51
+      Start 51: testCompMultiphaseFlowCapPressure
+
+51: Test command: /tmp/build/tests/testCompMultiphaseFlowCapPressure "/tmp/GEOSX/src/coreComponents/physicsSolvers/fluidFlow/unitTests"
+51: Test timeout computed to be: 1500
+51: terminate called after throwing an instance of 'umpire::util::Exception'
+51:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+51/54 Test #51: testCompMultiphaseFlowCapPressure .............***Exception: Other  0.03 sec
+test 52
+      Start 52: testReservoirSinglePhaseMSWells
+
+52: Test command: /tmp/build/tests/testReservoirSinglePhaseMSWells "/tmp/GEOSX/src/coreComponents/physicsSolvers/fluidFlow/unitTests"
+52: Test timeout computed to be: 1500
+52: terminate called after throwing an instance of 'umpire::util::Exception'
+52:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+52/54 Test #52: testReservoirSinglePhaseMSWells ...............***Exception: Other  0.03 sec
+test 53
+      Start 53: testReservoirCompositionalMultiphaseMSWells
+
+53: Test command: /tmp/build/tests/testReservoirCompositionalMultiphaseMSWells "/tmp/GEOSX/src/coreComponents/physicsSolvers/fluidFlow/unitTests"
+53: Test timeout computed to be: 1500
+53: terminate called after throwing an instance of 'umpire::util::Exception'
+53:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+53/54 Test #53: testReservoirCompositionalMultiphaseMSWells ...***Exception: Other  0.04 sec
+test 54
+      Start 54: testXML
+
+54: Test command: /tmp/build/tests/testXML "-i" "/tmp/GEOSX/src/coreComponents/unitTests/xmlTests/basic_input.xml"
+54: Test timeout computed to be: 1500
+54: terminate called after throwing an instance of 'umpire::util::Exception'
+54:   what():  ! Umpire Exception [/tmp/build/chai/src/chai/src/tpl/umpire/src/umpire/ResourceManager.cpp:206]:  initialize Umpire compiled with CUDA support but no GPUs detected!
+54/54 Test #54: testXML .......................................***Exception: Other  0.04 sec
+
+19% tests passed, 44 tests failed out of 54
+
+Total Test time (real) =   8.90 sec
+
+The following tests FAILED:
+	  6 - testUncrustifyCheck_common (Failed)
+	  7 - testUncrustifyCheck_dataRepository (Failed)
+	  8 - testArray (OTHER_FAULT)
+	  9 - testArrayOfArrays (OTHER_FAULT)
+	 10 - testArrayOfSets (OTHER_FAULT)
+	 11 - testArrayUtilities (OTHER_FAULT)
+	 12 - testArrayView (OTHER_FAULT)
+	 13 - testChaiVector (OTHER_FAULT)
+	 14 - testCRSMatrix (OTHER_FAULT)
+	 16 - testHelpers (OTHER_FAULT)
+	 19 - testSortedArray (OTHER_FAULT)
+	 20 - testSortedArrayManipulation (OTHER_FAULT)
+	 21 - testSparsityPattern (OTHER_FAULT)
+	 22 - testStackArray (OTHER_FAULT)
+	 24 - testPermutation (OTHER_FAULT)
+	 25 - testDataTypes (OTHER_FAULT)
+	 27 - testLAOperations (Failed)
+	 28 - testArrayLAOperations (Failed)
+	 29 - testKrylovSolvers (Failed)
+	 30 - testDofManager (Failed)
+	 31 - testLAIHelperFunctions (Failed)
+	 32 - testGeosxTraits (OTHER_FAULT)
+	 33 - testDefaultValue (OTHER_FAULT)
+	 34 - testObjectCatalog (OTHER_FAULT)
+	 35 - testRestartBasic (OTHER_FAULT)
+	 36 - testRestartExtended (OTHER_FAULT)
+	 37 - testWrapper (OTHER_FAULT)
+	 38 - testXmlWrapper (OTHER_FAULT)
+	 39 - testBufferOps (OTHER_FAULT)
+	 40 - testRecursiveFieldApplication (OTHER_FAULT)
+	 41 - testMeshGeneration (OTHER_FAULT)
+	 42 - testLinearElasticIsotropic (OTHER_FAULT)
+	 43 - testLinearElasticAnisotropic (OTHER_FAULT)
+	 44 - testRelPerm (OTHER_FAULT)
+	 45 - testCapillaryPressure (OTHER_FAULT)
+	 46 - testMultiFluid (OTHER_FAULT)
+	 47 - testStencilCollection (OTHER_FAULT)
+	 48 - testPAMELAImport (OTHER_FAULT)
+	 49 - testSinglePhaseFlowKernels (OTHER_FAULT)
+	 50 - testCompMultiphaseFlow (OTHER_FAULT)
+	 51 - testCompMultiphaseFlowCapPressure (OTHER_FAULT)
+	 52 - testReservoirSinglePhaseMSWells (OTHER_FAULT)
+	 53 - testReservoirCompositionalMultiphaseMSWells (OTHER_FAULT)
+	 54 - testXML (OTHER_FAULT)
+Errors while running CTest
