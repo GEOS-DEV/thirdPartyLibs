@@ -76,3 +76,7 @@ RUN make
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
+
+RUN yum -y install \
+    texlive \
+    graphviz*

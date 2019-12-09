@@ -95,4 +95,7 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
 # Any tool specific to building GEOSX shall be installed in this stage.
 RUN apt-get install -y --no-install-recommends \
-    openssh-client
+    openssh-client \
+    texlive \
+    graphviz
+
