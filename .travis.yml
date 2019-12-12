@@ -16,7 +16,7 @@ geosx_osx_build: &geosx_osx_build
   - git lfs install
   - git lfs pull
   script:
-  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DENABLE_CALIPER:BOOL=OFF
+  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DENABLE_CALIPER:BOOL=OFF -DENABLE_DOXYGEN:BOOL=OFF
   - cd build-darwin-clang-release
   - make
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
