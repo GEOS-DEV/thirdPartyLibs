@@ -392,12 +392,18 @@ endif()
 ################################
 # RAJA
 ################################
+#set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.8.0.tar.gz")
+#message(STATUS "Building RAJA found at ${RAJA_URL}")
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.8.0.tar.gz")
-message(STATUS "Building RAJA found at ${RAJA_URL}")
+set(RAJA_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/raja.git")
+set(RAJA_TAG "feature/benliu/slideWorld")
+message(STATUS "Building RAJA found at ${RAJA_REPO}")
 
 ExternalProject_Add( raja
-                     URL ${RAJA_URL}
+                     GIT_REPOSITORY ${RAJA_REPO}
+                     GIT_TAG ${RAJA_TAG}
+                     #URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS chai
