@@ -7,7 +7,7 @@ ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
 RUN rm /etc/apt/sources.list.d/*.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends \ 
-    wget \
+    curl \
     gfortran \
     libtbb2 \
     libblas-dev \
@@ -17,29 +17,21 @@ RUN rm /etc/apt/sources.list.d/*.list \
     libopenmpi-dev \
     python
 
-# Newer CMake versions have gfortran errors, downgrading to 3.9
-ARG TMP_DIR
-ADD https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.tar.gz ${TMP_DIR}/
-RUN tar --directory=/usr/local --strip-components=1 -xzf ${TMP_DIR}/cmake-3.9.2-Linux-x86_64.tar.gz && \
-    rm ${TMP_DIR}/cmake-3.9.2-Linux-x86_64.tar.gz
+# Installing CMake
+RUN curl -k https://cmake.org/files/v3.14/cmake-3.14.5-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
-#  Installing clang
-ENV llvmtar=clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04
-ENV tarext=.tar.xz
-RUN \
-       wget -q --no-check-certificate http://releases.llvm.org/8.0.0/${llvmtar}${tarext} \
-    && tar xf ${llvmtar}${tarext} \
-    && cp -fR ${llvmtar}/* /usr \
-    && rm -rf ${llvmtar} \
-    && rm ${llvmtar}${tarext}
+# Installing clang
+RUN curl -k http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz | tar --directory=/usr/local --strip-components=1 -xJf -
 
-ENV CC=/usr/bin/clang \
-    CXX=/usr/bin/clang++ \
+ENV CC=/usr/local/bin/clang \
+    CXX=/usr/local/bin/clang++ \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
 ENV OMPI_CC=${CC} \
     OMPI_CXX=${CXX} 
+ENV ENABLE_CUDA=ON \
+    CMAKE_CUDA_FLAGS="-restrict -arch sm_70 --expt-extended-lambda -Werror cross-execution-space-call,reorder,deprecated-declarations"
 
 # Installing TPL's
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
@@ -60,8 +52,16 @@ ARG TMP_DIR
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
 
+ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
+ARG CUDA_ARCH=sm_70
+ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
+
 COPY . ${TPL_SRC_DIR}
-RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh --hostconfig ${TPL_SRC_DIR}/host-configs/cuda-environment.cmake
+RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
+    -DENABLE_CUDA=${ENABLE_CUDA} \
+    -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR} \
+    -DCUDA_ARCH=${CUDA_ARCH} \
+    -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
