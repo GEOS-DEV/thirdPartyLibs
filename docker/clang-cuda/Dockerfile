@@ -17,7 +17,7 @@ RUN rm /etc/apt/sources.list.d/*.list \
     libopenmpi-dev \
     python
 
-# Installing CMake
+# Installing latest CMake version available on Lassen
 RUN curl -k https://cmake.org/files/v3.14/cmake-3.14.5-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 # Installing clang

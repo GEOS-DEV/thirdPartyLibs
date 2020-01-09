@@ -76,6 +76,8 @@ geosx_clang_cuda_build: &geosx_clang_cuda_build
   before_script:
   - echo .git > .dockerignore
   - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
+    # Argument to --build-arg is required.
+    # CUDA_VERSION is unused in build. Serves as a job label on Travis.
   - DOCKER_COMPILER_BUILD_ARG="CUDA_VERSION=${CUDA_VERSION}"
   - DOCKERFILE=docker/clang-cuda/Dockerfile
 
