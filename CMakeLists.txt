@@ -78,7 +78,7 @@ include( cmake/thirdparty/FindMathLibraries.cmake )
 # UNCRUSTIFY
 ################################
 set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
-set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-uncrustify-0.70.0.tar.gz")
+set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-master.zip")
 message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
