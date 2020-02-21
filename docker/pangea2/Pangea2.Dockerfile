@@ -18,13 +18,13 @@ ARG PANGEA_OPENMPI_INSTALL_DIR=${PANGEA_ROOT_INSTALL_DIR}/OpenMPI/RHEL7/${OPENMP
 
 # This stage is technical. Since we use (and abuse) multi-stage builds,
 # we must be careful to have all the runtime dependencies available.
-FROM centos:7.6.1810 as shared_components
+FROM centos:7.6.1810 AS shared_components
 
 RUN yum install -y \
         glibc-devel
 
 # We'll compile and deploy a version of `gcc` in this stage.
-FROM shared_components as gcc_stage
+FROM shared_components AS gcc_stage
 
 ARG GCC_VERSION
 ARG PANGEA_GCC_INSTALL_DIR
