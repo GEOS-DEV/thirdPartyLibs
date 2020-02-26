@@ -37,4 +37,6 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 RUN yum -y install \
     openssh-clients \
     texlive \
-    graphviz
+    graphviz \
+    libxml2 \
+    git
