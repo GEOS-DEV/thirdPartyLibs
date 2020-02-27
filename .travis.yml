@@ -47,7 +47,7 @@ geosx_linux_build: &geosx_linux_build
     .
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
     # And `after_success` does not fail the build in case of error.
-  - echo "${TOTOGAZ_DOCKER_PASSWORD}" | docker login -u "${TOTOGAZ_DOCKER_USERNAME}" --password-stdin
+  - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build

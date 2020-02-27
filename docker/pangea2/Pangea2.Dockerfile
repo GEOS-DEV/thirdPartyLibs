@@ -140,3 +140,6 @@ ENV CC=${PANGEA_GCC_INSTALL_DIR}/bin/gcc \
     MPIEXEC=${PANGEA_OPENMPI_INSTALL_DIR}/bin/mpiexec \
 # An additional `LD_LIBRARY_PATH` action is needed for the tools to work.
     LD_LIBRARY_PATH=${PANGEA_OPENMPI_INSTALL_DIR}/lib:${PANGEA_GCC_INSTALL_DIR}/lib64:${PANGEA_INTEL_DIR}/compiler/lib/intel64_lin:${PANGEA_INTEL_DIR}/mkl/lib/intel64_lin:${PANGEA_INTEL_DIR}/tbb/lib/intel64_lin/gcc4.1:${PANGEA_INTEL_DIR}/ipp/lib/intel64_lin:${PANGEA_INTEL_DIR}/daal/lib/intel64_lin:${LD_LIBRARY_PATH}
+# In the future, if we manage to use this image to test against intel compilers,
+# it may be wise not to expose those environment variables and let the client select its tools.
+# Another solution would be to build yet another image, but that may end expensive.
