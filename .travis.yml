@@ -86,7 +86,7 @@ geosx_pangea_build: &geosx_pangea_build
     - echo .git > .dockerignore
     - echo "**/*.rpm" >> .dockerignore
       # Defining what we are going to build in the `script` stage.
-    - DOCKER_REPOSITORY=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
+    - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
     - DOCKERFILE=docker/pangea2/Dockerfile
 
 jobs:
