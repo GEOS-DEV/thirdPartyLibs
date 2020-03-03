@@ -28,6 +28,7 @@ def parse_args(arguments):
     parser = argparse.ArgumentParser(description="Uploading the TPL for MACOSX so they can be reused for GEOSX.")
     parser.add_argument("tpl_dir", metavar="TPL_DIR", help="Path to the TPL folder")
     parser.add_argument("service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file.")
+    parser.add_argument("brew_hash", metavar="BREW_HASH", help="Current hash used for openmpi and brew.")
     return parser.parse_args(arguments)
 
 
@@ -37,7 +38,7 @@ def tpl_name_builder():
     Before modifying this function, keep in mind that GEOSX uses this naming convention to download the tarball.
     Consider modifying GEOSX accordingly.
     """
-    return "TPL/%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_BUILD_NUMBER'])
+    return "TPL/%s-%s-%s.tar" % (os.environ['TRAVIS_OS_NAME'], os.environ['TRAVIS_PULL_REQUEST'], os.environ['TRAVIS_BUILD_NUMBER'])
 
 
 def old_tpl_in_pr_predicate(blob):
@@ -70,13 +71,15 @@ def build_storage_client(credentials):
     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
-def upload_metadata(blob, credentials):
+def upload_metadata(blob, brew_hash, credentials):
     """
     Uploads the metadata of the blob. These metadata can be used to delete the old blobs
     (instead of relying on an implicit convention for the blob name).
     """
     metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"],
-                            "TRAVIS_BUILD_NUMBER": os.environ["TRAVIS_BUILD_NUMBER"]}}
+                            "TRAVIS_BUILD_NUMBER": os.environ["TRAVIS_BUILD_NUMBER"],
+                            "TRAVIS_COMMIT": os.environ["TRAVIS_COMMIT"],
+                            "BREW_HASH": brew_hash}}
     authed_session = AuthorizedSession(credentials)
     url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (quote(blob.bucket.name, safe=""), quote(blob.name, safe=""))
     req = authed_session.patch(url, json=metadata)
@@ -140,7 +143,7 @@ def main(arguments):
     blob_name = tpl_name_builder()
     remove_old_blobs(storage_client, old_tpl_in_pr_predicate)
     blob = upload_tpl(tpl_buff, tpl_size, blob_name, storage_client)
-    upload_metadata(blob, credentials)
+    upload_metadata(blob, args.brew_hash, credentials)
     logging.info('Uploaded blob "%s" to bucket "%s"' % (blob.name, blob.bucket.name))
     return 0
 
