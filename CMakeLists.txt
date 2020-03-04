@@ -906,21 +906,33 @@ ExternalProject_Add( vtk
                      URL ${VTK_URL}
                      INSTALL_DIR ${VTK_DIR}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     INSTALL_COMMAND "${TPL_INSTALL_COMMAND}/strip"
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DCMAKE_BUILD_TYPE:STRING=RELEASE
-                                -DVTK_BUILD_ALL_MODULES:STRING=OFF
-                                -DVTK_LEGACY_REMOVE:STRING=ON
-                                -DVTK_BUILD_TESTING:STRING=OFF
-                                -DVTK_BUILD_EXAMPLES:STRING=OFF
-                                -DVTK_WRAP_PYTHON:STRING=NO
-                                -DVTK_WRAP_JAVA:STRING=NO
-                                -DVTK_USE_TK:STRING=NO
-                                -DVTK_ENABLE_LOGGING:STRING=OFF
-                                -DVTK_MODULE_ENABLE_VTK_IOParallelXML:STRING=YES
+                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D VTK_GROUP_ENABLE_Imaging=NO
+                                -D VTK_GROUP_ENABLE_MPI=NO
+                                -D VTK_GROUP_ENABLE_Qt=NO
+                                -D VTK_GROUP_ENABLE_Rendering=NO
+                                -D VTK_GROUP_ENABLE_StandAlone=NO
+                                -D VTK_GROUP_ENABLE_Views=NO
+                                -D VTK_GROUP_ENABLE_Web=NO
+                                -D VTK_MODULE_ENABLE_VTK_IOParallelXML=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOXML=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOParallelXML=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonExecutionModel=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonMisc=YES
+                                -D VTK_MODULE_ENABLE_VTK_ParallelCore=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOXMLParser=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonSystem=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOCore=YES
+                                -D VTK_MODULE_ENABLE_VTK_ParallelCore=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOLegacy=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonDataModel=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonMath=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonTransforms=YES
                      )
 
 list(APPEND build_list vtk )
