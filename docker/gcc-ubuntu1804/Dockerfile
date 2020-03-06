@@ -7,23 +7,15 @@ FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
 # GEOSX use them so consider modifying their names with care.
 ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
 
-# The same distribution and Dockerfile can be used for the 7 and 8 version of the GNU compilers
-# The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
-# Note that docker seems to forget about the ARGs after each FROM statement.
-# This is why we repeat it below.
-ARG GCC_MAJOR_VERSION
-
 # Do not apt-get upgrade (ask thre maintainer if you really think so;ething should be upgraded)
 RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
     cmake \
     make \
-# It appears that gfortran-8 depends on ligfortran5 while gfortran-7 depends on libgfortran4.
-# The $(($GCC_MAJOR_VERSION-3)) is a small bash hack needed to install the runtime library separately.
-    gcc-${GCC_MAJOR_VERSION} \
-    g++-${GCC_MAJOR_VERSION} \
-    libgfortran$((${GCC_MAJOR_VERSION}-3)) \
+    gcc-8 \
+    g++-8 \
+    libgfortran5 \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
     libtbb2 \
@@ -38,8 +30,8 @@ RUN apt-get install -y --no-install-recommends \
 # is not in the python-minimal package so we install the whole std lib.
     python
 
-ENV CC=/usr/bin/gcc-${GCC_MAJOR_VERSION} \
-    CXX=/usr/bin/g++-${GCC_MAJOR_VERSION} \
+ENV CC=/usr/bin/gcc-8 \
+    CXX=/usr/bin/g++-8 \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
@@ -52,18 +44,14 @@ ENV OMPI_CC=$CC \
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
-# This is the version from the `docker build` command line.
-# It is repeated because docker seems to forget about the ARGs after FROM statements.
-ARG GCC_MAJOR_VERSION
-
-ENV FC=/usr/bin/gfortran-${GCC_MAJOR_VERSION} \
+ENV FC=/usr/bin/gfortran-8 \
     MPIFC=/usr/bin/mpifort
 # Again, troublesome multi-line definition.
 ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
-    gfortran-${GCC_MAJOR_VERSION} \
+    gfortran-8 \
     bc \
     file \
     bison \
@@ -100,4 +88,3 @@ RUN apt-get install -y --no-install-recommends \
     graphviz \
     libxml2-utils \
     git
-

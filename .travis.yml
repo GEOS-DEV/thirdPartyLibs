@@ -53,19 +53,18 @@ geosx_linux_build: &geosx_linux_build
   - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build
-  # The ubuntu_build relies on the GCC_MAJOR_VERSION env variable to select the compiler version.
-  # It's the role of the so-called "yaml derived class" to define it.
   <<: *geosx_linux_build
   before_script:
     # We save memory for the docker context
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
     # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc${GCC_MAJOR_VERSION}
-  - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
+  - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc8
   - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
 
 geosx_centos_build: &geosx_centos_build
+  # The centos builds rely on the CLANG_VERSION env variable to select the compiler version.
+  # It's the role of the so-called "yaml derived class" to define it.
   <<: *geosx_linux_build
   before_script:
     # This .dockerignore can be slightly improved for rpms
@@ -102,8 +101,7 @@ jobs:
   - <<: *geosx_centos_build
     env: CLANG_VERSION=7.0.0
   - <<: *geosx_ubuntu_build
-    env: GCC_MAJOR_VERSION=7
-  - <<: *geosx_ubuntu_build
+    # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
     env: GCC_MAJOR_VERSION=8
   - <<: *geosx_clang_cuda_build
     # CUDA_VERSION is unused in build. Serves as a job label on Travis.
