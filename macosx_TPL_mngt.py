@@ -71,7 +71,7 @@ def build_storage_client(credentials):
     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
-def upload_metadata(blob, brew_hash, credentials):
+def upload_metadata(blob, brew_hash, tpl_dir, credentials):
     """
     Uploads the metadata of the blob. These metadata can be used to delete the old blobs
     (instead of relying on an implicit convention for the blob name).
@@ -79,7 +79,8 @@ def upload_metadata(blob, brew_hash, credentials):
     metadata = {"metadata":{"TRAVIS_PULL_REQUEST": os.environ["TRAVIS_PULL_REQUEST"],
                             "TRAVIS_BUILD_NUMBER": os.environ["TRAVIS_BUILD_NUMBER"],
                             "TRAVIS_COMMIT": os.environ["TRAVIS_COMMIT"],
-                            "BREW_HASH": brew_hash}}
+                            "BREW_HASH": brew_hash,
+                            "GEOSX_TPL_DIR": tpl_dir}}
     authed_session = AuthorizedSession(credentials)
     url = "https://www.googleapis.com/storage/v1/b/%s/o/%s" % (quote(blob.bucket.name, safe=""), quote(blob.name, safe=""))
     req = authed_session.patch(url, json=metadata)
@@ -121,7 +122,9 @@ def compress_tpl_dir(tpl_dir):
     """
     fp = BytesIO()
     with tarfile.open(mode="w|", fileobj=fp) as tar:
-        tar.add(tpl_dir)
+        # We don't want the archive to copy the whole path to the root folder
+        archive_name = os.path.basename(os.path.normpath(tpl_dir))
+        tar.add(tpl_dir, arcname=archive_name)
     size = fp.tell()
     return fp, size
 
@@ -143,7 +146,7 @@ def main(arguments):
     blob_name = tpl_name_builder()
     remove_old_blobs(storage_client, old_tpl_in_pr_predicate)
     blob = upload_tpl(tpl_buff, tpl_size, blob_name, storage_client)
-    upload_metadata(blob, args.brew_hash, credentials)
+    upload_metadata(blob, args.brew_hash, args.tpl_dir, credentials)
     logging.info('Uploaded blob "%s" to bucket "%s"' % (blob.name, blob.bucket.name))
     return 0
 
