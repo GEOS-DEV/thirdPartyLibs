@@ -1,7 +1,7 @@
 FROM totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1 as tpl_toolchain_intersect_geosx_toolchain
 
 ARG TRAVIS_SHORT_COMMIT
-ENV GEOSX_TPL_DIR=/scratchrd/DEV/j0436735/docker-attempt-travis/GEOSX_TPL-${TRAVIS_SHORT_COMMIT}
+ENV GEOSX_TPL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_SHORT_COMMIT}
 
 RUN yum install -y \
     make \
