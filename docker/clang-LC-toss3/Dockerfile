@@ -8,12 +8,11 @@ ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
 # The same Dockerfile is used to install both 6.0.1 and 7.0.0 clang versions.
 ARG CLANG_VERSION
 
-ARG TMP_DIR
 # The packaged cmake version is too old, we install a newer precompiled version.
-ADD https://cmake.org/files/v3.13/cmake-3.13.3-Linux-x86_64.tar.gz ${TMP_DIR}/
-RUN tar --directory=/usr/local --strip-components=1 -xzf ${TMP_DIR}/cmake-3.13.3-Linux-x86_64.tar.gz && \
-    rm ${TMP_DIR}/cmake-3.13.3-Linux-x86_64.tar.gz
+ARG CMAKE_VERSION=3.13.3
+RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
+ARG TMP_DIR
 # The trailing / (in ${TMP_DIR}) is here for multiple COPY sources
 COPY docker/clang-LC-toss3/compiler-wrappers-1-8.tce.ch6_1.x86_64.rpm \
     docker/clang-LC-toss3/gcc493-2.0-6.ch6.x86_64.rpm \
@@ -79,4 +78,7 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
 RUN yum -y install \
     texlive \
-    graphviz*
+    graphviz* \
+    libxml2 \
+    git
+
