@@ -870,6 +870,7 @@ file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
 --CXXFLAGS=\"${PETSC_CXX_FLAGS}\" \
 --FC=${PETSC_Fortran_COMPILER} \
 --FFLAGS=\"${PETSC_Fortran_FLAGS}\" \
+--with-fortran-bindings=0 \
 --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis \
 --with-64-bit-indices=1 \
 --known-mpi-int64_t=0 \
