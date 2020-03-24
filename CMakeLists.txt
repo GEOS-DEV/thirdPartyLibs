@@ -911,11 +911,31 @@ if(ENABLE_VTK)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}/strip"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
-                         CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                    -D VTK_USE_MPI=ON
+                     CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D VTK_GROUP_ENABLE_Imaging=NO
+                                -D VTK_GROUP_ENABLE_MPI=NO
+                                -D VTK_GROUP_ENABLE_Qt=NO
+                                -D VTK_GROUP_ENABLE_Rendering=NO
+                                -D VTK_GROUP_ENABLE_StandAlone=NO
+                                -D VTK_GROUP_ENABLE_Views=NO
+                                -D VTK_GROUP_ENABLE_Web=NO
+                                -D VTK_BUILD_ALL_MODULES=OFF
+                                -D VTK_MODULE_ENABLE_VTK_vtkm=NO
+                                -D VTK_MODULE_ENABLE_VTK_CommonDataModel=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonCore=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonExecutionModel=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonMath=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonMisc=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonSystem=YES
+                                -D VTK_MODULE_ENABLE_VTK_CommonTransforms=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOXML=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOXMLParser=YES
+                                -D VTK_MODULE_ENABLE_VTK_IOCore=YES
+                                # -D VTK_MODULE_ENABLE_VTK_RenderingOpenVR=NO
+                                # -D VTK_MODULE_ENABLE_VTK_IOPostgreSQL=NO
                          )
     
     list(APPEND build_list vtk )
