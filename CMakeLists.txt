@@ -132,9 +132,8 @@ if( ENABLE_DOXYGEN )
                        URL ${DOXYGEN_URL}
                        PREFIX ${PROJECT_BINARY_DIR}/doxygen
                        INSTALL_DIR ${DOXYGEN_DIR}
-                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       BUILD_COMMAND make -j ${NUM_PROC}
+                       INSTALL_COMMAND make install
                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -163,6 +162,8 @@ else()
   set( HDF5_ENABLE_PARALLEL "")
 endif()
 
+set(HDF5_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
+
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
@@ -174,7 +175,7 @@ ExternalProject_Add( hdf5
                                        --prefix=<INSTALL_DIR>
                                        ${HDF5_ENABLE_PARALLEL}
                                        --enable-shared=no
-                                       CFLAGS=-fPIC
+                                       CFLAGS=${HDF5_C_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install )
 
@@ -206,32 +207,34 @@ ExternalProject_Add( conduit
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -DENABLE_DOCS=OFF
-                                -DENABLE_EXAMPLES=OFF
-                                -DENABLE_FORTRAN=OFF
-                                -DENABLE_TESTS=OFF
-                                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -DENABLE_MPI=${ENABLE_MPI}
-                                -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                -DHDF5_DIR=${HDF5_DIR}
+                     CMAKE_ARGS -D ENABLE_DOCS=OFF
+                                -D ENABLE_EXAMPLES=OFF
+                                -D ENABLE_FORTRAN=OFF
+                                -D ENABLE_TESTS=OFF
+                                -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                -D ENABLE_MPI=${ENABLE_MPI}
+                                -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                -D HDF5_DIR=${HDF5_DIR}
 
 # This is to work around a bug in how hdf5 is used in conduit (it exposes an MPI header)
 # Once this is fixed remove the next three lines (ENABLE_FIND_MPI and using the MPI wrappers)
 # and uncomment out the 4 after (using serial compilers and MPI wrappers separately)
-                                -DENABLE_FIND_MPI=OFF
-                                -DCMAKE_C_COMPILER=${CONDUIT_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CONDUIT_CXX_COMPILER}
+                                -D ENABLE_FIND_MPI=OFF
+                                -D CMAKE_C_COMPILER=${CONDUIT_C_COMPILER}
+                                -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+                                -D CMAKE_CXX_COMPILER=${CONDUIT_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
 #                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 #                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 #                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
 #                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DENABLE_OPENMP=${ENABLE_OPENMP}
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -DBLT_CXX_STD:STRING=c++11
+                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D BLT_CXX_STD:STRING=c++11
                                 )
 
 list(APPEND build_list conduit )
@@ -306,6 +309,7 @@ ExternalProject_Add( silo
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND ../silo/configure
                                           CC=${HDF5_C_COMPILER}
+                                          CFLAGS=${HDF5_C_FLAGS}
                                           CXX=${HDF5_CXX_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --disable-fortran
@@ -425,13 +429,39 @@ list(APPEND build_list fparser )
 
 
 ################################
-# CALIPER
+# Caliper and Adiak
 ################################
 if (ENABLE_CALIPER)
-    set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.2.0.tar.gz")
+    set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
+    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.0.tar.gz")
+    message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
-    message(STATUS "Building CALIPER found at ${CALIPER_URL}")
+    ExternalProject_Add( adiak
+                         URL ${ADIAK_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/adiak
+                         INSTALL_DIR ${ADIAK_DIR}
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
+                         CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
+                                    -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                    -D WITH_MPI:BOOL=${ENABLE_MPI}
+                                    -D MPI_C_COMPILER:STRING=${MPI_C_COMPILER}
+                                    -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
+                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                       )
+
+
+    set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-2.3.0.tar.gz")
+    message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     ExternalProject_Add( caliper
                          URL ${CALIPER_URL}
@@ -440,19 +470,30 @@ if (ENABLE_CALIPER)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
-                         CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                         DEPENDS adiak
+                         CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
+                                    -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
-                                    -D MPI_C_COMPILER=${MPI_C_COMPILER}
-                                    -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -D MPI_C_COMPILER:STRING=${MPI_C_COMPILER}
+                                    -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D WITH_PAPI=${ENABLE_PAPI}
-                                    -D PAPI_PREFIX=${PAPI_PREFIX}
+                                    -D WITH_PAPI:BOOL=${ENABLE_PAPI}
+                                    -D PAPI_PREFIX:STRING=${PAPI_PREFIX}
+                                    -D WITH_ADIAK:BOOL=ON
+                                    -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
+                                    -D WITH_CUPTI=${ENABLE_CUDA}
+                                    -D CUPTI_PREFIX=${CUDA_TOOLKIT_ROOT_DIR}/nvidia/extras/CUPTI
+                                    -D WITH_NVPROF=${ENABLE_CUDA}
                        )
 
-    list(APPEND build_list caliper )
+    list(APPEND build_list caliper adiak)
 endif()
 
 
@@ -477,17 +518,20 @@ else()
                                          mkdir -p <INSTALL_DIR>/lib &&
                                          make INSTALL_DIR=<INSTALL_DIR> install &&
                                          cp libmathpresso.a <INSTALL_DIR>/lib/
-                         CMAKE_ARGS -DMATHPRESSO_STATIC=TRUE
-                                    -DASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
-                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -DCMAKE_CXX_STANDARD=11
-                                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                    -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                         CMAKE_ARGS -D MATHPRESSO_STATIC=TRUE
+                                    -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                    -D ASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
+                                    -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                    -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_CXX_STANDARD=11
+                                    -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
 
     list(APPEND build_list mathpresso )
@@ -513,7 +557,6 @@ ExternalProject_Add( pugixml
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE} )
@@ -648,10 +691,8 @@ if( ${ENABLE_MPI} )
                                   -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                   -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-                                  -D ENABLE_MPI:BOOL=ON
                                   -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                   -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                  -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                   )
@@ -677,7 +718,6 @@ ExternalProject_Add( metis
                                 -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 )
@@ -713,7 +753,6 @@ if( ENABLE_MPI )
                                   -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                   -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                   -D CMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
-                                  -D ENABLE_MPI:BOOL=${ENABLE_MPI}
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                   -D CMAKE_C_STANDARD=99
@@ -723,7 +762,6 @@ if( ENABLE_MPI )
                                   -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
                                   -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                                   -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
-                                  -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                   -D enable_openmp=${ENABLE_OPENMP}
