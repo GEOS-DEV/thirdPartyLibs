@@ -1,0 +1,13 @@
+--- src/tpl/umpire/src/umpire/resource/CudaConstantMemoryResource.cu	2019-09-16 15:34:51.000000000 -0700
++++ src/tpl/umpire/src/umpire/resource/FixedCudaConstantMemoryResource.cu	2020-03-06 13:51:44.759965000 -0800
+@@ -32,8 +32,8 @@
+   m_highwatermark{0},
+   m_platform{Platform::cuda},
+   m_offset{0},
+-  m_initialized{false},
+-  m_ptr{nullptr}
++  m_ptr{nullptr},
++  m_initialized{false}
+ {
+ }
+ 
