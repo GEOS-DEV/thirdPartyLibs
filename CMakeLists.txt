@@ -145,12 +145,17 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.2.tar.gz")
-message(STATUS "Building Conduit found at ${CONDUIT_URL}")
+#message(STATUS "Building Conduit found at ${CONDUIT_URL}")
+#set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.3.2.tar.gz")
+set(CONDUIT_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/conduit.git")
+set(CONDUIT_TAG "feature/benliu/slideWorld")
+message(STATUS "Building Conduit found at ${CONDUIT_TAG}")
 
 ExternalProject_Add( conduit
-                     URL ${CONDUIT_URL}
+                     #URL ${CONDUIT_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/conduit
+                     DOWNLOAD_COMMAND git clone ${CONDUIT_REPO}
+                     UPDATE_COMMAND git checkout ${CONDUIT_TAG} && git pull
                      SOURCE_SUBDIR src
                      INSTALL_DIR ${CONDUIT_DIR}
                      DEPENDS ${HDF5_DEPENDENCIES}
@@ -828,14 +833,7 @@ if (ENABLE_TRIBOL)
                                         -DENABLE_EXAMPLES=OFF
                                         -DENABLE_FORTRAN=OFF
                                         -DENABLE_TESTS=OFF
-                                        -DAXOM_ENABLE_ALL_COMPONENTS=OFF
                                         -DAXOM_ENABLE_LUMBERJACK=ON
-                                        -DAXOM_ENABLE_MINT=ON
-                                        -DAXOM_ENABLE_PRIMAL=ON
-                                        -DAXOM_ENABLE_QUEST=ON
-                                        -DAXOM_ENABLE_SIDRE=ON
-                                        -DAXOM_ENABLE_SLAM=ON
-                                        -DAXOM_ENABLE_SLIC=ON
                                         -DAXOM_MINT_USE_SIDRE:BOOL=FALSE
                                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
@@ -859,6 +857,52 @@ if (ENABLE_TRIBOL)
         list(APPEND build_list axom )
     endif()
 
+    set(MFEM_DIR "${CMAKE_INSTALL_PREFIX}/mfem")
+    set(MFEM_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/mfem.git")
+    set(MFEM_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${MFEM_DIR})
+        message(STATUS "Using existing MFEM found at ${MFEM_DIR}")
+        list(APPEND existing_list axom )
+    else()
+        message(STATUS "Building MFEM found at ${MFEM_TAG}")
+
+        ExternalProject_Add( mfem
+                             DOWNLOAD_COMMAND git clone ${MFEM_REPO}
+                             UPDATE_COMMAND git checkout ${MFEM_TAG}
+                             PREFIX ${PROJECT_BINARY_DIR}/mfem
+                             INSTALL_DIR ${MFEM_DIR}
+                             DEPENDS hypre
+                             CMAKE_ARGS -DHYPRE_INCLUDE_DIRS=${HYPRE_DIR}/include
+                                        -DHYPRE_LIBRARIES=${HYPRE_DIR}/lib
+                                        -DMFEM_USE_OPENMP=OFF
+                                        -DMFEM_USE_GZSTREAM=ON
+                                        -DMFEM_USE_LIBUNWIND=OFF
+                                        -DMFEM_THREAD_SAFE=OFF
+                                        -DMFEM_USE_MEMALLOC=OFF
+                                        -DMFEM_USE_SUNDIALS=OFF
+                                        -DMFEM_USE_MESQUITE=OFF
+                                        -DMFEM_USE_SUITESPARSE=OFF
+                                        -DMFEM_USE_SUPERLU=OFF
+                                        -DMFEM_USE_STRUMPACK=OFF
+                                        -DMFEM_USE_GECKO=OFF
+                                        -DMFEM_USE_GNUTLS=OFF
+                                        -DMFEM_USE_NETCDF=OFF
+                                        -DMFEM_USE_PETSC=OFF
+                                        -DMFEM_USE_MPFR=OFF
+                                        -DMFEM_USE_SIDRE=OFF
+                                        -DMFEM_USE_METIS=OFF
+                                        -DMFEM_ENABLE_TESTING=OFF
+                                        -DMFEM_ENABLE_EXAMPLES=OFF
+                                        -DMFEM_ENABLE_MINIAPPS=OFF
+                                        -DMFEM_GIT_STRING="UNKNOWN"
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=ON
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install )
+        list(APPEND build_list mfem)
+    endif()
+
     set(TRIBOL_DIR "${CMAKE_INSTALL_PREFIX}/tribol")
     set(TRIBOL_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/tribol.git")
     set(TRIBOL_TAG "feature/benliu/slideWorld")
@@ -874,7 +918,7 @@ if (ENABLE_TRIBOL)
                              DOWNLOAD_COMMAND git clone ${TRIBOL_REPO}
                              UPDATE_COMMAND git checkout ${TRIBOL_TAG} && git pull
                              INSTALL_DIR ${TRIBOL_DIR}
-                             DEPENDS axom conduit hdf5
+                             DEPENDS axom conduit hdf5 mfem
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -893,6 +937,7 @@ if (ENABLE_TRIBOL)
                                         -DCONDUIT_DIR=${CONDUIT_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
                                         -DRAJA_DIR=${RAJA_DIR}
+                                        -DMFEM_DIR=${MFEM_DIR}
                                         -DENABLE_TESTS=OFF
                                         -DENABLE_EXAMPLES=OFF
                                         -DENABLE_DOCS=OFF)
@@ -923,21 +968,21 @@ if (ENABLE_TRIBOL)
         list(APPEND build_list LLNL_GlobalID)
     endif()
 
-    set(RAVI_DIR "${CMAKE_INSTALL_PREFIX}/ravi")
-    set(RAVI_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/ravi.git")
-    set(RAVI_TAG "feature/benliu/slideWorld")
+    set(CARE_DIR "${CMAKE_INSTALL_PREFIX}/care")
+    set(CARE_REPO "ssh://git@rz-stash.llnl.gov:7999/ale/care.git")
+    set(CARE_TAG "feature/benliu/slideWorld")
 
-    if (EXISTS ${RAVI_DIR})
-        message(STATUS "Using existing RAVI found at ${RAVI_DIR}")
-        list(APPEND existing_list ravi)
+    if (EXISTS ${CARE_DIR})
+        message(STATUS "Using existing CARE found at ${CARE_DIR}")
+        list(APPEND existing_list care)
     else()
-        message(STATUS "Building RAVI found at ${RAVI_TAG}")
+        message(STATUS "Building CARE found at ${CARE_TAG}")
 
-        ExternalProject_Add( ravi
-                             PREFIX ${PROJECT_BINARY_DIR}/ravi
-                             GIT_REPOSITORY ${RAVI_REPO}
-                             GIT_TAG ${RAVI_TAG}
-                             INSTALL_DIR ${RAVI_DIR}
+        ExternalProject_Add( care
+                             PREFIX ${PROJECT_BINARY_DIR}/care
+                             GIT_REPOSITORY ${CARE_REPO}
+                             GIT_TAG ${CARE_TAG}
+                             INSTALL_DIR ${CARE_DIR}
                              DEPENDS chai raja LLNL_GlobalID
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
@@ -955,7 +1000,7 @@ if (ENABLE_TRIBOL)
                                         -DRAJA_DIR=${RAJA_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
-        list(APPEND build_list ravi)
+        list(APPEND build_list care)
     endif()
 
     set(RXB_DIR "${CMAKE_INSTALL_PREFIX}/rxb")
@@ -1007,7 +1052,7 @@ if (ENABLE_TRIBOL)
                              GIT_REPOSITORY ${VISTA_REPO}
                              GIT_TAG ${VISTA_TAG}
                              INSTALL_DIR ${VISTA_DIR}
-                             DEPENDS LLNL_GlobalID chai silo ravi
+                             DEPENDS LLNL_GlobalID chai silo care
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -1026,7 +1071,7 @@ if (ENABLE_TRIBOL)
                                         -DCHAI_DIR=${CHAI_DIR}
                                         -DHDF5_DIR=${HDF5_DIR}
                                         -DRAJA_DIR=${RAJA_DIR}
-                                        -DRAVI_DIR=${RAVI_DIR}
+                                        -DCARE_DIR=${CARE_DIR}
                                         -DSILO_DIR=${SILO_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
@@ -1048,7 +1093,7 @@ if (ENABLE_TRIBOL)
                              GIT_REPOSITORY ${WORLDS_CORE_REPO}
                              GIT_TAG ${WORLDS_CORE_TAG}
                              INSTALL_DIR ${WORLDS_CORE_DIR}
-                             DEPENDS rxb vista LLNL_GlobalID chai ravi
+                             DEPENDS rxb vista LLNL_GlobalID chai care
                              BUILD_COMMAND make -j ${NUM_PROC}
                              INSTALL_COMMAND make install
                              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -1064,7 +1109,7 @@ if (ENABLE_TRIBOL)
                                         -DRXB_DIR=${RXB_DIR}
                                         -DVISTA_DIR=${VISTA_DIR}
                                         -DCHAI_DIR=${CHAI_DIR}
-                                        -DRAVI_DIR=${RAVI_DIR}
+                                        -DCARE_DIR=${CARE_DIR}
                                         -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
 
         list(APPEND build_list worlds_core)
