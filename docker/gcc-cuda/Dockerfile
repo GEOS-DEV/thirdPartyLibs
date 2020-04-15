@@ -1,33 +1,35 @@
 ARG TMP_DIR=/tmp
-FROM nvidia/cuda:10.1-devel-ubuntu18.04 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:10.1-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
 ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
 
-# Installing dependencies
-RUN rm /etc/apt/sources.list.d/*.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \ 
-    gcc-8 \
-    g++-8 \
-    curl \
-    gfortran \
-    libtbb2 \
-    libblas-dev \
-    liblapack-dev \
-    zlib1g-dev \
-    openmpi-bin \
-    libopenmpi-dev \
-    python
+# Using gcc 8.3.1 provided by the Software Collections (SCL).
+RUN yum install -y \
+    centos-release-scl \
+    && yum install -y \
+    devtoolset-8-gcc \
+    devtoolset-8-gcc-c++ \
+    devtoolset-8-gcc-gfortran
 
 # Installing latest CMake version available on Lassen
 ARG CMAKE_VERSION=3.14.5
-RUN curl -k https://cmake.org/files/v3.14/cmake-3.14.5-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - 
+RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
-ENV CC=/usr/bin/gcc-8 \
-    CXX=/usr/bin/g++-8 \
-    MPICC=/usr/bin/mpicc \
-    MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
+# Installing dependencies
+RUN yum -y install \
+    make \
+    tbb \
+    blas-devel \
+    lapack-devel \
+    zlib-devel \
+    openmpi-devel \
+    python
+
+ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
+    CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \
+    MPICC=/usr/lib64/openmpi/bin/mpicc \
+    MPICXX=/usr/lib64/openmpi/bin/mpicxx \
+    MPIEXEC=/usr/lib64/openmpi/bin/mpirun
 ENV OMPI_CC=${CC} \
     OMPI_CXX=${CXX} 
 ENV ENABLE_CUDA=ON \
@@ -36,12 +38,12 @@ ENV ENABLE_CUDA=ON \
 # Installing TPL's
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
-ENV FC=/usr/bin/gfortran \
-    MPIFC=/usr/bin/mpifort
+ENV FC=/opt/rh/devtoolset-8/root/usr/bin/gfortran \
+    MPIFC=/usr/lib64/openmpi/bin/mpifort
 ENV OMPI_FC=${FC}
 
-RUN apt-get install -y --no-install-recommends \
-    libtbb-dev \
+RUN yum install -y \
+    tbb-devel \
     bc \
     file \
     bison \
@@ -70,8 +72,7 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+RUN yum install -y \
     openssh-client \
     texlive \
     graphviz
