@@ -2,21 +2,19 @@
 # The pattern is equivalent so refer to ubuntu for description.
 # Only details that are specific to centos shall be underlined here.
 ARG TMP_DIR=/tmp
-FROM centos:7.5.1804 AS tpl_toolchain_intersect_geosx_toolchain
+FROM centos:7.7.1908 AS tpl_toolchain_intersect_geosx_toolchain
 
 ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
-# The same Dockerfile is used to install both 6.0.1 and 7.0.0 clang versions.
-ARG CLANG_VERSION
 
 # The packaged cmake version is too old, we install a newer precompiled version.
 ARG CMAKE_VERSION=3.13.3
-RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 ARG TMP_DIR
 # The trailing / (in ${TMP_DIR}) is here for multiple COPY sources
-COPY docker/clang-LC-toss3/compiler-wrappers-1-8.tce.ch6_1.x86_64.rpm \
-    docker/clang-LC-toss3/gcc493-2.0-6.ch6.x86_64.rpm \
-    docker/clang-LC-toss3/clang-${CLANG_VERSION}-1-1.tce.ch6_2.x86_64.rpm \
+COPY docker/clang-centos/compiler-wrappers-1-12.tce.ch6.x86_64.rpm \
+    docker/clang-centos/gcc493-2.0-6.ch6.x86_64.rpm \
+    docker/clang-centos/clang-9.0.0-3-2.tce.ch6.x86_64.rpm \
     ${TMP_DIR}/
 
 # Removing gpg signature warning.
@@ -28,21 +26,22 @@ RUN yum -y install \
     blas-devel \
     lapack-devel \
     zlib-devel \
-    ${TMP_DIR}/compiler-wrappers-1-8.tce.ch6_1.x86_64.rpm \
+    ${TMP_DIR}/compiler-wrappers-1-12.tce.ch6.x86_64.rpm \
     ${TMP_DIR}/gcc493-2.0-6.ch6.x86_64.rpm \
-    ${TMP_DIR}/clang-${CLANG_VERSION}-1-1.tce.ch6_2.x86_64.rpm \
+    ${TMP_DIR}/clang-9.0.0-3-2.tce.ch6.x86_64.rpm \
     openmpi-devel \
     python
 
 RUN rm ${TMP_DIR}/*.rpm
 
-# FIXME Is it possible to suppress fortran and reinstall it after?
-#       Is it worth the price?
+# The LLNL clang requires CUDA but we do not use it.
+# Just creating this empty folder is enough to fake a CUDA install in our configuration process.
+RUN mkdir -p /opt/cudatoolkit/10.1
 
-# FIXME Is it possible to use modules like centos7.5 suggests: 
-#       `module load mpi/openmpi-x86_64` ?
-ENV CC=/usr/tce/packages/clang/clang-${CLANG_VERSION}/bin/clang \
-    CXX=/usr/tce/packages/clang/clang-${CLANG_VERSION}/bin/clang++ \
+# The centos7 doc suggests to `module load mpi/openmpi-x86_64` but that does not fit quite well with the step by step docker building.
+# Defining the environment variables
+ENV CC=/usr/tce/packages/clang/clang-9.0.0/bin/clang \
+    CXX=/usr/tce/packages/clang/clang-9.0.0/bin/clang++ \
     MPICC=/usr/lib64/openmpi/bin/mpicc \
     MPICXX=/usr/lib64/openmpi/bin/mpicxx \
     MPIEXEC=/usr/lib64/openmpi/bin/mpirun
@@ -81,4 +80,3 @@ RUN yum -y install \
     graphviz* \
     libxml2 \
     git
-

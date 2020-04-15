@@ -1,5 +1,20 @@
 #!/bin/sh
 
+if [[ -z "${TPL_SRC_DIR}" ]]; then
+  echo "Environment variable \"TPL_SRC_DIR\" is undefined."
+  exit 1
+fi
+
+if [[ -z "${TPL_BUILD_DIR}" ]]; then
+  echo "Environment variable \"TPL_BUILD_DIR\" is undefined."
+  exit 1
+fi
+
+if [[ -z "${GEOSX_TPL_DIR}" ]]; then
+  echo "Environment variable \"GEOSX_TPL_DIR\" is undefined."
+  exit 1
+fi
+
 # Our travis build only offers 8 Gb of RAM and 
 # trilinos requires a lot of memory to compile.
 # A solution is to limit the number of concurrent jobs for trilinos.
