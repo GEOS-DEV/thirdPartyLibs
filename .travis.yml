@@ -49,7 +49,7 @@ geosx_linux_build: &geosx_linux_build
     .
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
     # And `after_success` does not fail the build in case of error.
-  - echo "${TOTOGAZ_DOCKER_PASSWORD}" | docker login -u "${TOTOGAZ_DOCKER_USERNAME}" --password-stdin
+  - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build
@@ -69,7 +69,7 @@ geosx_centos_build: &geosx_centos_build
   before_script:
   - echo .git > .dockerignore
     # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=totogaz/centos7.7.1908-clang9.0.0
+  - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
   - DOCKERFILE=docker/clang-centos/Dockerfile
 
 geosx_clang_cuda_build: &geosx_clang_cuda_build
