@@ -38,7 +38,7 @@ RUN rm ${TMP_DIR}/*.rpm
 # Just creating this empty folder is enough to fake a CUDA install in our configuration process.
 RUN mkdir -p /opt/cudatoolkit/10.1
 
-# The centos7.5 doc suggests to `module load mpi/openmpi-x86_64` but that does not fit quite well with the step by step docker building.
+# The centos7 doc suggests to `module load mpi/openmpi-x86_64` but that does not fit quite well with the step by step docker building.
 # Defining the environment variables
 ENV CC=/usr/tce/packages/clang/clang-9.0.0/bin/clang \
     CXX=/usr/tce/packages/clang/clang-9.0.0/bin/clang++ \
