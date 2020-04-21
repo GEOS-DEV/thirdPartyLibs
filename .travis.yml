@@ -83,7 +83,7 @@ geosx_gcc_cuda_build: &geosx_gcc_cuda_build
   <<: *geosx_linux_build
   before_script:
   - echo .git > .dockerignore
-  - DOCKER_REPOSITORY=geosx/centos7.7.1908-gcc8.3.1-cuda10.1.243
+  - DOCKER_REPOSITORY=geosx/centos7.6.1810-gcc8.3.1-cuda10.1.243
   - DOCKERFILE=docker/gcc-cuda/Dockerfile
 
 geosx_pangea_build: &geosx_pangea_build
