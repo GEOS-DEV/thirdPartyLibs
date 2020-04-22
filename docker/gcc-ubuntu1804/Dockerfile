@@ -17,8 +17,12 @@ ARG GCC_MAJOR_VERSION
 RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
-    cmake \
     make \
+
+# Installing more recent cmake version (3.10.2 in ubuntu is not enough)
+ARG CMAKE_VERSION=3.14.5
+RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+
 # It appears that gfortran-8 depends on ligfortran5 while gfortran-7 depends on libgfortran4.
 # The $(($GCC_MAJOR_VERSION-3)) is a small bash hack needed to install the runtime library separately.
     gcc-${GCC_MAJOR_VERSION} \
