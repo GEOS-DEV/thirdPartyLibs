@@ -923,6 +923,8 @@ if(ENABLE_VTK)
                                     -D VTK_GROUP_ENABLE_Views=NO
                                     -D VTK_GROUP_ENABLE_Web=NO
                                     -D VTK_BUILD_ALL_MODULES=OFF
+                                    -D VTK_WRAP_PYTHON=OFF
+                                    -D VTK_WRAP_JAVA=OFF
                                     -D VTK_MODULE_ENABLE_VTK_vtkm=NO
                                     -D VTK_MODULE_ENABLE_VTK_CommonDataModel=YES
                                     -D VTK_MODULE_ENABLE_VTK_CommonCore=YES
@@ -934,7 +936,8 @@ if(ENABLE_VTK)
                                     -D VTK_MODULE_ENABLE_VTK_IOXML=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOXMLParser=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOCore=YES
-                                    -D VTK_BUILD_TESTINGO=OFF
+                                    -D VTK_BUILD_TESTING=OFF
+                                    -D VTK_LEGACY_REMOVE=ON
                          )
     
     list(APPEND build_list vtk )
