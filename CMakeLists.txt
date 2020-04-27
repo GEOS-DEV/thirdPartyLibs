@@ -334,6 +334,16 @@ set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
 set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.10.1.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
+# workaround for cuda/gcc float128 issue
+set(RAJA_CUDA_FLAGS "")
+if(ENABLE_CUDA)
+  if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+      set(RAJA_CUDA_FLAGS "${RAJA_CUDA_FLAGS} -std=c++11 -Xcompiler -mno-float128")
+    endif()
+  endif()
+endif()
+
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
@@ -351,6 +361,7 @@ ExternalProject_Add( raja
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CUDA_ARCH:CACHE=${CUDA_ARCH}
+                                -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_TESTS:BOOL=OFF
                                 -D ENABLE_EXAMPLES:BOOL=OFF
                                 -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
@@ -387,6 +398,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
