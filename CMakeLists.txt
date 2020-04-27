@@ -742,7 +742,7 @@ list(APPEND build_list metis )
 ################################
 if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.0.0-trisolve.tar.gz")
+  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.3.1.tar.gz")
   
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -787,7 +787,7 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.18.2.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.18.2-2020.04.27.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -826,7 +826,7 @@ if( ${ENABLE_MPI} )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-bigint \
+  --enable-mixedint \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
@@ -868,7 +868,7 @@ list(APPEND build_list hypre )
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.10.2.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.13.0.tar.gz")
     set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-6.0.6-p1.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
