@@ -742,7 +742,7 @@ list(APPEND build_list metis )
 ################################
 if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-6.3.1-2020.04.27.tar.gz")
+  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-master-0f6efc3.tar.gz")
   
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -787,7 +787,7 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.18.2-2020.04.27.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-master-4182f90-patch.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -827,6 +827,7 @@ if( ${ENABLE_MPI} )
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
   --enable-mixedint \
+  --enable-cuda \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
