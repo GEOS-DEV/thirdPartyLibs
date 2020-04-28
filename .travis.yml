@@ -20,7 +20,8 @@ geosx_osx_build: &geosx_osx_build
   - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
   - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DENABLE_CALIPER:BOOL=OFF -DENABLE_DOXYGEN:BOOL=OFF -ip ${GEOSX_TPL_DIR}
   - cd build-darwin-clang-release
-  - make
+    #- make
+  - make -j $(nproc) VERBOSE=3 hypre
     # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
     # And `after_success` does not fail the build in case of error.
   - pip3 install -q google-cloud-storage
@@ -90,16 +91,16 @@ geosx_pangea_build: &geosx_pangea_build
 
 jobs:
   include:
-  - <<: *geosx_pangea_build
-    # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
-    env: PANGEA_VERSION=2
+          #  - <<: *geosx_pangea_build
+          #   # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
+          #    env: PANGEA_VERSION=2
   - <<: *geosx_osx_build
-  - <<: *geosx_centos_build
-    # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: CLANG_MAJOR_VERSION=9
-  - <<: *geosx_ubuntu_build
-    # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: GCC_MAJOR_VERSION=8
-  - <<: *geosx_clang_cuda_build
-    # CUDA_VERSION is unused in build. Serves as a job label on Travis.
-    env: CUDA_VERSION=10.1.243
+          #  - <<: *geosx_centos_build
+          #   # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
+          #   env: CLANG_MAJOR_VERSION=9
+          #  - <<: *geosx_ubuntu_build
+          #  # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
+          #    env: GCC_MAJOR_VERSION=8
+          #  - <<: *geosx_clang_cuda_build
+          #   # CUDA_VERSION is unused in build. Serves as a job label on Travis.
+          #  env: CUDA_VERSION=10.1.243
