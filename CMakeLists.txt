@@ -827,7 +827,6 @@ if( ${ENABLE_MPI} )
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
   --enable-mixedint \
-  --enable-cuda \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
@@ -857,7 +856,7 @@ ExternalProject_Add( hypre
                      DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
-                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
+                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=3
                      INSTALL_COMMAND make install
                    )
 
