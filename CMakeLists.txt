@@ -816,6 +816,12 @@ if (ENABLE_OPENMP)
     set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
 endif()
 
+if( APPLE )
+    set(HYPRE_INT_FLAG "bigint")
+else()
+    set(HYPRE_INT_FLAG "mixedint")
+endif()
+
 if( ${ENABLE_MPI} )
   file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
@@ -826,7 +832,7 @@ if( ${ENABLE_MPI} )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-bigint \
+  --enable-${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
@@ -843,7 +849,7 @@ else()
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-bigint \
+  --enable-${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   ${HYPRE_OPENMP_FLAG}\n")
