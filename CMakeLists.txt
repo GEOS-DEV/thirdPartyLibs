@@ -862,7 +862,7 @@ ExternalProject_Add( hypre
                      DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
-                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=3
+                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                      INSTALL_COMMAND make install
                    )
 
