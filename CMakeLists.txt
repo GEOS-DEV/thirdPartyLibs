@@ -964,6 +964,7 @@ if(ENABLE_VTK)
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/lib
                                     -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                     -D VTK_GROUP_ENABLE_Imaging=NO
                                     -D VTK_GROUP_ENABLE_MPI=NO
