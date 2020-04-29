@@ -826,7 +826,7 @@ if( ${ENABLE_MPI} )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-mixedint \
+  --enable-bigint \
   --enable-debug \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
