@@ -742,7 +742,7 @@ list(APPEND build_list metis )
 ################################
 if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-master-0f6efc3.tar.gz")
+  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
   
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -787,7 +787,7 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-master-4182f90-patch.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-4182f90.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -859,6 +859,7 @@ ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
                      INSTALL_DIR ${HYPRE_DIR}
+                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/petsc-hypre-4182f90.patch
                      DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
@@ -875,7 +876,7 @@ list(APPEND build_list hypre )
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
     set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-6.0.6-p1.tar.gz")
+    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-03d9a7d4.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
