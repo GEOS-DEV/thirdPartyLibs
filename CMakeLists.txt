@@ -827,7 +827,6 @@ if( ${ENABLE_MPI} )
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
   --enable-bigint \
-  --enable-debug \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
