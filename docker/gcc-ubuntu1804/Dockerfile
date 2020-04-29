@@ -7,7 +7,7 @@ FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
 # GEOSX use them so consider modifying their names with care.
 ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
 
-# Do not apt-get upgrade (ask the maintainer if you really think so;ething should be upgraded)
+# Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
