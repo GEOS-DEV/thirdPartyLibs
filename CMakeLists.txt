@@ -950,7 +950,7 @@ endif()
 ################################
 if(ENABLE_VTK)
     set(VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk")
-    set(VTK_URL "${TPL_MIRROR_DIR}/VTK-4ad05f0.zip")
+    set(VTK_URL "${TPL_MIRROR_DIR}/VTK-v9.0.0.rc3.tar.gz")
     
     message(STATUS "Building VTK found at ${VTK_URL}")
     
