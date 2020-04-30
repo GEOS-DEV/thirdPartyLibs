@@ -859,7 +859,7 @@ ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
                      INSTALL_DIR ${HYPRE_DIR}
-                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/hypre-4182f90.patch
+                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/hypre.patch
                      DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
