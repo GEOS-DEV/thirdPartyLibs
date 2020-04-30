@@ -876,7 +876,7 @@ list(APPEND build_list hypre )
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
     set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-03d9a7d4.tar.gz")
+    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
