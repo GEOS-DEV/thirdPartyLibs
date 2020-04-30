@@ -1,0 +1,17 @@
+diff --git a/src/IJ_mv/aux_parcsr_matrix.c b/src/IJ_mv/aux_parcsr_matrix.c
+index 7a9b73ff7..2ec631818 100644
+--- a/src/IJ_mv/aux_parcsr_matrix.c
++++ b/src/IJ_mv/aux_parcsr_matrix.c
+@@ -206,3 +206,12 @@ hypre_AuxParCSRMatrixInitialize_v2( hypre_AuxParCSRMatrix *matrix, HYPRE_MemoryL
+    return 0;
+ }
+ 
++/*--------------------------------------------------------------------------
++ * hypre_AuxParCSRMatrixInitialize_v
++ * (patch for compatibility with PETSc)
++ *--------------------------------------------------------------------------*/
++HYPRE_Int
++hypre_AuxParCSRMatrixInitialize( hypre_AuxParCSRMatrix *matrix )
++{
++  return hypre_AuxParCSRMatrixInitialize_v2(matrix, HYPRE_MEMORY_HOST);
++}
