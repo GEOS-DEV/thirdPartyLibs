@@ -31,6 +31,8 @@ echo "Building all LC TPLs from $GEOSX_DIR to be installed at $INSTALL_DIR"
 
 ./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang@upstream       "lalloc 1 -qpdebug" $@ &
 ./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang@upstream-NoMPI "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen gcc@8.3.1            "lalloc 1 -qpdebug" $@ &
+
 
 wait
 echo "Complete"
