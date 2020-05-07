@@ -7,11 +7,10 @@ FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
 # GEOSX use them so consider modifying their names with care.
 ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
 
-# Do not apt-get upgrade (ask thre maintainer if you really think so;ething should be upgraded)
+# Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
-    cmake \
     make \
     gcc-8 \
     g++-8 \
@@ -29,6 +28,13 @@ RUN apt-get install -y --no-install-recommends \
 # Unfortunately argparse (standard library's package used by GEOSX)
 # is not in the python-minimal package so we install the whole std lib.
     python
+
+# Installing more recent cmake version (3.10.2 in ubuntu is not enough)
+ARG CMAKE_VERSION=3.14.5
+# We install (and uninstall) `curl` and some SSL certificates only for downloading `cmake`.
+RUN apt-get install -y --no-install-recommends curl ca-certificates && \
+    curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - && \
+    apt-get purge --auto-remove -y curl ca-certificates
 
 ENV CC=/usr/bin/gcc-8 \
     CXX=/usr/bin/g++-8 \
