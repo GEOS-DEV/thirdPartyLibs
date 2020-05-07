@@ -79,6 +79,13 @@ geosx_clang_cuda_build: &geosx_clang_cuda_build
   - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
   - DOCKERFILE=docker/clang-cuda/Dockerfile
 
+geosx_gcc_cuda_build: &geosx_gcc_cuda_build
+  <<: *geosx_linux_build
+  before_script:
+  - echo .git > .dockerignore
+  - DOCKER_REPOSITORY=geosx/centos7.6.1810-gcc8.3.1-cuda10.1.243
+  - DOCKERFILE=docker/gcc-cuda/Dockerfile
+
 geosx_pangea_build: &geosx_pangea_build
   <<: *geosx_linux_build
   before_script:
@@ -101,5 +108,9 @@ jobs:
     # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
     env: GCC_MAJOR_VERSION=8
   - <<: *geosx_clang_cuda_build
-    # CUDA_VERSION is unused in build. Serves as a job label on Travis.
-    env: CUDA_VERSION=10.1.243
+    # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
+    env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
+  - <<: *geosx_gcc_cuda_build
+    # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
+    env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243
+

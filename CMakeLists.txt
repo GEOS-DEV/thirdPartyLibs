@@ -334,12 +334,14 @@ set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
 set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.10.1.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
-# workaround for cuda/gcc float128 issue
+# workaround for cuda/gcc float128 issue 
 set(RAJA_CUDA_FLAGS "")
 if(ENABLE_CUDA)
-  if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-      set(RAJA_CUDA_FLAGS "${RAJA_CUDA_FLAGS} -std=c++11 -Xcompiler -mno-float128")
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le)
+    if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+        set(RAJA_CUDA_FLAGS "${RAJA_CUDA_FLAGS} -std=c++11 -Xcompiler -mno-float128")
+      endif()
     endif()
   endif()
 endif()
@@ -384,7 +386,8 @@ ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
-                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/Umpire-b78dd50.patch
+                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/Umpire-b78dd50.patch &&
+                                   patch -p0 < ${TPL_MIRROR_DIR}/Umpire-gcc.patch
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
