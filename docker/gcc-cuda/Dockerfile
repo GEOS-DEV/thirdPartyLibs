@@ -125,15 +125,15 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DCUDA_ARCH=${CUDA_ARCH} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
 WORKDIR ${TPL_BUILD_DIR}
-RUN make
+#RUN make
 
 # Extract only TPL's from previous stage
-FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+#FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
-COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
+#COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
-RUN yum install -y \
-    openssh-client \
-    texlive \
-    graphviz \
-    git
+#RUN yum install -y \
+#    openssh-client \
+#    texlive \
+#    graphviz \
+#    git
