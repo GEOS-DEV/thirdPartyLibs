@@ -328,10 +328,31 @@ list(APPEND build_list silo )
 
 
 ################################
-# RAJA
+# RAJA + CAMP
 ################################
+
+
+if( NOT EXTERNAL_CAMP_SOURCE_DIR )
+  set(CAMP_DIR "${CMAKE_INSTALL_PREFIX}/camp")
+  set(CAMP_URL "${TPL_MIRROR_DIR}/camp-cef6f71c5e21836eed381f80cb328126202d512e.tar.gz")
+  message(STATUS "Using CAMP found at ${CAMP_URL}")
+
+  ExternalProject_Add( camp
+                       URL ${CAMP_URL}
+                       PREFIX ${PROJECT_BINARY_DIR}/camp
+                       INSTALL_DIR ${CAMP_DIR}
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       CMAKE_ARGS -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                     )
+  set( EXTERNAL_CAMP_SOURCE_DIR "${PROJECT_BINARY_DIR}/camp/src/camp")
+  set( RAJA_DEPENDS camp )
+endif()
+
+
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.10.1.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.11.0.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
 # workaround for cuda/gcc float128 issue 
@@ -350,6 +371,7 @@ ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
+                     DEPENDS ${RAJA_DEPENDS}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -370,6 +392,7 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D EXTERNAL_CAMP_SOURCE_DIR:PATH=${EXTERNAL_CAMP_SOURCE_DIR}
                     )
 
 list(APPEND build_list raja )
