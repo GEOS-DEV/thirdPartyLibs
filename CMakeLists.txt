@@ -371,6 +371,7 @@ ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
+                     PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/RAJA-cuda-x86.patch
                      DEPENDS ${RAJA_DEPENDS}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
