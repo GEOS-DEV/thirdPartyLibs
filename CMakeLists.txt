@@ -403,15 +403,14 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-corbett-changes-for-geosx.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2.1.1.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
-                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/Umpire-b78dd50.patch &&
-                                   patch -p0 < ${TPL_MIRROR_DIR}/Umpire-gcc.patch
+                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/chai-2.1.1.patch
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -608,7 +607,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-14-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-18-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
