@@ -36,6 +36,11 @@ option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
+if( APPLE )
+    option( ENABLE_PETSC "" OFF )
+else()
+    option( ENABLE_PETSC "" ON )
+endif()
 option( ENABLE_VTK "" ON )
 
 option( ENABLE_NINJA "" OFF )
