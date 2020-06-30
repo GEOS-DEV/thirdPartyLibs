@@ -21,7 +21,7 @@ set(ENABLE_PVTPackage ON CACHE BOOL "" FORCE)
 set(CUDA_ENABLED      "OFF"       CACHE PATH "" FORCE)
 set(ENABLE_OPENMP     "OFF"        CACHE PATH "" FORCE)
 
-option( ENABLE_CALIPER "Enables CALIPER" OFF )
+option( ENABLE_CALIPER "Enables CALIPER" ON )
 
 set( BLAS_LIBRARIES /usr/lib/libblas.dylib CACHE PATH "" FORCE )
 set( LAPACK_LIBRARIES /usr/lib/liblapack.dylib CACHE PATH "" FORCE )

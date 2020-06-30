@@ -34,7 +34,7 @@ include(ExternalProject)
 
 option( BUILD_SHARED_LIBS "" OFF )
 
-option( ENABLE_CALIPER "" OFF )
+option( ENABLE_CALIPER "" ON )
 option( ENABLE_TRILINOS "" ON )
 if( CMAKE_HOST_APPLE )
     option( ENABLE_PETSC "" OFF )
