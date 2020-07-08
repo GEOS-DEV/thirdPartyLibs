@@ -821,7 +821,7 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.19.0.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-343e31c.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
