@@ -22,7 +22,7 @@ ARG CMAKE_VERSION=3.14.5
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 # Installing clang
-RUN curl -fsSL http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz | tar --directory=/usr/local --strip-components=1 -xJf -
+RUN curl -fsSL http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz | tar --directory=/usr/local --strip-components=1 -xJf -
 
 ENV CC=/usr/local/bin/clang \
     CXX=/usr/local/bin/clang++ \
@@ -57,6 +57,9 @@ ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
 ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
+# Overwrite CUDA host-config to disable clang version check
+COPY docker/cuda/host_config.h /usr/local/cuda/targets/x86_64-linux/include/crt
+
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
@@ -68,6 +71,9 @@ RUN make
 
 # Extract only TPL's from previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+
+# Overwrite CUDA host-config to disable clang version check
+COPY docker/cuda/host_config.h /usr/local/cuda/targets/x86_64-linux/include/crt
 
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
