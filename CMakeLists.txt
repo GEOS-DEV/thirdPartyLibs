@@ -34,6 +34,7 @@ include(ExternalProject)
 
 option( BUILD_SHARED_LIBS "" OFF )
 
+option( ENABLE_ADIAK "" ON )
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_TRILINOS "" ON )
 option( ENABLE_PETSC "" OFF )
@@ -309,6 +310,8 @@ set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
 set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.10.3.mpiposix_patch.tar.gz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
+string(REPLACE "-std=c99" "" SILO_FLAGS ${HDF5_C_FLAGS})
+set(SILO_FLAGS "${SILO_FLAGS} -std=gnu99")
 
 ExternalProject_Add( silo
                      URL ${SILO_URL}
@@ -317,7 +320,7 @@ ExternalProject_Add( silo
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND ../silo/configure
                                           CC=${HDF5_C_COMPILER}
-                                          CFLAGS=${HDF5_C_FLAGS}
+                                          CFLAGS=${SILO_FLAGS}
                                           CXX=${HDF5_CXX_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --disable-fortran
@@ -475,9 +478,9 @@ list(APPEND build_list fparser )
 
 
 ################################
-# Caliper and Adiak
+# Adiak
 ################################
-if (ENABLE_CALIPER)
+if (ENABLE_ADIAK)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
     set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.0.tar.gz")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
@@ -492,6 +495,7 @@ if (ENABLE_CALIPER)
                          CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
                                     -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_C_STANDARD=99
                                     -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
@@ -504,7 +508,16 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                        )
 
+    set(CALIPER_DEPENDS adiak)
+    set(CALIPER_DEFINES "-D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/" )
 
+    list(APPEND build_list adiak)
+endif()
+
+################################
+# Caliper
+################################
+if (ENABLE_CALIPER)
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
     set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-2.3.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
@@ -516,7 +529,7 @@ if (ENABLE_CALIPER)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
-                         DEPENDS adiak
+                         DEPENDS ${CALIPER_DEPENDS}
                          CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
                                     -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
@@ -533,13 +546,13 @@ if (ENABLE_CALIPER)
                                     -D WITH_PAPI:BOOL=${ENABLE_PAPI}
                                     -D PAPI_PREFIX:STRING=${PAPI_PREFIX}
                                     -D WITH_ADIAK:BOOL=ON
-                                    -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
                                     -D WITH_CUPTI=${ENABLE_CUDA}
                                     -D CUPTI_PREFIX=${CUDA_TOOLKIT_ROOT_DIR}/nvidia/extras/CUPTI
                                     -D WITH_NVPROF=${ENABLE_CUDA}
+                                    ${CALIPER_DEFINES}
                        )
 
-    list(APPEND build_list caliper adiak)
+    list(APPEND build_list caliper)
 endif()
 
 
