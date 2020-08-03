@@ -506,7 +506,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-2.3.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-2.4.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     ExternalProject_Add( caliper
