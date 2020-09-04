@@ -1,6 +1,3 @@
-# from __future__ import (absolute_import, division, print_function, unicode_literals)
-# from builtins import *
-
 import os
 import os.path
 import sys
@@ -41,20 +38,27 @@ def validate_hashcode(file_name, md5_reference):
 
 def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
     url = tpl["url"]
+
+    if not url:
+        msg = 'No url provided for tpl "%s". Nothing done.' % tpl["name"]
+        logging.warning(msg)
+        return
+
     try:
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
 
+            # TODO improve name (see doxygen)
             parsed_url = urlparse(url)
             output = os.path.basename(parsed_url.path)
             output_file_name = os.path.join(dest, output)
 
             if os.path.exists(output_file_name):
                 if overwrite:
-                    msg = "File \"%s\" already exists, overwriting." % output_file_name
+                    msg = 'File "%s" already exists, overwriting.' % output_file_name
                     logging.warning(msg)
                 else:
-                    msg = "File \"%s\" already exists, nothing done." % output_file_name
+                    msg = 'File "%s" already exists, nothing done.' % output_file_name
                     logging.warning(msg)
                     return
 
@@ -63,7 +67,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     f.write(chunk)
 
-        if "md5" in tpl:
+        if "md5" in tpl and tpl["md5"]:
             validate_hashcode(output_file_name, tpl["md5"])
     except Exception as e:
         logging.error(e)
@@ -83,8 +87,8 @@ def main():
     args = parse_args()
     tpls = read_config_file(args.tpl)
     try:
-        download_all_tpls(tpls["tpls"], tpls["dest"])
-        # download_all_tpls(tpls["tpls"], "/tmp/test")
+        # download_all_tpls(tpls["tpls"], tpls["dest"])
+        download_all_tpls(tpls["tpls"], "/tmp/test")
     except Exception as e:
         logging.error(e)
         sys.exit(1)
@@ -95,3 +99,6 @@ if __name__ == "__main__":
                         datefmt='%Y/%m/%d %H:%M:%S',
                         level=logging.INFO)
     main()
+
+# NOTES
+# adiak from github does not contain submodules
