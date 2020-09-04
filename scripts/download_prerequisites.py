@@ -2,7 +2,7 @@ import os
 import os.path
 import sys
 import logging
-import json
+import yaml
 import hashlib
 import argparse
 from urllib.parse import urlparse
@@ -12,12 +12,12 @@ import requests
 
 def read_config_file(file_name):
     with open(file_name, 'r') as f:
-        return json.load(f)
+        return yaml.load(f)
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tpl", default="tpls.json")
+    parser.add_argument("--tpl", default="tpls.yaml")
     return parser.parse_args()
 
 
