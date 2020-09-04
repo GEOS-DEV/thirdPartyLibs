@@ -1,15 +1,121 @@
 {
     "tpls": [
       {
+        "name": "adiak",
+        "url": "https://github.com/LLNL/Adiak/archive/v0.2.0.tar.gz",
+        "md5": "184cd6c948cd953fdcc4a61044a0d40c"
+      },
+      {
+        "name": "asm-jit",
+        "url": "",
+        "md5": "771f54adf355f7dbd35188ae1b602a05"
+      },
+      {
+        "name": "astyle",
+        "url": "https://sourceforge.net/projects/astyle/files/astyle/astyle%203.1/astyle_3.1_linux.tar.gz/download",
+        "md5": "7712622f62661b1d8cb1062d7fedc390"
+      },
+      {
         "name": "axom",
         "url": "https://github.com/LLNL/axom/releases/download/v0.3.1/Axom-v0.3.1.tar.gz",
         "md5": "05ae73da590e378221b30e9c054e5747"
       },
       {
+        "name": "caliper",
+        "url": "https://github.com/LLNL/Caliper/archive/v2.4.0.tar.gz",
+        "md5": "7f2d71b25aed8da82fe62d2aae7c771f"
+      },
+      {
+        "name": "camp",
+        "url": "",
+        "md5": "1a8ded173392feb9c4b9e33837ac7b0f"
+      },
+      {
+        "name": "CHAI",
+        "url": "https://github.com/LLNL/CHAI/releases/download/v2.2.1/chai-2.2.1.tar.gz",
+        "md5": "c6ff82695599b7020dd855e0df187e31"
+      },
+      {
+        "name": "conduit",
+        "url": "https://github.com/LLNL/conduit/releases/download/v0.5.0/conduit-v0.5.0-src-with-blt.tar.gz",
+        "md5": "e7f79ba9ec5427f0ee9ef7aa36d5c8fd"
+      },
+      {
+        "name": "doxygen",
+        "url": "https://github.com/doxygen/doxygen/archive/Release_1_8_13.tar.gz",
+        "md5": "684bfd513778cc6e2635b2f6755654c1"
+      },
+      {
+        "name": "fparser",
+        "url": "http://warp.povusers.org/FunctionParser/fparser4.5.2.zip",
+        "md5": "ce805d2f827f25e61f266e176b8d338d"
+      },
+      {
+        "name": "hdf5",
+        "url": "https://github.com/live-clones/hdf5/archive/hdf5-1_10_5.tar.gz",
+        "md5": "e115eeb66e944fa7814482415dd21cc4"
+      },
+      {
+        "name": "hypre",
+        "url": "https://github.com/hypre-space/hypre/archive/343e31c845dd1a0448105ebfd77d464c66ec8de6.tar.gz",
+        "md5": "0deddc41eb36043fe37f2b83f26d2867"
+      },
+      {
+        "name": "mathpresso",
+        "url": "",
+        "md5": "c0bae6b43f399328ce4ca24ca340b791"
+      },
+      {
+        "name": "parmetis",
+        "url": "",
+        "md5": "078d68aa428882257a8f8cc365f9c0eb"
+      },
+      {
+        "name": "petsc-lite",
+        "url": "http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.13.0.tar.gz",
+        "md5": "8ea59cc9e329611d73eb1be56cc32fda"
+      },
+      {
+        "name": "petsc-scotch",
+        "url": "",
+        "md5": "5d567b52988871a3767ec8ae81f592de"
+      },
+      {
+        "name": "pugixml",
+        "url": "https://github.com/zeux/pugixml/releases/download/v1.8/pugixml-1.8.tar.gz",
+        "md5": "f4899649e2164bb21d2bd102ff7087d1"
+      },
+      {
+        "name": "RAJA",
+        "url": "https://github.com/LLNL/RAJA/releases/download/v0.11.0/RAJA-v0.11.0.tar.gz",
+        "md5": "deadbeef"
+      },
+      {
+        "name": "silo",
+        "url": "",
+        "md5": ""
+      },
+      {
+        "name": "superlu_dist",
+        "url": "https://github.com/xiaoyeli/superlu_dist/archive/0f6efc377df2440c235452d13d28d2c717f832a1.tar.gz",
+        "md5": "3f66a1dc043d479265de7043cf6dca37"
+      },
+      {
+        "name": "trilinos",
+        "url": "",
+        "md5": "9c1d151169949bca6cf203831e4d6aee"
+      },
+      {
+        "name": "uncrustify",
+        "url": "https://github.com/uncrustify/uncrustify/archive/401a4098bce9dcc47e024987403f2d59d9ba7bd2.tar.gz",
+        "md5": "23fbf1c33699b214a4dff0870ae1e0c6"
+      },
+      {
         "name": "vtk",
-        "url": "https://github.com/Kitware/VTK/archive/v9.0.0.rc3.zip__",
+        "url": "https://github.com/Kitware/VTK/archive/v9.0.0.rc3.zip",
         "md5": "09f8c973c9213d9d59dd3c42857412d7"
       }
     ],
     "dest": "tplMirror"
   }
+  
