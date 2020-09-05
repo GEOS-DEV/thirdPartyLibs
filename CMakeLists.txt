@@ -944,7 +944,7 @@ MY_METIS_INC=\"${CMAKE_INSTALL_PREFIX}/metis/include\" \
 CUDA=no")
 
     # UMFPACK dependencies
-    set( SUITESPARSE_PACKAGES "SuiteSparse_config;AMD;BTF;CAMD;CCOLAMD;COLAMD;CHOLMOD;KLU;LDL;UMFPACK" )
+    set( SUITESPARSE_PACKAGES "SuiteSparse_config;AMD;BTF;CAMD;CCOLAMD;COLAMD;CHOLMOD;KLU;UMFPACK" )
 
     set( SUITESPARSE_BUILD_CMD "" )
     foreach( PKG ${SUITESPARSE_PACKAGES} )
@@ -1014,7 +1014,7 @@ if( ENABLE_PETSC )
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-mpi-dir=/home/af1990/openmpi/install")
+        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis")
         set( PETSC_DEPENDS parmetis metis superlu_dist )
     else()
         set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
@@ -1035,8 +1035,11 @@ string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
 ./configure \
 --prefix=${PETSC_INSTALL_DIR} \
+--CC=${PETSC_C_COMPILER} \
 --CFLAGS=\"${PETSC_C_FLAGS}\" \
+--CXX=${PETSC_CXX_COMPILER} \
 --CXXFLAGS=\"${PETSC_CXX_FLAGS}\" \
+--FC=${PETSC_Fortran_COMPILER} \
 --FFLAGS=\"${PETSC_Fortran_FLAGS}\" \
 --with-fortran-bindings=0 \
 --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis \
