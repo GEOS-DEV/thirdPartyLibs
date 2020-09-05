@@ -904,6 +904,81 @@ ExternalProject_Add( hypre
 list(APPEND build_list hypre )
 
 ################################
+# SUITESPARSE
+################################
+if(ENABLE_SUITESPARSE)
+    set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
+    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.8.1.tar.gz")
+
+    message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
+
+    set( SUITESPARSE_DEPENDS metis )
+
+    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
+    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
+    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
+
+    set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( SUITESPARSE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( SUITESPARSE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+
+    if (ENABLE_OPENMP)
+        set(SUITESPARSE_OPENMP_FLAG "${OpenMP_C_FLAGS}")
+    else()
+        set(SUITESPARSE_OPENMP_FLAG "")
+    endif()
+
+    set( SUITESPARSE_CONFIG_ARGS "CC=${SUITESPARSE_C_COMPILER} \
+CFLAGS=\"${SUITESPARSE_C_FLAGS}\" \
+CXX=${SUITESPARSE_CXX_COMPILER} \
+CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
+FC=${SUITESPARSE_Fortran_COMPILER} \
+FCFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
+JOBS=${NUM_PROC} \
+CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
+INSTALL=${SUITESPARSE_DIR} \
+BLAS=\"${BLAS_LINK_LINE}\" \
+LAPACK=\"${LAPACK_LINK_LINE}\" \
+MY_METIS_LIB=\"${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a\" \
+MY_METIS_INC=\"${CMAKE_INSTALL_PREFIX}/metis/include\" \
+CUDA=no")
+
+    # UMFPACK dependencies
+    set( SUITESPARSE_PACKAGES "SuiteSparse_config;AMD;BTF;CAMD;CCOLAMD;COLAMD;CHOLMOD;KLU;LDL;UMFPACK" )
+
+    set( SUITESPARSE_BUILD_CMD "" )
+    foreach( PKG ${SUITESPARSE_PACKAGES} )
+        set( SUITESPARSE_BUILD_CMD "${SUITESPARSE_BUILD_CMD}cd ${PKG}\; \
+make ${SUITESPARSE_CONFIG_ARGS} library;
+cd ..\n" )
+    endforeach()
+
+    set( SUITESPARSE_INSTALL_CMD "" )
+    foreach( PKG ${SUITESPARSE_PACKAGES} )
+        set( SUITESPARSE_INSTALL_CMD "${SUITESPARSE_INSTALL_CMD}cd ${PKG}\; \
+make ${SUITESPARSE_CONFIG_ARGS} install;
+cd ..\n" )
+    endforeach()
+
+    file(WRITE ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx "make config ${SUITESPARSE_CONFIG_ARGS}\n" )
+    file(WRITE ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx ${SUITESPARSE_BUILD_CMD})
+    file(WRITE ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx ${SUITESPARSE_INSTALL_CMD})
+
+    ExternalProject_Add( suitesparse
+                         URL ${SUITESPARSE_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/suitesparse
+                         INSTALL_DIR ${SUITESPARSE_DIR}
+                         DEPENDS ${SUITESPARSE_DEPENDS}
+                         BINARY_DIR ${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse
+                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
+                         BUILD_COMMAND cat ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
+                         INSTALL_COMMAND cat ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx
+                       )
+
+    list(APPEND build_list suitesparse )
+endif(ENABLE_SUITESPARSE)
+
+################################
 # PETSC
 ################################
 
@@ -939,7 +1014,7 @@ if( ENABLE_PETSC )
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis")
+        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis --with-mpi-dir=/home/af1990/openmpi/install")
         set( PETSC_DEPENDS parmetis metis superlu_dist )
     else()
         set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
@@ -949,17 +1024,19 @@ if( ENABLE_PETSC )
         set( PETSC_DEPENDS metis )
     endif()
 
+    if(ENABLE_SUITESPARSE)
+        list( APPEND PETSC_DEPENDS suitesparse )
+        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${CMAKE_INSTALL_PREFIX}/suitesparse")
+    endif()
+
 string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
 string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 
 file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
 ./configure \
 --prefix=${PETSC_INSTALL_DIR} \
---CC=${PETSC_C_COMPILER} \
 --CFLAGS=\"${PETSC_C_FLAGS}\" \
---CXX=${PETSC_CXX_COMPILER} \
 --CXXFLAGS=\"${PETSC_CXX_FLAGS}\" \
---FC=${PETSC_Fortran_COMPILER} \
 --FFLAGS=\"${PETSC_Fortran_FLAGS}\" \
 --with-fortran-bindings=0 \
 --with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis \
@@ -1035,70 +1112,6 @@ if(ENABLE_VTK)
 endif(ENABLE_VTK)
 
 ################################
-# SUITESPARSE
-################################
-if(ENABLE_SUITESPARSE)
-    set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
-    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.8.1.tar.gz")
-
-    message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
-
-    set(SUITESPARSE_UMFPACK_CONFIG "-DNCHOLMOD")
-
-    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
-    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
-    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
-
-    set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
-    set( SUITESPARSE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-    set( SUITESPARSE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-
-    if (ENABLE_OPENMP)
-        set(SUITESPARSE_OPENMP_FLAG "${OpenMP_C_FLAGS}")
-    else()
-        set(SUITESPARSE_OPENMP_FLAG "")
-    endif()
-
-    set( SUITESPARSE_MAKE_ARGS "CC=${SUITESPARSE_C_COMPILER} \
-CFLAGS=\"${SUITESPARSE_C_FLAGS}\" \
-CXX=${SUITESPARSE_CXX_COMPILER} \
-CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
-FC=${SUITESPARSE_Fortran_COMPILER} \
-FCFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
-CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
-INSTALL=${SUITESPARSE_DIR} \
-BLAS=\"${BLAS_LINK_LINE}\" \
-LAPACK=\"${LAPACK_LINK_LINE}\" \
-UMFPACK_CONFIG=\"${SUITESPARSE_UMFPACK_CONFIG}\" \
-CUDA=no")
-
-    file(WRITE ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
-    "make config ${SUITESPARSE_MAKE_ARGS}\n" )
-
-    file(WRITE ${PROJECT_BINARY_DIR}/make_suitesparse_for_geosx "\
-    cd SuiteSparse_config && \
-    make -j ${NUM_PROC} VERBOSE=1 ${SUITESPARSE_MAKE_ARGS} install\n \
-    cd ../AMD && \
-    make -j ${NUM_PROC} VERBOSE=1 ${SUITESPARSE_MAKE_ARGS} install\n \
-    cd ../UMFPACK && \
-    make -j ${NUM_PROC} VERBOSE=1 ${SUITESPARSE_MAKE_ARGS} install\n \
-    cd ..\n")
-
-    ExternalProject_Add( suitesparse
-                         URL ${SUITESPARSE_URL}
-                         PREFIX ${PROJECT_BINARY_DIR}/suitesparse
-                         INSTALL_DIR ${SUITESPARSE_DIR}
-                         DEPENDS ${SUITESPARSE_DEPENDS}
-                         BINARY_DIR ${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse
-                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
-                         BUILD_COMMAND cat ${PROJECT_BINARY_DIR}/make_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/make_suitesparse_for_geosx
-                         INSTALL_COMMAND ""
-                       )
-
-    list(APPEND build_list suitesparse )
-endif(ENABLE_SUITESPARSE)
-
-################################
 # Create target that builds all dependencies
 ################################
 message(STATUS "Building= ${build_list}")
@@ -1107,3 +1120,9 @@ blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
 
 add_dependencies( tpl ${build_list}  )
+
+# Clean up
+add_custom_command( TARGET tpl POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx )
