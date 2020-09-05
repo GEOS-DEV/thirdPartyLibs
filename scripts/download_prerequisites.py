@@ -1,12 +1,13 @@
 import os
 import os.path
 import sys
+import re
 import logging
-import yaml
 import hashlib
 import argparse
 from urllib.parse import urlparse
 
+import yaml
 import requests
 
 
@@ -49,8 +50,12 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
             response.raise_for_status()
 
             # TODO improve name (see doxygen)
-            parsed_url = urlparse(url)
-            output = os.path.basename(parsed_url.path)
+            m = re.search("filename=(.+)", response.headers.get('content-disposition', ''))
+            if m:
+                output = m.group(1)
+            else:
+                parsed_url = urlparse(url)
+                output = os.path.basename(parsed_url.path)
             output_file_name = os.path.join(dest, output)
 
             if os.path.exists(output_file_name):
