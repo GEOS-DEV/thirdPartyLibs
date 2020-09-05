@@ -7,7 +7,8 @@ tpls:
   url: 
   md5: 771f54adf355f7dbd35188ae1b602a05
 - name: astyle
-  url: https://sourceforge.net/projects/astyle/files/astyle/astyle%203.1/astyle_3.1_linux.tar.gz/download
+  # url: https://sourceforge.net/projects/astyle/files/astyle/astyle%203.1/astyle_3.1_linux.tar.gz/download
+  url: https://gigenet.dl.sourceforge.net/project/astyle/astyle/astyle%203.1/astyle_3.1_linux.tar.gz
   md5: 7712622f62661b1d8cb1062d7fedc390
 - name: axom
   url: https://github.com/LLNL/axom/releases/download/v0.3.1/Axom-v0.3.1.tar.gz
