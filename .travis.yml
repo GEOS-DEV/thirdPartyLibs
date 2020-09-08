@@ -62,6 +62,10 @@ geosx_linux_build: &geosx_linux_build
 geosx_ubuntu_build: &geosx_ubuntu_build
   <<: *geosx_linux_build
   before_script:
+  # FIXME wrong place
+  - python3 ${TRAVIS_BUILD_DIR}/scripts/download_prerequisites.py
+   --tpl=${TRAVIS_BUILD_DIR}/scripts/tpls.yaml
+   --dest=${TRAVIS_BUILD_DIR}/tplMirror
     # We save memory for the docker context
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
@@ -104,19 +108,19 @@ geosx_pangea_build: &geosx_pangea_build
 
 jobs:
   include:
-  - <<: *geosx_pangea_build
-    # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
-    env: PANGEA_VERSION=2
-  - <<: *geosx_osx_build
-  - <<: *geosx_centos_build
-    # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: CLANG_MAJOR_VERSION=9
+  # - <<: *geosx_pangea_build
+  #   # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
+  #   env: PANGEA_VERSION=2
+  # - <<: *geosx_osx_build
+  # - <<: *geosx_centos_build
+  #   # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
+  #   env: CLANG_MAJOR_VERSION=9
   - <<: *geosx_ubuntu_build
     # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
     env: GCC_MAJOR_VERSION=8
-  - <<: *geosx_clang_cuda_build
-    # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-    env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
-  - <<: *geosx_gcc_cuda_build
-    # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-    env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243
+  # - <<: *geosx_clang_cuda_build
+  #   # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
+  #   env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
+  # - <<: *geosx_gcc_cuda_build
+  #   # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
+  #   env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243

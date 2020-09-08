@@ -19,6 +19,7 @@ def read_config_file(file_name):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tpl", default="tpls.yaml")
+    parser.add_argument("--dest", default="../tplMirror")
     return parser.parse_args()
 
 
@@ -105,8 +106,8 @@ def main():
     args = parse_args()
     tpls = read_config_file(args.tpl)
     try:
-        # download_all_tpls(tpls["tpls"], tpls["dest"])
-        download_all_tpls(tpls["tpls"], "/tmp/test")
+        download_all_tpls(tpls["tpls"], tpls["dest"])
+        # download_all_tpls(tpls["tpls"], "/tmp/test")
     except Exception as e:
         logging.error(e)
         sys.exit(1)
