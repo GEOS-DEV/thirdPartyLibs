@@ -38,11 +38,12 @@ def validate_hashcode(file_name, md5_reference):
         logging.error(e)
 
 
-def build_output_name(tpl, response):
+def build_output_name(tpl, response, url):
     """
     Builds and returns the downloaded file name.
     tpl: dict like - may contain the name in the `output` key.
     response: http request answer - my contain a name in its header.
+    url: string - download link.
     """
     # If a name is provided by the user
     # FIXME one could use the `name` field instead.
@@ -54,7 +55,7 @@ def build_output_name(tpl, response):
         return m.group(1)
     # Default is to build the basename from the URL
     parsed_url = urlparse(url)
-    output = os.path.basename(parsed_url.path)
+    return os.path.basename(parsed_url.path)
 
 
 def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
@@ -69,7 +70,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
 
-            output_file_name = build_output_name(tpl, response)
+            output_file_name = build_output_name(tpl, response, url)
             output = os.path.join(dest, output_file_name)
 
             if os.path.exists(output):
