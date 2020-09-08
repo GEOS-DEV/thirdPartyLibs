@@ -28,6 +28,7 @@ tpls:
 - name: doxygen
   url: https://github.com/doxygen/doxygen/archive/Release_1_8_13.tar.gz
   md5: 684bfd513778cc6e2635b2f6755654c1
+  output: doxygen.tar.gz
 - name: fparser
   url: http://warp.povusers.org/FunctionParser/fparser4.5.2.zip
   md5: ce805d2f827f25e61f266e176b8d338d
