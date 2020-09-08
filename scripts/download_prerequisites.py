@@ -37,6 +37,25 @@ def validate_hashcode(file_name, md5_reference):
         logging.error(e)
 
 
+def build_output_name(tpl, response):
+    """
+    Builds and returns the downloaded file name.
+    tpl: dict like - may contain the name in the `output` key.
+    response: http request answer - my contain a name in its header.
+    """
+    # If a name is provided by the user
+    # FIXME one could use the `name` field instead.
+    if "output" in tpl:
+        return tpl["output"]
+    # If the name is defined in the HTTP headers
+    m = re.search("filename=(.+)", response.headers.get('content-disposition', ''))
+    if m:
+        return m.group(1)
+    # Default is to build the basename from the URL
+    parsed_url = urlparse(url)
+    output = os.path.basename(parsed_url.path)
+
+
 def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
     url = tpl["url"]
 
@@ -49,31 +68,25 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
 
-            # TODO improve name (see doxygen)
-            m = re.search("filename=(.+)", response.headers.get('content-disposition', ''))
-            if m:
-                output = m.group(1)
-            else:
-                parsed_url = urlparse(url)
-                output = os.path.basename(parsed_url.path)
-            output_file_name = os.path.join(dest, output)
+            output_file_name = build_output_name(tpl, response)
+            output = os.path.join(dest, output_file_name)
 
-            if os.path.exists(output_file_name):
+            if os.path.exists(output):
                 if overwrite:
-                    msg = 'File "%s" already exists, overwriting.' % output_file_name
+                    msg = 'File "%s" already exists, overwriting.' % output
                     logging.warning(msg)
                 else:
-                    msg = 'File "%s" already exists, nothing done.' % output_file_name
+                    msg = 'File "%s" already exists, nothing done.' % output
                     logging.warning(msg)
                     return
 
-            with open(output_file_name, "wb") as f:
-                logging.info("Downloading " + url)
+            with open(output, "wb") as f:
+                logging.info("Downloading %s to %s" % (url, output))
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     f.write(chunk)
 
         if "md5" in tpl and tpl["md5"]:
-            validate_hashcode(output_file_name, tpl["md5"])
+            validate_hashcode(output, tpl["md5"])
     except Exception as e:
         logging.error(e)
 
