@@ -5,14 +5,7 @@ geosx_osx_build: &geosx_osx_build
   os: osx
   osx_image: xcode11.2
   install:
-    # It is not immediate to get the version of open-mpi we want.
-    # We use the specific revision of the openmpi 4.0.2 upgrade.
-    # (The revision is identified through its git commit hash.
-    # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
-  - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
-  - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
-  - brew install ${BREW_URL}/Formula/open-mpi.rb > /dev/null 2>&1
-  - brew install ${BREW_URL}/Formula/git-lfs.rb > /dev/null 2>&1
+  - brew install open-mpi git-lfs > /dev/null 2>&1
   before_script:
   - git lfs install
   - git lfs pull
@@ -26,7 +19,7 @@ geosx_osx_build: &geosx_osx_build
   - pip3 install -q google-cloud-storage
   - cd ${TRAVIS_BUILD_DIR}
   - openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  - python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
+  - python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json
 
 geosx_linux_build: &geosx_linux_build
   stage: build

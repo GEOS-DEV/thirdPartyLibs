@@ -3,3 +3,4 @@ install-*
 .cproject
 .project
 .pydevproject
+.vscode
