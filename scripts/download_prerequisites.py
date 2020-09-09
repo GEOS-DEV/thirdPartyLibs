@@ -72,6 +72,8 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
 
             output_file_name = build_output_name(tpl, response, url)
             output = os.path.join(dest, output_file_name)
+            logging.warning("Downloading (0) %s to %s" % (url, output))
+
 
             if os.path.exists(output):
                 if overwrite:
