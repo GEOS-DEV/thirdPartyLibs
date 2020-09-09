@@ -61,6 +61,7 @@ geosx_linux_build: &geosx_linux_build
 
 geosx_ubuntu_build: &geosx_ubuntu_build
   <<: *geosx_linux_build
+  dist: focal
   before_script:
   - sudo apt-get update
   - sudo apt-get -y install ca-certificates
