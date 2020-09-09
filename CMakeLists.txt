@@ -134,7 +134,7 @@ list(APPEND build_list astyle )
 if( ENABLE_DOXYGEN )
 
   set(DOXYGEN_DIR "${CMAKE_INSTALL_PREFIX}/doxygen")
-  set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen.gz")
+  set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen.tar.gz")
   message(STATUS "Building Doxygen found at ${DOXYGEN_URL}")
 
   ExternalProject_Add( doxygen
