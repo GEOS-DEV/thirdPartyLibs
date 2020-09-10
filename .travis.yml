@@ -1,28 +1,34 @@
 language: minimal
 
+geosx_tpl_download: &geosx_tpl_download
+  python3 ${TRAVIS_BUILD_DIR}/scripts/download_prerequisites.py 
+  --tpl=${TRAVIS_BUILD_DIR}/scripts/tpls.yaml
+  --dest=${TRAVIS_BUILD_DIR}/tplMirror
+
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
   osx_image: xcode11.2
   install:
     # It is not immediate to get the version of open-mpi we want.
-    # We use the specific revision of the openmpi 4.0.2 upgrade.
-    # (The revision is identified through its git commit hash.
-    # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
-    # - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
-    # git commit associated with OpenMPI 4.0.5
+    # (The revision is identified through its git commit hash of
+    # the https://github.com/Homebrew/homebrew-core repository).
+    # To find the version, a convenient way is to browse
+    # the `Formula/open-mpi.rb` history.)
   - BREW_HASH=7e8d6b9f40e3e79f704d0f5c59f7da31a9f556df
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
-  - wget ${BREW_URL}/Formula/open-mpi.rb
   - brew update
+  - wget ${BREW_URL}/Formula/open-mpi.rb
   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb > /dev/null 2>&1
   - for dep in `brew deps open-mpi.rb`; do brew install $dep; done
   - wget ${BREW_URL}/Formula/git-lfs.rb
   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb > /dev/null 2>&1
   - for dep in `brew deps git-lfs.rb`; do brew install $dep; done
-  before_script:
+  # Getting the LFS elements if the repository
   - git lfs install
   - git lfs pull
+  # Download the TPL
+  - *geosx_tpl_download
   script:
   - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
   - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DENABLE_DOXYGEN:BOOL=OFF -ip ${GEOSX_TPL_DIR}
@@ -38,7 +44,11 @@ geosx_osx_build: &geosx_osx_build
 geosx_linux_build: &geosx_linux_build
   stage: build
   os: linux
+  dist: focal
   services: docker
+  install:
+  # Download the TPL
+  - *geosx_tpl_download
   script:
     # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
     # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
@@ -61,16 +71,11 @@ geosx_linux_build: &geosx_linux_build
 
 geosx_ubuntu_build: &geosx_ubuntu_build
   <<: *geosx_linux_build
-  dist: focal
   before_script:
-  # FIXME wrong place
-  - python3 ${TRAVIS_BUILD_DIR}/scripts/download_prerequisites.py
-   --tpl=${TRAVIS_BUILD_DIR}/scripts/tpls.yaml
-   --dest=${TRAVIS_BUILD_DIR}/tplMirror
-    # We save memory for the docker context
+  # We save memory for the docker context
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
-    # Defining what we are going to build in the `script` stage.
+  # Defining what we are going to build in the `script` stage.
   - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc8
   - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
 
@@ -80,7 +85,7 @@ geosx_centos_build: &geosx_centos_build
   <<: *geosx_linux_build
   before_script:
   - echo .git > .dockerignore
-    # Defining what we are going to build in the `script` stage.
+  # Defining what we are going to build in the `script` stage.
   - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
   - DOCKERFILE=docker/clang-centos/Dockerfile
 
@@ -103,25 +108,25 @@ geosx_pangea_build: &geosx_pangea_build
   before_script:
     - echo .git > .dockerignore
     - echo "**/*.rpm" >> .dockerignore
-      # Defining what we are going to build in the `script` stage.
+    # Defining what we are going to build in the `script` stage.
     - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
     - DOCKERFILE=docker/pangea2/Dockerfile
 
 jobs:
   include:
-  # - <<: *geosx_pangea_build
-  #   # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
-  #   env: PANGEA_VERSION=2
-  # - <<: *geosx_osx_build
-  # - <<: *geosx_centos_build
-  #   # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-  #   env: CLANG_MAJOR_VERSION=9
+  - <<: *geosx_pangea_build
+    # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
+    env: PANGEA_VERSION=2
+  - <<: *geosx_osx_build
+  - <<: *geosx_centos_build
+    # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
+    env: CLANG_MAJOR_VERSION=9
   - <<: *geosx_ubuntu_build
     # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
     env: GCC_MAJOR_VERSION=8
-  # - <<: *geosx_clang_cuda_build
-  #   # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-  #   env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
-  # - <<: *geosx_gcc_cuda_build
-  #   # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-  #   env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243
+  - <<: *geosx_clang_cuda_build
+    # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
+    env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
+  - <<: *geosx_gcc_cuda_build
+    # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
+    env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243
