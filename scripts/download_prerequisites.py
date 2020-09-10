@@ -134,7 +134,8 @@ if __name__ == "__main__":
     logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                         datefmt='%Y/%m/%d %H:%M:%S',
                         level=logging.INFO)
-    sys.exit(main().value)
+    # sys.exit(main().value)
+    main()
 
 # NOTES
 # adiak from github does not contain submodules
