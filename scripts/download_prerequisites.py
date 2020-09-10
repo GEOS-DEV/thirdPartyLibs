@@ -31,7 +31,6 @@ def parse_args():
 
 
 def validate_hashcode(file_name, md5_reference):
-    logging.info("Checking md5 sum for " + file_name)
     md5 = hashlib.md5()
     chunk_size = md5.block_size * 1024
     try:
@@ -43,6 +42,8 @@ def validate_hashcode(file_name, md5_reference):
             error_msg = "md5 sum for %s is %s and does not match reference %s" % (file_name, md5.hexdigest(), md5_reference)
             logging.error(error_msg)
             return ErrorCode.Error
+        else:
+            logging.info("Checksum for %s matches reference.")
 
         return ErrorCode.Success
     except Exception as e:
@@ -74,8 +75,8 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
     url = tpl["url"] # FIXME what is no url field?
 
     if not url:
-        msg = 'No url provided for tpl "%s". Nothing done.' % tpl["name"]
-        logging.warning(msg) # FIXME error in the end
+        msg = 'No url provided for tpl "%s". Nothing done.' % tpl["output"]
+        logging.error(msg)
         return ErrorCode.Error
 
     try:
@@ -136,6 +137,3 @@ if __name__ == "__main__":
                         level=logging.INFO)
     # sys.exit(main().value)
     main()
-
-# NOTES
-# adiak from github does not contain submodules
