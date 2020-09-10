@@ -9,7 +9,9 @@ geosx_osx_build: &geosx_osx_build
     # We use the specific revision of the openmpi 4.0.2 upgrade.
     # (The revision is identified through its git commit hash.
     # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
-  - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
+    # - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
+    # git commit associated with OpenMPI 4.0.5
+  - BREW_HASH=5c76fbc892ebdcced038f7de55b5b17d54be560b
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - wget ${BREW_URL}/Formula/open-mpi.rb
   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb > /dev/null 2>&1
