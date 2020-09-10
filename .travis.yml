@@ -63,8 +63,6 @@ geosx_ubuntu_build: &geosx_ubuntu_build
   <<: *geosx_linux_build
   dist: focal
   before_script:
-  - sudo apt-get update
-  - sudo apt-get -y install ca-certificates
   # FIXME wrong place
   - python3 ${TRAVIS_BUILD_DIR}/scripts/download_prerequisites.py
    --tpl=${TRAVIS_BUILD_DIR}/scripts/tpls.yaml

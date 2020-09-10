@@ -67,7 +67,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
         return
 
     try:
-        with requests.get(url, stream=True, allow_redirects=True) as response:
+        with requests.get(url, stream=True) as response:
             response.raise_for_status()
 
             output_file_name = build_output_name(tpl, response, url)
@@ -83,7 +83,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
                     return
 
             with open(output, "wb") as f:
-                logging.warning("Downloading %s to %s" % (url, output))
+                logging.INFO("Downloading %s to %s" % (url, output))
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     f.write(chunk)
 
@@ -117,7 +117,7 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                         datefmt='%Y/%m/%d %H:%M:%S',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     main()
 
 # NOTES
