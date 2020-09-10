@@ -86,7 +86,7 @@ include( cmake/thirdparty/FindMathLibraries.cmake )
 # UNCRUSTIFY
 ################################
 set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
-set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-401a409.zip")
+set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify.zip")
 message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
@@ -109,7 +109,7 @@ list(APPEND build_list uncrustify )
 # ASTYLE
 ################################
 set(ASTYLE_DIR "${CMAKE_INSTALL_PREFIX}/astyle")
-set(ASTYLE_URL "${TPL_MIRROR_DIR}/astyle_3.1_linux.tar.gz")
+set(ASTYLE_URL "${TPL_MIRROR_DIR}/astyle.tar.gz")
 message(STATUS "Building AStyle found at ${ASTYLE_URL}")
 
 ExternalProject_Add( astyle
@@ -157,7 +157,7 @@ endif()
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.5.tar.gz")    
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5.tar.gz")    
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
@@ -195,7 +195,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.5.0-src-with-blt.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -252,7 +252,7 @@ list(APPEND build_list conduit )
 # Axom
 ################################
 set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-set(AXOM_URL "${TPL_MIRROR_DIR}/Axom-v0.3.1.tar.gz")
+set(AXOM_URL "${TPL_MIRROR_DIR}/axom.tar.gz")
 
 message(STATUS "Building Axom found at ${AXOM_URL}")
 
@@ -359,7 +359,7 @@ endif()
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.11.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
 # workaround for cuda/gcc float128 issue 
@@ -410,7 +410,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2.1.1.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -453,7 +453,7 @@ list(APPEND build_list chai )
 # FPARSER
 ################################
 set(FPARSER_DIR "${CMAKE_INSTALL_PREFIX}/fparser")
-set(FPARSER_URL "${TPL_MIRROR_DIR}/fparser4.5.2.zip")
+set(FPARSER_URL "${TPL_MIRROR_DIR}/fparser.zip")
 message(STATUS "Building FPARSER found at ${FPARSER_URL}")
 
 ExternalProject_Add( fparser
@@ -479,7 +479,7 @@ list(APPEND build_list fparser )
 ################################
 if (ENABLE_CALIPER)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
-    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.0.tar.gz")
+    set(ADIAK_URL "${TPL_MIRROR_DIR}/adiak.tar.gz")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
     ExternalProject_Add( adiak
@@ -506,7 +506,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-2.4.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     ExternalProject_Add( caliper
@@ -588,7 +588,7 @@ endif()
 # PUGIXML
 ################################
 set(PUGIXML_DIR "${CMAKE_INSTALL_PREFIX}/pugixml")
-set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.8.0.tar.gz")
+set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml.tar.gz")
 
 message(STATUS "Building PUGIXML found at ${PUGIXML_URL}")
 
@@ -614,7 +614,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-18-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -776,7 +776,7 @@ list(APPEND build_list metis )
 ################################
 if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
+  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist.tar.gz")
   
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -821,7 +821,7 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-343e31c845dd1a0448105ebfd77d464c66ec8de6.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -908,7 +908,7 @@ list(APPEND build_list hypre )
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite.tar.gz")
     set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
@@ -989,7 +989,7 @@ endif()
 ################################
 if(ENABLE_VTK)
     set(VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk")
-    set(VTK_URL "${TPL_MIRROR_DIR}/VTK-v9.0.0.rc3.tar.gz")
+    set(VTK_URL "${TPL_MIRROR_DIR}/VTK.tar.gz")
     
     message(STATUS "Building VTK found at ${VTK_URL}")
     
