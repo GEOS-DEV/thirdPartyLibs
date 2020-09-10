@@ -1,5 +1,6 @@
 import os
 import os.path
+import enum
 import sys
 import re
 import logging
@@ -9,6 +10,11 @@ from urllib.parse import urlparse
 
 import yaml
 import requests
+
+
+class ErrorCode(enum.Enum):
+    Success = 0
+    Error = 1
 
 
 def read_config_file(file_name):
@@ -32,11 +38,16 @@ def validate_hashcode(file_name, md5_reference):
         with open(file_name, "rb") as f:
             for chunk in iter( lambda: f.read(chunk_size), b'' ):
                 md5.update(chunk)
+
         if md5.hexdigest() != md5_reference:
             error_msg = "md5 sum for %s is %s and does not match reference %s" % (file_name, md5.hexdigest(), md5_reference)
             logging.error(error_msg)
+            return ErrorCode.Error
+
+        return ErrorCode.Success
     except Exception as e:
         logging.error(e)
+        return ErrorCode.Error
 
 
 def build_output_name(tpl, response, url):
@@ -60,12 +71,12 @@ def build_output_name(tpl, response, url):
 
 
 def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
-    url = tpl["url"]
+    url = tpl["url"] # FIXME what is no url field?
 
     if not url:
         msg = 'No url provided for tpl "%s". Nothing done.' % tpl["name"]
-        logging.warning(msg)
-        return
+        logging.warning(msg) # FIXME error in the end
+        return ErrorCode.Error
 
     try:
         with requests.get(url, stream=True) as response:
@@ -81,7 +92,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
                 else:
                     msg = 'File "%s" already exists, nothing done.' % output
                     logging.warning(msg)
-                    return
+                    return ErrorCode.Success
 
             with open(output, "wb") as f:
                 logging.info("Downloading %s to %s" % (url, output))
@@ -89,37 +100,41 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
                     f.write(chunk)
 
         if "md5" in tpl and tpl["md5"]:
-            validate_hashcode(output, tpl["md5"])
+            return validate_hashcode(output, tpl["md5"])
+
+        return ErrorCode.Success
     except Exception as e:
         logging.error(e)
+        return ErrorCode.Error
 
 
 def download_all_tpls(tpls, dest):
     if not os.path.isdir(dest):
         error_msg = "Destination folder \"%s\" does not exist or is not a directory." % dest
         logging.error(error_msg)
-        sys.exit(1)
+        sys.exit(ErrorCode.Error)
 
-    for tpl in tpls:
-        download_tpl(tpl, dest)
+    # I convert into list to be sure that the whole iteration goes through before going to the error check.
+    error_codes = list(map(lambda tpl: download_tpl(tpl, dest), tpls))
+    return ErrorCode.Success if all( ec == ErrorCode.Success for ec in error_codes ) else ErrorCode.Error
 
 
 def main():
     args = parse_args()
     tpls = read_config_file(args.tpl)
     try:
-        download_all_tpls(tpls["tpls"], args.dest)
-        # download_all_tpls(tpls["tpls"], "/tmp/test")
+        # return download_all_tpls(tpls["tpls"], "/tmp/test")
+        return download_all_tpls(tpls["tpls"], args.dest)
     except Exception as e:
         logging.error(e)
-        sys.exit(1)
+        return ErrorCode.Error
 
 
 if __name__ == "__main__":
     logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                         datefmt='%Y/%m/%d %H:%M:%S',
                         level=logging.INFO)
-    main()
+    sys.exit(main().value)
 
 # NOTES
 # adiak from github does not contain submodules
