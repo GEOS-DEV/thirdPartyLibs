@@ -18,7 +18,7 @@ tpls:
   url: 
   md5: 1a8ded173392feb9c4b9e33837ac7b0f
 - output: chai.tar.gz
-  url: https://github.com/LLNL/CHAI/releases/download/v2.2.1/chai-2.2.1.tar.gz
+  url: https://github.com/LLNL/CHAI/releases/download/v2.1.1/chai-2.1.1.tar.gz
   md5: c6ff82695599b7020dd855e0df187e31
 - output: conduit.tar.gz
   url: https://github.com/LLNL/conduit/releases/download/v0.5.0/conduit-v0.5.0-src-with-blt.tar.gz
