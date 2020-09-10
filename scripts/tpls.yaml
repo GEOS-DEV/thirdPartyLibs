@@ -1,6 +1,6 @@
 tpls:
 - name: adiak
-  url: https://github.com/LLNL/Adiak/archive/v0.2.0.tar.gz
+  url: https://github.com/LLNL/Adiak/releases/download/v0.2.0/adiak-0.2.0.tar.gz
   md5: 184cd6c948cd953fdcc4a61044a0d40c
 - name: asm-jit
   url: 
