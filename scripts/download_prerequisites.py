@@ -43,7 +43,7 @@ def validate_hashcode(file_name, md5_reference):
             logging.error(error_msg)
             return ErrorCode.Error
         else:
-            logging.info("Checksum for %s matches reference.")
+            logging.info("Checksum for %s matches reference." % file_name)
 
         return ErrorCode.Success
     except Exception as e:
@@ -72,7 +72,7 @@ def build_output_name(tpl, response, url):
 
 
 def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
-    url = tpl["url"] # FIXME what is no url field?
+    url = tpl.get("url")
 
     if not url:
         msg = 'No url provided for tpl "%s". Nothing done.' % tpl["output"]
