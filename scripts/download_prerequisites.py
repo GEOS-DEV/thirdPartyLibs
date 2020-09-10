@@ -13,7 +13,8 @@ import requests
 
 def read_config_file(file_name):
     with open(file_name, 'r') as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
+        return yaml.load(f)
+        # return yaml.load(f, Loader=yaml.FullLoader)
 
 
 def parse_args():
@@ -83,7 +84,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
                     return
 
             with open(output, "wb") as f:
-                logging.INFO("Downloading %s to %s" % (url, output))
+                logging.info("Downloading %s to %s" % (url, output))
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     f.write(chunk)
 
