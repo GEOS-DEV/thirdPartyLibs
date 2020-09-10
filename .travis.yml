@@ -14,7 +14,7 @@ geosx_osx_build: &geosx_osx_build
   - BREW_HASH=5c76fbc892ebdcced038f7de55b5b17d54be560b
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - wget ${BREW_URL}/Formula/open-mpi.rb
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb --debug #> /dev/null 2>&1
+  - HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=y HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb --debug #> /dev/null 2>&1
   - for dep in `brew deps open-mpi.rb`; do brew install $dep; done
   - wget ${BREW_URL}/Formula/git-lfs.rb
   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb > /dev/null 2>&1
