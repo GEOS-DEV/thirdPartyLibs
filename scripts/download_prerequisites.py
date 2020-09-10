@@ -69,7 +69,7 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
 
     try:
         with requests.get(url, stream=True) as response:
-            # response.raise_for_status()
+            response.raise_for_status()
 
             output_file_name = build_output_name(tpl, response, url)
             output = os.path.join(dest, output_file_name)
