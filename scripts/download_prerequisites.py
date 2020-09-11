@@ -113,7 +113,7 @@ def download_all_tpls(tpls, dest):
     if not os.path.isdir(dest):
         error_msg = "Destination folder \"%s\" does not exist or is not a directory." % dest
         logging.error(error_msg)
-        sys.exit(ErrorCode.Error)
+        return ErrorCode.Error
 
     # I convert into list to be sure that the whole iteration goes through before going to the error check.
     error_codes = list(map(lambda tpl: download_tpl(tpl, dest), tpls))
