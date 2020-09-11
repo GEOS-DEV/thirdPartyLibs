@@ -10,6 +10,8 @@ from urllib.parse import urlparse
 
 import yaml
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 class ErrorCode(enum.Enum):
@@ -80,7 +82,15 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
         return ErrorCode.Success
 
     try:
-        with requests.get(url, stream=True) as response:
+        with requests.Session() as session:
+            retry = Retry(total=2, backoff_factor=5, method_whitelist=False,
+                          status_forcelist=(408, 429, 500, 502, 503, 504))
+            adapter = HTTPAdapter(max_retries=retry)
+            session.mount("https://", adapter)
+            session.mount("http://", adapter)
+            session.mount("ftp://", adapter)
+
+            response = session.get(url, stream=True)
             response.raise_for_status()
 
             output_file_name = build_output_name(tpl, response, url)
