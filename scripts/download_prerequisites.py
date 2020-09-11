@@ -35,7 +35,7 @@ def validate_hashcode(file_name, md5_reference):
     chunk_size = md5.block_size * 1024
     try:
         with open(file_name, "rb") as f:
-            for chunk in iter( lambda: f.read(chunk_size), b'' ):
+            for chunk in iter(lambda: f.read(chunk_size), b''):
                 md5.update(chunk)
 
         if md5.hexdigest() != md5_reference:
@@ -75,8 +75,9 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
 
     if not url:
         msg = 'No url provided for tpl "%s". Nothing done.' % tpl["output"]
-        logging.error(msg)
-        return ErrorCode.Error
+        # When all the urls are fulfilled, this should become an error (logging.error + return ErrorCode.Error)
+        logging.warning(msg)
+        return ErrorCode.Success
 
     try:
         with requests.get(url, stream=True) as response:
@@ -134,6 +135,4 @@ if __name__ == "__main__":
     logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                         datefmt='%Y/%m/%d %H:%M:%S',
                         level=logging.INFO)
-    # Not considering the error code for the moment
-    # sys.exit(main().value)
-    main()
+    sys.exit(main().value)
