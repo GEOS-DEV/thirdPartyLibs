@@ -18,10 +18,10 @@ geosx_osx_build: &geosx_osx_build
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - brew update
   - wget ${BREW_URL}/Formula/open-mpi.rb
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb > /dev/null 2>&1
+  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb
   - for dep in `brew deps open-mpi.rb`; do brew install $dep; done
   - wget ${BREW_URL}/Formula/git-lfs.rb
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb > /dev/null 2>&1
+  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb
   - for dep in `brew deps git-lfs.rb`; do brew install $dep; done
   # Getting the LFS elements if the repository
   - git lfs install
