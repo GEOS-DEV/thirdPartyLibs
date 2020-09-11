@@ -135,7 +135,6 @@ def main():
     args = parse_args()
     tpls = read_config_file(args.tpl)
     try:
-        # return download_all_tpls(tpls["tpls"], "/tmp/test", args.overwrite)
         return download_all_tpls(tpls["tpls"], args.dest, args.overwrite)
     except Exception as e:
         logging.error(e)
