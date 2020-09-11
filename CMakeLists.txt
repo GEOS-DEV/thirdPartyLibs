@@ -949,14 +949,14 @@ CUDA=no")
     set( SUITESPARSE_BUILD_CMD "" )
     foreach( PKG ${SUITESPARSE_PACKAGES} )
         set( SUITESPARSE_BUILD_CMD "${SUITESPARSE_BUILD_CMD}cd ${PKG} && \
-make ${SUITESPARSE_CONFIG_ARGS} library &&
+make ${SUITESPARSE_CONFIG_ARGS} library && \
 cd ..\n" )
     endforeach()
 
     set( SUITESPARSE_INSTALL_CMD "" )
     foreach( PKG ${SUITESPARSE_PACKAGES} )
         set( SUITESPARSE_INSTALL_CMD "${SUITESPARSE_INSTALL_CMD}cd ${PKG} && \
-make ${SUITESPARSE_CONFIG_ARGS} install &&
+make ${SUITESPARSE_CONFIG_ARGS} install && \
 cd ..\n" )
     endforeach()
 
