@@ -116,18 +116,13 @@ geosx_pangea_build: &geosx_pangea_build
 jobs:
   include:
   - <<: *geosx_pangea_build
-    # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
-    env: PANGEA_VERSION=2
+    name: Pangea2 build.
   - <<: *geosx_osx_build
   - <<: *geosx_centos_build
-    # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: CLANG_MAJOR_VERSION=9
+    name: clang-9 build on centos.
   - <<: *geosx_ubuntu_build
-    # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: GCC_MAJOR_VERSION=8
+    name: gcc-8 build on ubuntu.
   - <<: *geosx_clang_cuda_build
-    # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-    env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
+    name: clang-8 and cuda-10.1.243 build on ubuntu.
   - <<: *geosx_gcc_cuda_build
-    # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-    env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243
+    name: gcc-8.3.1 and cuda-10.1.243 build on centos.
