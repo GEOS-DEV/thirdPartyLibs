@@ -10,11 +10,10 @@ geosx_osx_build: &geosx_osx_build
   os: osx
   osx_image: xcode11.2
   install:
-    # It is not immediate to get the version of open-mpi we want.
-    # We use the specific revision of the openmpi 4.0.2 upgrade.
-    # (The revision is identified through its git commit hash.
-    # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
-    # The git commit associated with OpenMPI 4.0.5 is
+  # It is not immediate to get the version of open-mpi we want.
+  # We use the specific revision of the openmpi 4.0.5 upgrade.
+  # (The revision is identified through its git commit hash.
+  # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
   - BREW_HASH=5c76fbc892ebdcced038f7de55b5b17d54be560b
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - brew update
