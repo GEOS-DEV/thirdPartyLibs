@@ -59,7 +59,6 @@ def build_output_name(tpl, response, url):
     url: string - download link.
     """
     # If a name is provided by the user
-    # FIXME one could use the `name` field instead.
     if "output" in tpl:
         return tpl["output"]
     # If the name is defined in the HTTP headers
@@ -135,5 +134,6 @@ if __name__ == "__main__":
     logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                         datefmt='%Y/%m/%d %H:%M:%S',
                         level=logging.INFO)
+    # Not considering the error code for the moment
     # sys.exit(main().value)
     main()
