@@ -1,7 +1,7 @@
 tpls:
 - output: adiak.tar.gz
   url: https://github.com/LLNL/Adiak/releases/download/v0.2.0/adiak-0.2.0.tar.gz
-  md5: 184cd6c948cd953fdcc4a61044a0d40c
+  md5: 1b1d6e4abc1784433548788aebaa2334
 - output: asm-jit.tar.gz
   url: 
   md5: 771f54adf355f7dbd35188ae1b602a05
@@ -31,10 +31,10 @@ tpls:
   md5: ce805d2f827f25e61f266e176b8d338d
 - output: hdf5.tar.gz
   url: https://github.com/live-clones/hdf5/archive/hdf5-1_10_5.tar.gz
-  md5: e115eeb66e944fa7814482415dd21cc4
+  md5: 5708a2aaa155f151c9aee42610613822
 - output: hypre.tar.gz
   url: https://github.com/hypre-space/hypre/archive/343e31c845dd1a0448105ebfd77d464c66ec8de6.tar.gz
-  md5: 0deddc41eb36043fe37f2b83f26d2867
+  md5: 58cee7d1b14c4976275c724a3955e55c
 - output: mathpresso.tar.gz
   url: 
   md5: c0bae6b43f399328ce4ca24ca340b791
@@ -49,7 +49,7 @@ tpls:
   md5: 5d567b52988871a3767ec8ae81f592de
 - output: pugixml.tar.gz
   url: https://github.com/zeux/pugixml/releases/download/v1.8/pugixml-1.8.tar.gz
-  md5: f4899649e2164bb21d2bd102ff7087d1
+  md5: ffa59ee4853958e243050e6b690b4f2e
 - output: RAJA.tar.gz
   url: https://github.com/LLNL/RAJA/releases/download/v0.11.0/RAJA-v0.11.0.tar.gz
   md5: 2ebeb23f99038072915940af28334079
@@ -58,7 +58,7 @@ tpls:
   md5: 1d1858becd09ccb21131145420d0dc5f
 - output: superlu_dist.tar.gz
   url: https://github.com/xiaoyeli/superlu_dist/archive/0f6efc377df2440c235452d13d28d2c717f832a1.tar.gz
-  md5: 3f66a1dc043d479265de7043cf6dca37
+  md5: 4790a811b5a20ed41a6ba56845db26c6
 - output: trilinos.tar.gz
   url: https://github.com/trilinos/Trilinos/archive/trilinos-release-12-18-1.tar.gz
   md5: 9c1d151169949bca6cf203831e4d6aee
