@@ -27,7 +27,7 @@ geosx_osx_build: &geosx_osx_build
   - git lfs install
   - git lfs pull
   # Download the TPL
-  - pip3 pyyaml requests
+  - pip3 install -q pyyaml requests
   - *geosx_tpl_download
   script:
   - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
