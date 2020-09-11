@@ -27,8 +27,9 @@ def read_config_file(file_name):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tpl", default="tpls.yaml")
-    parser.add_argument("--dest", default="../tplMirror")
+    parser.add_argument("--tpl", default="tpls.yaml", help="Path to TPLs yaml description.")
+    parser.add_argument("--dest", default="../tplMirror", help="Download directory.")
+    parser.add_argument('--overwrite', default=False, action='store_true', help="Override existing files.")
     return parser.parse_args()
 
 
@@ -72,7 +73,7 @@ def build_output_name(tpl, response, url):
     return os.path.basename(parsed_url.path)
 
 
-def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
+def download_tpl(tpl, dest, overwrite, chunk_size=1024):
     url = tpl.get("url")
 
     if not url:
@@ -119,14 +120,14 @@ def download_tpl(tpl, dest, overwrite=False, chunk_size=1024):
         return ErrorCode.Error
 
 
-def download_all_tpls(tpls, dest):
+def download_all_tpls(tpls, dest, overwrite):
     if not os.path.isdir(dest):
         error_msg = "Destination folder \"%s\" does not exist or is not a directory." % dest
         logging.error(error_msg)
         return ErrorCode.Error
 
     # I convert into list to be sure that the whole iteration goes through before going to the error check.
-    error_codes = list(map(lambda tpl: download_tpl(tpl, dest), tpls))
+    error_codes = list(map(lambda tpl: download_tpl(tpl, dest, overwrite), tpls))
     return ErrorCode.Success if all( ec == ErrorCode.Success for ec in error_codes ) else ErrorCode.Error
 
 
@@ -134,8 +135,8 @@ def main():
     args = parse_args()
     tpls = read_config_file(args.tpl)
     try:
-        # return download_all_tpls(tpls["tpls"], "/tmp/test")
-        return download_all_tpls(tpls["tpls"], args.dest)
+        # return download_all_tpls(tpls["tpls"], "/tmp/test", args.overwrite)
+        return download_all_tpls(tpls["tpls"], args.dest, args.overwrite)
     except Exception as e:
         logging.error(e)
         return ErrorCode.Error
