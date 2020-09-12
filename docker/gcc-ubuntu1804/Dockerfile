@@ -23,6 +23,7 @@ RUN apt-get install -y --no-install-recommends \
     zlib1g-dev \
     openmpi-bin \
     libopenmpi-dev \
+    ghostscript
 # Some of the TPL's make "extensive" use of python in their build.
 # And we want to test GEOSX's python configuration script.
 # Unfortunately argparse (standard library's package used by GEOSX)
@@ -79,7 +80,7 @@ COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
 WORKDIR ${TPL_BUILD_DIR}
-RUN make
+#RUN make
 
 # Last step is setting everything for a complete slave that will build GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
