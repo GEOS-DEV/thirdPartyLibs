@@ -23,7 +23,7 @@ RUN apt-get install -y --no-install-recommends \
     zlib1g-dev \
     openmpi-bin \
     libopenmpi-dev \
-    ghostscript
+    ghostscript \
 # Some of the TPL's make "extensive" use of python in their build.
 # And we want to test GEOSX's python configuration script.
 # Unfortunately argparse (standard library's package used by GEOSX)
