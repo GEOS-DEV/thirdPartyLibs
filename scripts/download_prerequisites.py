@@ -117,7 +117,7 @@ def download_tpl(tpl, dest, overwrite, chunk_size=1024):
     Arguments:
         tpl (dict like): Contains keys `url` that defines where to download from, 
             `output` that defines where to doanload and potentially `md5` that contains a checksum reference and
-        dest (str): Doanload file name.
+        dest (str): Download file name.
         overwrite (bool): Shall we overwrite any file that already exists.
         chunk_size (int): Size of the chunk to write when downloading the stream.
             Technical argument, shoud not be needed to modify.
