@@ -109,7 +109,7 @@ def build_output_name(tpl, response, url):
     return os.path.basename(parsed_url.path)
 
 
-def download_tpl(tpl, dest, overwrite, chunk_size=1024):
+def download_tpl(tpl, dest, overwrite, chunk_size=1024 * 1024):
     """
     Downloads the third partylib from `tpl`.
     Validate against md5 checksums if provided.
