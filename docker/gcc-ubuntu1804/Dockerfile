@@ -93,4 +93,5 @@ RUN apt-get install -y --no-install-recommends \
     texlive \
     graphviz \
     libxml2-utils \
-    git
+    git \
+    ghostscript
