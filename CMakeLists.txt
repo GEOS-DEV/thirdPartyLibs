@@ -42,6 +42,7 @@ option( ENABLE_PETSC "" OFF )
 #else()
 #    option( ENABLE_PETSC "" ON )
 #endif()
+option( ENABLE_SUITESPARSE "" ON )
 
 option( ENABLE_VTK "" ON )
 
@@ -157,7 +158,7 @@ endif()
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.5.tar.gz")    
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.5.tar.gz")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
@@ -362,7 +363,7 @@ set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
 set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.11.0.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
-# workaround for cuda/gcc float128 issue 
+# workaround for cuda/gcc float128 issue
 #set(RAJA_CUDA_FLAGS "")
 #if(ENABLE_CUDA)
 #  if(CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le)
@@ -719,10 +720,10 @@ endif()
 set(PARMETIS_DIR "${CMAKE_INSTALL_PREFIX}/parmetis")
 set(METIS_DIR "${CMAKE_INSTALL_PREFIX}/metis")
 set(PARMETIS_URL "${TPL_MIRROR_DIR}/parmetis-4.0.3-IDXTYPEWIDTH_64.tar.gz")
-  
+
 if( ${ENABLE_MPI} )
   message(STATUS "Building PARMETIS found at ${PARMETIS_URL}")
-  
+
   ExternalProject_Add( parmetis
                        PREFIX ${PROJECT_BINARY_DIR}/parmetis
                        URL ${PARMETIS_URL}
@@ -742,7 +743,7 @@ if( ${ENABLE_MPI} )
                                   -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                   )
-  
+
   list(APPEND build_list parmetis )
 endif()
 
@@ -777,10 +778,10 @@ list(APPEND build_list metis )
 if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
-  
+
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
-  
+
   message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
   ExternalProject_Add( superlu_dist
                        PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
@@ -812,7 +813,7 @@ if( ENABLE_MPI )
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                   -D enable_openmp=${ENABLE_OPENMP}
           )
-  
+
   list(APPEND build_list superlu_dist )
 endif()
 
@@ -903,6 +904,81 @@ ExternalProject_Add( hypre
 list(APPEND build_list hypre )
 
 ################################
+# SUITESPARSE
+################################
+if(ENABLE_SUITESPARSE)
+    set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
+    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.8.1.tar.gz")
+
+    message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
+
+    set( SUITESPARSE_DEPENDS metis )
+
+    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
+    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
+    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
+
+    set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( SUITESPARSE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( SUITESPARSE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+
+    if (ENABLE_OPENMP)
+        set(SUITESPARSE_OPENMP_FLAG "${OpenMP_C_FLAGS}")
+    else()
+        set(SUITESPARSE_OPENMP_FLAG "")
+    endif()
+
+    set( SUITESPARSE_CONFIG_ARGS "CC=${SUITESPARSE_C_COMPILER} \
+CFLAGS=\"${SUITESPARSE_C_FLAGS}\" \
+CXX=${SUITESPARSE_CXX_COMPILER} \
+CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
+FC=${SUITESPARSE_Fortran_COMPILER} \
+FCFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
+JOBS=${NUM_PROC} \
+CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
+INSTALL=${SUITESPARSE_DIR} \
+BLAS=\"${BLAS_LINK_LINE}\" \
+LAPACK=\"${LAPACK_LINK_LINE}\" \
+MY_METIS_LIB=\"${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a\" \
+MY_METIS_INC=\"${CMAKE_INSTALL_PREFIX}/metis/include\" \
+CUDA=no")
+
+    # UMFPACK dependencies
+    set( SUITESPARSE_PACKAGES "SuiteSparse_config;AMD;BTF;CAMD;CCOLAMD;COLAMD;CHOLMOD;KLU;UMFPACK" )
+
+    set( SUITESPARSE_BUILD_CMD "" )
+    foreach( PKG ${SUITESPARSE_PACKAGES} )
+        set( SUITESPARSE_BUILD_CMD "${SUITESPARSE_BUILD_CMD}cd ${PKG} && \
+make ${SUITESPARSE_CONFIG_ARGS} library && \
+cd ..\n" )
+    endforeach()
+
+    set( SUITESPARSE_INSTALL_CMD "" )
+    foreach( PKG ${SUITESPARSE_PACKAGES} )
+        set( SUITESPARSE_INSTALL_CMD "${SUITESPARSE_INSTALL_CMD}cd ${PKG} && \
+make ${SUITESPARSE_CONFIG_ARGS} install && \
+cd ..\n" )
+    endforeach()
+
+    file(WRITE ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx "make config ${SUITESPARSE_CONFIG_ARGS}\n" )
+    file(WRITE ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx ${SUITESPARSE_BUILD_CMD})
+    file(WRITE ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx ${SUITESPARSE_INSTALL_CMD})
+
+    ExternalProject_Add( suitesparse
+                         URL ${SUITESPARSE_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/suitesparse
+                         INSTALL_DIR ${SUITESPARSE_DIR}
+                         DEPENDS ${SUITESPARSE_DEPENDS}
+                         BINARY_DIR ${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse
+                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
+                         BUILD_COMMAND cat ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
+                         INSTALL_COMMAND cat ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx
+                       )
+
+    list(APPEND build_list suitesparse )
+endif(ENABLE_SUITESPARSE)
+
+################################
 # PETSC
 ################################
 
@@ -948,6 +1024,11 @@ if( ENABLE_PETSC )
         set( PETSC_DEPENDS metis )
     endif()
 
+    if(ENABLE_SUITESPARSE)
+        list( APPEND PETSC_DEPENDS suitesparse )
+        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${CMAKE_INSTALL_PREFIX}/suitesparse")
+    endif()
+
 string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
 string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 
@@ -976,7 +1057,7 @@ ${PETSC_MPI_FLAG}\n")
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
                          DEPENDS ${PETSC_DEPENDS}
                          INSTALL_DIR ${PETSC_INSTALL_DIR}
-                         CONFIGURE_COMMAND cd ../petsc && cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx 
+                         CONFIGURE_COMMAND cd ../petsc && cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx
                          BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
                          INSTALL_COMMAND cd ../petsc && make install
                         )
@@ -990,9 +1071,9 @@ endif()
 if(ENABLE_VTK)
     set(VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk")
     set(VTK_URL "${TPL_MIRROR_DIR}/VTK-v9.0.0.rc3.tar.gz")
-    
+
     message(STATUS "Building VTK found at ${VTK_URL}")
-    
+
     ExternalProject_Add( vtk
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
@@ -1029,7 +1110,7 @@ if(ENABLE_VTK)
                                     -D VTK_BUILD_TESTING=OFF
                                     -D VTK_LEGACY_REMOVE=ON
                          )
-    
+
     list(APPEND build_list vtk )
 endif(ENABLE_VTK)
 
@@ -1042,3 +1123,9 @@ blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
 
 add_dependencies( tpl ${build_list}  )
+
+# Clean up
+add_custom_command( TARGET tpl POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx )
