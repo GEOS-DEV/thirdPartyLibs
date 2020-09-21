@@ -908,7 +908,7 @@ list(APPEND build_list hypre )
 ################################
 if(ENABLE_SUITESPARSE)
     set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
-    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.8.1.tar.gz")
+    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse.tar.gz")
 
     message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
 

@@ -59,6 +59,9 @@ tpls:
 - output: superlu_dist.tar.gz
   url: https://github.com/xiaoyeli/superlu_dist/archive/0f6efc377df2440c235452d13d28d2c717f832a1.tar.gz
   md5: 4790a811b5a20ed41a6ba56845db26c6
+- output: SuiteSparse.tar.gz
+  url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.8.1.tar.gz
+  md5: c414679bbc9432a3def01b31ad921140
 - output: trilinos.tar.gz
   url: https://github.com/trilinos/Trilinos/archive/trilinos-release-12-18-1.tar.gz
   md5: 9c1d151169949bca6cf203831e4d6aee
