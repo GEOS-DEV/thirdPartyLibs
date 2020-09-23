@@ -129,6 +129,10 @@ geosx_pangea_build: &geosx_pangea_build
     - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
     - DOCKERFILE=docker/pangea2/Dockerfile
 
+stages:
+- backup
+- build
+
 jobs:
   include:
   - <<: *geosx_pangea_build
