@@ -81,7 +81,7 @@ def validate_hashcode(file_name, md5_reference):
 
         return ErrorCode.Success
     except Exception as e:
-        logging.error(e)
+        logging.error(e, exc_info=e)
         return ErrorCode.Error
 
 
@@ -116,7 +116,7 @@ def download_tpl(tpl, dest, overwrite, chunk_size=1024 * 1024):
 
     Arguments:
         tpl (dict like): Contains keys `url` that defines where to download from, 
-            `output` that defines where to doanload and potentially `md5` that contains a checksum reference and
+            `output` that defines where to download and potentially `md5` that contains a checksum reference and
         dest (str): Download file name.
         overwrite (bool): Shall we overwrite any file that already exists.
         chunk_size (int): Size of the chunk to write when downloading the stream.
@@ -173,7 +173,7 @@ def download_tpl(tpl, dest, overwrite, chunk_size=1024 * 1024):
 
         return ErrorCode.Success
     except Exception as e:
-        logging.error(e)
+        logging.error(e, exc_info=e)
         return ErrorCode.Error
 
 
@@ -183,7 +183,7 @@ def download_all_tpls(tpls, dest, overwrite):
 
     Arguments:
         tpls (iterable): Description of all the third party libraries. See `download_tpl` documentation.
-        dest (str): Doanload file name.
+        dest (str): Download file name.
         overwrite (bool): Shall we overwrite any file that already exists.
     
     Returns:
@@ -203,9 +203,12 @@ def download_all_tpls(tpls, dest, overwrite):
 
 
 def main():
-    args = parse_args()
-    tpls = read_config_file(args.tpl)
+    logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
+                        datefmt='%Y/%m/%d %H:%M:%S',
+                        level=logging.INFO)
     try:
+        args = parse_args()
+        tpls = read_config_file(args.tpl) 
         return download_all_tpls(tpls["tpls"], args.dest, args.overwrite)
     except Exception as e:
         logging.error(e)
@@ -213,7 +216,9 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
-                        datefmt='%Y/%m/%d %H:%M:%S',
-                        level=logging.INFO)
-    sys.exit(main().value)
+    try:
+        arguments = sys.argv[1:]
+        sys.exit(main(arguments).value)
+    except Exception as e:
+        logging.error(repr(e))
+        sys.exit(ErrorCode.Error.value)

@@ -20,10 +20,10 @@ def parse_args(arguments):
     Parse the command line arguments
 
     Returns:
-        A structure with 3 attributes (`tpl`, `dest`, `overwrite`) definind respectively
+        A structure with 3 attributes (`tpl`, `from_dir`, `service_account_file`) definind respectively
         - the path to the tpl yaml description file,
-        - the download destination folder
-        - and whether we should overwrite a file if it already exists.
+        - the source folder
+        - the path to the service account file used for GCP bucket connection.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--tpl", default="scripts/tpls.yaml", help="Path to TPLs yaml description.")
@@ -65,24 +65,63 @@ def build_storage_client(credentials):
     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
-def build_name(output, md5):
+def build_blob_name(output, md5):
+    """
+    Builds the blob backup name.
+    We rely on this to check if the file is already saved in the bucket.
+    If the name is not found in the bucket, then we'll backup again.
+    """
     return quote( output + "/" + md5 )
 
 
 def backup_tpls(bucket, tpls, from_dir):
+    """
+    Build all the tpl tarballs defined in `tpls` and located in `from_dir` into GCP's `bucket`.
+
+    Parameters
+        bucket (google.cloud.storage.bucket.Bucket): The GCP storage bucket to upload to.
+        tpls (iterable): Description of all the third party libraries.
+                         "output" key contains the file name to find in `from_dir` and to be uploaded to `bucket`.
+        from_dir (str): The directory where to find the tarball (should be the "output" field )
+
+    Returns:
+        None
+
+    Raises:
+        Raises in case of error.
+    """
+    # We do not want to upload something that already exists,
+    # so we need to know what's already in the bucket.
+    # We rely on naming convention here.
+    # If you break this, tarballs will therefore be saved twice.
     blobs_names = list(b.name for b in bucket.list_blobs())
+
     for output, md5 in ( ( tpl["output"], tpl["md5"] ) for tpl in tpls ):
-        tpl_blob_name = build_name( output, md5 )
-        if tpl_blob_name not in blobs_names:
-            tpl_blob = bucket.blob(tpl_blob_name, chunk_size=8 * 1024 * 1024)
-            from_file_name = os.path.join( from_dir, output )
-            if not os.path.exists( from_file_name ):
-                logging.warning(from_file_name + " does not exist")
-                # FIXME Should become an error/assert
-                continue
-            with open( from_file_name, "rb" ) as f:
-                logging.debug( "Uploading " + from_file_name )
-                tpl_blob.upload_from_file( f )
+        tpl_blob_name = build_blob_name( output, md5 )
+
+        # Nothing to do if the blob already exists.
+        if tpl_blob_name in blobs_names:
+            msg = "%s already in bucket %s" % (tpl_blob_name, bucket.name)
+            logging.info( msg )
+            continue
+
+        # The timeout seems based on the chunk size, so I put a chunck of 4MB for 60 seconds.
+        tpl_blob = bucket.blob( tpl_blob_name, chunk_size=4 * 1024 * 1024 )
+        src_file_name = os.path.join( from_dir, output )
+        # We check that the file has been previously downloaded in `from_dir`
+        # From the workflow we are using, this should not happen so this should be an error.
+        # But we are currently migrating, this is still acceptable
+        if not os.path.exists( src_file_name ):
+            # FIXME Should become an error/assert
+            logging.warning( src_file_name + " does not exist" )
+            continue
+
+        # The upload part
+        with open( src_file_name, "rb" ) as f:
+            msg = "Uploading %s to blob bucket %s" % ( src_file_name, tpl_blob.name )
+            logging.info( msg )
+            logging.debug( "Uploading " + src_file_name )
+            tpl_blob.upload_from_file( f )
 
 
 def main(arguments):
@@ -101,13 +140,13 @@ def main(arguments):
         tpls = read_config_file(args.tpl)
         return backup_tpls(bucket, tpls["tpls"], args.from_dir)
     except Exception as e:
-        logging.error(e)
+        logging.error(e, exc_info=e)
         return 1
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:]))
+        sys.exit( main( sys.argv[1:] ) )
     except Exception as e:
-        logging.error(repr(e))
-        sys.exit(1)
+        logging.error( e, exc_info=e )
+        sys.exit( 1 )
