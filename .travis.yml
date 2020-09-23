@@ -81,7 +81,7 @@ geosx_backup_tpl: &geosx_backup_tpl
   #     packages:
   #     - google-cloud-sdk
   before_script:
-  - pip3 install google-cloud-storage
+  - pip install google-cloud-storage
   script:
   - *geosx_tpl_download
   # Now upload to the proper GCP bucket
