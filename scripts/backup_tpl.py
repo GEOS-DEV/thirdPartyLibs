@@ -28,7 +28,7 @@ def parse_args(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument("--tpl", default="scripts/tpls.yaml", help="Path to TPLs yaml description.")
     parser.add_argument("--from", default="tplMirror", help="TPL directory.", dest="from_dir")
-    # parser.add_argument("service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file.")
+    parser.add_argument("service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file.")
     return parser.parse_args(arguments)
 
 # TODO factor
@@ -93,8 +93,8 @@ def main(arguments):
 
         args = parse_args(arguments)
 
-        # credentials = build_credentials(args.service_account_file)
-        credentials = build_credentials("/root/thirdPartyLibs/geosx-key.json")
+        credentials = build_credentials(args.service_account_file)
+        # credentials = build_credentials("/root/thirdPartyLibs/geosx-key.json")
         storage_client = build_storage_client(credentials)
         bucket = storage_client.get_bucket(TPL_BUCKET_NAME)
 
