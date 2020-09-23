@@ -34,7 +34,7 @@ def read_config_file(file_name):
         # return yaml.load(f, Loader=yaml.FullLoader)
 
 
-def parse_args():
+def parse_args( arguments ):
     """
     Parse the command line arguments
 
@@ -45,10 +45,10 @@ def parse_args():
         - and whether we should overwrite a file if it already exists.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tpl", default="tpls.yaml", help="Path to TPLs yaml description.")
-    parser.add_argument("--dest", default="../tplMirror", help="Download directory.")
-    parser.add_argument('--overwrite', default=False, action='store_true', help="Override existing files.")
-    return parser.parse_args()
+    parser.add_argument( "--tpl", default="tpls.yaml", help="Path to TPLs yaml description." )
+    parser.add_argument( "--dest", default="../tplMirror", help="Download directory." )
+    parser.add_argument( '--overwrite', default=False, action='store_true', help="Override existing files." )
+    return parser.parse_args( arguments )
 
 
 def validate_hashcode(file_name, md5_reference):
@@ -202,12 +202,12 @@ def download_all_tpls(tpls, dest, overwrite):
     return ErrorCode.Success if all( ec == ErrorCode.Success for ec in error_codes ) else ErrorCode.Error
 
 
-def main():
+def main( arguments ):
     logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                         datefmt='%Y/%m/%d %H:%M:%S',
                         level=logging.INFO)
     try:
-        args = parse_args()
+        args = parse_args( arguments )
         tpls = read_config_file(args.tpl) 
         return download_all_tpls(tpls["tpls"], args.dest, args.overwrite)
     except Exception as e:
@@ -218,7 +218,7 @@ def main():
 if __name__ == "__main__":
     try:
         arguments = sys.argv[1:]
-        sys.exit(main(arguments).value)
+        sys.exit( main( arguments ).value )
     except Exception as e:
-        logging.error(repr(e))
-        sys.exit(ErrorCode.Error.value)
+        logging.error( e, exc_info=e )
+        sys.exit( ErrorCode.Error.value )

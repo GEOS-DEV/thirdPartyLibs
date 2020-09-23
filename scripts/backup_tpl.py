@@ -15,7 +15,7 @@ from requests.utils import quote
 TPL_BUCKET_NAME = "geosx-tpl-mirror"
 
 
-def parse_args(arguments):
+def parse_args( arguments ):
     """
     Parse the command line arguments
 
@@ -26,13 +26,13 @@ def parse_args(arguments):
         - the path to the service account file used for GCP bucket connection.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tpl", default="scripts/tpls.yaml", help="Path to TPLs yaml description.")
-    parser.add_argument("--from", default="tplMirror", help="TPL directory.", dest="from_dir")
-    parser.add_argument("service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file.")
-    return parser.parse_args(arguments)
+    parser.add_argument( "--tpl", default="scripts/tpls.yaml", help="Path to TPLs yaml description." )
+    parser.add_argument( "--from", default="tplMirror", help="TPL directory.", dest="from_dir" )
+    parser.add_argument( "service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file." 
+    return parser.parse_args( arguments )
 
 # TODO factor
-def read_config_file(file_name):
+def read_config_file( file_name ):
     """
     Parses and returns the file describing the TPLs.
 
@@ -42,8 +42,8 @@ def read_config_file(file_name):
     Returns:
         The parsed yaml, used as a dict.
     """
-    with open(file_name, 'r') as f:
-        return yaml.load(f)
+    with open( file_name, 'r' ) as f:
+        return yaml.load( f )
         # return yaml.load(f, Loader=yaml.FullLoader)
 
 # TODO refactor
@@ -57,7 +57,7 @@ def build_credentials(service_account_file):
 
 
 # TODO refactor
-def build_storage_client(credentials):
+def build_storage_client( credentials ):
     """
     Builds and returns the GCP storage client.
     This functions requires GCP credentials.
@@ -65,7 +65,7 @@ def build_storage_client(credentials):
     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
-def build_blob_name(output, md5):
+def build_blob_name( output, md5 ):
     """
     Builds the blob backup name.
     We rely on this to check if the file is already saved in the bucket.
@@ -74,7 +74,7 @@ def build_blob_name(output, md5):
     return quote( output + "/" + md5 )
 
 
-def backup_tpls(bucket, tpls, from_dir):
+def backup_tpls( bucket, tpls, from_dir ):
     """
     Build all the tpl tarballs defined in `tpls` and located in `from_dir` into GCP's `bucket`.
 
@@ -94,7 +94,7 @@ def backup_tpls(bucket, tpls, from_dir):
     # so we need to know what's already in the bucket.
     # We rely on naming convention here.
     # If you break this, tarballs will therefore be saved twice.
-    blobs_names = list(b.name for b in bucket.list_blobs())
+    blobs_names = list( b.name for b in bucket.list_blobs() )
 
     for output, md5 in ( ( tpl["output"], tpl["md5"] ) for tpl in tpls ):
         tpl_blob_name = build_blob_name( output, md5 )
@@ -124,7 +124,7 @@ def backup_tpls(bucket, tpls, from_dir):
             tpl_blob.upload_from_file( f )
 
 
-def main(arguments):
+def main( arguments) :
     try:
         logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                 datefmt='%Y/%m/%d %H:%M:%S',
@@ -140,7 +140,7 @@ def main(arguments):
         tpls = read_config_file(args.tpl)
         return backup_tpls(bucket, tpls["tpls"], args.from_dir)
     except Exception as e:
-        logging.error(e, exc_info=e)
+        logging.error( e, exc_info=e )
         return 1
 
 
