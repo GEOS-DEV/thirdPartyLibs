@@ -72,7 +72,7 @@ geosx_linux_build: &geosx_linux_build
 
 geosx_backup_tpl: &geosx_backup_tpl
   stage: backup
-  dist: bionic
+  dist: focal
   # addons:
   #   apt:
   #     sources:
