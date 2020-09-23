@@ -29,9 +29,8 @@ def read_config_file(file_name):
     Returns:
         The parsed yaml, used as a dict.
     """
-    with open(file_name, 'r') as f:
-        return yaml.load(f)
-        # return yaml.load(f, Loader=yaml.FullLoader)
+    with open( file_name, 'r' ) as f:
+        return yaml.load( f, Loader=yaml.FullLoader )
 
 
 def parse_args( arguments ):
