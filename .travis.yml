@@ -127,17 +127,17 @@ geosx_pangea_build: &geosx_pangea_build
 
 jobs:
   include:
-  # - <<: *geosx_pangea_build
-  #   name: Pangea2 build
-  # - <<: *geosx_osx_build
-  #   name: Mac OSX
-  # - <<: *geosx_centos_build
-  #   name: clang-9 build on centos
-  # - <<: *geosx_ubuntu_build
-  #   name: gcc-8 build on ubuntu
-  # - <<: *geosx_clang_cuda_build
-  #   name: clang-8 and cuda-10.1.243 build on ubuntu
-  # - <<: *geosx_gcc_cuda_build
-  #   name: gcc-8.3.1 and cuda-10.1.243 build on centos
+  - <<: *geosx_pangea_build
+    name: Pangea2 build
+  - <<: *geosx_osx_build
+    name: Mac OSX
+  - <<: *geosx_centos_build
+    name: clang-9 build on centos
+  - <<: *geosx_ubuntu_build
+    name: gcc-8 build on ubuntu
+  - <<: *geosx_clang_cuda_build
+    name: clang-8 and cuda-10.1.243 build on ubuntu
+  - <<: *geosx_gcc_cuda_build
+    name: gcc-8.3.1 and cuda-10.1.243 build on centos
   - <<: *geosx_backup_tpl
     name: Backup TPLs
