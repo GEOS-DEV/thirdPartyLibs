@@ -57,33 +57,30 @@ def backup_tpls( bucket, tpls, from_dir ):
     Raises:
         Raises in case of error.
     """
-    # We do not want to upload something that already exists,
-    # so we need to know what's already in the bucket.
-    # We rely on naming convention here.
-    # If you break this, tarballs will therefore be saved twice.
-    blobs_names = list( b.name for b in bucket.list_blobs() )
-
     for output, md5 in ( ( tpl["output"], tpl["md5"] ) for tpl in tpls ):
         tpl_blob_name = build_blob_name( output, md5 )
+        # The timeout seems based on the chunk size, so I put a chunck of 4MB for 60 seconds.
+        tpl_blob = bucket.blob( tpl_blob_name, chunk_size=4 * 1024 * 1024 )
 
-        # Nothing to do if the blob already exists.
-        if tpl_blob_name in blobs_names:
+        # We do not want to upload something that already exists,
+        # so we need to know if the blobs are already in the bucket.
+        # We rely on naming convention here.
+        # If you break this, tarballs will therefore be saved twice.
+        if tpl_blob.exists():
             msg = "%s already in bucket %s" % (tpl_blob_name, bucket.name)
             logging.info( msg )
             continue
 
-        # The timeout seems based on the chunk size, so I put a chunck of 4MB for 60 seconds.
-        tpl_blob = bucket.blob( tpl_blob_name, chunk_size=4 * 1024 * 1024 )
-        src_file_name = os.path.join( from_dir, output )
-        # We check that the file has been previously downloaded in `from_dir`
-        # From the workflow we are using, this should not happen so this should be an error.
+        # We check that the source file has been previously downloaded in `from_dir`.
+        # In our workflow, this should not happen so this should be an error.
         # But we are currently migrating, this is still acceptable
+        src_file_name = os.path.join( from_dir, output )
         if not os.path.exists( src_file_name ):
             # FIXME Should become an error/assert
             logging.warning( src_file_name + " does not exist" )
             continue
 
-        # The upload part
+        # Last, the upload part
         with open( src_file_name, "rb" ) as f:
             msg = "Uploading %s to blob %s" % ( src_file_name, os.path.joint( bucket.name, tpl_blob.name ) )
             logging.info( msg )
