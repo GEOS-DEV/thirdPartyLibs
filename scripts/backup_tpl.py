@@ -118,9 +118,8 @@ def backup_tpls( bucket, tpls, from_dir ):
 
         # The upload part
         with open( src_file_name, "rb" ) as f:
-            msg = "Uploading %s to blob bucket %s" % ( src_file_name, tpl_blob.name )
+            msg = "Uploading %s to blob %s" % ( src_file_name, os.path.joint( bucket.name, tpl_blob.name ) )
             logging.info( msg )
-            logging.debug( "Uploading " + src_file_name )
             tpl_blob.upload_from_file( f )
 
 
@@ -128,7 +127,7 @@ def main( arguments) :
     try:
         logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                 datefmt='%Y/%m/%d %H:%M:%S',
-                level=logging.DEBUG)
+                level=logging.INFO)
 
         args = parse_args(arguments)
 
@@ -145,8 +144,4 @@ def main( arguments) :
 
 
 if __name__ == "__main__":
-    try:
-        sys.exit( main( sys.argv[1:] ) )
-    except Exception as e:
-        logging.exception( e )
-        sys.exit( 1 )
+    sys.exit( main( sys.argv[1:] ) )
