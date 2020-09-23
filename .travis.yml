@@ -73,13 +73,15 @@ geosx_linux_build: &geosx_linux_build
 geosx_backup_tpl: &geosx_backup_tpl
   stage: backup
   dist: bionic
-  addons:
-    apt:
-      sources:
-      - sourceline: 'deb https://packages.cloud.google.com/apt cloud-sdk main'
-        key_url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
-      packages:
-      - google-cloud-sdk
+  # addons:
+  #   apt:
+  #     sources:
+  #     - sourceline: 'deb https://packages.cloud.google.com/apt cloud-sdk main'
+  #       key_url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+  #     packages:
+  #     - google-cloud-sdk
+  before_script:
+  - pip3 install google-cloud-storage
   script:
   - *geosx_tpl_download
   # Now upload to the proper GCP bucket
