@@ -82,7 +82,7 @@ def backup_tpls( bucket, tpls, from_dir ):
 
         # Last, the upload part
         with open( src_file_name, "rb" ) as f:
-            msg = "Uploading %s to blob %s" % ( src_file_name, os.path.joint( bucket.name, tpl_blob.name ) )
+            msg = "Uploading %s to blob %s" % ( src_file_name, os.path.join( bucket.name, tpl_blob.name ) )
             logging.info( msg )
             tpl_blob.upload_from_file( f )
 
