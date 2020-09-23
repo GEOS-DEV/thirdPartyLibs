@@ -14,8 +14,6 @@ from requests.utils import quote
 from download_prerequisites import read_config_file
 from macosx_TPL_mngt import build_credentials, build_storage_client
 
-TPL_BUCKET_NAME = "geosx-tpl-mirror"
-
 
 def parse_args( arguments ):
     """
@@ -32,39 +30,6 @@ def parse_args( arguments ):
     parser.add_argument( "--from", default="tplMirror", help="TPL directory.", dest="from_dir" )
     parser.add_argument( "service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file." )
     return parser.parse_args( arguments )
-
-# # TODO factor
-# def read_config_file( file_name ):
-#     """
-#     Parses and returns the file describing the TPLs.
-
-#     Parameters
-#         file_name (str): The path to the file.
-
-#     Returns:
-#         The parsed yaml, used as a dict.
-#     """
-#     with open( file_name, 'r' ) as f:
-#         return yaml.load( f )
-#         # return yaml.load(f, Loader=yaml.FullLoader)
-
-# # TODO refactor
-# def build_credentials(service_account_file):
-#     """
-#     Builds and returns the GCP credentials from the JSON config file (decyphered by travis).
-#     """
-#     return service_account.Credentials.from_service_account_file(
-#                service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",)
-#                                                                 )
-
-
-# # TODO refactor
-# def build_storage_client( credentials ):
-#     """
-#     Builds and returns the GCP storage client.
-#     This functions requires GCP credentials.
-#     """
-#     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
 def build_blob_name( output, md5 ):
@@ -125,7 +90,7 @@ def backup_tpls( bucket, tpls, from_dir ):
             tpl_blob.upload_from_file( f )
 
 
-def main( arguments) :
+def main( arguments ):
     try:
         logging.basicConfig(format='[%(asctime)s][%(levelname)8s] %(message)s',
                 datefmt='%Y/%m/%d %H:%M:%S',
@@ -134,12 +99,12 @@ def main( arguments) :
         args = parse_args(arguments)
 
         credentials = build_credentials(args.service_account_file)
-        # credentials = build_credentials("/root/thirdPartyLibs/geosx-key.json")
         storage_client = build_storage_client(credentials)
-        bucket = storage_client.get_bucket(TPL_BUCKET_NAME)
+        bucket = storage_client.get_bucket( "geosx-tpl-mirror" )
 
         tpls = read_config_file(args.tpl)
-        return backup_tpls(bucket, tpls["tpls"], args.from_dir)
+        backup_tpls( bucket, tpls["tpls"], args.from_dir )
+        return 0
     except Exception as e:
         logging.exception( e )
         return 1
