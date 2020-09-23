@@ -11,6 +11,8 @@ from google.auth.transport.requests import AuthorizedSession
 
 from requests.utils import quote
 
+from download_prerequisites import read_config_file
+from macosx_TPL_mngt import build_credentials, build_storage_client
 
 TPL_BUCKET_NAME = "geosx-tpl-mirror"
 
@@ -31,38 +33,38 @@ def parse_args( arguments ):
     parser.add_argument( "service_account_file", metavar="CONFIG_JSON", help="Path to the service accoubt json file." )
     return parser.parse_args( arguments )
 
-# TODO factor
-def read_config_file( file_name ):
-    """
-    Parses and returns the file describing the TPLs.
+# # TODO factor
+# def read_config_file( file_name ):
+#     """
+#     Parses and returns the file describing the TPLs.
 
-    Parameters
-        file_name (str): The path to the file.
+#     Parameters
+#         file_name (str): The path to the file.
 
-    Returns:
-        The parsed yaml, used as a dict.
-    """
-    with open( file_name, 'r' ) as f:
-        return yaml.load( f )
-        # return yaml.load(f, Loader=yaml.FullLoader)
+#     Returns:
+#         The parsed yaml, used as a dict.
+#     """
+#     with open( file_name, 'r' ) as f:
+#         return yaml.load( f )
+#         # return yaml.load(f, Loader=yaml.FullLoader)
 
-# TODO refactor
-def build_credentials(service_account_file):
-    """
-    Builds and returns the GCP credentials from the JSON config file (decyphered by travis).
-    """
-    return service_account.Credentials.from_service_account_file(
-               service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",)
-                                                                )
+# # TODO refactor
+# def build_credentials(service_account_file):
+#     """
+#     Builds and returns the GCP credentials from the JSON config file (decyphered by travis).
+#     """
+#     return service_account.Credentials.from_service_account_file(
+#                service_account_file, scopes=("https://www.googleapis.com/auth/devstorage.full_control",)
+#                                                                 )
 
 
-# TODO refactor
-def build_storage_client( credentials ):
-    """
-    Builds and returns the GCP storage client.
-    This functions requires GCP credentials.
-    """
-    return storage.Client(project=credentials.project_id, credentials=credentials)
+# # TODO refactor
+# def build_storage_client( credentials ):
+#     """
+#     Builds and returns the GCP storage client.
+#     This functions requires GCP credentials.
+#     """
+#     return storage.Client(project=credentials.project_id, credentials=credentials)
 
 
 def build_blob_name( output, md5 ):
