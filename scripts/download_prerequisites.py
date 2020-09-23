@@ -81,7 +81,7 @@ def validate_hashcode(file_name, md5_reference):
 
         return ErrorCode.Success
     except Exception as e:
-        logging.error(e, exc_info=e)
+        logging.exception( e )
         return ErrorCode.Error
 
 
@@ -173,7 +173,7 @@ def download_tpl(tpl, dest, overwrite, chunk_size=1024 * 1024):
 
         return ErrorCode.Success
     except Exception as e:
-        logging.error(e, exc_info=e)
+        logging.exception( e )
         return ErrorCode.Error
 
 
@@ -220,5 +220,5 @@ if __name__ == "__main__":
         arguments = sys.argv[1:]
         sys.exit( main( arguments ).value )
     except Exception as e:
-        logging.error( e, exc_info=e )
+        logging.exception( e )
         sys.exit( ErrorCode.Error.value )

@@ -140,7 +140,7 @@ def main( arguments) :
         tpls = read_config_file(args.tpl)
         return backup_tpls(bucket, tpls["tpls"], args.from_dir)
     except Exception as e:
-        logging.error( e, exc_info=e )
+        logging.exception( e )
         return 1
 
 
@@ -148,5 +148,5 @@ if __name__ == "__main__":
     try:
         sys.exit( main( sys.argv[1:] ) )
     except Exception as e:
-        logging.error( e, exc_info=e )
+        logging.exception( e )
         sys.exit( 1 )
