@@ -822,7 +822,7 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-343e31c.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.20.0.tar.gz")
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -851,10 +851,16 @@ if (ENABLE_OPENMP)
     set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
 endif()
 
-if( CMAKE_HOST_APPLE )
-    set(HYPRE_INT_FLAG "bigint")
+if( ENABLE_CUDA )
+    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-debug --enable-unified-memory --enable-cublas" )
+endif()
+
+if( ENABLE_CUDA )
+    set(HYPRE_INT_FLAG "" )
+elseif( CMAKE_HOST_APPLE )
+    set(HYPRE_INT_FLAG "--enable-bigint")
 else()
-    set(HYPRE_INT_FLAG "mixedint")
+    set(HYPRE_INT_FLAG "--enable-mixedint")
 endif()
 
 if( ${ENABLE_MPI} )
@@ -867,13 +873,14 @@ if( ${ENABLE_MPI} )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-${HYPRE_INT_FLAG} \
+  ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
   --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
   --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
-  ${HYPRE_OPENMP_FLAG}\n")
+  ${HYPRE_OPENMP_FLAG} \
+  ${HYPRE_CUDA_FLAGS}\n")
 else()
   file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
@@ -884,10 +891,11 @@ else()
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-${HYPRE_INT_FLAG} \
+  ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  ${HYPRE_OPENMP_FLAG}\n")
+  ${HYPRE_OPENMP_FLAG} \
+  ${HYPRE_CUDA_FLAGS}\n")
 endif()
 
 ExternalProject_Add( hypre
