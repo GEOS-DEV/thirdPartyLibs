@@ -845,8 +845,6 @@ if (ENABLE_TRILINOS)
                                  -D OpenMP_Fortran_LIB_NAMES:STRING=${OpenMP_Fortran_LIB_NAMES})
     endif()
 
-    message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
-
     if( ENABLE_MPI )
       set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
       set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
@@ -888,6 +886,10 @@ if (ENABLE_TRILINOS)
     if( ENABLE_OPENMP OR ENABLE_CUDA )
       set( TRILINOS_ENABLE_SERIAL OFF )
     endif()
+
+    message(STATUS "TRILINOS_CXX_COMPILER = ${TRILINOS_CXX_COMPILER}")
+    message(STATUS "TRILINOS_CXX_FLAGS = ${TRILINOS_CXX_FLAGS}")
+    message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
 
     ExternalProject_Add( trilinos
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
