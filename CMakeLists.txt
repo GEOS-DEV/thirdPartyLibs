@@ -863,6 +863,9 @@ else()
     set(HYPRE_INT_FLAG "--enable-mixedint")
 endif()
 
+set(HYPRE_INT_FLAG "" )
+
+
 if( ${ENABLE_MPI} )
   file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
