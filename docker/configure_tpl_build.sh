@@ -23,7 +23,7 @@ python ${TPL_SRC_DIR}/scripts/config-build.py \
        --buildtype Release \
        --buildpath ${TPL_BUILD_DIR} \
        --installpath ${GEOSX_TPL_DIR} \
-       -DTRILINOS_BUILD_COMMAND="make -j1" \
+       -DTRILINOS_NUM_PROC=$(nproc) \
        -DNUM_PROC=$(nproc) \
        $*
 # Note that since docker is not used for mac,\

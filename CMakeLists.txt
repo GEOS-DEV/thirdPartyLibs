@@ -36,6 +36,7 @@ option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_TRILINOS "" ON )
+option( ENABLE_HYPRE "" ON )
 option( ENABLE_PETSC "" OFF )
 #if( CMAKE_HOST_APPLE )
 #    option( ENABLE_PETSC "" OFF )
@@ -610,106 +611,6 @@ ExternalProject_Add( pugixml
 
 list(APPEND build_list pugixml )
 
-################################
-# TRILINOS
-################################
-if (ENABLE_TRILINOS)
-    set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-18-1.tar.gz")
-
-    message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
-
-    if (NOT DEFINED TRILINOS_BUILD_COMMAND)
-        set(TRILINOS_BUILD_COMMAND ${TPL_BUILD_COMMAND})
-    endif()
-
-    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
-
-    if( ENABLE_MKL )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D TPL_ENABLE_MKL:BOOL=ON
-                                 -D TPL_MKL_INCLUDE_DIRS:PATH=${MKL_INCLUDE_DIRS}
-                                 -D TPL_MKL_LIBRARIES:STRING=${MKL_LIBRARIES})
-    endif()
-
-    if ( ENABLE_ESSL )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D HAVE_dggsvd3:BOOL=ON)
-    endif()
-
-    if ( DEFINED OpenMP_Fortran_FLAGS )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D OpenMP_Fortran_FLAGS:STRING=${OpenMP_Fortran_FLAGS})
-    endif()
-
-    if ( DEFINED OpenMP_Fortran_LIB_NAMES )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D OpenMP_Fortran_LIB_NAMES:STRING=${OpenMP_Fortran_LIB_NAMES})
-    endif()
-
-    message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
-
-    if( ${ENABLE_MPI} )
-      set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
-      set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
-      set( TRILINOS_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    else()
-      set( TRILINOS_C_COMPILER ${CMAKE_C_COMPILER} )
-      set( TRILINOS_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-      set( TRILINOS_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-    endif()
-
-    ExternalProject_Add( trilinos
-                         PREFIX ${PROJECT_BINARY_DIR}/trilinos
-                         URL ${TRILINOS_URL}
-                         INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND ${TRILINOS_BUILD_COMMAND}
-                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                         CMAKE_GENERATOR ${TPL_GENERATOR}
-                         CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
-                                          -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
-                         CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}
-                                    -D CMAKE_C_FLAGS:STRING=${TRILINOS_C_FLAGS}
-                                    -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-                                    -D CMAKE_CXX_COMPILER:PATH=${TRILINOS_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
-                                    -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                    -D CMAKE_Fortran_COMPILER:PATH=${CMAKE_Fortran_COMPILER}
-                                    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
-                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
-                                    -D BUILD_SHARED_LIBS:BOOL=ON
-                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                    -D Trilinos_ENABLE_OpenMP:BOOL=${ENABLE_OPENMP}
-                                    -D Trilinos_ENABLE_Fortran:BOOL=ON
-                                    -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
-                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                    -D Trilinos_ENABLE_TESTS:BOOL=OFF
-                                    -D Trilinos_ENABLE_Gtest:BOOL=OFF
-                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
-                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
-                                    -D Trilinos_ENABLE_Epetra:BOOL=ON
-                                    -D Trilinos_ENABLE_EpetraExt:BOOL=ON
-                                    -D Trilinos_ENABLE_Tpetra:BOOL=ON
-                                    -D Trilinos_ENABLE_Kokkos:BOOL=ON
-                                    -D Trilinos_ENABLE_Stratimikos:BOOL=ON
-                                    -D Trilinos_ENABLE_Amesos:BOOL=ON
-                                    -D Trilinos_ENABLE_AztecOO:BOOL=ON
-                                    -D Trilinos_ENABLE_Ifpack:BOOL=ON
-                                    -D Trilinos_ENABLE_Teuchos:BOOL=ON
-                                    -D Trilinos_ENABLE_ML:BOOL=ON
-                                    -D Trilinos_ENABLE_Thyra:BOOL=ON
-                                    -D Trilinos_ENABLE_STK:BOOL=OFF
-                                    -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
-                                    -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON
-                                    ${TRILINOS_EXTRA_ARGS}
-                        )
-
-    list(APPEND build_list trilinos )
-endif()
-
 
 ################################
 # PARMETIS
@@ -773,146 +674,14 @@ list(APPEND build_list metis )
 
 
 ################################
-# SUPERLU --
-################################
-if( ENABLE_MPI )
-  set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
-
-  set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
-  set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
-
-  message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
-  ExternalProject_Add( superlu_dist
-                       PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
-                       URL ${SUPERLU_URL}
-                       INSTALL_DIR ${SUPERLU_DIR}
-                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                       CMAKE_GENERATOR ${TPL_GENERATOR}
-                       DEPENDS parmetis metis
-                       CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
-                                        -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
-                                        -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
-                                        -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
-                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
-                                  -D XSDK_INDEX_SIZE=64
-                                  -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
-                                  -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                  -D CMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
-                                  -D MPI_C_COMPILER=${MPI_C_COMPILER}
-                                  -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                  -D CMAKE_C_STANDARD=99
-                                  -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
-                                  -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-                                  -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
-                                  -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                  -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
-                                  -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
-                                  -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                  -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                  -D enable_openmp=${ENABLE_OPENMP}
-          )
-
-  list(APPEND build_list superlu_dist )
-endif()
-
-################################
-# HYPRE
-################################
-
-set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-343e31c.tar.gz")
-
-message(STATUS "Building HYPRE found at ${HYPRE_URL}")
-
-set(HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
-set(HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-set(HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
-
-
-if( ${ENABLE_MPI} )
-  set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
-  set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
-  set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-  set( HYPRE_DEPENDS "superlu_dist" )
-  set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
-else()
-  set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
-  set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-  set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-  set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
-endif()
-
-if (ENABLE_OPENMP)
-    set(HYPRE_OPENMP_FLAG --with-openmp)
-    set(HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
-endif()
-
-if( CMAKE_HOST_APPLE )
-    set(HYPRE_INT_FLAG "bigint")
-else()
-    set(HYPRE_INT_FLAG "mixedint")
-endif()
-
-if( ${ENABLE_MPI} )
-  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
-  ./configure \
-  CC=${MPI_C_COMPILER} \
-  CFLAGS=\"${HYPRE_C_FLAGS}\" \
-  CXX=${HYPRE_CXX_COMPILER} \
-  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-  FC=${HYPRE_Fortran_COMPILER} \
-  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-  --prefix=${HYPRE_DIR} \
-  --enable-${HYPRE_INT_FLAG} \
-  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
-  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  --with-dsuperlu \
-  --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
-  --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
-  ${HYPRE_OPENMP_FLAG}\n")
-else()
-  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
-  ./configure \
-  CC=${MPI_C_COMPILER} \
-  CFLAGS=\"${HYPRE_C_FLAGS}\" \
-  CXX=${HYPRE_CXX_COMPILER} \
-  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-  FC=${HYPRE_Fortran_COMPILER} \
-  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-  --prefix=${HYPRE_DIR} \
-  --enable-${HYPRE_INT_FLAG} \
-  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
-  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  ${HYPRE_OPENMP_FLAG}\n")
-endif()
-
-ExternalProject_Add( hypre
-                     URL ${HYPRE_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/hypre
-                     INSTALL_DIR ${HYPRE_DIR}
-                     DEPENDS ${HYPRE_DEPENDS}
-                     BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
-                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                     INSTALL_COMMAND make install
-                   )
-
-list(APPEND build_list hypre )
-
-################################
 # SUITESPARSE
 ################################
 if(ENABLE_SUITESPARSE)
+
     set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
     set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.8.1.tar.gz")
 
     message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
-
-    set( SUITESPARSE_DEPENDS metis )
 
     set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
     set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
@@ -939,8 +708,8 @@ CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
 INSTALL=${SUITESPARSE_DIR} \
 BLAS=\"${BLAS_LINK_LINE}\" \
 LAPACK=\"${LAPACK_LINK_LINE}\" \
-MY_METIS_LIB=\"${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a\" \
-MY_METIS_INC=\"${CMAKE_INSTALL_PREFIX}/metis/include\" \
+MY_METIS_LIB=\"${METIS_DIR}/lib/libmetis.a\" \
+MY_METIS_INC=\"${METIS_DIR}/include\" \
 CUDA=no")
 
     # UMFPACK dependencies
@@ -968,7 +737,7 @@ cd ..\n" )
                          URL ${SUITESPARSE_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/suitesparse
                          INSTALL_DIR ${SUITESPARSE_DIR}
-                         DEPENDS ${SUITESPARSE_DEPENDS}
+                         DEPENDS metis
                          BINARY_DIR ${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse
                          CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
                          BUILD_COMMAND cat ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
@@ -977,6 +746,316 @@ cd ..\n" )
 
     list(APPEND build_list suitesparse )
 endif(ENABLE_SUITESPARSE)
+
+
+################################
+# SUPERLU --
+################################
+if( ENABLE_MPI )
+  set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
+  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
+
+  set(PARMETIS_INCLUDE_DIRS ${PARMETIS_DIR}/include;${METIS_DIR}/include)
+  set(PARMETIS_LIBRARIES ${PARMETIS_DIR}/lib/libparmetis.a;${METIS_DIR}/lib/libmetis.a)
+
+  message(STATUS "Building SUPERLU found at ${SUPERLU_URL}")
+  ExternalProject_Add( superlu_dist
+                       PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
+                       URL ${SUPERLU_URL}
+                       INSTALL_DIR ${SUPERLU_DIR}
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       DEPENDS parmetis metis
+                       CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${PARMETIS_DIR}/include;${METIS_DIR}/include
+                                        -DTPL_PARMETIS_LIBRARIES:STRING=${PARMETIS_DIR}/lib/libparmetis.a;${METIS_DIR}/lib/libmetis.a
+                                        -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                                        -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                  -D XSDK_INDEX_SIZE=64
+                                  -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                  -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D CMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
+                                  -D MPI_C_COMPILER=${MPI_C_COMPILER}
+                                  -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D CMAKE_C_STANDARD=99
+                                  -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+                                  -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                  -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                  -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
+                                  -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                  -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                  -D enable_openmp=${ENABLE_OPENMP}
+          )
+
+  list(APPEND build_list superlu_dist )
+endif()
+
+
+################################
+# TRILINOS
+################################
+if (ENABLE_TRILINOS)
+    set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-13-0-0.tar.gz")
+
+    message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
+
+    if (NOT DEFINED TRILINOS_NUM_PROC)
+        set(TRILINOS_BUILD_COMMAND ${TPL_BUILD_COMMAND})
+    else()
+        set(TRILINOS_BUILD_COMMAND make -j ${TRILINOS_NUM_PROC})
+    endif()
+
+    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
+
+    if( ENABLE_MKL )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D TPL_ENABLE_MKL:BOOL=ON
+                                 -D TPL_MKL_INCLUDE_DIRS:PATH=${MKL_INCLUDE_DIRS}
+                                 -D TPL_MKL_LIBRARIES:STRING=${MKL_LIBRARIES})
+    endif()
+
+    if( ENABLE_ESSL )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D HAVE_dggsvd3:BOOL=ON)
+    endif()
+
+    if( ENABLE_SUITESPARSE )
+      set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                               -D TPL_ENABLE_UMFPACK:BOOL=ON
+                               -D Amesos_ENABLE_UMFPACK:BOOL=OFF
+                               -D Amesos2_ENABLE_UMFPACK:BOOL=ON
+                               -D UMFPACK_LIBRARY_DIRS:PATH=${SUITESPARSE_DIR}/lib
+                               -D UMFPACK_INCLUDE_DIRS:PATH=${SUITESPARSE_DIR}/include
+                               -D UMFPACK_LIBRARY_NAMES=umfpack;amd;colamd;cholmod;suitesparseconfig )
+      set( TRILINOS_DEPENDS ${TRILINOS_DEPENDS} suitesparse )
+    endif()
+
+    if ( DEFINED OpenMP_Fortran_FLAGS )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D OpenMP_Fortran_FLAGS:STRING=${OpenMP_Fortran_FLAGS})
+    endif()
+
+    if ( DEFINED OpenMP_Fortran_LIB_NAMES )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D OpenMP_Fortran_LIB_NAMES:STRING=${OpenMP_Fortran_LIB_NAMES})
+    endif()
+
+    if( ENABLE_MPI )
+      set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
+      set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
+      set( TRILINOS_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    else()
+      set( TRILINOS_C_COMPILER ${CMAKE_C_COMPILER} )
+      set( TRILINOS_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+      set( TRILINOS_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    endif()
+
+    if( ENABLE_CUDA )
+      set( TRILINOS_CXX_FLAGS "${TRILINOS_CXX_FLAGS} -ccbin ${TRILINOS_CXX_COMPILER} --expt-extended-lambda --expt-relaxed-constexpr" )
+      set( TRILINOS_CXX_COMPILER ${CMAKE_CURRENT_BINARY_DIR}/trilinos/src/trilinos/packages/kokkos/bin/nvcc_wrapper )
+
+      # Handle Kokkos_ARCH settings
+      set( _KOKKOS_ARCH_sm_30 Kepler30 )
+      set( _KOKKOS_ARCH_sm_32 Kepler32 )
+      set( _KOKKOS_ARCH_sm_35 Kepler35 )
+      set( _KOKKOS_ARCH_sm_37 Kepler37 )
+      set( _KOKKOS_ARCH_sm_50 Maxwell50 )
+      set( _KOKKOS_ARCH_sm_52 Maxwell52 )
+      set( _KOKKOS_ARCH_sm_53 Maxwell53 )
+      set( _KOKKOS_ARCH_sm_60 Pascal60 )
+      set( _KOKKOS_ARCH_sm_61 Pascal61 )
+      set( _KOKKOS_ARCH_sm_70 Volta70 )
+      set( _KOKKOS_ARCH_sm_72 Volta72 )
+      set( _KOKKOS_ARCH_sm_75 Turing75 )
+
+      if( NOT DEFINED _KOKKOS_ARCH_${CUDA_ARCH} )
+        message(FATAL_ERROR "Unable to determine Kokkos_ARCH from CUDA_ARCH=${CUDA_ARCH}")
+      endif()
+      set( KOKKOS_ARCH ${_KOKKOS_ARCH_${CUDA_ARCH}} )
+      set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                               -D Kokkos_ARCH_${KOKKOS_ARCH}:BOOL=ON )
+
+    endif()
+
+    set( TRILINOS_ENABLE_SERIAL ON )
+    if( ENABLE_OPENMP OR ENABLE_CUDA )
+      set( TRILINOS_ENABLE_SERIAL OFF )
+    endif()
+
+    message(STATUS "TRILINOS_CXX_COMPILER = ${TRILINOS_CXX_COMPILER}")
+    message(STATUS "TRILINOS_CXX_FLAGS = ${TRILINOS_CXX_FLAGS}")
+    message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
+
+    ExternalProject_Add( trilinos
+                         PREFIX ${PROJECT_BINARY_DIR}/trilinos
+                         URL ${TRILINOS_URL}
+                         INSTALL_DIR ${TRILINOS_DIR}
+                         BUILD_COMMAND ${TRILINOS_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
+                         DEPENDS ${TRILINOS_DEPENDS}
+                         CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                                          -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
+                         CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}
+                                    -D CMAKE_C_FLAGS:STRING=${TRILINOS_C_FLAGS}
+                                    -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_COMPILER:PATH=${TRILINOS_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
+                                    -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_Fortran_COMPILER:PATH=${CMAKE_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
+                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -D BUILD_SHARED_LIBS:BOOL=ON
+                                    -D CUDA_ROOT:PATH=${CUDA_TOOLKIT_ROOT_DIR}
+                                    -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
+                                    -D TPL_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                    -D Trilinos_ENABLE_OpenMP:BOOL=${ENABLE_OPENMP}
+                                    -D Trilinos_ENABLE_Fortran:BOOL=ON
+                                    -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
+                                    -D Trilinos_ENABLE_TESTS:BOOL=OFF
+                                    -D Trilinos_ENABLE_Gtest:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
+                                    -D Trilinos_ENABLE_Epetra:BOOL=ON
+                                    -D Trilinos_ENABLE_EpetraExt:BOOL=ON
+                                    -D Trilinos_ENABLE_Tpetra:BOOL=ON
+                                    -D Trilinos_ENABLE_Kokkos:BOOL=ON
+                                    -D Trilinos_ENABLE_Stratimikos:BOOL=ON
+                                    -D Trilinos_ENABLE_Amesos:BOOL=ON
+                                    -D Trilinos_ENABLE_Amesos2:BOOL=ON
+                                    -D Trilinos_ENABLE_AztecOO:BOOL=ON
+                                    -D Trilinos_ENABLE_Belos:BOOL=ON
+                                    -D Trilinos_ENABLE_Ifpack:BOOL=ON
+                                    -D Trilinos_ENABLE_Ifpack2:BOOL=ON
+                                    -D Trilinos_ENABLE_Teuchos:BOOL=ON
+                                    -D Trilinos_ENABLE_ML:BOOL=ON
+                                    -D Trilinos_ENABLE_MueLu:BOOL=ON
+                                    -D Trilinos_ENABLE_Thyra:BOOL=ON
+                                    -D Trilinos_ENABLE_STK:BOOL=OFF
+                                    -D Trilinos_ENABLE_TrilinosCouplings:BOOL=OFF
+                                    -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON
+                                    -D Trilinos_ENABLE_COMPLEX_DOUBLE:BOOL=OFF
+                                    -D Kokkos_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                    -D Kokkos_ENABLE_CUDA_LAMBDA:BOOL=${ENABLE_CUDA}
+                                    -D Kokkos_ENABLE_CUDA_UVM:BOOL=${ENABLE_CUDA}
+                                    -D Tpetra_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                    -D Tpetra_INST_SERIAL:BOOL=${TRILINOS_ENABLE_SERIAL}
+                                    -D Tpetra_INST_INT_LONG_LONG:BOOL=ON
+                                    -D Tpetra_INST_INT_INT:BOOL=OFF
+                                    -D Tpetra_INST_DOUBLE:BOOL=ON
+                                    -D Tpetra_INST_COMPLEX_DOUBLE:BOOL=OFF
+                                    -D Belos_ENABLE_Tpetra:BOOL=ON
+                                    -D Belos_ENABLE_Epetra:BOOL=OFF
+                                    -D Belos_ENABLE_Xpetra:BOOL=OFF
+                                    -D Ifpack2_ENABLE_ThyraTpetraAdapters:BOOL=ON
+                                    -D Amesos2_ENABLE_TIMERS:BOOL=ON
+                                    ${TRILINOS_EXTRA_ARGS}
+                        )
+
+    list(APPEND build_list trilinos )
+endif()
+
+
+################################
+# HYPRE
+################################
+
+if( ENABLE_HYPRE )
+
+  set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-343e31c.tar.gz" )
+
+  message(STATUS "Building HYPRE found at ${HYPRE_URL}")
+
+  set( HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}" )
+  set( HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}" )
+  set( HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
+
+  set( HYPRE_DEPENDS "" )
+  if( ENABLE_SUITESPARSE )
+    list( APPEND HYPRE_DEPENDS suitesparse )
+  endif()
+
+  if( ENABLE_MPI )
+    set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
+    set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
+    set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++")
+    list( APPEND HYPRE_DEPENDS superlu_dist )
+  else()
+    set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    set( HYPRE_SUPERLU_LIBS "${METIS_DIR}/lib/libmetis.a -lstdc++")
+  endif()
+
+  if( ENABLE_OPENMP )
+      set( HYPRE_OPENMP_FLAG --with-openmp )
+      set( HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+      set( HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+      set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" )
+  endif()
+
+  if( CMAKE_HOST_APPLE )
+      set(HYPRE_INT_FLAG "bigint")
+  else()
+      set(HYPRE_INT_FLAG "mixedint")
+  endif()
+
+  if( ${ENABLE_MPI} )
+    file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
+    ./configure \
+    CC=${MPI_C_COMPILER} \
+    CFLAGS=\"${HYPRE_C_FLAGS}\" \
+    CXX=${HYPRE_CXX_COMPILER} \
+    CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
+    FC=${HYPRE_Fortran_COMPILER} \
+    FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+    --prefix=${HYPRE_DIR} \
+    --enable-${HYPRE_INT_FLAG} \
+    --with-blas-lib=\"${BLAS_LINK_LINE}\" \
+    --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
+    --with-dsuperlu \
+    --with-dsuperlu-include=${SUPERLU_DIR}/include \
+    --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
+    ${HYPRE_OPENMP_FLAG}\n")
+  else()
+    file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
+    ./configure \
+    CC=${MPI_C_COMPILER} \
+    CFLAGS=\"${HYPRE_C_FLAGS}\" \
+    CXX=${HYPRE_CXX_COMPILER} \
+    CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
+    FC=${HYPRE_Fortran_COMPILER} \
+    FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+    --prefix=${HYPRE_DIR} \
+    --enable-${HYPRE_INT_FLAG} \
+    --with-blas-lib=\"${BLAS_LINK_LINE}\" \
+    --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
+    ${HYPRE_OPENMP_FLAG}\n")
+  endif()
+
+  ExternalProject_Add( hypre
+                       URL ${HYPRE_URL}
+                       PREFIX ${PROJECT_BINARY_DIR}/hypre
+                       INSTALL_DIR ${HYPRE_DIR}
+                       DEPENDS ${HYPRE_DEPENDS}
+                       BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
+                       CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
+                       BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
+                       INSTALL_COMMAND make install
+                     )
+
+  list(APPEND build_list hypre )
+endif()
 
 ################################
 # PETSC
@@ -989,9 +1068,10 @@ if( ENABLE_PETSC )
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
-    set(PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
-    set(PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-    set(PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" bt_uc)
+    set(PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${bt_uc}}")
+    set(PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${bt_uc}}")
+    set(PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${bt_uc}}")
 
     if (ENABLE_OPENMP)
         set(PETSC_OPENMP_FLAG --with-openmp=1)
@@ -1014,7 +1094,7 @@ if( ENABLE_PETSC )
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis")
+        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${SUPERLU_DIR} --with-parmetis-dir=${PARMETIS_DIR}")
         set( PETSC_DEPENDS parmetis metis superlu_dist )
     else()
         set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
@@ -1026,7 +1106,7 @@ if( ENABLE_PETSC )
 
     if(ENABLE_SUITESPARSE)
         list( APPEND PETSC_DEPENDS suitesparse )
-        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${CMAKE_INSTALL_PREFIX}/suitesparse")
+        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${SUITESPARSE_DIR}")
     endif()
 
 string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
@@ -1042,7 +1122,7 @@ file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
 --FC=${PETSC_Fortran_COMPILER} \
 --FFLAGS=\"${PETSC_Fortran_FLAGS}\" \
 --with-fortran-bindings=0 \
---with-metis-dir=${CMAKE_INSTALL_PREFIX}/metis \
+--with-metis-dir=${METIS_DIR} \
 --with-64-bit-indices=1 \
 --known-mpi-int64_t=0 \
 --with-blas-lib=\"${PETSC_BLAS_LIBS}\" \

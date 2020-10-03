@@ -36,7 +36,7 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=384,driver<385 brand=tes
 
 FROM nvidia-base AS nvidia-runtime 
 
-RUN yum install -y \
+RUN yum install -y --setopt=obsoletes=0 \
     cuda-libraries-$CUDA_PKG_VERSION \
     cuda-nvtx-$CUDA_PKG_VERSION \
     libcublas10-10.2.1.243-1 \
@@ -46,7 +46,7 @@ RUN yum install -y \
 
 FROM nvidia-runtime AS nvidia-develop 
 
-RUN yum install -y \
+RUN yum install -y --setopt=obsoletes=0 \
     cuda-nvml-dev-$CUDA_PKG_VERSION \
     cuda-command-line-tools-$CUDA_PKG_VERSION \
     cuda-libraries-dev-$CUDA_PKG_VERSION \
@@ -108,15 +108,16 @@ RUN yum install -y \
     file \
     bison \
     flex \
-    patch
+    patch \
+    which
 
 ARG TMP_DIR
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
 
-ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
-ARG CUDA_ARCH=sm_70
-ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
+ENV CUDA_ARCH=sm_70
+ENV CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
