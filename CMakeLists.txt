@@ -1024,11 +1024,6 @@ if( ENABLE_PETSC )
         set( PETSC_DEPENDS metis )
     endif()
 
-    if(ENABLE_SUITESPARSE)
-        list( APPEND PETSC_DEPENDS suitesparse )
-        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${CMAKE_INSTALL_PREFIX}/suitesparse")
-    endif()
-
 string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
 string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 
