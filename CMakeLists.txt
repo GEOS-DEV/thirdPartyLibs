@@ -835,7 +835,7 @@ if( ${ENABLE_MPI} )
   set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
   set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
   set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-  set( HYPRE_DEPENDS "superlu_dist" )
+  set( HYPRE_DEPENDS superlu_dist caliper )
   set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
 else()
   set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
@@ -852,7 +852,8 @@ if (ENABLE_OPENMP)
 endif()
 
 if( ENABLE_CUDA )
-    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-debug --enable-unified-memory --enable-cublas" )
+    set(HYPRE_CUDA_FLAGS  "--with-cuda --enable-cusparse --enable-unified-memory" )
+    #set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-debug --enable-unified-memory --enable-cublas" )
 endif()
 
 if( ENABLE_CUDA )
@@ -864,6 +865,10 @@ else()
 endif()
 
 set(HYPRE_INT_FLAG "" )
+
+#  --with-caliper \
+#  --with-caliper-include=\"${CALIPER_DIR}\/include\" \
+#  --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" \
 
 
 if( ${ENABLE_MPI} )
