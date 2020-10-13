@@ -340,46 +340,33 @@ list(APPEND build_list silo )
 ################################
 
 
-if( NOT EXTERNAL_CAMP_SOURCE_DIR )
-  set(CAMP_DIR "${CMAKE_INSTALL_PREFIX}/camp")
-  set(CAMP_URL "${TPL_MIRROR_DIR}/camp-cef6f71c5e21836eed381f80cb328126202d512e.tar.gz")
-  message(STATUS "Using CAMP found at ${CAMP_URL}")
+# if( NOT EXTERNAL_CAMP_SOURCE_DIR )
+#   set(CAMP_DIR "${CMAKE_INSTALL_PREFIX}/camp")
+#   set(CAMP_URL "${TPL_MIRROR_DIR}/camp-cef6f71c5e21836eed381f80cb328126202d512e.tar.gz")
+#   message(STATUS "Using CAMP found at ${CAMP_URL}")
 
-  ExternalProject_Add( camp
-                       URL ${CAMP_URL}
-                       PREFIX ${PROJECT_BINARY_DIR}/camp
-                       INSTALL_DIR ${CAMP_DIR}
-                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                       CMAKE_GENERATOR ${TPL_GENERATOR}
-                       CMAKE_ARGS -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                     )
-  set( EXTERNAL_CAMP_SOURCE_DIR "${PROJECT_BINARY_DIR}/camp/src/camp")
-  set( RAJA_DEPENDS camp )
-endif()
+#   ExternalProject_Add( camp
+#                        URL ${CAMP_URL}
+#                        PREFIX ${PROJECT_BINARY_DIR}/camp
+#                        INSTALL_DIR ${CAMP_DIR}
+#                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
+#                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+#                        CMAKE_GENERATOR ${TPL_GENERATOR}
+#                        CMAKE_ARGS -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+#                      )
+#   set( EXTERNAL_CAMP_SOURCE_DIR "${PROJECT_BINARY_DIR}/camp/src/camp")
+#   set( RAJA_DEPENDS camp )
+# endif()
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.11.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.12.1.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
-
-# workaround for cuda/gcc float128 issue
-#set(RAJA_CUDA_FLAGS "")
-#if(ENABLE_CUDA)
-#  if(CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le)
-#    if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-#      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-#        set(RAJA_CUDA_FLAGS "${RAJA_CUDA_FLAGS} -std=c++11 -Xcompiler -mno-float128")
-#      endif()
-#    endif()
-#  endif()
-#endif()
 
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
-                     PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/RAJA-cuda-x86.patch
                      DEPENDS ${RAJA_DEPENDS}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -401,7 +388,7 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D EXTERNAL_CAMP_SOURCE_DIR:PATH=${EXTERNAL_CAMP_SOURCE_DIR}
+                                # -D EXTERNAL_CAMP_SOURCE_DIR:PATH=${EXTERNAL_CAMP_SOURCE_DIR}
                     )
 
 list(APPEND build_list raja )
@@ -411,14 +398,13 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2.1.1.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-0755757.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
-                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/chai-2.1.1.patch
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -1022,11 +1008,6 @@ if( ENABLE_PETSC )
         set( PETSC_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
         set( PETSC_MPI_FLAG "--with-mpi=0" )
         set( PETSC_DEPENDS metis )
-    endif()
-
-    if(ENABLE_SUITESPARSE)
-        list( APPEND PETSC_DEPENDS suitesparse )
-        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${CMAKE_INSTALL_PREFIX}/suitesparse")
     endif()
 
 string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
