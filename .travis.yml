@@ -11,15 +11,16 @@ geosx_osx_build: &geosx_osx_build
     # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
     # - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
     # git commit associated with OpenMPI 4.0.5
-  - BREW_HASH=7e8d6b9f40e3e79f704d0f5c59f7da31a9f556df
-  - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
-  - wget ${BREW_URL}/Formula/open-mpi.rb
-  - brew update
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb
-  - for dep in `brew deps open-mpi.rb`; do brew install $dep; done
-  - wget ${BREW_URL}/Formula/git-lfs.rb
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb
-  - for dep in `brew deps git-lfs.rb`; do brew install $dep; done
+#   - BREW_HASH=7e8d6b9f40e3e79f704d0f5c59f7da31a9f556df
+#   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
+#   - wget ${BREW_URL}/Formula/open-mpi.rb
+#   - brew update
+#   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb
+#   - for dep in `brew deps open-mpi.rb`; do brew install $dep; done
+#   - wget ${BREW_URL}/Formula/git-lfs.rb
+#   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb
+#   - for dep in `brew deps git-lfs.rb`; do brew install $dep; done
+  - brew install open-mpi git-lfs 
   before_script:
   - git lfs install
   - git lfs pull
