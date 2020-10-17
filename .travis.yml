@@ -20,7 +20,7 @@ geosx_osx_build: &geosx_osx_build
 #   - wget ${BREW_URL}/Formula/git-lfs.rb
 #   - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb
 #   - for dep in `brew deps git-lfs.rb`; do brew install $dep; done
-  - brew install open-mpi git-lfs 
+  - brew install open-mpi git-lfs python@3.9
   before_script:
   - git lfs install
   - git lfs pull
