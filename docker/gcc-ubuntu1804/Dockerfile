@@ -91,6 +91,7 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 RUN apt-get install -y --no-install-recommends \
     openssh-client \
     texlive \
+    texlive-latex-extra \
     graphviz \
     libxml2-utils \
     git \
