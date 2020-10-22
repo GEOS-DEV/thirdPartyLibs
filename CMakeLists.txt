@@ -315,6 +315,7 @@ ExternalProject_Add( silo
                      URL ${SILO_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
+                     PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/silo-xcode12.patch
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND ../silo/configure
                                           CC=${HDF5_C_COMPILER}
@@ -349,7 +350,6 @@ if( NOT EXTERNAL_CAMP_SOURCE_DIR )
                        URL ${CAMP_URL}
                        PREFIX ${PROJECT_BINARY_DIR}/camp
                        INSTALL_DIR ${CAMP_DIR}
-                       PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/silo-xcode12.patch
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
