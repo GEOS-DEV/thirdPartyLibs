@@ -134,7 +134,7 @@ list(APPEND build_list astyle )
 if( ENABLE_DOXYGEN )
 
   set(DOXYGEN_DIR "${CMAKE_INSTALL_PREFIX}/doxygen")
-  set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen-1.8.13.tar.gz")
+  set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen-1.8.20.tar.gz")
   message(STATUS "Building Doxygen found at ${DOXYGEN_URL}")
 
   ExternalProject_Add( doxygen
@@ -336,44 +336,13 @@ list(APPEND build_list silo )
 
 
 ################################
-# RAJA + CAMP
+# RAJA
 ################################
-
-
-#if( NOT EXTERNAL_CAMP_SOURCE_DIR )
-#  set(CAMP_DIR "${CMAKE_INSTALL_PREFIX}/camp")
-#  set(CAMP_URL "${TPL_MIRROR_DIR}/camp-master.zip")
-#  message(STATUS "Using CAMP found at ${CAMP_URL}")
-
-#  ExternalProject_Add( camp
-#                       URL ${CAMP_URL}
-#                       PREFIX ${PROJECT_BINARY_DIR}/camp
-#                       INSTALL_DIR ${CAMP_DIR}
-#                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
-#                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-#                       CMAKE_GENERATOR ${TPL_GENERATOR}
-#                       CMAKE_ARGS -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-#                     )
-#  set( EXTERNAL_CAMP_SOURCE_DIR "${PROJECT_BINARY_DIR}/camp/src/camp")
-#  set( RAJA_DEPENDS camp )
-#endif()
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
 set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.12.1.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
-
-# workaround for cuda/gcc float128 issue
-#set(RAJA_CUDA_FLAGS "")
-#if(ENABLE_CUDA)
-#  if(CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le)
-#    if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-#      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-#        set(RAJA_CUDA_FLAGS "${RAJA_CUDA_FLAGS} -std=c++11 -Xcompiler -mno-float128")
-#      endif()
-#    endif()
-#  endif()
-#endif()
 
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
@@ -1040,11 +1009,6 @@ if( ENABLE_PETSC )
         set( PETSC_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
         set( PETSC_MPI_FLAG "--with-mpi=0" )
         set( PETSC_DEPENDS metis )
-    endif()
-
-    if(ENABLE_SUITESPARSE)
-        list( APPEND PETSC_DEPENDS suitesparse )
-        set( PETSC_MPI_FLAG "${PETSC_MPI_FLAG} --with-suitesparse-dir=${CMAKE_INSTALL_PREFIX}/suitesparse")
     endif()
 
 string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
