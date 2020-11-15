@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.9)
 ################################
 project(geosx_tpl LANGUAGES C CXX Fortran)
 
+#set(DOXYGEN_EXECUTABLE /usr/bin/doxygen CACHE PATH "" FORCE)
+
 ################################
 # BLT
 ################################
@@ -398,7 +400,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
+                                -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -834,9 +836,19 @@ endif()
 
 set(HYPRE_INT_FLAG "" )
 
-#  --with-caliper \
-#  --with-caliper-include=\"${CALIPER_DIR}\/include\" \
-#  --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" \
+
+
+if( ENABLE_CALIPER_HYPRE )
+    set(HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}\/include\" --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" " )
+else()
+    set(HYPRE_CALIPER_FLAGS "" )
+endif()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set(HYPRE_DEBUG_FLAG "--enable-debug" )
+else()
+    set(HYPRE_DEBUG_FLAG "" )
+endif()
 
 
 if( ${ENABLE_MPI} )
@@ -849,6 +861,7 @@ if( ${ENABLE_MPI} )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
+  ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
@@ -859,7 +872,8 @@ if( ${ENABLE_MPI} )
   --with-caliper-include=\"${CALIPER_DIR}\/include\" \
   --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" \
   ${HYPRE_OPENMP_FLAG} \
-  ${HYPRE_CUDA_FLAGS}\n")
+  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CALIPER_FLAGS}\n")
 else()
   file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
@@ -870,11 +884,13 @@ else()
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
+  ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   ${HYPRE_OPENMP_FLAG} \
-  ${HYPRE_CUDA_FLAGS}\n")
+  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CALIPER_FLAGS}\n")
 endif()
 
 ExternalProject_Add( hypre
