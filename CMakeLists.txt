@@ -834,10 +834,6 @@ else()
     set(HYPRE_INT_FLAG "--enable-mixedint")
 endif()
 
-set(HYPRE_INT_FLAG "" )
-
-
-
 if( ENABLE_CALIPER_HYPRE )
     set(HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}\/include\" --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" " )
 else()
