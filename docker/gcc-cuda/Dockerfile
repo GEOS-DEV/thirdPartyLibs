@@ -120,6 +120,7 @@ ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
+RUN ln -s ln -s /usr/include/cublas_v2.h /usr/local/cuda/include/cublas_v2.h
 
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
@@ -128,7 +129,7 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DCUDA_ARCH=${CUDA_ARCH} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
 WORKDIR ${TPL_BUILD_DIR}
-RUN make
+RUN make hypre
 
 # Extract only TPL's from previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
