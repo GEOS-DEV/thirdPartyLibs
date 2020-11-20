@@ -36,17 +36,19 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=384,driver<385 brand=tes
 
 FROM nvidia-base AS nvidia-runtime 
 
-RUN yum install -y \
+# Tell yum not to upgrade from "obselete" libcublas and lock libcublas version
+RUN yum install --setopt=obsoletes=0 -y \
     cuda-libraries-$CUDA_PKG_VERSION \
     cuda-nvtx-$CUDA_PKG_VERSION \
     libcublas10-10.2.1.243-1 \
     && \
     rm -rf /var/cache/yum/*
 
+RUN yum install -y yum-plugin-versionlock && yum versionlock libcublas10
 
 FROM nvidia-runtime AS nvidia-develop 
 
-RUN yum install -y \
+RUN yum install --setopt=obsoletes=0 -y \
     cuda-nvml-dev-$CUDA_PKG_VERSION \
     cuda-command-line-tools-$CUDA_PKG_VERSION \
     cuda-libraries-dev-$CUDA_PKG_VERSION \
@@ -57,6 +59,7 @@ RUN yum install -y \
 
 ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 
+RUN yum install -y yum-plugin-versionlock && yum versionlock libcublas10
 
 ARG TMP_DIR=/tmp
 FROM nvidia-develop AS tpl_toolchain_intersect_geosx_toolchain
