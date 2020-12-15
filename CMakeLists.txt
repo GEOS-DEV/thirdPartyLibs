@@ -4,7 +4,12 @@ cmake_minimum_required(VERSION 3.9)
 ################################
 project(geosx_tpl LANGUAGES C CXX Fortran)
 
-#set(DOXYGEN_EXECUTABLE /usr/bin/doxygen CACHE PATH "" FORCE)
+option( GEOSXTPL_ENABLE_DOXYGEN "" OFF )
+if ( ENABLE_DOXYGEN )
+    set( GEOSXTPL_ENABLE_DOXYGEN "ON" )
+endif()
+set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
+
 
 ################################
 # BLT
@@ -133,7 +138,7 @@ list(APPEND build_list astyle )
 # Doxygen
 ################################
 
-if( ENABLE_DOXYGEN )
+if( GEOSXTPL_ENABLE_DOXYGEN )
 
   set(DOXYGEN_DIR "${CMAKE_INSTALL_PREFIX}/doxygen")
   set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen-1.8.20.tar.gz")
