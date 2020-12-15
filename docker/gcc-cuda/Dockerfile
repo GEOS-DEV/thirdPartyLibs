@@ -132,7 +132,7 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DCUDA_ARCH=${CUDA_ARCH} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
 WORKDIR ${TPL_BUILD_DIR}
-RUN make hypre
+RUN make
 
 # Extract only TPL's from previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain

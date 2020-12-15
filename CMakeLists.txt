@@ -828,7 +828,6 @@ endif()
 
 if( ENABLE_CUDA )
     set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
-    #set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory --enable-debug" )
 endif()
 
 if( ENABLE_CUDA )
@@ -869,9 +868,6 @@ if( ${ENABLE_MPI} )
   --with-dsuperlu \
   --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
   --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
-  --with-caliper \
-  --with-caliper-include=\"${CALIPER_DIR}\/include\" \
-  --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" \
   ${HYPRE_OPENMP_FLAG} \
   ${HYPRE_CUDA_FLAGS}\
   ${HYPRE_CALIPER_FLAGS}\n")
