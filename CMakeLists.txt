@@ -34,7 +34,7 @@ include(ExternalProject)
 
 option( BUILD_SHARED_LIBS "" OFF )
 
-option( ENABLE_CALIPER "" ON )
+option( ENABLE_CALIPER "" OFF )
 option( ENABLE_TRILINOS "" ON )
 option( ENABLE_PETSC "" OFF )
 #if( CMAKE_HOST_APPLE )
@@ -249,6 +249,7 @@ ExternalProject_Add( conduit
 list(APPEND build_list conduit )
 
 
+if (NOT ENABLE_TRIBOL)
 ################################
 # Axom
 ################################
@@ -301,6 +302,7 @@ ExternalProject_Add( axom
                                 )
 
 list(APPEND build_list axom )
+endif (NOT ENABLE_TRIBOL)
 
 
 ################################
@@ -393,6 +395,51 @@ ExternalProject_Add( raja
 
 list(APPEND build_list raja )
 
+if (ENABLE_TRIBOL)
+
+   set(UMPIRE_DIR "${CMAKE_INSTALL_PREFIX}/umpire")
+   set(UMPIRE_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/umpire.git")
+   set(UMPIRE_TAG "feature/benliu/slideWorld")
+
+   if (EXISTS ${UMPIRE_DIR})
+       message(STATUS "Using existing UMPIRE found at ${UMPIRE_DIR}")
+       list(APPEND existing_list umpire)
+   else()
+       message(STATUS "Building UMPIRE found at ${UMPIRE_TAG}")
+
+       ExternalProject_Add( umpire
+                            PREFIX ${PROJECT_BINARY_DIR}/umpire
+                            GIT_REPOSITORY ${UMPIRE_REPO}
+                            GIT_TAG ${UMPIRE_TAG}
+                            INSTALL_DIR ${UMPIRE_DIR}
+                            DEPENDS raja
+                            BUILD_COMMAND make -j ${NUM_PROC}
+                            INSTALL_COMMAND make install
+                            CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                       -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                       -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                       -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                       -Dcamp_DIR=${RAJA_DIR}/lib/cmake/camp
+                                       -DENABLE_CUDA=OFF
+                                       -DENABLE_C=ON
+                                       -DENABLE_FORTRAN=OFF
+                                       -DENABLE_TESTS=OFF
+                                       -DENABLE_BENCHMARKS=OFF
+                                       -DENABLE_GMOCK=OFF
+                                       -DENABLE_EXAMPLES=OFF
+                                       -DENABLE_TOOLS=OFF
+                                       -DENABLE_OPENMP=OFF
+                                       -DCMAKE_DEBUG_POSTFIX=)
+
+       list(APPEND build_list umpire)
+   endif()
+endif (ENABLE_TRIBOL)
+
 
 ################################
 # CHAI
@@ -405,7 +452,7 @@ ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
-                     DEPENDS raja
+                     DEPENDS raja umpire
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -422,6 +469,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D ENABLE_PICK=ON
                                 -D ENABLE_TESTS=OFF
                                 -D ENABLE_BENCHMARKS=OFF
                                 -D ENABLE_EXAMPLES=OFF
@@ -431,6 +479,8 @@ ExternalProject_Add( chai
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/share/raja/cmake
+                                -D camp_DIR=${RAJA_DIR}/lib/cmake/camp
+                                -D umpire_DIR=${UMPIRE_DIR}/share/umpire/cmake
                     )
 
 list(APPEND build_list chai )
@@ -1094,6 +1144,326 @@ if(ENABLE_VTK)
 
     list(APPEND build_list vtk )
 endif(ENABLE_VTK)
+
+################################
+# TRIBOL
+################################
+if (ENABLE_TRIBOL)
+   set(TPL_CXX_GID64 ${TPL_CXX_STANDARD})
+   list(APPEND TPL_CXX_GID64 -DGLOBALID_IS_64BIT=1)
+
+    set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
+    set(AXOM_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/axom.git")
+    set(AXOM_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${AXOM_DIR})
+        message(STATUS "Using existing Axom found at ${AXOM_DIR}")
+        list(APPEND existing_list axom )
+    else()
+        message(STATUS "Building Axom found at ${AXOM_TAG}")
+
+        ExternalProject_Add( axom
+                             DOWNLOAD_COMMAND git clone ${AXOM_REPO}
+                             UPDATE_COMMAND git checkout ${AXOM_TAG}
+                             PREFIX ${PROJECT_BINARY_DIR}/axom
+                             SOURCE_SUBDIR src
+                             INSTALL_DIR ${AXOM_DIR}
+                             DEPENDS hdf5 conduit raja
+                             CMAKE_ARGS -DENABLE_DOCS=OFF
+                                        -DENABLE_BENCHMARKS=OFF
+                                        -DENABLE_EXAMPLES=OFF
+                                        -DENABLE_FORTRAN=OFF
+                                        -DENABLE_TESTS=OFF
+                                        -DAXOM_ENABLE_LUMBERJACK=ON
+                                        -DAXOM_MINT_USE_SIDRE:BOOL=FALSE
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DENABLE_MPI=${ENABLE_MPI}
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DHDF5_DIR=${HDF5_DIR}
+                                        -DCONDUIT_DIR=${CONDUIT_DIR}
+                                        -DUMPIRE_DIR=
+                                        -DRAJA_DIR=
+                                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DMPI_C_COMPILER=${MPI_C_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_CXX_FLAGS=-std=c++14
+                                        -DENABLE_OPENMP=${ENABLE_OPENMP}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install )
+        list(APPEND build_list axom )
+    endif()
+
+    set(MFEM_DIR "${CMAKE_INSTALL_PREFIX}/mfem")
+    set(MFEM_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/mfem.git")
+    set(MFEM_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${MFEM_DIR})
+        message(STATUS "Using existing MFEM found at ${MFEM_DIR}")
+        list(APPEND existing_list axom )
+    else()
+        message(STATUS "Building MFEM found at ${MFEM_TAG}")
+
+        ExternalProject_Add( mfem
+                             DOWNLOAD_COMMAND git clone ${MFEM_REPO}
+                             UPDATE_COMMAND git checkout ${MFEM_TAG}
+                             PREFIX ${PROJECT_BINARY_DIR}/mfem
+                             INSTALL_DIR ${MFEM_DIR}
+                             DEPENDS hypre
+                             CMAKE_ARGS -DHYPRE_INCLUDE_DIRS=${HYPRE_DIR}/include
+                                        -DHYPRE_LIBRARIES=${HYPRE_DIR}/lib
+                                        -DMFEM_USE_OPENMP=OFF
+                                        -DMFEM_USE_GZSTREAM=ON
+                                        -DMFEM_USE_LIBUNWIND=OFF
+                                        -DMFEM_THREAD_SAFE=OFF
+                                        -DMFEM_USE_MEMALLOC=OFF
+                                        -DMFEM_USE_SUNDIALS=OFF
+                                        -DMFEM_USE_MESQUITE=OFF
+                                        -DMFEM_USE_SUITESPARSE=OFF
+                                        -DMFEM_USE_SUPERLU=OFF
+                                        -DMFEM_USE_STRUMPACK=OFF
+                                        -DMFEM_USE_GECKO=OFF
+                                        -DMFEM_USE_GNUTLS=OFF
+                                        -DMFEM_USE_NETCDF=OFF
+                                        -DMFEM_USE_PETSC=OFF
+                                        -DMFEM_USE_MPFR=OFF
+                                        -DMFEM_USE_SIDRE=OFF
+                                        -DMFEM_USE_METIS=OFF
+                                        -DMFEM_ENABLE_TESTING=OFF
+                                        -DMFEM_ENABLE_EXAMPLES=OFF
+                                        -DMFEM_ENABLE_MINIAPPS=OFF
+                                        -DMFEM_GIT_STRING="UNKNOWN"
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=ON
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install )
+        list(APPEND build_list mfem)
+    endif()
+
+    set(TRIBOL_DIR "${CMAKE_INSTALL_PREFIX}/tribol")
+    set(TRIBOL_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/tribol.git")
+    set(TRIBOL_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${TRIBOL_DIR})
+        message(STATUS "Using existing TRIBOL found at ${TRIBOL_DIR}")
+        list(APPEND existing_list tribol)
+    else()
+        message(STATUS "Building TRIBOL found at ${TRIBOL_TAG}")
+
+        ExternalProject_Add( tribol
+                             PREFIX ${PROJECT_BINARY_DIR}/tribol
+                             #DOWNLOAD_COMMAND git clone ${TRIBOL_REPO}
+                             #UPDATE_COMMAND git checkout ${TRIBOL_TAG} && git pull
+                             GIT_REPOSITORY ${TRIBOL_REPO}
+                             GIT_TAG ${TRIBOL_TAG}
+                             INSTALL_DIR ${TRIBOL_DIR}
+                             DEPENDS axom conduit hdf5 mfem
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_CXX_FLAGS=-std=c++14
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DTRIBOL_USE_EXTERNAL_AXOM:BOOL=TRUE
+                                        -DTRIBOL_ENABLE_SIDRE:BOOL=FALSE
+                                        -DAXOM_DIR=${AXOM_DIR}
+                                        -DCONDUIT_DIR=${CONDUIT_DIR}
+                                        -DHDF5_DIR=${HDF5_DIR}
+                                        -DRAJA_DIR=${RAJA_DIR}
+                                        -DMFEM_DIR=${MFEM_DIR}
+                                        -DENABLE_TESTS=OFF
+                                        -DENABLE_EXAMPLES=OFF
+                                        -DENABLE_DOCS=OFF)
+
+        list(APPEND build_list tribol)
+    endif()
+
+    set(LLNL_GLOBALID_DIR "${CMAKE_INSTALL_PREFIX}/LLNL_GlobalID")
+    set(LLNL_GLOBALID_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/LLNL_GlobalID.git")
+    set(LLNL_GLOBALID_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${LLNL_GLOBALID_DIR})
+        message(STATUS "Using existing LLNL_GLOBALID found at ${LLNL_GLOBALID_DIR}")
+        list(APPEND existing_list LLNL_GlobalID)
+    else()
+        message(STATUS "Building LLNL_GLOBALID found at ${LLNL_GLOBALID_TAG}")
+
+        ExternalProject_Add( LLNL_GlobalID
+                             PREFIX ${PROJECT_BINARY_DIR}/LLNL_GlobalID
+                             GIT_REPOSITORY ${LLNL_GLOBALID_REPO}
+                             GIT_TAG ${LLNL_GLOBALID_TAG}
+                             INSTALL_DIR ${LLNL_GLOBALID_DIR}
+                             CONFIGURE_COMMAND pwd
+                             BUILD_COMMAND pwd
+                             INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
+                                             cp <SOURCE_DIR>/LLNL_GlobalID.h <INSTALL_DIR>/include/ &&
+                                             cp <SOURCE_DIR>/LLNL_GlobalID_mpi.h <INSTALL_DIR>/include/)
+        list(APPEND build_list LLNL_GlobalID)
+    endif()
+
+    set(CARE_DIR "${CMAKE_INSTALL_PREFIX}/care")
+    set(CARE_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/imports_care.git")
+    set(CARE_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${CARE_DIR})
+        message(STATUS "Using existing CARE found at ${CARE_DIR}")
+        list(APPEND existing_list care)
+    else()
+        message(STATUS "Building CARE found at ${CARE_TAG}")
+
+        ExternalProject_Add( care
+                             PREFIX ${PROJECT_BINARY_DIR}/care
+                             #GIT_REPOSITORY ${CARE_REPO}
+                             #GIT_TAG ${CARE_TAG}
+                             DOWNLOAD_COMMAND git clone ${CARE_REPO} care
+                             UPDATE_COMMAND git checkout ${CARE_TAG} && git pull
+                             INSTALL_DIR ${CARE_DIR}
+                             DEPENDS chai raja LLNL_GlobalID
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -Dcamp_DIR=${RAJA_DIR}/lib/cmake/camp
+                                        -DUMPIRE_DIR=${UMPIRE_DIR}
+                                        -DCHAI_DIR=${CHAI_DIR}
+                                        -DRAJA_DIR=${RAJA_DIR}
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list care)
+    endif()
+
+    set(RXB_DIR "${CMAKE_INSTALL_PREFIX}/rxb")
+    set(RXB_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/rxb.git")
+    set(RXB_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${RXB_DIR})
+        message(STATUS "Using existing RXB found at ${RXB_DIR}")
+        list(APPEND existing_list rxb)
+    else()
+        message(STATUS "Building RXB found at ${RXB_TAG}")
+
+        ExternalProject_Add( rxb 
+                             PREFIX ${PROJECT_BINARY_DIR}/rxb
+                             GIT_REPOSITORY ${RXB_REPO}
+                             GIT_TAG ${RXB_TAG}
+                             INSTALL_DIR ${RXB_DIR}
+                             DEPENDS LLNL_GlobalID
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DENABLE_MPI:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DENABLE_RIB=OFF
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list rxb)
+    endif()
+
+    set(VISTA_DIR "${CMAKE_INSTALL_PREFIX}/vista")
+    set(VISTA_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/vista.git")
+    set(VISTA_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${VISTA_DIR})
+        message(STATUS "Using existing VISTA found at ${VISTA_DIR}")
+        list(APPEND existing_list vista)
+    else()
+        message(STATUS "Building VISTA found at ${VISTA_TAG}")
+
+        ExternalProject_Add( vista
+                             PREFIX ${PROJECT_BINARY_DIR}/vista
+                             GIT_REPOSITORY ${VISTA_REPO}
+                             GIT_TAG ${VISTA_TAG}
+                             INSTALL_DIR ${VISTA_DIR}
+                             DEPENDS LLNL_GlobalID chai silo care
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                        -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DCMAKE_DEBUG_POSTFIX=
+                                        -DENABLE_VISTA_TV_DEBUG:BOOL=TRUE
+                                        -DEXTERNAL_VISTA_TV_DEBUG:BOOL=TRUE
+                                        -DCHAI_DIR=${CHAI_DIR}
+                                        -DHDF5_DIR=${HDF5_DIR}
+                                        -DRAJA_DIR=${RAJA_DIR}
+                                        -DCAMP_DIR=${RAJA_DIR}/lib/cmake/camp
+                                        -DCARE_DIR=${CARE_DIR}
+                                        -DSILO_DIR=${SILO_DIR}
+                                        -DUMPIRE_DIR=${UMPIRE_DIR}
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list vista)
+    endif()
+
+    set(WORLDS_CORE_DIR "${CMAKE_INSTALL_PREFIX}/worlds_core")
+    set(WORLDS_CORE_REPO "ssh://git@rz-bitbucket.llnl.gov:7999/ale/worlds_core.git")
+    set(WORLDS_CORE_TAG "feature/benliu/slideWorld")
+
+    if (EXISTS ${WORLDS_CORE_DIR})
+        message(STATUS "Using existing WORLDS_CORE found at ${WORLDS_CORE_DIR}")
+        list(APPEND existing_list worlds_core)
+    else()
+        message(STATUS "Building WORLDS_CORE found at ${WORLDS_CORE_TAG}")
+
+        ExternalProject_Add( worlds_core
+                             PREFIX ${PROJECT_BINARY_DIR}/worlds_core
+                             GIT_REPOSITORY ${WORLDS_CORE_REPO}
+                             GIT_TAG ${WORLDS_CORE_TAG}
+                             INSTALL_DIR ${WORLDS_CORE_DIR}
+                             DEPENDS rxb vista LLNL_GlobalID chai care
+                             BUILD_COMMAND make -j ${NUM_PROC}
+                             INSTALL_COMMAND make install
+                             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                        -DCMAKE_CXX_FLAGS=${TPL_CXX_GID64}
+                                        -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                        -DENABLE_MPI:BOOL=TRUE
+                                        -DBLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                        -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                        -DRXB_DIR=${RXB_DIR}
+                                        -DVISTA_DIR=${VISTA_DIR}
+                                        -DCHAI_DIR=${CHAI_DIR}
+                                        -DCARE_DIR=${CARE_DIR}
+                                        -DLLNL_GLOBALID_DIR=${LLNL_GLOBALID_DIR})
+
+        list(APPEND build_list worlds_core)
+    endif()
+
+endif(ENABLE_TRIBOL)
 
 ################################
 # Create target that builds all dependencies
