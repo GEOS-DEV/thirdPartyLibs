@@ -96,3 +96,18 @@ RUN apt-get install -y --no-install-recommends \
     libxml2-utils \
     git \
     ghostscript
+    
+# Testing our build system against potential conflicts with system libraries
+RUN apt-get install -y \
+    libpugixml-dev \
+    libhypre-dev \
+    petsc-dev \
+    libsuitesparse-dev \
+    libsuperlu-dist-dev \
+    trilinos-dev \
+    libparmetis-dev \
+    libhdf5-dev \
+    libsilo-dev \
+    libvtk7-dev \
+    astyle \
+    uncrustify
