@@ -98,7 +98,7 @@ RUN apt-get install -y --no-install-recommends \
     ghostscript
     
 # Testing our build system against potential conflicts with system libraries
-RUN apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libpugixml-dev \
     libhypre-dev \
     petsc-dev \
