@@ -401,6 +401,8 @@ set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
 set(CHAI_URL "${TPL_MIRROR_DIR}/chai-0755757.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
+set( CHAI_CUDA_FLAGS "${RAJA_CUDA_FLAGS} -Xcompiler -mno-float128" ) 
+
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
@@ -418,7 +420,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
+                                -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -524,6 +526,8 @@ if (ENABLE_CALIPER)
                                     -D WITH_CUPTI=${ENABLE_CUDA}
                                     -D CUPTI_PREFIX=${CUDA_TOOLKIT_ROOT_DIR}/nvidia/extras/CUPTI
                                     -D WITH_NVPROF=${ENABLE_CUDA}
+                                    -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+
                        )
 
     list(APPEND build_list caliper adiak)
@@ -900,8 +904,8 @@ if(ENABLE_SUITESPARSE)
 
     set( SUITESPARSE_DEPENDS metis )
 
-    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
-    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
+    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE} -pthread" )
+    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE} -pthread" )
     set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
 
     set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
@@ -919,12 +923,12 @@ CFLAGS=\"${SUITESPARSE_C_FLAGS}\" \
 CXX=${SUITESPARSE_CXX_COMPILER} \
 CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
 FC=${SUITESPARSE_Fortran_COMPILER} \
-FCFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
+FFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
 JOBS=${NUM_PROC} \
 CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
 INSTALL=${SUITESPARSE_DIR} \
-BLAS=\"${BLAS_LINK_LINE}\" \
-LAPACK=\"${LAPACK_LINK_LINE}\" \
+BLAS=\"${BLAS_LINK_LINE} -lgfortran -lgomp -pthread\" \
+LAPACK=\"${LAPACK_LINK_LINE} -lgfortran -lgomp -pthread\" \
 MY_METIS_LIB=\"${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a\" \
 MY_METIS_INC=\"${CMAKE_INSTALL_PREFIX}/metis/include\" \
 CUDA=no")
