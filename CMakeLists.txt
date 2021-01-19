@@ -823,7 +823,7 @@ endif()
 
 if( ENABLE_HYPRE )
     set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-    set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-804609b6c40ee3f69dd13a75b36953ef66fc5c0c.zip")
+    set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip")
 
 
     message(STATUS "Building HYPRE found at ${HYPRE_URL}")
@@ -853,13 +853,14 @@ if( ENABLE_HYPRE )
         set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
     endif()
 
-    if( ENABLE_CUDA )
-        set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
-    endif()
+    #if( ENABLE_CUDA )
+    #    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
+    #endif()
 
-    if( ENABLE_CUDA )
-        set(HYPRE_INT_FLAG "" )
-    elseif( CMAKE_HOST_APPLE )
+    #if( ENABLE_CUDA )
+    #    set(HYPRE_INT_FLAG "" )
+    #else
+    if( CMAKE_HOST_APPLE )
         set(HYPRE_INT_FLAG "--enable-bigint")
     else()
         set(HYPRE_INT_FLAG "--enable-mixedint")
