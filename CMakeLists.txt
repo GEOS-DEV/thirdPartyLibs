@@ -821,116 +821,115 @@ endif()
 # HYPRE
 ################################
 
-if( ENABLE_HYPRE )
-    set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-    set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip")
+set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip")
 
 
-    message(STATUS "Building HYPRE found at ${HYPRE_URL}")
+message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
-    set(HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
-    set(HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-    set(HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
-
-
-    if( ${ENABLE_MPI} )
-      set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
-      set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
-      set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-      set( HYPRE_DEPENDS superlu_dist caliper )
-      set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
-    else()
-      set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
-      set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-      set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-      set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
-    endif()
-
-    if (ENABLE_OPENMP)
-        set(HYPRE_OPENMP_FLAG --with-openmp)
-        set(HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set(HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
-    endif()
-
-    #if( ENABLE_CUDA )
-    #    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
-    #endif()
-
-    #if( ENABLE_CUDA )
-    #    set(HYPRE_INT_FLAG "" )
-    #else
-    if( CMAKE_HOST_APPLE )
-        set(HYPRE_INT_FLAG "--enable-bigint")
-    else()
-        set(HYPRE_INT_FLAG "--enable-mixedint")
-    endif()
-
-    if( ENABLE_CALIPER_HYPRE )
-        set(HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}\/include\" --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" " )
-    else()
-        set(HYPRE_CALIPER_FLAGS "" )
-    endif()
-
-    if (CMAKE_BUILD_TYPE MATCHES Debug)
-        set(HYPRE_DEBUG_FLAG "--enable-debug" )
-    else()
-        set(HYPRE_DEBUG_FLAG "" )
-    endif()
+set(HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
+set(HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+set(HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
 
 
-    if( ${ENABLE_MPI} )
-      file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
-      ./configure \
-      CC=${MPI_C_COMPILER} \
-      CFLAGS=\"${HYPRE_C_FLAGS}\" \
-      CXX=${HYPRE_CXX_COMPILER} \
-      CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-      FC=${HYPRE_Fortran_COMPILER} \
-      FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-      --prefix=${HYPRE_DIR} \
-      ${HYPRE_DEBUG_FLAG} \
-      ${HYPRE_INT_FLAG} \
-      --with-blas-lib=\"${BLAS_LINK_LINE}\" \
-      --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-      --with-dsuperlu \
-      --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
-      --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
-      ${HYPRE_OPENMP_FLAG} \
-      ${HYPRE_CUDA_FLAGS}\
-      ${HYPRE_CALIPER_FLAGS}\n")
-    else()
-      file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
-      ./configure \
-      CC=${MPI_C_COMPILER} \
-      CFLAGS=\"${HYPRE_C_FLAGS}\" \
-      CXX=${HYPRE_CXX_COMPILER} \
-      CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-      FC=${HYPRE_Fortran_COMPILER} \
-      FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-      --prefix=${HYPRE_DIR} \
-      ${HYPRE_DEBUG_FLAG} \
-      ${HYPRE_INT_FLAG} \
-      --with-blas-lib=\"${BLAS_LINK_LINE}\" \
-      --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-      ${HYPRE_OPENMP_FLAG} \
-      ${HYPRE_CUDA_FLAGS}\
-      ${HYPRE_CALIPER_FLAGS}\n")
-    endif()
-
-    ExternalProject_Add( hypre
-                         URL ${HYPRE_URL}
-                         PREFIX ${PROJECT_BINARY_DIR}/hypre
-                         INSTALL_DIR ${HYPRE_DIR}
-                         DEPENDS ${HYPRE_DEPENDS}
-                         BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
-                         BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                         INSTALL_COMMAND make install
-                       )
-
-    list(APPEND build_list hypre )
+if( ${ENABLE_MPI} )
+    set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
+    set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
+    set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    set( HYPRE_DEPENDS superlu_dist caliper )
+    set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
+else()
+    set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
 endif()
+
+if (ENABLE_OPENMP)
+    set(HYPRE_OPENMP_FLAG --with-openmp)
+    set(HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
+endif()
+
+#if( ENABLE_CUDA )
+#    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
+#endif()
+
+#if( ENABLE_CUDA )
+#    set(HYPRE_INT_FLAG "" )
+#else
+if( CMAKE_HOST_APPLE )
+    set(HYPRE_INT_FLAG "--enable-bigint")
+else()
+    set(HYPRE_INT_FLAG "--enable-mixedint")
+endif()
+
+if( ENABLE_CALIPER_HYPRE )
+    set(HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}\/include\" --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" " )
+else()
+    set(HYPRE_CALIPER_FLAGS "" )
+endif()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set(HYPRE_DEBUG_FLAG "--enable-debug" )
+else()
+    set(HYPRE_DEBUG_FLAG "" )
+endif()
+
+
+if( ${ENABLE_MPI} )
+  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
+  ./configure \
+  CC=${MPI_C_COMPILER} \
+  CFLAGS=\"${HYPRE_C_FLAGS}\" \
+  CXX=${HYPRE_CXX_COMPILER} \
+  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
+  FC=${HYPRE_Fortran_COMPILER} \
+  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  --prefix=${HYPRE_DIR} \
+  ${HYPRE_DEBUG_FLAG} \
+  ${HYPRE_INT_FLAG} \
+  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
+  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
+  --with-dsuperlu \
+  --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
+  --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
+  ${HYPRE_OPENMP_FLAG} \
+  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CALIPER_FLAGS}\n")
+else()
+  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
+  ./configure \
+  CC=${MPI_C_COMPILER} \
+  CFLAGS=\"${HYPRE_C_FLAGS}\" \
+  CXX=${HYPRE_CXX_COMPILER} \
+  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
+  FC=${HYPRE_Fortran_COMPILER} \
+  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  --prefix=${HYPRE_DIR} \
+  ${HYPRE_DEBUG_FLAG} \
+  ${HYPRE_INT_FLAG} \
+  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
+  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
+  ${HYPRE_OPENMP_FLAG} \
+  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CALIPER_FLAGS}\n")
+endif()
+
+ExternalProject_Add( hypre
+                     URL ${HYPRE_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/hypre
+                     INSTALL_DIR ${HYPRE_DIR}
+                     DEPENDS ${HYPRE_DEPENDS}
+                     BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
+                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
+                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
+                     INSTALL_COMMAND make install
+                   )
+
+list(APPEND build_list hypre )
+
 
 ################################
 # SUITESPARSE
