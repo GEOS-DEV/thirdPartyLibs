@@ -4,6 +4,13 @@ cmake_minimum_required(VERSION 3.9)
 ################################
 project(geosx_tpl LANGUAGES C CXX Fortran)
 
+option( GEOSXTPL_ENABLE_DOXYGEN "" ON )
+if ( ENABLE_DOXYGEN EQUAL OFF )
+    set( GEOSXTPL_ENABLE_DOXYGEN "OFF" )
+endif()
+set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
+
+
 ################################
 # BLT
 ################################
@@ -83,6 +90,33 @@ message(STATUS "Build command = ${TPL_BUILD_COMMAND}")
 include(GNUInstallDirs)
 include( cmake/thirdparty/FindMathLibraries.cmake )
 
+
+set( GEOSX_LOCALINDEX_TYPE "std::ptrdiff_t" CACHE STRING "" )
+set( GEOSX_GLOBALINDEX_TYPE "long long int" CACHE STRING "" )
+
+if( GEOSX_LOCALINDEX_TYPE STREQUAL "int" )
+    set( GEOSX_LOCALINDEX_TYPE_FLAG "0" CACHE STRING "" FORCE )
+elseif( GEOSX_LOCALINDEX_TYPE STREQUAL "long int" )
+    set( GEOSX_LOCALINDEX_TYPE_FLAG "1" CACHE STRING "" FORCE )
+elseif( GEOSX_LOCALINDEX_TYPE STREQUAL "long long int" )
+    set( GEOSX_LOCALINDEX_TYPE_FLAG "2" CACHE STRING "" FORCE )
+elseif( GEOSX_LOCALINDEX_TYPE STREQUAL "std::ptrdiff_t" )
+    set( GEOSX_LOCALINDEX_TYPE_FLAG "3" CACHE STRING "" FORCE )
+else( TRUE )
+    message( FATAL_ERROR "GEOSX_LOCALINDEX_TYPE_FLAG not set for ${GEOSX_LOCALINDEX_TYPE}" )
+endif()
+
+if( GEOSX_GLOBALINDEX_TYPE STREQUAL "int" )
+    set( GEOSX_GLOBALINDEX_TYPE_FLAG "0" CACHE STRING "" FORCE )
+elseif( GEOSX_GLOBALINDEX_TYPE STREQUAL "long int" )
+    set( GEOSX_GLOBALINDEX_TYPE_FLAG "1" CACHE STRING "" FORCE )
+elseif( GEOSX_GLOBALINDEX_TYPE STREQUAL "long long int" )
+    set( GEOSX_GLOBALINDEX_TYPE_FLAG "2" CACHE STRING "" FORCE )
+else( TRUE )
+    message( FATAL_ERROR "GEOSX_GLOBALINDEX_TYPE_FLAG not set for ${GEOSX_GLOBALINDEX_TYPE}" )
+endif()
+
+
 ################################
 # UNCRUSTIFY
 ################################
@@ -131,7 +165,7 @@ list(APPEND build_list astyle )
 # Doxygen
 ################################
 
-if( ENABLE_DOXYGEN )
+if( GEOSXTPL_ENABLE_DOXYGEN )
 
   set(DOXYGEN_DIR "${CMAKE_INSTALL_PREFIX}/doxygen")
   set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen-1.8.20.tar.gz")
@@ -336,27 +370,8 @@ list(APPEND build_list silo )
 
 
 ################################
-# RAJA + CAMP
+# RAJA
 ################################
-
-
-# if( NOT EXTERNAL_CAMP_SOURCE_DIR )
-#   set(CAMP_DIR "${CMAKE_INSTALL_PREFIX}/camp")
-#   set(CAMP_URL "${TPL_MIRROR_DIR}/camp-cef6f71c5e21836eed381f80cb328126202d512e.tar.gz")
-#   message(STATUS "Using CAMP found at ${CAMP_URL}")
-
-#   ExternalProject_Add( camp
-#                        URL ${CAMP_URL}
-#                        PREFIX ${PROJECT_BINARY_DIR}/camp
-#                        INSTALL_DIR ${CAMP_DIR}
-#                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
-#                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-#                        CMAKE_GENERATOR ${TPL_GENERATOR}
-#                        CMAKE_ARGS -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-#                      )
-#   set( EXTERNAL_CAMP_SOURCE_DIR "${PROJECT_BINARY_DIR}/camp/src/camp")
-#   set( RAJA_DEPENDS camp )
-# endif()
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
@@ -388,7 +403,6 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                # -D EXTERNAL_CAMP_SOURCE_DIR:PATH=${EXTERNAL_CAMP_SOURCE_DIR}
                     )
 
 list(APPEND build_list raja )
@@ -398,7 +412,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-0755757.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2.2.2.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -418,7 +432,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
+                                -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -808,7 +822,8 @@ endif()
 ################################
 
 set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-343e31c.tar.gz")
+set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip")
+
 
 message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -818,16 +833,16 @@ set(HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
 
 
 if( ${ENABLE_MPI} )
-  set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
-  set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
-  set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-  set( HYPRE_DEPENDS "superlu_dist" )
-  set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
+    set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
+    set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
+    set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    set( HYPRE_DEPENDS superlu_dist caliper )
+    set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
 else()
-  set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
-  set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-  set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-  set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
+    set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
 endif()
 
 if (ENABLE_OPENMP)
@@ -837,11 +852,31 @@ if (ENABLE_OPENMP)
     set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
 endif()
 
+#if( ENABLE_CUDA )
+#    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
+#endif()
+
+#if( ENABLE_CUDA )
+#    set(HYPRE_INT_FLAG "" )
+#else
 if( CMAKE_HOST_APPLE )
-    set(HYPRE_INT_FLAG "bigint")
+    set(HYPRE_INT_FLAG "--enable-bigint")
 else()
-    set(HYPRE_INT_FLAG "mixedint")
+    set(HYPRE_INT_FLAG "--enable-mixedint")
 endif()
+
+if( ENABLE_CALIPER_HYPRE )
+    set(HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}\/include\" --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" " )
+else()
+    set(HYPRE_CALIPER_FLAGS "" )
+endif()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set(HYPRE_DEBUG_FLAG "--enable-debug" )
+else()
+    set(HYPRE_DEBUG_FLAG "" )
+endif()
+
 
 if( ${ENABLE_MPI} )
   file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
@@ -853,13 +888,16 @@ if( ${ENABLE_MPI} )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-${HYPRE_INT_FLAG} \
+  ${HYPRE_DEBUG_FLAG} \
+  ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   --with-dsuperlu \
   --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
   --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
-  ${HYPRE_OPENMP_FLAG}\n")
+  ${HYPRE_OPENMP_FLAG} \
+  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CALIPER_FLAGS}\n")
 else()
   file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
@@ -870,10 +908,13 @@ else()
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
-  --enable-${HYPRE_INT_FLAG} \
+  ${HYPRE_DEBUG_FLAG} \
+  ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  ${HYPRE_OPENMP_FLAG}\n")
+  ${HYPRE_OPENMP_FLAG} \
+  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CALIPER_FLAGS}\n")
 endif()
 
 ExternalProject_Add( hypre
@@ -889,6 +930,7 @@ ExternalProject_Add( hypre
 
 list(APPEND build_list hypre )
 
+
 ################################
 # SUITESPARSE
 ################################
@@ -900,6 +942,12 @@ if(ENABLE_SUITESPARSE)
 
     set( SUITESPARSE_DEPENDS metis )
 
+    if( GEOSX_GLOBALINDEX_TYPE_FLAG EQUAL 0 )
+    	set( SUITESPARSE_LONG_INT_FLAGS "-DSuiteSparse_long=int -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
+    elseif( GEOSX_GLOBALINDEX_TYPE_FLAG EQUAL 2 )
+        set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
+    endif()
+ 
     set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
     set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
     set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
@@ -915,7 +963,7 @@ if(ENABLE_SUITESPARSE)
     endif()
 
     set( SUITESPARSE_CONFIG_ARGS "CC=${SUITESPARSE_C_COMPILER} \
-CFLAGS=\"${SUITESPARSE_C_FLAGS}\" \
+CFLAGS=\"${SUITESPARSE_C_FLAGS} ${SUITESPARSE_LONG_INT_FLAGS}\" \
 CXX=${SUITESPARSE_CXX_COMPILER} \
 CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
 FC=${SUITESPARSE_Fortran_COMPILER} \
