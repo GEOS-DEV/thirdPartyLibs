@@ -59,7 +59,6 @@ RUN yum install --setopt=obsoletes=0 -y \
 
 ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 
-RUN yum install -y yum-plugin-versionlock && yum versionlock libcublas10
 
 ARG TMP_DIR=/tmp
 FROM nvidia-develop AS tpl_toolchain_intersect_geosx_toolchain
@@ -123,8 +122,6 @@ ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
-#RUN ln -s ln -s /usr/include/cublas_v2.h /usr/local/cuda/include/cublas_v2.h
-
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
