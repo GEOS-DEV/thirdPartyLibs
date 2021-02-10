@@ -676,7 +676,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
-                                    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${TRILINOS_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
