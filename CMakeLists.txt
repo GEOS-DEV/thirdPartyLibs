@@ -533,6 +533,7 @@ if (ENABLE_CALIPER)
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
                                     -D MPI_C_COMPILER:STRING=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
+                                    -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D WITH_PAPI:BOOL=${ENABLE_PAPI}
