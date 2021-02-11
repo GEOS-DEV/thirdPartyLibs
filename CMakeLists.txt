@@ -14,6 +14,8 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 ################################
 # BLT
 ################################
+set( BLT_CXX_STD c++14 CACHE STRING "" FORCE )
+
 if (DEFINED BLT_SOURCE_DIR)
     # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
 
