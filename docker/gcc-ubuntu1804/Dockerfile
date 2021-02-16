@@ -27,7 +27,11 @@ RUN apt-get install -y --no-install-recommends \
 # And we want to test GEOSX's python configuration script.
 # Unfortunately argparse (standard library's package used by GEOSX)
 # is not in the python-minimal package so we install the whole std lib.
-    python
+    python \
+# MOAB uses those tools to convert configure.ac into the configure script
+    autoconf \
+    autotools-dev \
+    libtool
 
 # Installing more recent cmake version (3.10.2 in ubuntu is not enough)
 ARG CMAKE_VERSION=3.14.5
