@@ -227,7 +227,6 @@ ExternalProject_Add( hdf5
 list(APPEND HDF5_DEPENDENCIES hdf5 )
 list(APPEND build_list hdf5 )
 
-
 ################################
 # Conduit
 ################################
@@ -773,6 +772,45 @@ ExternalProject_Add( metis
 
 list(APPEND build_list metis )
 
+################################
+# MOAB (Mesh-Oriented datABase) is a mandatory dependency
+################################
+
+# MOAB is a mandatory dependency
+set( MOAB_DEPENDENCIES hdf5 metis parmetis )
+set( MOAB_DIR "${CMAKE_INSTALL_PREFIX}/moab" )
+set( MOAB_URL "${TPL_MIRROR_DIR}/moab-5.2.1.tar.gz" )
+message( STATUS "Building MOAB found at ${MOAB_URL}" )
+
+if( ${ENABLE_MPI} )
+  set( MOAB_C_COMPILER ${MPI_C_COMPILER} )
+  set( MOAB_CXX_COMPILER ${MPI_CXX_COMPILER} )
+  set( MOAB_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+  set( MOAB_WITH_MPI --with-mpi )
+else()
+  set( MOAB_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( MOAB_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+  set( MOAB_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+  set( MOAB_WITH_MPI "" )
+endif()
+
+ExternalProject_Add( moab
+                     URL ${MOAB_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/moab
+                     INSTALL_DIR ${MOAB_DIR}
+                     DEPENDS ${MOAB_DEPENDENCIES}
+                     CONFIGURE_COMMAND autoreconf -fi && CC=${MOAB_C_COMPILER} CXX=${MOAB_CXX_COMPILER} FC=${MOAB_Fortran_COMPILER} ./configure
+                         --disable-fortran ${MOAB_WITH_MPI}
+                         --with-blas --with-lapack
+                         --with-hdf5=${HDF5_DIR}
+                         --with-metis=${METIS_DIR}
+                         --with-parmetis=${PARMETIS_DIR}
+                         --without-netcdf
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     )
+
+list( APPEND build_list moab )
 
 ################################
 # SUPERLU --
