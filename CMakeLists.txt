@@ -799,7 +799,7 @@ ExternalProject_Add( moab
                      PREFIX ${PROJECT_BINARY_DIR}/moab
                      INSTALL_DIR ${MOAB_DIR}
                      DEPENDS ${MOAB_DEPENDENCIES}
-                     CONFIGURE_COMMAND autoreconf -fi && CC=${MOAB_C_COMPILER} CXX=${MOAB_CXX_COMPILER} FC=${MOAB_Fortran_COMPILER} ./configure
+                     CONFIGURE_COMMAND cd ../moab && autoreconf -fi && CC=${MOAB_C_COMPILER} CXX=${MOAB_CXX_COMPILER} FC=${MOAB_Fortran_COMPILER} ./configure
                          --disable-fortran ${MOAB_WITH_MPI}
                          --with-blas --with-lapack
                          --with-hdf5=${HDF5_DIR}
