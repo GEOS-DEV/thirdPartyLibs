@@ -860,8 +860,10 @@ endif()
 
 if( ENABLE_CUDA )
     set(HYPRE_INT_FLAG "" )
-else()
+elseif( CMAKE_HOST_APPLE )
     set(HYPRE_INT_FLAG "--enable-bigint")
+else()
+    set(HYPRE_INT_FLAG "--enable-mixedint")
 endif()
 
 if( ENABLE_CALIPER_HYPRE )
