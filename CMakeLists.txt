@@ -117,6 +117,8 @@ else( TRUE )
 endif()
 
 
+
+
 ################################
 # UNCRUSTIFY
 ################################
@@ -852,17 +854,14 @@ if (ENABLE_OPENMP)
     set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
 endif()
 
-#if( ENABLE_CUDA )
-#    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
-#endif()
+if( ENABLE_CUDA )
+    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
+endif()
 
-#if( ENABLE_CUDA )
-#    set(HYPRE_INT_FLAG "" )
-#else
-if( CMAKE_HOST_APPLE )
-    set(HYPRE_INT_FLAG "--enable-bigint")
+if( ENABLE_CUDA )
+    set(HYPRE_INT_FLAG "" )
 else()
-    set(HYPRE_INT_FLAG "--enable-mixedint")
+    set(HYPRE_INT_FLAG "--enable-bigint")
 endif()
 
 if( ENABLE_CALIPER_HYPRE )
@@ -920,6 +919,7 @@ endif()
 ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
+		     PATCH_COMMAND cd ${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities && pwd && ls  && patch < ${TPL_MIRROR_DIR}/hypre_setDevice_patch.txt
                      INSTALL_DIR ${HYPRE_DIR}
                      DEPENDS ${HYPRE_DEPENDS}
                      BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
