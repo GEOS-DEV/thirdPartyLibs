@@ -668,9 +668,9 @@ if (ENABLE_TRILINOS)
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
                          INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND ${TRILINOS_BUILD_COMMAND}
-                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                         CMAKE_GENERATOR ${TPL_GENERATOR}
+                         BUILD_COMMAND "ninja -j ${NUM_PROC}"
+                         INSTALL_COMMAND "ninja install"
+                         CMAKE_GENERATOR "Ninja"
                          CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
                                           -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
                          CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}

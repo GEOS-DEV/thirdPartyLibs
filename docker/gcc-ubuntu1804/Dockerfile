@@ -1,5 +1,5 @@
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
-FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
+FROM ubuntu:20.10 AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
@@ -12,8 +12,9 @@ RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
     make \
-    gcc-8 \
-    g++-8 \
+    ninja-build \
+    gcc-9 \
+    g++-9 \
     libgfortran5 \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
@@ -36,8 +37,8 @@ RUN apt-get install -y --no-install-recommends curl ca-certificates && \
     curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - && \
     apt-get purge --auto-remove -y curl ca-certificates
 
-ENV CC=/usr/bin/gcc-8 \
-    CXX=/usr/bin/g++-8 \
+ENV CC=/usr/bin/gcc-9 \
+    CXX=/usr/bin/g++-9 \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
@@ -50,14 +51,14 @@ ENV OMPI_CC=$CC \
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
-ENV FC=/usr/bin/gfortran-8 \
+ENV FC=/usr/bin/gfortran-9 \
     MPIFC=/usr/bin/mpifort
 # Again, troublesome multi-line definition.
 ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
-    gfortran-8 \
+    gfortran-9 \
     bc \
     file \
     bison \
