@@ -14,6 +14,8 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 ################################
 # BLT
 ################################
+set( BLT_CXX_STD c++14 CACHE STRING "" FORCE )
+
 if (DEFINED BLT_SOURCE_DIR)
     # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
 
@@ -543,6 +545,8 @@ if (ENABLE_CALIPER)
                        )
 
     list(APPEND build_list caliper adiak)
+else()
+	SET(ENABLE_CALIPER_HYPRE OFF CACHE BOOL "" FORCE )    
 endif()
 
 
@@ -677,7 +681,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_COMPILER:PATH=${TRILINOS_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                    -D CMAKE_Fortran_COMPILER:PATH=${CMAKE_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -838,7 +842,11 @@ if( ${ENABLE_MPI} )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    set( HYPRE_DEPENDS superlu_dist caliper )
+    if ( ENABLE_CALIPER_HYPRE )
+        set(HYPRE_DEPENDS superlu_dist caliper)
+    else()
+        set(HYPRE_DEPENDS superlu_dist)
+    endif()
     set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
 else()
     set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
