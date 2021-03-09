@@ -619,7 +619,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-18-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-13-0-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
