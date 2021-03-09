@@ -619,7 +619,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-18-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-13-0-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -668,9 +668,9 @@ if (ENABLE_TRILINOS)
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
                          INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND "ninja -j ${NUM_PROC}"
-                         INSTALL_COMMAND "ninja install"
-                         CMAKE_GENERATOR "Ninja"
+                         BUILD_COMMAND ${TRILINOS_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
                                           -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
                          CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}

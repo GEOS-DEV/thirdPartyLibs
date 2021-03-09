@@ -12,7 +12,6 @@ RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
     make \
-    ninja-build \
     gcc-9 \
     g++-9 \
     libgfortran5 \
