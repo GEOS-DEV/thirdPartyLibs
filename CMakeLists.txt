@@ -896,6 +896,7 @@ if( ${ENABLE_MPI} )
   CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  CUDA_HOME=\"${CUDA_TOOLKIT_ROOT_DIR}\" \
   --prefix=${HYPRE_DIR} \
   ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
@@ -916,6 +917,7 @@ else()
   CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  CUDA_HOME=\"${CUDA_TOOLKIT_ROOT_DIR}\" \
   --prefix=${HYPRE_DIR} \
   ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
