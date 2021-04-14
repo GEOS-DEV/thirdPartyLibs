@@ -1146,6 +1146,7 @@ if(ENABLE_VTK)
                                     -D VTK_MODULE_ENABLE_VTK_IOXML=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOXMLParser=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOCore=YES
+                                    -D VTK_MODULE_ENABLE_VTK_IOLegacy=YES
                                     -D VTK_BUILD_TESTING=OFF
                                     -D VTK_LEGACY_REMOVE=ON
                          )
