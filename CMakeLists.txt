@@ -44,7 +44,7 @@ include(ExternalProject)
 option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
-OPTION( ENABLE_HYPRE "" ON )
+option( ENABLE_HYPRE "" ON )
 option( ENABLE_TRILINOS "" ON )
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SUITESPARSE "" ON )
@@ -603,7 +603,8 @@ ExternalProject_Add( pugixml
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -928,9 +929,9 @@ if(ENABLE_SUITESPARSE)
         set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     endif()
  
-    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE}" )
-    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}" )
-    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}" )
+    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
 
     set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
     set( SUITESPARSE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
@@ -938,8 +939,6 @@ if(ENABLE_SUITESPARSE)
 
     if (ENABLE_OPENMP)
         set(SUITESPARSE_OPENMP_FLAG "${OpenMP_C_FLAGS}")
-    else()
-        set(SUITESPARSE_OPENMP_FLAG "")
     endif()
 
     set( SUITESPARSE_CONFIG_ARGS "CC=${SUITESPARSE_C_COMPILER} \
@@ -1003,45 +1002,45 @@ if( ENABLE_PETSC )
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
-    set(PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
-    set(PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-    set(PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
+    set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( PETSC_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( PETSC_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    set( PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( PETSC_DEPENDS metis )
 
-    if (ENABLE_OPENMP)
-        set(PETSC_OPENMP_FLAG --with-openmp=1)
+    if( ENABLE_OPENMP )
+        set(PETSC_OPENMP_FLAG "--with-openmp=1")
         set(PETSC_C_FLAGS "${PETSC_C_FLAGS} ${OpenMP_C_FLAGS}")
         set(PETSC_CXX_FLAGS "${PETSC_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         set(PETSC_Fortran_FLAGS "${PETSC_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
 
-        if(PETSC_OMP_DIR)
-            set(PETSC_OMP_DIR_FLAG --with-openmp-dir=${PETSC_OMP_DIR})
+        if( PETSC_OMP_DIR )
+            set(PETSC_OMP_DIR_FLAG "--with-openmp-dir=${PETSC_OMP_DIR}")
         endif()
     endif()
 
-    if (CMAKE_BUILD_TYPE MATCHES Debug)
-        set(PETSC_DEBUG_FLAG --with-debugging=1)
+    if( CMAKE_BUILD_TYPE MATCHES Debug )
+        set(PETSC_DEBUG_FLAG "--with-debugging=1")
     else()
-        set(PETSC_DEBUG_FLAG --with-debugging=0)
+        set(PETSC_DEBUG_FLAG "--with-debugging=0")
     endif()
 
-    if( ${ENABLE_MPI} )
+    if( ENABLE_MPI )
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${CMAKE_INSTALL_PREFIX}/superlu_dist --with-parmetis-dir=${CMAKE_INSTALL_PREFIX}/parmetis")
-        set( PETSC_DEPENDS parmetis metis superlu_dist )
-    else()
-        set( PETSC_C_COMPILER ${CMAKE_C_COMPILER} )
-        set( PETSC_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-        set( PETSC_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${SUPERLU_DIR} --with-parmetis-dir=${PARMETIS_DIR}" )
+        list( APPEND PETSC_DEPENDS parmetis superlu_dist )
+    else()    
         set( PETSC_MPI_FLAG "--with-mpi=0" )
-        set( PETSC_DEPENDS metis )
     endif()
 
-string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
-string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
+    string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
+    string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 
-file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
+    file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
 ./configure \
 --prefix=${PETSC_INSTALL_DIR} \
 --CC=${PETSC_C_COMPILER} \
