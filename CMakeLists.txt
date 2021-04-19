@@ -44,15 +44,10 @@ include(ExternalProject)
 option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
+OPTION( ENABLE_HYPRE "" ON )
 option( ENABLE_TRILINOS "" ON )
 option( ENABLE_PETSC "" OFF )
-#if( CMAKE_HOST_APPLE )
-#    option( ENABLE_PETSC "" OFF )
-#else()
-#    option( ENABLE_PETSC "" ON )
-#endif()
 option( ENABLE_SUITESPARSE "" ON )
-
 option( ENABLE_VTK "" ON )
 
 option( ENABLE_NINJA "" OFF )
@@ -74,6 +69,8 @@ string(REPLACE "-Wall" "" CXX_FLAGS_NO_WARNINGS ${CMAKE_CXX_FLAGS})
 string(REPLACE "-Wextra" "" CXX_FLAGS_NO_WARNINGS ${CXX_FLAGS_NO_WARNINGS})
 set(CXX_FLAGS_NO_WARNINGS "${CXX_FLAGS_NO_WARNINGS} -w")
 string(STRIP ${CXX_FLAGS_NO_WARNINGS} CXX_FLAGS_NO_WARNINGS)
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
 
 # Setup Ninja support
 if (ENABLE_NINJA)
@@ -393,7 +390,7 @@ ExternalProject_Add( raja
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
-                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
@@ -430,7 +427,7 @@ ExternalProject_Add( chai
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
@@ -546,7 +543,7 @@ if (ENABLE_CALIPER)
 
     list(APPEND build_list caliper adiak)
 else()
-	SET(ENABLE_CALIPER_HYPRE OFF CACHE BOOL "" FORCE )    
+    set( ENABLE_CALIPER_HYPRE OFF CACHE BOOL "" FORCE )    
 endif()
 
 
@@ -654,8 +651,6 @@ if (ENABLE_TRILINOS)
                                  -D OpenMP_Fortran_LIB_NAMES:STRING=${OpenMP_Fortran_LIB_NAMES})
     endif()
 
-    message(STATUS "TRILINOS_EXTRA_ARGS = ${TRILINOS_EXTRA_ARGS}")
-
     if( ${ENABLE_MPI} )
       set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
       set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
@@ -737,7 +732,7 @@ if( ${ENABLE_MPI} )
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
-                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                   -D GKLIB_PATH=../parmetis/metis/GKlib
                                   -D METIS_PATH=../parmetis/metis
                                   -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
@@ -763,7 +758,7 @@ ExternalProject_Add( metis
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D GKLIB_PATH=../metis/metis/GKlib
                                 -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -801,7 +796,7 @@ if( ENABLE_MPI )
                                         -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
                                         -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
                                         -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
-                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                   -D XSDK_INDEX_SIZE=64
                                   -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                   -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
@@ -827,119 +822,94 @@ endif()
 # HYPRE
 ################################
 
-set(HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre")
-set(HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip")
+if( ENABLE_HYPRE )
+  set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip" )
 
+  message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
-message(STATUS "Building HYPRE found at ${HYPRE_URL}")
+  set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+  set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+  set( HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+  set( HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
+  set( HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
+  set( HYPRE_DEPENDS "" )
 
-set(HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
-set(HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-set(HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_RELEASE}")
-
-
-if( ${ENABLE_MPI} )
+  if( ENABLE_MPI )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    if ( ENABLE_CALIPER_HYPRE )
-        set(HYPRE_DEPENDS superlu_dist caliper)
-    else()
-        set(HYPRE_DEPENDS superlu_dist)
+    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
+    if( ENABLE_OPENMP )
+      set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
     endif()
-    set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/superlu_dist/${CMAKE_INSTALL_LIBDIR}/libsuperlu_dist.a ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a ${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
-else()
-    set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
-    set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-    set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-    set( HYPRE_SUPERLU_LIBS "${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a -lstdc++")
-endif()
+    set( HYPRE_SUPERLU_FLAGS "--with-dsuperlu --with-dsuperlu-include=${SUPERLU_DIR}/include --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\"" )
+    list( APPEND HYPRE_DEPENDS superlu_dist )
+  endif()
 
-if (ENABLE_OPENMP)
-    set(HYPRE_OPENMP_FLAG --with-openmp)
-    set(HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}")
-endif()
+  if( ENABLE_OPENMP )
+    set( HYPRE_OPENMP_FLAG --with-openmp )
+    set( HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+    set( HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+  endif()
 
-if( ENABLE_CUDA )
-    set(HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
-endif()
+  if( ENABLE_HYPRE_CUDA )
+    set( HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
+    string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
+  endif()
 
-if( ENABLE_CUDA )
-    set(HYPRE_INT_FLAG "" )
-elseif( CMAKE_HOST_APPLE )
-    set(HYPRE_INT_FLAG "--enable-bigint")
-else()
-    set(HYPRE_INT_FLAG "--enable-mixedint")
-endif()
+  if( ENABLE_HYPRE_CUDA )
+    set( HYPRE_INT_FLAG "" )
+  elseif( CMAKE_HOST_APPLE )
+    set( HYPRE_INT_FLAG "--enable-bigint" )
+  else()
+    set( HYPRE_INT_FLAG "--enable-mixedint" )
+  endif()
 
-if( ENABLE_CALIPER_HYPRE )
-    set(HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}\/include\" --with-caliper-lib=\"${CALIPER_DIR}\/libs\/caliper.a\" " )
-else()
-    set(HYPRE_CALIPER_FLAGS "" )
-endif()
+  if( ENABLE_CALIPER_HYPRE )
+    set( HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}/include\" --with-caliper-lib=\"${CALIPER_DIR}/libs/caliper.a\"" )
+    list( APPEND HYPRE_DEPENDS caliper )
+  endif()
 
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-    set(HYPRE_DEBUG_FLAG "--enable-debug" )
-else()
-    set(HYPRE_DEBUG_FLAG "" )
-endif()
+  if( CMAKE_BUILD_TYPE MATCHES Debug )
+    set( HYPRE_DEBUG_FLAG "--enable-debug" )
+  endif()
 
-
-if( ${ENABLE_MPI} )
-  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
+  file( WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
   ./configure \
-  CC=${MPI_C_COMPILER} \
+  CC=${HYPRE_C_COMPILER} \
   CFLAGS=\"${HYPRE_C_FLAGS}\" \
   CXX=${HYPRE_CXX_COMPILER} \
   CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
+  CUDA_HOME=\"${CUDA_TOOLKIT_ROOT_DIR}\" \
+  HYPRE_CUDA_SM=\"${HYPRE_CUDA_SM}\" \
   --prefix=${HYPRE_DIR} \
   ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  --with-dsuperlu \
-  --with-dsuperlu-include=${CMAKE_INSTALL_PREFIX}/superlu_dist/include \
-  --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\" \
+  ${HYPRE_SUPERLU_FLAGS} \
   ${HYPRE_OPENMP_FLAG} \
   ${HYPRE_CUDA_FLAGS}\
   ${HYPRE_CALIPER_FLAGS}\n")
-else()
-  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
-  ./configure \
-  CC=${MPI_C_COMPILER} \
-  CFLAGS=\"${HYPRE_C_FLAGS}\" \
-  CXX=${HYPRE_CXX_COMPILER} \
-  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-  FC=${HYPRE_Fortran_COMPILER} \
-  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-  --prefix=${HYPRE_DIR} \
-  ${HYPRE_DEBUG_FLAG} \
-  ${HYPRE_INT_FLAG} \
-  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
-  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  ${HYPRE_OPENMP_FLAG} \
-  ${HYPRE_CUDA_FLAGS}\
-  ${HYPRE_CALIPER_FLAGS}\n")
+
+  ExternalProject_Add( hypre
+                       URL ${HYPRE_URL}
+                       PREFIX ${PROJECT_BINARY_DIR}/hypre
+                       PATCH_COMMAND cd ${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities && pwd && ls  && patch < ${TPL_MIRROR_DIR}/hypre_setDevice_patch.txt
+                       INSTALL_DIR ${HYPRE_DIR}
+                       DEPENDS ${HYPRE_DEPENDS}
+                       BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
+                       CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
+                       BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
+                       INSTALL_COMMAND make install
+                     )
+
+  list( APPEND build_list hypre )
 endif()
-
-ExternalProject_Add( hypre
-                     URL ${HYPRE_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/hypre
-		     PATCH_COMMAND cd ${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities && pwd && ls  && patch < ${TPL_MIRROR_DIR}/hypre_setDevice_patch.txt
-                     INSTALL_DIR ${HYPRE_DIR}
-                     DEPENDS ${HYPRE_DEPENDS}
-                     BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
-                     BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                     INSTALL_COMMAND make install
-                   )
-
-list(APPEND build_list hypre )
-
 
 ################################
 # SUITESPARSE
@@ -1124,7 +1094,7 @@ if(ENABLE_VTK)
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/lib
-                                    -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D VTK_GROUP_ENABLE_Imaging=NO
                                     -D VTK_GROUP_ENABLE_MPI=NO
                                     -D VTK_GROUP_ENABLE_Qt=NO
@@ -1156,7 +1126,7 @@ endif(ENABLE_VTK)
 ################################
 # Create target that builds all dependencies
 ################################
-message(STATUS "Building= ${build_list}")
+message(STATUS "Building = ${build_list}")
 
 blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
