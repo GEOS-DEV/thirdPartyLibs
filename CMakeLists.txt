@@ -623,10 +623,6 @@ if (ENABLE_TRILINOS)
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
-    if (NOT DEFINED TRILINOS_BUILD_COMMAND)
-        set(TRILINOS_BUILD_COMMAND ${TPL_BUILD_COMMAND})
-    endif()
-
     set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
     set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
 
@@ -666,7 +662,7 @@ if (ENABLE_TRILINOS)
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
                          INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND ${TRILINOS_BUILD_COMMAND}
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
