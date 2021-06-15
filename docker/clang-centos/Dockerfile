@@ -4,7 +4,8 @@
 ARG TMP_DIR=/tmp
 FROM centos:7.7.1908 AS tpl_toolchain_intersect_geosx_toolchain
 
-ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
+ARG INSTALL_DIR
+ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 # The packaged cmake version is too old, we install a newer precompiled version.
 ARG CMAKE_VERSION=3.13.3
@@ -65,6 +66,8 @@ RUN yum -y install \
 ARG TMP_DIR
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
+
+ARG HOST_CONFIG
 
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh

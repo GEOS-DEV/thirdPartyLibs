@@ -5,7 +5,11 @@ FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
 # are part of the image contract (otherwise ARG is used).
 # GEOSX use them so consider modifying their names with care.
-ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
+#
+# The installation directory is provided as a docker build argument.
+# We forward it using an environment variable.
+ARG INSTALL_DIR
+ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update

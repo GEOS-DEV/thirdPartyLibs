@@ -47,9 +47,8 @@ geosx_linux_build: &geosx_linux_build
   - DOCKER_TAG=${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}
   - docker build ${DOCKER_COMPILER_BUILD_ARG}
     --build-arg HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake}
-    --build-arg TRAVIS_SHORT_COMMIT=${TRAVIS_COMMIT:0:7}
     --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE:-undefined}
-    --build-arg DEPLOYMENT_HOME=${DEPLOYMENT_HOME:-undefined}
+    --build-arg INSTALL_DIR=${INSTALL_DIR:-/opt/GEOSX_TPL}
     --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG}
     --file ${DOCKERFILE}
     --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)"
@@ -99,7 +98,7 @@ geosx_pangea_build: &geosx_pangea_build
   - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
   - DOCKERFILE=docker/pangea2/Dockerfile
   - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
-  - DEPLOYMENT_HOME=/workrd/SCR/GEOSX/install/gcc8
+  - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
 
 geosx_pecan_build: &geosx_pecan_build
   <<: *geosx_linux_build
@@ -111,7 +110,7 @@ geosx_pecan_build: &geosx_pecan_build
   - DOCKERFILE=docker/pangea2/Dockerfile
   - DOCKER_ROOT_IMAGE=totogaz/pecan:0.0.1
   - HOST_CONFIG=docker/pangea2/pecan.cmake
-  - DEPLOYMENT_HOME=/data/gpfs/Users/j0436735/travis-deploy
+  - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deploy/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
 
 jobs:
   include:
