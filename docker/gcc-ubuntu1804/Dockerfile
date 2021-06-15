@@ -69,6 +69,8 @@ RUN apt-get install -y --no-install-recommends \
 ARG TMP_DIR=/tmp
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
+# Get host config file from docker build arguments
+ARG HOST_CONFIG
 
 # This COPY statement is a hack to use the clone that Travis-CI
 # already did at the beginning of the build.
