@@ -897,7 +897,7 @@ if( ENABLE_HYPRE )
 ExternalProject_Add( hypre
                      URL ${HYPRE_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hypre
-                     PATCH_COMMAND cd ${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities && patch < ${TPL_MIRROR_DIR}/hypre_setDevice.patch
+                     PATCH_COMMAND patch --directory=${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities < ${TPL_MIRROR_DIR}/hypre_setDevice.patch
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
