@@ -180,3 +180,11 @@ ARG PECAN_INTEL_HOME=/apps/intel/2019/u5
 ARG INTEL_DIR_NAME=compilers_and_libraries_2019.5.281
 RUN mkdir -p /apps/intel/2019/u5 && \
     ln -s /opt/intel/${INTEL_DIR_NAME} ${PECAN_INTEL_HOME}/${INTEL_DIR_NAME}
+
+ENV CC=${GCC_HOME}/bin/gcc \
+    CXX=${GCC_HOME}/bin/g++ \
+    FC=${GCC_HOME}/bin/gfortran \
+    MPICC=${OPENMPI_HOME}/bin/mpicc \
+    MPICXX=${OPENMPI_HOME}/bin/mpicxx \
+    MPIFC=${OPENMPI_HOME}/bin/mpifort \
+    LD_LIBRARY_PATH=${GCC_HOME}/lib64:${PECAN_INTEL_HOME}/${INTEL_DIR_NAME}/linux/mkl/lib/intel64:${PECAN_INTEL_HOME}/${INTEL_DIR_NAME}/compiler/lib/intel64:${OPENMPI_HOME}/lib

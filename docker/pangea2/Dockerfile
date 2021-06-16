@@ -5,7 +5,7 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 # test
-ENV LD_LIBRARY_PATH=/apps/gcc/8.2.0/x86_64/lib64:/apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/mkl/lib/intel64:/apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin:/hrtc/apps/mpi/openmpi/4.0.1/RDHPC/gcc/8.2.0/lib
+# ENV LD_LIBRARY_PATH=/apps/gcc/8.2.0/x86_64/lib64:/apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/mkl/lib/intel64:/apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin:/hrtc/apps/mpi/openmpi/4.0.1/RDHPC/gcc/8.2.0/lib
 
 RUN yum install -y \
     make \
