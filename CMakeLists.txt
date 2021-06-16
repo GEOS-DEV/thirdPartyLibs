@@ -894,17 +894,17 @@ if( ENABLE_HYPRE )
   ${HYPRE_CUDA_FLAGS}\
   ${HYPRE_CALIPER_FLAGS}\n")
 
-ExternalProject_Add( hypre
-                     URL ${HYPRE_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/hypre
-                     PATCH_COMMAND patch --directory=${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities < ${TPL_MIRROR_DIR}/hypre_setDevice.patch
+  ExternalProject_Add( hypre
+                       URL ${HYPRE_URL}
+                       PREFIX ${PROJECT_BINARY_DIR}/hypre
+                       PATCH_COMMAND patch --directory=${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities < ${TPL_MIRROR_DIR}/hypre_setDevice.patch
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                        CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                        INSTALL_COMMAND make install
-                     )
+                       )
 
   list( APPEND build_list hypre )
 endif()
