@@ -99,7 +99,7 @@ geosx_pangea_build: &geosx_pangea_build
   - echo "**/*.rpm" >> .dockerignore
   # Defining what we are going to build in the `script` stage.
   - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
-  - DOCKERFILE=docker/pangea2/Dockerfile
+  - DOCKERFILE=docker/TotalEnergies/Dockerfile
   - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
   - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
 
@@ -109,10 +109,10 @@ geosx_pecan_build: &geosx_pecan_build
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
   # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=totogaz/pecan-gcc8.2.0-openmpi4.0.1
-  - DOCKERFILE=docker/pangea2/Dockerfile
-  - DOCKER_ROOT_IMAGE=totogaz/pecan:0.0.2
-  - HOST_CONFIG=docker/pangea2/pecan.cmake
+  - DOCKER_REPOSITORY=geosx/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
+  - DOCKERFILE=docker/TotalEnergies/Dockerfile
+  - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+  - HOST_CONFIG=docker/TotalEnergies/pecan.cmake
   - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deploy/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
 
 jobs:
