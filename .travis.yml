@@ -43,6 +43,9 @@ geosx_linux_build: &geosx_linux_build
   - echo .git > .dockerignore
   # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
   # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
+  # A specific host-config file can be defined through variable HOST_CONFIG.
+  # For the case of Total cluster only, DOCKER_ROOT_IMAGE is used to define docker base image.
+  # Where the TPL are installed in the docker can be specified by parameter INSTALL_DIR.
   # Unlike DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
   - DOCKER_TAG=${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}
   - docker build ${DOCKER_COMPILER_BUILD_ARG}
@@ -58,7 +61,7 @@ geosx_linux_build: &geosx_linux_build
     .
   # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
   # And `after_success` does not fail the build in case of error.
-  - echo "${TOTOGAZ_DOCKER_PASSWORD}" | docker login -u "${TOTOGAZ_DOCKER_USERNAME}" --password-stdin
+  - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build
@@ -117,7 +120,7 @@ jobs:
   - <<: *geosx_pangea_build
     name: Pangea2 build
   - <<: *geosx_pecan_build
-    name: Pecan build
+    name: Pecan GPU build
   - <<: *geosx_osx_build
     name: Mac OSX
   - <<: *geosx_centos_build

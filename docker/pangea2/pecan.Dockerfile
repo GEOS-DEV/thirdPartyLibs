@@ -181,6 +181,8 @@ ARG INTEL_DIR_NAME=compilers_and_libraries_2019.5.281
 RUN mkdir -p /apps/intel/2019/u5 && \
     ln -s /opt/intel/${INTEL_DIR_NAME} ${PECAN_INTEL_HOME}/${INTEL_DIR_NAME}
 
+# Exposing quite everything, making future modularization more complicated.
+# Most likely there will be no future modularization!
 ENV CC=${GCC_HOME}/bin/gcc \
     CXX=${GCC_HOME}/bin/g++ \
     FC=${GCC_HOME}/bin/gfortran \
