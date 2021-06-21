@@ -1100,7 +1100,7 @@ endif(ENABLE_MPI)
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}/strip"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTKTPL_C_COMPILER}
-                                    -D CMAKE_BUILD_TYPE:STRING="Debug"
+                                    -D CMAKE_BUILD_TYPE:STRING=Debug
                                     -D CMAKE_CXX_COMPILER=${VTKTPL_CXX_COMPILER}
                                     -D VTK_USE_MPI=ON
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTKTPL_MODULE_ENABLE_VTK_IOParallelXML}
