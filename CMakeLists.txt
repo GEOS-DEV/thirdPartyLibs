@@ -422,6 +422,7 @@ ExternalProject_Add( chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
+                     PATCH_COMMAND patch < ${TPL_MIRROR_DIR}/chai-2.2.2-CMP0025.patch
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -1084,7 +1085,7 @@ if(ENABLE_VTK)
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                         INSTALL_COMMAND "${TPL_INSTALL_COMMAND}/strip"
+                         INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
