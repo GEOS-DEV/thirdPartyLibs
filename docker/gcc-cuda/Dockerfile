@@ -36,17 +36,19 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=384,driver<385 brand=tes
 
 FROM nvidia-base AS nvidia-runtime 
 
-RUN yum install -y \
+# Tell yum not to upgrade from "obselete" libcublas and lock libcublas version
+RUN yum install --setopt=obsoletes=0 -y \
     cuda-libraries-$CUDA_PKG_VERSION \
     cuda-nvtx-$CUDA_PKG_VERSION \
     libcublas10-10.2.1.243-1 \
     && \
     rm -rf /var/cache/yum/*
 
+RUN yum install -y yum-plugin-versionlock && yum versionlock libcublas10
 
 FROM nvidia-runtime AS nvidia-develop 
 
-RUN yum install -y \
+RUN yum install --setopt=obsoletes=0 -y \
     cuda-nvml-dev-$CUDA_PKG_VERSION \
     cuda-command-line-tools-$CUDA_PKG_VERSION \
     cuda-libraries-dev-$CUDA_PKG_VERSION \
@@ -118,6 +120,8 @@ ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
 ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
+ENV HYPRE_CUDA_SM=70
+ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \

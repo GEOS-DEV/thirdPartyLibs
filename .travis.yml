@@ -1,36 +1,35 @@
 language: minimal
-
+ 
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
   osx_image: xcode11.2
   install:
-    # It is not immediate to get the version of open-mpi we want.
-    # We use the specific revision of the openmpi 4.0.2 upgrade.
-    # (The revision is identified through its git commit hash.
-    # To find it, a convenient way is to browse the `Formula/open-mpi.rb` history.)
-    # - BREW_HASH=1e1370e0fddf2970695ab2e3b12ed5f24eb71819
-    # git commit associated with OpenMPI 4.0.5
-  - BREW_HASH=7e8d6b9f40e3e79f704d0f5c59f7da31a9f556df
+  # It is not immediate to get the version of open-mpi we want.
+  # (The revision is identified through its git commit hash of
+  # the https://github.com/Homebrew/homebrew-core repository).
+  # To find the version, a convenient way is to browse
+  # the `Formula/open-mpi.rb` history.)
+  - BREW_HASH=b2d072dc1ff32d5c723d83d59145192e8f04fb0b
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
+  - brew update > /dev/null 2>&1
   - wget ${BREW_URL}/Formula/open-mpi.rb
-  - brew update
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb > /dev/null 2>&1
+  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb
   - for dep in `brew deps open-mpi.rb`; do brew install $dep; done
   - wget ${BREW_URL}/Formula/git-lfs.rb
-  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb > /dev/null 2>&1
+  - HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb
   - for dep in `brew deps git-lfs.rb`; do brew install $dep; done
   before_script:
   - git lfs install
   - git lfs pull
   script:
   - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
-  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DENABLE_DOXYGEN:BOOL=OFF -ip ${GEOSX_TPL_DIR}
+  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -ip ${GEOSX_TPL_DIR}
   - cd build-darwin-clang-release
   - make
-    # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
-    # And `after_success` does not fail the build in case of error.
-  - pip3 install -q google-cloud-storage
+  # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
+  # And `after_success` does not fail the build in case of error.
+  - python3 -m pip install google-cloud-storage 
   - cd ${TRAVIS_BUILD_DIR}
   - openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
   - python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
@@ -40,9 +39,9 @@ geosx_linux_build: &geosx_linux_build
   os: linux
   services: docker
   script:
-    # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
-    # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
-    # Unlike DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
+  # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
+  # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
+  # Unlike DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
   - DOCKER_TAG=${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}
   - docker build
     ${DOCKER_COMPILER_BUILD_ARG}
@@ -54,18 +53,18 @@ geosx_linux_build: &geosx_linux_build
     --label "org.opencontainers.image.revision=${TRAVIS_COMMIT}"
     --label "org.opencontainers.image.title=Building environment for GEOSX"
     .
-    # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
-    # And `after_success` does not fail the build in case of error.
+  # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
+  # And `after_success` does not fail the build in case of error.
   - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 geosx_ubuntu_build: &geosx_ubuntu_build
   <<: *geosx_linux_build
   before_script:
-    # We save memory for the docker context
+  # We save memory for the docker context
   - echo .git > .dockerignore
   - echo "**/*.rpm" >> .dockerignore
-    # Defining what we are going to build in the `script` stage.
+  # Defining what we are going to build in the `script` stage.
   - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc8
   - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
 
@@ -105,18 +104,14 @@ geosx_pangea_build: &geosx_pangea_build
 jobs:
   include:
   - <<: *geosx_pangea_build
-    # PANGEA_VERSION is unused in build. Serves as a job label on Travis.
-    env: PANGEA_VERSION=2
+    name: Pangea2 build
   - <<: *geosx_osx_build
+    name: Mac OSX
   - <<: *geosx_centos_build
-    # CLANG_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: CLANG_MAJOR_VERSION=9
+    name: clang-9 build on centos
   - <<: *geosx_ubuntu_build
-    # GCC_MAJOR_VERSION is unused in build. Serves as a job label on Travis.
-    env: GCC_MAJOR_VERSION=8
+    name: gcc-8 build on ubuntu
   - <<: *geosx_clang_cuda_build
-    # CLANG_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-    env: CLANG_VERSION=8.0.0 CUDA_VERSION=10.1.243
+    name: clang-8 and cuda-10.1.243 build on ubuntu
   - <<: *geosx_gcc_cuda_build
-    # GCC_VERSION and CUDA_VERSION are unused in build. Serve as job labels on Travis.
-    env: GCC_VERSION=8.3.1 CUDA_VERSION=10.1.243
+    name: gcc-8.3.1 and cuda-10.1.243 build on centos
