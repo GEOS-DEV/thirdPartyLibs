@@ -532,6 +532,7 @@ if (ENABLE_CALIPER)
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
                                     -D MPI_C_COMPILER:STRING=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
+                                    -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D WITH_PAPI:BOOL=${ENABLE_PAPI}
@@ -545,7 +546,7 @@ if (ENABLE_CALIPER)
 
     list(APPEND build_list caliper adiak)
 else()
-    set( ENABLE_CALIPER_HYPRE OFF CACHE BOOL "" FORCE )    
+    set( ENABLE_CALIPER_HYPRE OFF CACHE BOOL "" FORCE )
 endif()
 
 
@@ -898,14 +899,14 @@ if( ENABLE_HYPRE )
   ExternalProject_Add( hypre
                        URL ${HYPRE_URL}
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
-                       PATCH_COMMAND cd ${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities && pwd && ls  && patch < ${TPL_MIRROR_DIR}/hypre_setDevice_patch.txt
+                       PATCH_COMMAND patch --directory=${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities < ${TPL_MIRROR_DIR}/hypre_setDevice.patch
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                        CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                        INSTALL_COMMAND make install
-                     )
+                       )
 
   list( APPEND build_list hypre )
 endif()
@@ -1031,7 +1032,7 @@ if( ENABLE_PETSC )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
         set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${SUPERLU_DIR} --with-parmetis-dir=${PARMETIS_DIR}" )
         list( APPEND PETSC_DEPENDS parmetis superlu_dist )
-    else()    
+    else()
         set( PETSC_MPI_FLAG "--with-mpi=0" )
     endif()
 

@@ -1,7 +1,8 @@
 ARG TMP_DIR=/tmp
 FROM nvidia/cuda:10.1-devel-ubuntu18.04 AS tpl_toolchain_intersect_geosx_toolchain
 
-ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
+ARG INSTALL_DIR
+ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 # Installing dependencies
 RUN rm /etc/apt/sources.list.d/*.list \
@@ -52,6 +53,8 @@ RUN apt-get install -y --no-install-recommends \
 ARG TMP_DIR
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
+
+ARG HOST_CONFIG
 
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70

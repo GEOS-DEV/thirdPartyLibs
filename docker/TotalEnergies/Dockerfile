@@ -1,7 +1,9 @@
-FROM totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1 as tpl_toolchain_intersect_geosx_toolchain
+# The docker base image can be pecan or pangea.
+ARG DOCKER_ROOT_IMAGE
+FROM ${DOCKER_ROOT_IMAGE} as tpl_toolchain_intersect_geosx_toolchain
 
-ARG TRAVIS_SHORT_COMMIT
-ENV GEOSX_TPL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_SHORT_COMMIT}
+ARG INSTALL_DIR
+ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 RUN yum install -y \
     make \
@@ -9,7 +11,7 @@ RUN yum install -y \
     zlib-devel
 
 # centos:7.6 offers a 2.8 version of cmake which is too old.
-ARG CMAKE_VERSION=3.16.3
+ARG CMAKE_VERSION=3.14.5
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
@@ -24,6 +26,8 @@ RUN yum install -y \
 ARG TMP_DIR=/tmp
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
+
+ARG HOST_CONFIG
 
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
