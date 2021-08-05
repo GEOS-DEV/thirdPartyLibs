@@ -1102,7 +1102,7 @@ endif(ENABLE_MPI)
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTKTPL_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTKTPL_CXX_COMPILER}
-                                    -D VTK_USE_MPI=ON
+                                    -D VTK_USE_MPI=${VTKTPL_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTKTPL_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
