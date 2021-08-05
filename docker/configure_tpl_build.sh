@@ -15,8 +15,13 @@ if [[ -z "${GEOSX_TPL_DIR}" ]]; then
   exit 1
 fi
 
+if [[ -z "${HOST_CONFIG}" ]]; then
+  echo "Environment variable \"HOST_CONFIG\" is undefined."
+  exit 1
+fi
+
 python ${TPL_SRC_DIR}/scripts/config-build.py \
-       --hostconfig ${TPL_SRC_DIR}/host-configs/environment.cmake \
+       --hostconfig ${TPL_SRC_DIR}/${HOST_CONFIG} \
        --buildtype Release \
        --buildpath ${TPL_BUILD_DIR} \
        --installpath ${GEOSX_TPL_DIR} \

@@ -63,7 +63,8 @@ ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 ARG TMP_DIR=/tmp
 FROM nvidia-develop AS tpl_toolchain_intersect_geosx_toolchain
 
-ENV GEOSX_TPL_DIR=/opt/GEOSX_TPL
+ARG INSTALL_DIR
+ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 # Using gcc 8.3.1 provided by the Software Collections (SCL).
 RUN yum install -y \
@@ -115,6 +116,8 @@ RUN yum install -y \
 ARG TMP_DIR
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
+
+ARG HOST_CONFIG
 
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
