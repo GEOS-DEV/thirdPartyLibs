@@ -30,8 +30,13 @@ set(CMAKE_CUDA_FLAGS_RELEASE "-O3 -DNDEBUG -Xcompiler -DNDEBUG -Xcompiler -O3" C
 set(CMAKE_CUDA_FLAGS_RELWITHDEBINFO "-g -lineinfo ${CMAKE_CUDA_FLAGS_RELEASE}" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0 -Xcompiler -O0" CACHE STRING "")
 
-# Current version of hypre does not build with GPU support.
-# Most recent version does build. Let's wait for an upgrade on our side.
+# Current version of hypre does not build with GPU support inside of docker.
+# Hypre's build system awaits to be embedded into a CUDA environment.
+# This is a bit tedious to reproduce in docker environment.
+# And since most recent version of hypre do build without this constraint.
+# Let's wait for an upgrade on our side.
+# In the mean time, if you need the GPU support for hypre,
+# simply install the classical way, with some `module load cuda`.
 #set(ENABLE_HYPRE_CUDA ON CACHE BOOL "" FORCE)
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "" FORCE)
