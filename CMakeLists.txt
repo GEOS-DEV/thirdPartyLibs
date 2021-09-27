@@ -824,7 +824,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip" )
+#  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2186a8fb343f84f109405eed3e298cb1a2615e95.zip" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-3d3a1b85c5711f94af691ae59633efa0a3a46616.zip" )
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -899,7 +900,6 @@ if( ENABLE_HYPRE )
   ExternalProject_Add( hypre
                        URL ${HYPRE_URL}
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
-                       PATCH_COMMAND patch --directory=${PROJECT_BINARY_DIR}/hypre/src/hypre/src/utilities < ${TPL_MIRROR_DIR}/hypre_setDevice.patch
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
