@@ -1043,6 +1043,9 @@ ExternalProject_Add( fmt
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D CMAKE_CXX_STANDARD=14
+                                -D CMAKE_CXX_VISIBILITY_PRESET:STRING=default
+                                -D CMAKE_VISIBILITY_INLINES_HIDDEN:BOOL=OFF
                                 -D FMT_TEST:BOOL=OFF )
 
 list(APPEND build_list fmt)
