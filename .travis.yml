@@ -64,70 +64,49 @@ geosx_linux_build: &geosx_linux_build
   - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
-geosx_ubuntu_build: &geosx_ubuntu_build
-  <<: *geosx_linux_build
-  before_script:
-  - echo "**/*.rpm" >> .dockerignore
-  # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc8
-  - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
-
-geosx_centos_build: &geosx_centos_build
-  # The centos builds rely on the CLANG_VERSION env variable to select the compiler version.
-  # It's the role of the so-called "yaml derived class" to define it.
-  <<: *geosx_linux_build
-  before_script:
-    # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
-  - DOCKERFILE=docker/clang-centos/Dockerfile
-
-geosx_clang_cuda_build: &geosx_clang_cuda_build
-  <<: *geosx_linux_build
-  before_script:
-  - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
-  - DOCKERFILE=docker/clang-cuda/Dockerfile
-
-geosx_gcc_cuda_build: &geosx_gcc_cuda_build
-  <<: *geosx_linux_build
-  before_script:
-  - DOCKER_REPOSITORY=geosx/centos7.6.1810-gcc8.3.1-cuda10.1.243
-  - DOCKERFILE=docker/gcc-cuda/Dockerfile
-
-geosx_pangea_build: &geosx_pangea_build
-  <<: *geosx_linux_build
-  before_script:
-  - echo "**/*.rpm" >> .dockerignore
-  # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
-  - DOCKERFILE=docker/TotalEnergies/Dockerfile
-  - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
-  - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
-
-geosx_pecan_build: &geosx_pecan_build
-  <<: *geosx_linux_build
-  before_script:
-  - echo .git > .dockerignore
-  - echo "**/*.rpm" >> .dockerignore
-  # Defining what we are going to build in the `script` stage.
-  - DOCKER_REPOSITORY=geosx/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
-  - DOCKERFILE=docker/TotalEnergies/Dockerfile
-  - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
-  - HOST_CONFIG=docker/TotalEnergies/pecan.cmake
-  - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deploy/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
-
 jobs:
   include:
-  - <<: *geosx_pangea_build
-    name: Pangea2 build
-  - <<: *geosx_pecan_build
-    name: Pecan GPU build
-  - <<: *geosx_osx_build
-    name: Mac OSX
-  - <<: *geosx_centos_build
-    name: clang-9 build on centos
-  - <<: *geosx_ubuntu_build
-    name: gcc-8 build on ubuntu
-  - <<: *geosx_clang_cuda_build
-    name: clang-8 and cuda-10.1.243 build on ubuntu
-  - <<: *geosx_gcc_cuda_build
-    name: gcc-8.3.1 and cuda-10.1.243 build on centos
+  - name: Pangea2 build
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
+    - DOCKERFILE=docker/TotalEnergies/Dockerfile
+    - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
+    - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    before_script:
+    - echo "**/*.rpm" >> .dockerignore
+  - name: Pecan GPU build
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
+    - DOCKERFILE=docker/TotalEnergies/Dockerfile
+    - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+    - HOST_CONFIG=docker/TotalEnergies/pecan.cmake
+    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deploy/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    before_script:
+    - echo "**/*.rpm" >> .dockerignore
+  - name: Mac OSX
+    <<: *geosx_osx_build
+  - name: clang-9 build on centos
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
+    - DOCKERFILE=docker/clang-centos/Dockerfile
+  - name: gcc-8 build on ubuntu
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc8
+    - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
+    before_script:
+    - echo "**/*.rpm" >> .dockerignore
+  - name: clang-8 and cuda-10.1.243 build on ubuntu
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
+    - DOCKERFILE=docker/clang-cuda/Dockerfile
+  - name: gcc-8.3.1 and cuda-10.1.243 build on centos
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/centos7.6.1810-gcc8.3.1-cuda10.1.243
+    - DOCKERFILE=docker/gcc-cuda/Dockerfile
+
