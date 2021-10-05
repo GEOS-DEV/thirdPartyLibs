@@ -1,7 +1,7 @@
-# Retrieve the compilers, standard libraries...
+# Retrieve the compilers, standard libraries... from the CPU configuration
 include(${CMAKE_CURRENT_LIST_DIR}/pecan-CPU.cmake)
-# ... and just add what's dedicated to GPU.
 
+# Now let's add what's dedicated to GPU.
 set(ENABLE_CUDA ON CACHE PATH "" FORCE)
 set(CUDA_TOOLKIT_ROOT_DIR /hrtc/apps/cuda/10.2.89/x86_64 CACHE PATH "")
 set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "")
