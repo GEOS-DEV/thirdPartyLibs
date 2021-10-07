@@ -1032,6 +1032,31 @@ endif(ENABLE_MPI)
 endif(ENABLE_VTK)
 
 ################################
+# FMT
+################################
+set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-8.0.1.tar.gz")
+
+message(STATUS "Building FMT found at ${FMT_URL}")
+
+ExternalProject_Add( fmt
+                     PREFIX ${PROJECT_BINARY_DIR}/fmt
+                     URL ${FMT_URL}
+                     INSTALL_DIR ${FMT_DIR}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D FMT_TEST:BOOL=OFF )
+
+list(APPEND build_list fmt)
+
+################################
 # Create target that builds all dependencies
 ################################
 message(STATUS "Building = ${build_list}")
