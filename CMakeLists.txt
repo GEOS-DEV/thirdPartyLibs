@@ -141,26 +141,6 @@ ExternalProject_Add( uncrustify
 
 list(APPEND build_list uncrustify )
 
-################################
-# ASTYLE
-################################
-set(ASTYLE_DIR "${CMAKE_INSTALL_PREFIX}/astyle")
-set(ASTYLE_URL "${TPL_MIRROR_DIR}/astyle_3.1_linux.tar.gz")
-message(STATUS "Building AStyle found at ${ASTYLE_URL}")
-
-ExternalProject_Add( astyle
-                     URL ${ASTYLE_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/astyle
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_DIR ${ASTYLE_DIR}
-                     INSTALL_COMMAND make DESTDIR=${ASTYLE_DIR} install
-                     CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_CXX_STANDARD=11
-                                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                )
-
-list(APPEND build_list astyle )
-
 
 ################################
 # Doxygen
@@ -285,60 +265,6 @@ list(APPEND build_list conduit )
 
 
 ################################
-# Axom
-################################
-set(AXOM_DIR "${CMAKE_INSTALL_PREFIX}/axom")
-set(AXOM_URL "${TPL_MIRROR_DIR}/Axom-v0.3.1.tar.gz")
-
-message(STATUS "Building Axom found at ${AXOM_URL}")
-
-if( ${ENABLE_MPI} )
-    set( AXOM_ENABLE_LUMBERJACK ON )
-else()
-    set( AXOM_ENABLE_LUMBERJACK OFF )
-endif()
-
-ExternalProject_Add( axom
-                     URL ${AXOM_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/axom
-                     SOURCE_SUBDIR src
-                     INSTALL_DIR ${AXOM_DIR}
-                     DEPENDS ${HDF5_DEPENDENCIES} conduit
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                     CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_ARGS -D AXOM_ENABLE_DOCS=OFF
-                                -D AXOM_ENABLE_BENCHMARKS=OFF
-                                -D AXOM_ENABLE_EXAMPLES=OFF
-                                -D ENABLE_FORTRAN=OFF
-                                -D AXOM_ENABLE_TESTS=OFF
-                                -D ENABLE_TESTS:BOOL=OFF
-                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
-                                -D HDF5_DIR=${HDF5_DIR}
-                                -D CONDUIT_DIR=${CONDUIT_DIR}
-                                -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -D ENABLE_MPI=${ENABLE_MPI}
-                                -D AXOM_ENABLE_ALL_COMPONENTS:BOOL=OFF
-                                -D MPI_C_COMPILER=${MPI_C_COMPILER}
-                                -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D AXOM_ENABLE_SLIC=ON
-                                -D AXOM_ENABLE_LUMBERJACK=${AXOM_ENABLE_LUMBERJACK}
-                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -D BLT_CXX_STD:STRING=c++11
-                                )
-
-list(APPEND build_list axom )
-
-
-################################
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
@@ -451,31 +377,6 @@ ExternalProject_Add( chai
                     )
 
 list(APPEND build_list chai )
-
-
-################################
-# FPARSER
-################################
-set(FPARSER_DIR "${CMAKE_INSTALL_PREFIX}/fparser")
-set(FPARSER_URL "${TPL_MIRROR_DIR}/fparser4.5.2.zip")
-message(STATUS "Building FPARSER found at ${FPARSER_URL}")
-
-ExternalProject_Add( fparser
-                     URL ${FPARSER_URL}
-                     PREFIX ${PROJECT_BINARY_DIR}/fparser
-                     INSTALL_DIR ${FPARSER_DIR}
-                     CONFIGURE_COMMAND ""
-                     BUILD_COMMAND ${CMAKE_CXX_COMPILER} -c -DFP_NO_SUPPORT_OPTIMIZER -I../fparser ../fparser/fparser.cc ../fparser/fpoptimizer.cc &&
-                                   ar rcs libfparser.a fparser.o fpoptimizer.o
-                     INSTALL_COMMAND mkdir -p <INSTALL_DIR>/lib &&
-                                     cp libfparser.a <INSTALL_DIR>/lib &&
-                                     cd ../fparser &&
-                                     mkdir -p <INSTALL_DIR>/include &&
-                                     ls  &&
-                                     cp fparser.hh fparser_gmpint.hh fparser_mpfr.hh fpconfig.hh <INSTALL_DIR>/include;
-                     )
-
-list(APPEND build_list fparser )
 
 
 ################################
@@ -1120,6 +1021,31 @@ if(ENABLE_VTK)
 
     list(APPEND build_list vtk )
 endif(ENABLE_VTK)
+
+################################
+# FMT
+################################
+set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-8.0.1.tar.gz")
+
+message(STATUS "Building FMT found at ${FMT_URL}")
+
+ExternalProject_Add( fmt
+                     PREFIX ${PROJECT_BINARY_DIR}/fmt
+                     URL ${FMT_URL}
+                     INSTALL_DIR ${FMT_DIR}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D FMT_TEST:BOOL=OFF )
+
+list(APPEND build_list fmt)
 
 ################################
 # Create target that builds all dependencies
