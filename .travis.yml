@@ -3,7 +3,7 @@ language: minimal
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
-  osx_image: xcode11.2
+  osx_image: xcode12.5
   install:
   # It is not immediate to get the version of open-mpi we want.
   # (The revision is identified through its git commit hash of
