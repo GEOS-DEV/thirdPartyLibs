@@ -72,7 +72,7 @@ jobs:
     - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
-    - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
     - echo "**/*.rpm" >> .dockerignore
   - name: Pecan GPU
@@ -82,7 +82,7 @@ jobs:
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-GPU.cmake
-    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
     - echo "**/*.rpm" >> .dockerignore
   - name: Pecan CPU
@@ -92,7 +92,7 @@ jobs:
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-CPU.cmake
-    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
     - echo "**/*.rpm" >> .dockerignore
   - name: Mac OSX
