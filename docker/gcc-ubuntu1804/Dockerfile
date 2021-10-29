@@ -1,5 +1,5 @@
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
-FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
+FROM ubuntu:20.10 AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
@@ -11,13 +11,20 @@ FROM ubuntu:18.04 AS tpl_toolchain_intersect_geosx_toolchain
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
+# The same distribution and Dockerfile can be used for the 7 and 8 version of the GNU compilers
+# The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
+# Note that docker seems to forget about the ARGs after each FROM statement.
+# This is why we repeat it below.
+ARG GCC_MAJOR_VERSION
+
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
     make \
-    gcc-8 \
-    g++-8 \
+# Both gfortran-9 and 10 depends on ligfortran5.
+    gcc-${GCC_MAJOR_VERSION} \
+    g++-${GCC_MAJOR_VERSION} \
     libgfortran5 \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
@@ -40,8 +47,8 @@ RUN apt-get install -y --no-install-recommends curl ca-certificates && \
     curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - && \
     apt-get purge --auto-remove -y curl ca-certificates
 
-ENV CC=/usr/bin/gcc-8 \
-    CXX=/usr/bin/g++-8 \
+ENV CC=/usr/bin/gcc-${GCC_MAJOR_VERSION} \
+    CXX=/usr/bin/g++-${GCC_MAJOR_VERSION} \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
@@ -54,14 +61,18 @@ ENV OMPI_CC=$CC \
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
-ENV FC=/usr/bin/gfortran-8 \
+# This is the version from the `docker build` command line.
+# It is repeated because docker forgets about the ARGs after FROM statements.
+ARG GCC_MAJOR_VERSION
+
+ENV FC=/usr/bin/gfortran-${GCC_MAJOR_VERSION} \
     MPIFC=/usr/bin/mpifort
 # Again, troublesome multi-line definition.
 ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
-    gfortran-8 \
+    gfortran-${GCC_MAJOR_VERSION} \
     bc \
     file \
     bison \

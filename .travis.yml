@@ -102,12 +102,23 @@ jobs:
     env:
     - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
     - DOCKERFILE=docker/clang-centos/Dockerfile
-  - name: gcc-8 on ubuntu
+  - name: gcc-9 on ubuntu
     <<: *geosx_linux_build
     env:
-    - DOCKER_REPOSITORY=geosx/ubuntu18.04-gcc8
-    - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile
+    - GCC_MAJOR_VERSION=9
+    - DOCKER_REPOSITORY=geosx/ubuntu20.10-gcc${GCC_MAJOR_VERSION}
+    - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile # TODO move the folder
     before_script:
+    - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
+    - echo "**/*.rpm" >> .dockerignore
+  - name: gcc-10 on ubuntu
+    <<: *geosx_linux_build
+    env:
+      - GCC_MAJOR_VERSION=10
+      - DOCKER_REPOSITORY=geosx/ubuntu20.10-gcc${GCC_MAJOR_VERSION}
+      - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile # TODO move the folder
+    before_script:
+    - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
   - name: clang-8 and cuda-10.1.243 on ubuntu
     <<: *geosx_linux_build
