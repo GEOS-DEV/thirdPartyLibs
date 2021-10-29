@@ -11,7 +11,7 @@ FROM ubuntu:20.10 AS tpl_toolchain_intersect_geosx_toolchain
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
-# The same distribution and Dockerfile can be used for the 7 and 8 version of the GNU compilers
+# The same distribution and Dockerfile can be used for the 9 and 10 version of the GNU compilers
 # The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
 # Note that docker seems to forget about the ARGs after each FROM statement.
 # This is why we repeat it below.
