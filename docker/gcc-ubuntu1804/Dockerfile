@@ -1,5 +1,5 @@
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
-FROM ubuntu:20.10 AS tpl_toolchain_intersect_geosx_toolchain
+FROM ubuntu:20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
@@ -11,7 +11,7 @@ FROM ubuntu:20.10 AS tpl_toolchain_intersect_geosx_toolchain
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
-# The same distribution and Dockerfile can be used for the 9 and 10 version of the GNU compilers
+# The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
 # The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
 # Note that docker seems to forget about the ARGs after each FROM statement.
 # This is why we repeat it below.
@@ -22,7 +22,7 @@ RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \
     make \
-# Both gfortran-9 and 10 depends on ligfortran5.
+# gfortran 8, 9 and 10 depend on libgfortran5.
     gcc-${GCC_MAJOR_VERSION} \
     g++-${GCC_MAJOR_VERSION} \
     libgfortran5 \
