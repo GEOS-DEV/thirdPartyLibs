@@ -20,7 +20,10 @@ ARG GCC_MAJOR_VERSION
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
 
-RUN apt-get install -y --no-install-recommends \
+# tzdata blocks the installation by interactively asking for the time zone.
+# DEBIAN_FRONTEND and TZ variables fix this.
+RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
+    apt-get install -y --no-install-recommends \
     make \
 # gfortran 8, 9 and 10 depend on libgfortran5.
     gcc-${GCC_MAJOR_VERSION} \
