@@ -66,7 +66,7 @@ geosx_linux_build: &geosx_linux_build
 
 jobs:
   include:
-  - name: Pangea2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
+  - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
     <<: *geosx_linux_build
     env:
     - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
@@ -102,7 +102,7 @@ jobs:
     env:
     - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
     - DOCKERFILE=docker/clang-centos/Dockerfile
-  - name: Ubuntu (20.10, gcc 8.4.0, open-mpi 4.0.3)
+  - name: Ubuntu (20.04, gcc 8.4.0, open-mpi 4.0.3)
     <<: *geosx_linux_build
     env:
     - GCC_MAJOR_VERSION=8
@@ -111,7 +111,7 @@ jobs:
     before_script:
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
-  - name: Ubuntu (20.10, gcc 9.3.0, open-mpi 4.0.3)
+  - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
     <<: *geosx_linux_build
     env:
     - GCC_MAJOR_VERSION=9
@@ -120,7 +120,7 @@ jobs:
     before_script:
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
-  - name: Ubuntu (20.10, gcc 10.3.0, open-mpi 4.0.3)
+  - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3)
     <<: *geosx_linux_build
     env:
     - GCC_MAJOR_VERSION=10
