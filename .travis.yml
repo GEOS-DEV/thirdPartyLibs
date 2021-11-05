@@ -3,14 +3,14 @@ language: minimal
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
-  osx_image: xcode11.2
+  osx_image: xcode12.5
   install:
   # It is not immediate to get the version of open-mpi we want.
   # (The revision is identified through its git commit hash of
   # the https://github.com/Homebrew/homebrew-core repository).
   # To find the version, a convenient way is to browse
   # the `Formula/open-mpi.rb` history.)
-  - BREW_HASH=b2d072dc1ff32d5c723d83d59145192e8f04fb0b
+  - BREW_HASH=fd64066273528a594e1f83c9eba20556e925e51c
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - brew update > /dev/null 2>&1
   - wget ${BREW_URL}/Formula/open-mpi.rb
@@ -72,7 +72,7 @@ jobs:
     - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
-    - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
     - echo "**/*.rpm" >> .dockerignore
   - name: Pecan GPU
@@ -82,7 +82,7 @@ jobs:
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-GPU.cmake
-    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
     - echo "**/*.rpm" >> .dockerignore
   - name: Pecan CPU
@@ -92,7 +92,7 @@ jobs:
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-CPU.cmake
-    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_COMMIT:0:7}
+    - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
     - echo "**/*.rpm" >> .dockerignore
   - name: Mac OSX

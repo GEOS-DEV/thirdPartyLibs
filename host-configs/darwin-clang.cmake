@@ -23,5 +23,5 @@ set(ENABLE_OPENMP     "OFF"        CACHE PATH "" FORCE)
 
 option( ENABLE_CALIPER "Enables CALIPER" ON )
 
-set( BLAS_LIBRARIES /usr/lib/libblas.dylib CACHE PATH "" FORCE )
-set( LAPACK_LIBRARIES /usr/lib/liblapack.dylib CACHE PATH "" FORCE )
+set( BLAS_LIBRARIES /usr/local/opt/openblas/lib/libblas.dylib CACHE PATH "" FORCE )
+set( LAPACK_LIBRARIES /usr/local/opt/openblas/lib/liblapack.dylib CACHE PATH "" FORCE )
