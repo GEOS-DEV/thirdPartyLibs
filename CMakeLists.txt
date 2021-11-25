@@ -757,8 +757,8 @@ if( ENABLE_HYPRE )
   endif()
 
   if( ENABLE_HYPRE_CUDA )
-    set( HYPRE_CUDA_FLAGS "--with-cuda --enable-cusparse --enable-unified-memory" )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
+    set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} --enable-cusparse --enable-unified-memory --with-gpu-arch=${HYPRE_CUDA_SM}" )
   endif()
 
   if( ENABLE_HYPRE_CUDA )
@@ -786,8 +786,6 @@ if( ENABLE_HYPRE )
   CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-  CUDA_HOME=\"${CUDA_TOOLKIT_ROOT_DIR}\" \
-  HYPRE_CUDA_SM=\"${HYPRE_CUDA_SM}\" \
   --prefix=${HYPRE_DIR} \
   ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
@@ -817,7 +815,7 @@ endif()
 ################################
 if(ENABLE_SUITESPARSE)
     set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
-    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.8.1.tar.gz")
+    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.10.1.tar.gz")
 
     message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
 
