@@ -107,7 +107,7 @@ jobs:
     env:
     - GCC_MAJOR_VERSION=9
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
-    - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile # TODO move the folder `gcc-ubuntu`
+    - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     before_script:
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
@@ -116,7 +116,7 @@ jobs:
     env:
     - GCC_MAJOR_VERSION=10
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
-    - DOCKERFILE=docker/gcc-ubuntu1804/Dockerfile # TODO move the folder `gcc-ubuntu`
+    - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     before_script:
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
