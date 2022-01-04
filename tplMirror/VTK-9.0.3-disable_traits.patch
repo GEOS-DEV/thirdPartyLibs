@@ -1,0 +1,15 @@
+--- serialization.hpp   2020-04-20 10:37:22.000000000 +0200
++++ serialization_patched.hpp   2021-09-20 11:54:32.000000000 +0200
+@@ -92,10 +92,12 @@
+   template<class T>
+   struct Serialization: public detail::Default
+   {
++    /*
+ #if (defined(__clang__) && !defined(__ppc64__)) || (defined(__GNUC__) && __GNUC__ >= 5)
+     //exempt power-pc clang variants due to: https://gitlab.kitware.com/vtk/vtk-m/issues/201
+     static_assert(std::is_trivially_copyable<T>::value, "Default serialization works only for trivially copyable types");
+ #endif
++*/
+ 
+     static void         save(BinaryBuffer& bb, const T& x)          { bb.save_binary((const char*)  &x, sizeof(T)); }
+     static void         load(BinaryBuffer& bb, T& x)                { bb.load_binary((char*)        &x, sizeof(T)); }
