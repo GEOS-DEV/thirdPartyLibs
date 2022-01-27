@@ -11,7 +11,7 @@ RUN yum install -y \
     zlib-devel
 
 # centos:7.6 offers a 2.8 version of cmake which is too old.
-ARG CMAKE_VERSION=3.14.5
+ARG CMAKE_VERSION=3.19.2
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
