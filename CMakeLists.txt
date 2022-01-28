@@ -975,23 +975,29 @@ endif()
 # VTK
 ################################
 if(ENABLE_VTK)
-    set(VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk")
-    set(VTK_URL "${TPL_MIRROR_DIR}/VTK-9.0.3.tar.gz")
+    set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.0.3.tar.gz" )
 
-    message(STATUS "Building VTK found at ${VTK_URL}")
+    message( STATUS "Building VTK found at ${VTK_URL}" )
+
+    # Depending on the platfor, the install directory could be 'lib' or 'lib64'.
+    # This makes the 'rpath' task more complicated to deal with a single script ('CMAKE_INSTALL_RPATH' option).
+    # Defining explicitly 'lib' deals with this issue.
+    # I'm no cmake expert and I do not know if there was a better way to deal with it.
+    set( VTK_CMAKE_INSTALL_LIBDIR "lib" )
 
 if(ENABLE_MPI)
-    set( VTKTPL_C_COMPILER ${MPI_C_COMPILER})
-    set( VTKTPL_CXX_COMPILER ${MPI_CXX_COMPILER})
+    set( VTKTPL_C_COMPILER ${MPI_C_COMPILER} )
+    set( VTKTPL_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( VTKTPL_USE_MPI ON)
-    set( VTKTPL_MODULE_ENABLE_VTK_IOParallelXML YES)
-    set( VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2 YES)
+    set( VTKTPL_MODULE_ENABLE_VTK_IOParallelXML YES )
+    set( VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2 YES )
 else()
-    set( VTKTPL_C_COMPILER ${CMAKE_C_COMPILER})
-    set( VTKTPL_CXX_COMPILER ${CMAKE_CXX_COMPILER})
+    set( VTKTPL_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( VTKTPL_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
     set( VTKTPL_USE_MPI OFF)
-    set( VTKTPL_MODULE_ENABLE_VTK_IOParallelXML NO)
-    set( VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2 NO)
+    set( VTKTPL_MODULE_ENABLE_VTK_IOParallelXML NO )
+    set( VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2 NO )
 endif(ENABLE_MPI)
 
     ExternalProject_Add( vtk
@@ -1009,8 +1015,8 @@ endif(ENABLE_MPI)
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTKTPL_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D CMAKE_INSTALL_LIBDIR=lib
-                                    -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/lib
+                                    -D CMAKE_INSTALL_LIBDIR=${VTK_CMAKE_INSTALL_LIBDIR}
+                                    -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${VTK_CMAKE_INSTALL_LIBDIR}
                                     -D VTK_GROUP_ENABLE_Imaging=DONT_WANT
                                     -D VTK_GROUP_ENABLE_MPI=DONT_WANT
                                     -D VTK_GROUP_ENABLE_Qt=DONT_WANT
