@@ -987,17 +987,17 @@ if(ENABLE_VTK)
     set( VTK_CMAKE_INSTALL_LIBDIR "lib" )
 
 if(ENABLE_MPI)
-    set( VTKTPL_C_COMPILER ${MPI_C_COMPILER} )
-    set( VTKTPL_CXX_COMPILER ${MPI_CXX_COMPILER} )
-    set( VTKTPL_USE_MPI ON)
-    set( VTKTPL_MODULE_ENABLE_VTK_IOParallelXML YES )
-    set( VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2 YES )
+    set( VTK_C_COMPILER ${MPI_C_COMPILER} )
+    set( VTK_CXX_COMPILER ${MPI_CXX_COMPILER} )
+    set( VTK_USE_MPI ON)
+    set( VTK_MODULE_ENABLE_VTK_IOParallelXML YES )
+    set( VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2 YES )
 else()
-    set( VTKTPL_C_COMPILER ${CMAKE_C_COMPILER} )
-    set( VTKTPL_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-    set( VTKTPL_USE_MPI OFF)
-    set( VTKTPL_MODULE_ENABLE_VTK_IOParallelXML NO )
-    set( VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2 NO )
+    set( VTK_C_COMPILER ${CMAKE_C_COMPILER} )
+    set( VTK_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    set( VTK_USE_MPI OFF)
+    set( VTK_MODULE_ENABLE_VTK_IOParallelXML NO )
+    set( VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2 NO )
 endif(ENABLE_MPI)
 
     ExternalProject_Add( vtk
@@ -1008,12 +1008,12 @@ endif(ENABLE_MPI)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
-                         CMAKE_ARGS -D CMAKE_C_COMPILER=${VTKTPL_C_COMPILER}
+                         CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                    -D CMAKE_CXX_COMPILER=${VTKTPL_CXX_COMPILER}
-                                    -D VTK_USE_MPI=${VTKTPL_USE_MPI}
-                                    -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTKTPL_MODULE_ENABLE_VTK_IOParallelXML}
-                                    -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2}
+                                    -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
+                                    -D VTK_USE_MPI=${VTK_USE_MPI}
+                                    -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
+                                    -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D CMAKE_INSTALL_LIBDIR=${VTK_CMAKE_INSTALL_LIBDIR}
                                     -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${VTK_CMAKE_INSTALL_LIBDIR}
