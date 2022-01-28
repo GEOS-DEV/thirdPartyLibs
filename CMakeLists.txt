@@ -1009,7 +1009,7 @@ endif(ENABLE_MPI)
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTKTPL_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTKTPL_MODULE_ENABLE_VTK_FiltersParallelDIY2}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/lib
+                                    -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/lib64
                                     -D VTK_GROUP_ENABLE_Imaging=DONT_WANT
                                     -D VTK_GROUP_ENABLE_MPI=DONT_WANT
                                     -D VTK_GROUP_ENABLE_Qt=DONT_WANT
