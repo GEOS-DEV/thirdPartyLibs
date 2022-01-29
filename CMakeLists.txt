@@ -974,7 +974,7 @@ endif()
 ################################
 # VTK
 ################################
-if(ENABLE_VTK)
+if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
     set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.0.3.tar.gz" )
 
@@ -986,19 +986,19 @@ if(ENABLE_VTK)
     # I'm no cmake expert and I do not know if there was a better way to deal with it.
     set( VTK_CMAKE_INSTALL_LIBDIR "lib" )
 
-if(ENABLE_MPI)
+if( ENABLE_MPI )
     set( VTK_C_COMPILER ${MPI_C_COMPILER} )
     set( VTK_CXX_COMPILER ${MPI_CXX_COMPILER} )
-    set( VTK_USE_MPI ON)
+    set( VTK_USE_MPI ON )
     set( VTK_MODULE_ENABLE_VTK_IOParallelXML YES )
     set( VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2 YES )
 else()
     set( VTK_C_COMPILER ${CMAKE_C_COMPILER} )
     set( VTK_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-    set( VTK_USE_MPI OFF)
+    set( VTK_USE_MPI OFF )
     set( VTK_MODULE_ENABLE_VTK_IOParallelXML NO )
     set( VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2 NO )
-endif(ENABLE_MPI)
+endif( ENABLE_MPI )
 
     ExternalProject_Add( vtk
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
@@ -1033,8 +1033,8 @@ endif(ENABLE_MPI)
                                     -D VTK_BUILD_TESTING=OFF
                                     -D VTK_LEGACY_REMOVE=ON )
 
-    list(APPEND build_list vtk )
-endif(ENABLE_VTK)
+    list( APPEND build_list vtk )
+endif( ENABLE_VTK )
 
 ################################
 # FMT
