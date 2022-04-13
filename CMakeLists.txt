@@ -173,7 +173,7 @@ endif()
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.10.5.tar.gz")
+set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.12.1.tar.gz")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
@@ -211,7 +211,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.5.0-src-with-blt.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.8.2.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -268,7 +268,7 @@ list(APPEND build_list conduit )
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
-set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.10.3.mpiposix_patch.tar.gz")
+set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11-bsd.tgz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
 
@@ -276,7 +276,7 @@ ExternalProject_Add( silo
                      URL ${SILO_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
-                     PATCH_COMMAND patch -d src/fpzip < ${TPL_MIRROR_DIR}/silo-xcode12.patch
+                     PATCH_COMMAND patch  src/hdf5_drv/H5FDsilo.c  < ${TPL_MIRROR_DIR}/silo-4.11.patch
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND ../silo/configure
                                           CC=${HDF5_C_COMPILER}
