@@ -1,5 +1,6 @@
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
-FROM ubuntu:20.04 AS tpl_toolchain_intersect_geosx_toolchain
+ARG UBUNTU_VERSION
+FROM ubuntu:${UBUNTU_VERSION} AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
