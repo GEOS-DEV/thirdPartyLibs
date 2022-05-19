@@ -98,7 +98,7 @@ ARG HOST_CONFIG
 COPY . ${TPL_SRC_DIR}
 
 # We now configure the build...
-RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
+RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh -DCMAKE_CXX_FLAGS="-std=c++14"
 # ... before we compile the TPLs!
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
