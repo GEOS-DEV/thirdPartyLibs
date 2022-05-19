@@ -97,9 +97,6 @@ ARG HOST_CONFIG
 # prevents us from installing git, git-lfs and ca-certificates.
 COPY . ${TPL_SRC_DIR}
 
-# Alias required for Ubuntu 22.0.4
-RUN alias python="python2"
-
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
