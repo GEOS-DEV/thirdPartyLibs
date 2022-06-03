@@ -303,7 +303,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v0.12.1.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.03.0.tar.gz")
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
 ExternalProject_Add( raja
@@ -340,7 +340,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2.2.2.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -348,7 +348,6 @@ ExternalProject_Add( chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
-                     PATCH_COMMAND patch < ${TPL_MIRROR_DIR}/chai-2.2.2-CMP0025.patch
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -374,6 +373,7 @@ ExternalProject_Add( chai
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/share/raja/cmake
+				-D UMPIRE_ENABLE_C=ON
                     )
 
 list(APPEND build_list chai )
@@ -725,7 +725,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-63208e3e3411da220737c519741ccd9a4827ff26.tar.gz")
+#  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-63208e3e3411da220737c519741ccd9a4827ff26.tar.gz")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-07a8def6f8b7dfdffa4208d962f08f5e5d80ccaa.zip")
   
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
@@ -736,7 +737,7 @@ if( ENABLE_HYPRE )
   set( HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
-  set( HYPRE_DEPENDS "" )
+  set( HYPRE_DEPENDS "chai" )
 
   if( ENABLE_MPI )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
@@ -758,7 +759,13 @@ if( ENABLE_HYPRE )
 
   if( ENABLE_HYPRE_CUDA )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
-    set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} --enable-cusparse --enable-unified-memory --with-gpu-arch=${HYPRE_CUDA_SM}" )
+    set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
+    	 		   --enable-cusparse \
+			   --with-gpu-arch=${HYPRE_CUDA_SM} \
+    	 		   --with-umpire --with-umpire-include=${CHAI_DIR}/include \
+			   --with-umpire-lib-dirs=${CHAI_DIR}/lib \
+  			   --with-umpire-libs=umpire " )
+
   endif()
 
   if( CMAKE_HOST_APPLE )
