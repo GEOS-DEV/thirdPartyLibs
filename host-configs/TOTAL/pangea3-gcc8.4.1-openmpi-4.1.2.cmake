@@ -87,6 +87,8 @@ set(ENABLE_ESSL OFF CACHE BOOL "")
 
 set(ENABLE_PYGEOSX ON CACHE BOOL "")
 
+set(ENABLE_VTK_WRAP_PYTHON ON CACHE BOOOL "")
+
 set(BLAS_LIBRARIES /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/openblas-0.3.18-udwdz2i4a3zcoyjl63h2wlsoacmifvwk/lib/libopenblas.a)
 set(LAPACK_LIBRARIES /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/openblas-0.3.18-udwdz2i4a3zcoyjl63h2wlsoacmifvwk/lib/libopenblas.a)
 
