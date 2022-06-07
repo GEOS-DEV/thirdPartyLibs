@@ -8,7 +8,7 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 # The packaged cmake version is too old, we install a newer precompiled version.
-ARG CMAKE_VERSION=3.13.3
+ARG CMAKE_VERSION=3.14.7
 RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 ARG TMP_DIR
