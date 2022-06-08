@@ -374,8 +374,8 @@ ExternalProject_Add( chai
                                 -D ENABLE_DOXYGEN=OFF
                                 -D ENABLE_SPHINX=OFF
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D ENABLE_RAJA_PLUGIN=ON
-                                -D RAJA_DIR=${RAJA_DIR}/share/raja/cmake
+                                -D CHAI_ENABLE_RAJA_PLUGIN=ON
+                                -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
 				-D UMPIRE_ENABLE_C=ON
                     )
 
