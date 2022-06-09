@@ -89,8 +89,12 @@ set(ENABLE_PYGEOSX ON CACHE BOOL "")
 
 set(ENABLE_VTK_WRAP_PYTHON ON CACHE BOOOL "")
 
-set(BLAS_LIBRARIES /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/openblas-0.3.18-udwdz2i4a3zcoyjl63h2wlsoacmifvwk/lib/libopenblas.a)
-set(LAPACK_LIBRARIES /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/openblas-0.3.18-udwdz2i4a3zcoyjl63h2wlsoacmifvwk/lib/libopenblas.a)
+if (DEFINED ENV{OPENBLAS_ROOT})
+  set(BLAS_LIBRARIES $ENV{OPENBLAS_ROOT}/lib/libopenblas.a)
+  set(LAPACK_LIBRARIES $ENV{OPENBLAS_ROOT}/lib/libopenblas.a)
+else
+  message(FATAL_ERROR "You must have OPENBLAS_ROOT environment variable set, we advise loading module openblas/0.3.18")
+endif()
 
 set(ENABLE_DOXYGEN OFF CACHE PATH "")
 
