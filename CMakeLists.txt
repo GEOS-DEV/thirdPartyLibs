@@ -740,7 +740,6 @@ if( ENABLE_HYPRE )
   set( HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
-  set( HYPRE_DEPENDS "chai" )
 
   if( ENABLE_MPI )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
@@ -761,11 +760,14 @@ if( ENABLE_HYPRE )
   endif()
 
   if( ENABLE_HYPRE_CUDA )
+    set( HYPRE_DEPENDS "chai" )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
     set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
     	 		   --enable-cusparse \
+			   --enable-unified-memory \
 			   --with-gpu-arch=${HYPRE_CUDA_SM} \
-    	 		   --with-umpire --with-umpire-include=${CHAI_DIR}/include \
+    	 		   --with-umpire \
+			   --with-umpire-include=${CHAI_DIR}/include \
 			   --with-umpire-lib-dirs=${CHAI_DIR}/lib \
   			   --with-umpire-libs=umpire " )
 
