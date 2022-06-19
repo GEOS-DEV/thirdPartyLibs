@@ -728,9 +728,9 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-#  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-63208e3e3411da220737c519741ccd9a4827ff26.tar.gz")
   set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-07a8def6f8b7dfdffa4208d962f08f5e5d80ccaa.zip")
-  
+  set( HYPRE_DEPENDS "" )
+
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -760,7 +760,7 @@ if( ENABLE_HYPRE )
   endif()
 
   if( ENABLE_HYPRE_CUDA )
-    set( HYPRE_DEPENDS "chai" )
+    list( APPEND HYPRE_DEPENDS chai )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
     set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
     	 		   --enable-cusparse \
