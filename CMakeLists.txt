@@ -49,6 +49,7 @@ option( ENABLE_TRILINOS "" ON )
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SUITESPARSE "" ON )
 option( ENABLE_VTK "" ON )
+option( ENABLE_VTK_WRAP_PYTHON "" OFF )
 
 option( ENABLE_NINJA "" OFF )
 
@@ -198,7 +199,7 @@ ExternalProject_Add( hdf5
                                        --enable-build-mode=production
                                        --prefix=<INSTALL_DIR>
                                        ${HDF5_ENABLE_PARALLEL}
-                                       --enable-shared=no
+                                       --enable-shared=yes
                                        CFLAGS=${HDF5_C_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install )
@@ -1025,7 +1026,7 @@ endif( ENABLE_MPI )
                                     -D VTK_GROUP_ENABLE_Views=DONT_WANT
                                     -D VTK_GROUP_ENABLE_Web=DONT_WANT
                                     -D VTK_BUILD_ALL_MODULES=OFF
-                                    -D VTK_WRAP_PYTHON=OFF
+                                    -D VTK_WRAP_PYTHON=${ENABLE_VTK_WRAP_PYTHON}
                                     -D VTK_WRAP_JAVA=OFF
                                     -D VTK_MODULE_ENABLE_VTK_vtkm=DONT_WANT
                                     -D VTK_MODULE_ENABLE_VTK_IOXML=YES
