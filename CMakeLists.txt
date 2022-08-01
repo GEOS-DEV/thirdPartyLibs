@@ -47,6 +47,7 @@ option( ENABLE_CALIPER "" ON )
 option( ENABLE_HYPRE "" ON )
 option( ENABLE_TRILINOS "" ON )
 option( ENABLE_PETSC "" OFF )
+option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
 option( ENABLE_VTK "" ON )
 option( ENABLE_VTK_WRAP_PYTHON "" OFF )
@@ -901,6 +902,63 @@ cd ..\n" )
 endif(ENABLE_SUITESPARSE)
 
 ################################
+# SCOTCH
+################################
+
+if( ENABLE_SCOTCH )
+    set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v6.0.9.tar.gz" )
+
+    message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
+
+    if( NOT ENABLE_MPI )
+        message( FATAL_ERROR "Building Scotch without MPI is not supported." )
+    endif()
+
+    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -fPIC -DCOMMON_PTHREAD -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -DSCOTCH_PTHREAD_MPI -Drestrict=__restrict -DINTSIZE64 -DIDXSIZE64" )
+
+    set( SCOTCH_CONFIG "\
+EXE       =
+OBJ       = .o
+LIB       = .a
+MAKE      = make
+AR        = ar
+ARFLAGS   = -ruv
+CAT       = cat
+CCS       = ${MPI_C_COMPILER}
+CCP       = ${MPI_C_COMPILER}
+CCD       = ${MPI_C_COMPILER}
+CFLAGS    = ${SCOTCH_C_FLAGS}
+CLIBFLAGS =
+LDFLAGS   = -lm -lrt -pthread
+CP        = cp
+LEX       = flex -Pscotchyy -olex.yy.c
+LN        = ln
+MKDIR     = mkdir -p
+MV        = mv
+RANLIB    = ranlib
+YACC      = bison -pscotchyy -y -b y
+prefix    = ${SCOTCH_DIR}
+" )
+
+    file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
+    set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
+
+    ExternalProject_Add( scotch
+                         URL ${SCOTCH_URL}
+                         PREFIX ${PROJECT_BINARY_DIR}/scotch
+                         INSTALL_DIR ${SCOTCH_DIR}
+                         BINARY_DIR ${SCOTCH_BUILD_DIR}
+                         CONFIGURE_COMMAND cp ${PROJECT_BINARY_DIR}/scotch_makefile.inc ${SCOTCH_BUILD_DIR}/Makefile.inc
+                         BUILD_COMMAND make -j ${NUM_PROC} ptscotch scotch ptesmumps esmumps
+                         INSTALL_COMMAND make install
+                       )
+
+    list(APPEND build_list scotch )
+
+endif()
+
+################################
 # PETSC
 ################################
 
@@ -917,7 +975,6 @@ if( ENABLE_PETSC )
     set( PETSC_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
     set( PETSC_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
     set( PETSC_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
-    set( PETSC_DEPENDS metis )
 
     if( ENABLE_OPENMP )
         set(PETSC_OPENMP_FLAG "--with-openmp=1")
@@ -936,14 +993,23 @@ if( ENABLE_PETSC )
         set(PETSC_DEBUG_FLAG "--with-debugging=0")
     endif()
 
+    set( PETSC_DEPENDS )
+    set( PETSC_DEP_FLAG "" )
+
     if( ENABLE_MPI )
         set( PETSC_C_COMPILER ${MPI_C_COMPILER} )
         set( PETSC_CXX_COMPILER ${MPI_CXX_COMPILER} )
         set( PETSC_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-        set( PETSC_MPI_FLAG "--with-mpi=1 --download-ptscotch=${PT_SCOTCH_URL} --with-superlu_dist-dir=${SUPERLU_DIR} --with-parmetis-dir=${PARMETIS_DIR}" )
-        list( APPEND PETSC_DEPENDS parmetis superlu_dist )
+        set( PETSC_MPI_FLAG "--with-mpi=1" )
+        set( PETSC_DEP_FLAGS "${PETSC_DEP_FLAG} --with-parmetis-dir=${PARMETIS_DIR} --with-superlu_dist-dir=${SUPERLU_DIR}")
+        list( APPEND PETSC_DEPENDS parmetis metis superlu_dist )
     else()
         set( PETSC_MPI_FLAG "--with-mpi=0" )
+    endif()
+
+    if( ENABLE_SCOTCH )
+        set( PETSC_DEP_FLAGS "${PETSC_DEP_FLAG} --with-ptscotch-dir=${SCOTCH_DIR}" )
+        list( APPEND PETSC_DEPENDS scotch )
     endif()
 
     string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
@@ -967,16 +1033,18 @@ if( ENABLE_PETSC )
 ${PETSC_DEBUG_FLAG} \
 ${PETSC_OPENMP_FLAG} \
 ${PETSC_OMP_DIR_FLAG} \
-${PETSC_MPI_FLAG}\n")
+${PETSC_MPI_FLAG} \
+${PETSC_DEP_FLAG}\n")
 
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
                          DEPENDS ${PETSC_DEPENDS}
+                         BINARY_DIR ${PROJECT_BINARY_DIR}/petsc/src/petsc
                          INSTALL_DIR ${PETSC_INSTALL_DIR}
-                         CONFIGURE_COMMAND cd ../petsc && cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx
-                         BUILD_COMMAND cd ../petsc && make -j ${NUM_PROC}
-                         INSTALL_COMMAND cd ../petsc && make install
+                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx
+                         BUILD_COMMAND make -j ${NUM_PROC}
+                         INSTALL_COMMAND make install
                         )
 
     list(APPEND build_list petsc )
