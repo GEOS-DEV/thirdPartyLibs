@@ -915,7 +915,14 @@ if( ENABLE_SCOTCH )
         message( FATAL_ERROR "Building Scotch without MPI is not supported." )
     endif()
 
-    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -fPIC -DCOMMON_PTHREAD -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -DSCOTCH_PTHREAD_MPI -Drestrict=__restrict -DINTSIZE64 -DIDXSIZE64" )
+    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -fPIC -DINTSIZE64 -DIDXSIZE64 -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -Drestrict=__restrict" )
+    set( SCOTCH_LD_FLAGS "-lm" )
+
+    # OSX does not have pthread barriers used by Scotch
+    if( NOT CMAKE_HOST_APPLE )
+        set( SCOTCH_C_FLAGS "${SCOTCH_C_FLAGS} -DCOMMON_PTHREAD -DSCOTCH_PTHREAD_MPI" )
+        set( SCOTCH_LD_FLAGS "${SCOTCH_LD_FLAGS} -pthread" )
+    endif()
 
     set( SCOTCH_CONFIG "\
 EXE       =
@@ -930,7 +937,7 @@ CCP       = ${MPI_C_COMPILER}
 CCD       = ${MPI_C_COMPILER}
 CFLAGS    = ${SCOTCH_C_FLAGS}
 CLIBFLAGS =
-LDFLAGS   = -lm -lrt -pthread
+LDFLAGS   = ${SCOTCH_LD_FLAGS}
 CP        = cp
 LEX       = flex -Pscotchyy -olex.yy.c
 LN        = ln
