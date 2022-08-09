@@ -7,7 +7,7 @@
 # Consider overriding them from the `--build-arg` command line or directly in the file.
 # The intel tools are a little bit more complicated: just one version number is not obvious
 # to fully determine the installation. For the moment you shall go to the intel section (last) for customisation.
-ARG GCC_VERSION=10.3.0
+ARG GCC_VERSION=10.1.0
 ARG OPENMPI_VERSION=4.1.0
 
 # Main software root installation directory in SHERLOCK
