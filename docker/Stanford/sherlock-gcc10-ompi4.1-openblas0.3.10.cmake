@@ -26,8 +26,8 @@ set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "")
 set(ENABLE_CUDA OFF)
 
 # Blas/Lapack options
-set(BLAS_LIBRARIES "/share/software/user/open/openblas/0.3.10/lib/libblas.so" CACHE STRING "")
-set(LAPACK_LIBRARIES "/share/software/user/open/openblas/0.3.10/lib/liblapack.so" CACHE STRING "")
+set(BLAS_LIBRARIES "/share/software/user/open/openblas/0.3.10/lib/libopenblas.so" CACHE STRING "")
+set(LAPACK_LIBRARIES "/share/software/user/open/openblas/0.3.10/lib/libopenblas.so" CACHE STRING "")
 
 # Python options
 #set(ENABLE_PYLVARRAY ON CACHE BOOL "")
