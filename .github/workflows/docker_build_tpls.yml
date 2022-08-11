@@ -13,6 +13,10 @@ jobs:
 
     #TODO: Change DOCKER_REPOSITORY root back to "geosx"
     strategy:
+
+      # In-progress jobs will not be cancelled if there is a failure
+      fail-fast : false
+
       matrix:
         include:
           - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
