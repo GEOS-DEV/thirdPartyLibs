@@ -10,7 +10,7 @@ geosx_osx_build: &geosx_osx_build
   # the https://github.com/Homebrew/homebrew-core repository).
   # To find the version, a convenient way is to browse
   # the `Formula/open-mpi.rb` history.)
-  - BREW_HASH=5e32fc013f872935e5574af15ee326a2f80449eb
+  - BREW_HASH=cde5d3048893a2960690bc973d47eca87d1b7b88
   - BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
   - brew update > /dev/null 2>&1
   - wget ${BREW_URL}/Formula/open-mpi.rb
