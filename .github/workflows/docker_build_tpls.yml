@@ -1,0 +1,129 @@
+name: Docker Build TPLs
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build_images:
+    name: ${{ matrix.name }}
+
+    runs-on: ${{ matrix.os }}
+
+    #TODO: Change DOCKER_REPOSITORY root back to "geosx"
+    strategy:
+      matrix:
+        include:
+          - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
+            DOCKER_REPOSITORY: han12/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
+            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            DOCKER_ROOT_IMAGE: totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
+            INSTALL_DIR: /workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+            os: ubuntu-latest
+          - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 10.2.89p2)
+            DOCKER_REPOSITORY: han12/pecan-gpu-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
+            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+            HOST_CONFIG: docker/TotalEnergies/pecan-GPU.cmake
+            INSTALL_DIR: /data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+            os: ubuntu-latest
+          - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
+            DOCKER_REPOSITORY: han12/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
+            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+            HOST_CONFIG: docker/TotalEnergies/pecan-CPU.cmake
+            INSTALL_DIR: /data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+            os: ubuntu-latest
+          #- name: Mac OSX
+          #  os: macos-12
+          # - name: Centos (7.6, clang 9.0.0 + gcc 4.9.3, open-mpi 1.10.7)
+          #   DOCKER_REPOSITORY: han12/centos7.7.1908-clang9.0.0
+          #   DOCKERFILE: docker/clang-centos/Dockerfile
+          #   os: ubuntu-latest
+          - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
+            DOCKER_REPOSITORY: han12/ubuntu20.04-gcc9
+            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
+            os: ubuntu-latest
+          - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3)
+            DOCKER_REPOSITORY: han12/ubuntu20.04-gcc10
+            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=10"
+            os: ubuntu-latest
+          - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-10.1.243)
+            DOCKER_REPOSITORY: han12/ubuntu18.04-clang8.0.0-cuda10.1.243
+            DOCKERFILE: docker/clang-cuda/Dockerfile
+            os: ubuntu-latest
+          - name: Centos (7.6, gcc 8.3.1, open-mpi 1.10.7, cuda 10.1.243)
+            DOCKER_REPOSITORY: han12/centos7.6.1810-gcc8.3.1-cuda10.1.243
+            DOCKERFILE: docker/gcc-cuda/Dockerfile
+            os: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # TODO Add login details for pushing
+    #- name: Login to DockerHub
+    #  uses: docker/login-action@v2
+    #  with:
+    #    username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # It's easier to reference named environment variables than
+    # indexes of the matrix or github context variables
+    - name: Set Environment
+      env:
+        dockerfile: ${{ matrix.DOCKERFILE }}
+        docker_repository: ${{ matrix.DOCKER_REPOSITORY }}
+        docker_compiler_build_arg: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
+        os: ${{ matrix.os }}
+        install_dir: ${{ matrix.INSTALL_DIR }}
+        host_config: ${{ matrix.HOST_CONFIG }}
+        docker_root_image: ${{ matrix.DOCKER_ROOT_IMAGE }}
+
+        pull_request_number: ${{ github.event.number }}
+        build_number: ${{ github.run_number }}
+        commit: ${{ github.sha }}
+        build_dir: ${{ github.workspace }}
+      run: |
+        echo "DOCKERFILE=$dockerfile" >> $GITHUB_ENV
+        echo "DOCKER_REPOSITORY=$docker_repository" >> $GITHUB_ENV
+        echo "DOCKER_COMPILER_BUILD_ARG=$docker_compiler_build_arg" >> $GITHUB_ENV
+        echo "OS=$os" >> $GITHUB_ENV
+        echo "INSTALL_DIR=$install_dir" >> $GITHUB_ENV
+        echo "HOST_CONFIG=$host_config" >> $GITHUB_ENV
+        echo "DOCKER_ROOT_IMAGE=$docker_root_image" >> $GITHUB_ENV
+        echo "PULL_REQUEST_NUMBER=$pull_request_number" >> $GITHUB_ENV
+        echo "BUILD_NUMBER=$build_number" >> $GITHUB_ENV
+        echo "COMMIT=$commit" >> $GITHUB_ENV
+        echo "BUILD_DIR=$build_dir" >> $GITHUB_ENV
+
+    - name: Print environment
+      run: printenv
+
+    - name: Run the docker build and push docker script
+      run: bash -x ./scripts/docker_build_and_push.sh
+
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo '${{ toJSON(github) }}'
+      - name: Dump job context
+        run: echo '${{ toJSON(job) }}'
+      - name: Dump steps context
+        run: echo '${{ toJSON(steps) }}'
+      - name: Dump runner context
+        run: echo '${{ toJSON(runner) }}'
+      - name: Dump strategy context
+        run: echo '${{ toJSON(strategy) }}'
+      - name: Dump matrix context
+        run: echo '${{ toJSON(matrix) }}'
