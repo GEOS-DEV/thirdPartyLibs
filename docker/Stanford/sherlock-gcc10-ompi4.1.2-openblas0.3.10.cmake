@@ -1,7 +1,7 @@
-set(CONFIG_NAME "sherlock-gcc10-ompi4.1-openblas0.3.10" CACHE PATH "")
+set(CONFIG_NAME "sherlock-gcc10-ompi4.1.2-openblas0.3.10" CACHE PATH "")
 
 set(GCC_ROOT "/share/software/user/open/gcc/10.1.0" CACHE PATH "")
-set(MPI_ROOT "/share/software/user/open/openmpi/4.1.0" CACHE PATH "")
+set(MPI_ROOT "/share/software/user/open/openmpi/4.1.2" CACHE PATH "")
 
 site_name(HOST_NAME)
 
