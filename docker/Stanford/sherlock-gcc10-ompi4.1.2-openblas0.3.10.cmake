@@ -23,7 +23,7 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE STRING "")
 set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "")
 
 # CUDA options
-set(ENABLE_CUDA OFF)
+set(ENABLE_CUDA OFF CACHE PATH "" FORCE)
 
 # Blas/Lapack options
 set(BLAS_LIBRARIES "/share/software/user/open/openblas/0.3.10/lib/libopenblas.so" CACHE STRING "")
