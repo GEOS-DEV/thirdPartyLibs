@@ -7,7 +7,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 RUN yum install -y \
     make \
-    python
+    python \
     zlib-devel
 
 # centos:7.9
