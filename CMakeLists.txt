@@ -531,101 +531,6 @@ ExternalProject_Add( pugixml
 list(APPEND build_list pugixml )
 
 ################################
-# TRILINOS
-################################
-if (ENABLE_TRILINOS)
-    set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/Trilinos-trilinos-release-13-4-1.tar.gz")
-
-    message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
-
-    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
-
-    if( ENABLE_MKL )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D TPL_ENABLE_MKL:BOOL=ON
-                                 -D TPL_MKL_INCLUDE_DIRS:PATH=${MKL_INCLUDE_DIRS}
-                                 -D TPL_MKL_LIBRARIES:STRING=${MKL_LIBRARIES})
-    endif()
-
-    if ( ENABLE_ESSL )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D HAVE_dggsvd3:BOOL=ON)
-    endif()
-
-    if ( DEFINED OpenMP_Fortran_FLAGS )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D OpenMP_Fortran_FLAGS:STRING=${OpenMP_Fortran_FLAGS})
-    endif()
-
-    if ( DEFINED OpenMP_Fortran_LIB_NAMES )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D OpenMP_Fortran_LIB_NAMES:STRING=${OpenMP_Fortran_LIB_NAMES})
-    endif()
-
-    if( ${ENABLE_MPI} )
-      set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
-      set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
-      set( TRILINOS_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    else()
-      set( TRILINOS_C_COMPILER ${CMAKE_C_COMPILER} )
-      set( TRILINOS_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-      set( TRILINOS_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-    endif()
-
-    ExternalProject_Add( trilinos
-                         PREFIX ${PROJECT_BINARY_DIR}/trilinos
-                         URL ${TRILINOS_URL}
-                         INSTALL_DIR ${TRILINOS_DIR}
-                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                         CMAKE_GENERATOR ${TPL_GENERATOR}
-                         CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
-                                          -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
-                         CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}
-                                    -D CMAKE_C_FLAGS:STRING=${TRILINOS_C_FLAGS}
-                                    -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-                                    -D CMAKE_CXX_COMPILER:PATH=${TRILINOS_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
-                                    -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                    -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
-                                    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
-                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
-                                    -D BUILD_SHARED_LIBS:BOOL=ON
-                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                    -D Trilinos_ENABLE_OpenMP:BOOL=${ENABLE_OPENMP}
-                                    -D Trilinos_ENABLE_Fortran:BOOL=ON
-                                    -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
-                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                    -D Trilinos_ENABLE_TESTS:BOOL=OFF
-                                    -D Trilinos_ENABLE_Gtest:BOOL=OFF
-                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
-                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
-                                    -D Trilinos_ENABLE_Epetra:BOOL=ON
-                                    -D Trilinos_ENABLE_EpetraExt:BOOL=ON
-                                    -D Trilinos_ENABLE_Tpetra:BOOL=ON
-                                    -D Trilinos_ENABLE_Kokkos:BOOL=ON
-                                    -D Trilinos_ENABLE_Stratimikos:BOOL=ON
-                                    -D Trilinos_ENABLE_Amesos:BOOL=ON
-                                    -D Trilinos_ENABLE_AztecOO:BOOL=ON
-                                    -D Trilinos_ENABLE_Ifpack:BOOL=ON
-                                    -D Trilinos_ENABLE_Teuchos:BOOL=ON
-                                    -D Trilinos_ENABLE_ML:BOOL=ON
-                                    -D Trilinos_ENABLE_Thyra:BOOL=ON
-                                    -D Trilinos_ENABLE_STK:BOOL=OFF
-                                    -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
-                                    -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON
-                                    ${TRILINOS_EXTRA_ARGS}
-                        )
-
-    list(APPEND build_list trilinos )
-endif()
-
-
-################################
 # PARMETIS
 # (also METIS is built; note that the idx_t data type is defined to be
 #  64 bit signed integer)
@@ -730,6 +635,108 @@ if( ENABLE_MPI )
 
   list(APPEND build_list superlu_dist )
 endif()
+
+################################
+# TRILINOS
+################################
+if (ENABLE_TRILINOS)
+    set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/Trilinos-trilinos-release-13-4-1.tar.gz")
+
+    message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
+
+    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
+
+    if( ENABLE_MKL )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D TPL_ENABLE_MKL:BOOL=ON
+                                 -D TPL_MKL_INCLUDE_DIRS:PATH=${MKL_INCLUDE_DIRS}
+                                 -D TPL_MKL_LIBRARIES:STRING=${MKL_LIBRARIES})
+    endif()
+
+    if ( ENABLE_ESSL )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D HAVE_dggsvd3:BOOL=ON)
+    endif()
+
+    if ( DEFINED OpenMP_Fortran_FLAGS )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D OpenMP_Fortran_FLAGS:STRING=${OpenMP_Fortran_FLAGS})
+    endif()
+
+    if ( DEFINED OpenMP_Fortran_LIB_NAMES )
+        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
+                                 -D OpenMP_Fortran_LIB_NAMES:STRING=${OpenMP_Fortran_LIB_NAMES})
+    endif()
+
+    if( ${ENABLE_MPI} )
+      set( TRILINOS_C_COMPILER ${MPI_C_COMPILER} )
+      set( TRILINOS_CXX_COMPILER ${MPI_CXX_COMPILER} )
+      set( TRILINOS_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    else()
+      set( TRILINOS_C_COMPILER ${CMAKE_C_COMPILER} )
+      set( TRILINOS_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+      set( TRILINOS_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
+    endif()
+
+    ExternalProject_Add( trilinos
+                         PREFIX ${PROJECT_BINARY_DIR}/trilinos
+                         URL ${TRILINOS_URL}
+                         INSTALL_DIR ${TRILINOS_DIR}
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         DEPENDS parmetis metis
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
+                         CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                                          -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
+                                          -DTPL_METIS_INCLUDE_DIRS:PATH=${METIS_DIR}/include
+                                          -DTPL_METIS_LIBRARIES:PATH=${METIS_DIR}/lib/libmetis.a
+                                          -DTPL_ParMETIS_INCLUDE_DIRS:PATH=${PARMETIS_DIR}/include
+                                          -DTPL_ParMETIS_LIBRARIES:PATH=${PARMETIS_DIR}/lib/libparmetis.a;${METIS_DIR}/lib/libmetis.a
+                         CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}
+                                    -D CMAKE_C_FLAGS:STRING=${TRILINOS_C_FLAGS}
+                                    -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_COMPILER:PATH=${TRILINOS_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
+                                    -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
+                                    -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
+                                    -D TPL_ENABLE_METIS:BOOL=ON
+                                    -D TPL_ENABLE_ParMETIS:BOOL=ON
+                                    -D BUILD_SHARED_LIBS:BOOL=ON
+                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -D Trilinos_ENABLE_OpenMP:BOOL=${ENABLE_OPENMP}
+                                    -D Trilinos_ENABLE_Fortran:BOOL=ON
+                                    -D Trilinos_WARNINGS_AS_ERRORS_FLAGS:STRING=""
+                                    -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                    -D Trilinos_ENABLE_TESTS:BOOL=OFF
+                                    -D Trilinos_ENABLE_Gtest:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF
+                                    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
+                                    -D Trilinos_ENABLE_Epetra:BOOL=ON
+                                    -D Trilinos_ENABLE_EpetraExt:BOOL=ON
+                                    -D Trilinos_ENABLE_Tpetra:BOOL=ON
+                                    -D Trilinos_ENABLE_Kokkos:BOOL=ON
+                                    -D Trilinos_ENABLE_Stratimikos:BOOL=ON
+                                    -D Trilinos_ENABLE_Amesos:BOOL=ON
+                                    -D Trilinos_ENABLE_AztecOO:BOOL=ON
+                                    -D Trilinos_ENABLE_Ifpack:BOOL=ON
+                                    -D Trilinos_ENABLE_Teuchos:BOOL=ON
+                                    -D Trilinos_ENABLE_ML:BOOL=ON
+                                    -D Trilinos_ENABLE_Thyra:BOOL=ON
+                                    -D Trilinos_ENABLE_STK:BOOL=OFF
+                                    -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
+                                    -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON
+                                    ${TRILINOS_EXTRA_ARGS}
+                        )
+
+    list(APPEND build_list trilinos )
+endif()
+
 
 ################################
 # HYPRE
