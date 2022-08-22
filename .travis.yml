@@ -96,6 +96,16 @@ jobs:
     - INSTALL_DIR=/home/groups/tchelepi/geosx-sherlock/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     before_script:
       - echo "**/*.rpm" >> .dockerignore
+  - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.0, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
+    <<: *geosx_linux_build
+    env:
+      - DOCKER_REPOSITORY=geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
+      - DOCKERFILE=docker/Stanford/Dockerfile
+      - DOCKER_ROOT_IMAGE=jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+      - HOST_CONFIG=docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
+      - INSTALL_DIR=/home/groups/tchelepi/geosx-sherlock/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
+    before_script:
+      - echo "**/*.rpm" >> .dockerignore
   - name: Mac OSX
     <<: *geosx_osx_build
   - name: Centos (7.6, clang 9.0.0 + gcc 4.9.3, open-mpi 1.10.7)
