@@ -957,7 +957,7 @@ prefix    = ${SCOTCH_DIR}
                          INSTALL_DIR ${SCOTCH_DIR}
                          BINARY_DIR ${SCOTCH_BUILD_DIR}
                          CONFIGURE_COMMAND cp ${PROJECT_BINARY_DIR}/scotch_makefile.inc ${SCOTCH_BUILD_DIR}/Makefile.inc
-                         BUILD_COMMAND make -j ${NUM_PROC} ptscotch scotch ptesmumps esmumps
+                         BUILD_COMMAND make ptscotch scotch ptesmumps esmumps
                          INSTALL_COMMAND make install
                        )
 
