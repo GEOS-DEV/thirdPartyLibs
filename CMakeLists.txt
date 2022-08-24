@@ -951,7 +951,7 @@ prefix    = ${SCOTCH_DIR}
     file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
     if ( NOT DEFINED SCOTCH_NUM_PROC )
-      set( SCOTCH_NUM_PROC NUM_PROC )
+      set( SCOTCH_NUM_PROC ${NUM_PROC} )
     endif()
     ExternalProject_Add( scotch
                          URL ${SCOTCH_URL}
