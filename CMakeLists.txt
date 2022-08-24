@@ -950,14 +950,16 @@ prefix    = ${SCOTCH_DIR}
 
     file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
-
+    if ( NOT DEFINED SCOTCH_NUM_PROC )
+      set( SCOTCH_NUM_PROC NUM_PROC )
+    endif()
     ExternalProject_Add( scotch
                          URL ${SCOTCH_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/scotch
                          INSTALL_DIR ${SCOTCH_DIR}
                          BINARY_DIR ${SCOTCH_BUILD_DIR}
                          CONFIGURE_COMMAND cp ${PROJECT_BINARY_DIR}/scotch_makefile.inc ${SCOTCH_BUILD_DIR}/Makefile.inc
-                         BUILD_COMMAND make ptscotch scotch ptesmumps esmumps
+                         BUILD_COMMAND make -j ${SCOTCH_NUM_PROC} ptscotch scotch ptesmumps esmumps
                          INSTALL_COMMAND make install
                        )
 
