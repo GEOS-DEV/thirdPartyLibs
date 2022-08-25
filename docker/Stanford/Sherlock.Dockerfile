@@ -111,7 +111,7 @@ ARG OPENBLAS_VERSION
 # works for intel 11th gen
 #ARG MICRO_ARCH=SKYLAKEX
 #should be for Sherlock AMD EPYC 7502 32-Core Processor
-#ARG MICRO_ARCH=ZEN
+#ARG MICRO_ARCH=ZEN auto detected with this version of openblas
 
 #retrieve env
 ARG SHERLOCK_ROOT_INSTALL_DIR
@@ -133,6 +133,7 @@ ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
 WORKDIR /tmp/src
 RUN curl -sL https://github.com/xianyi/OpenBLAS/archive/refs/tags/v${OPENBLAS_VERSION}.tar.gz | tar --strip-components=1 -xzf -
 
+#in case $PMICRO_ARCH} is not auto-detected
 #RUN make TARGET=${MICRO_ARCH} && make install PREFIX=${SHERLOCK_OPENBLAS_INSTALL_DIR}
 RUN make && make install PREFIX=${SHERLOCK_OPENBLAS_INSTALL_DIR}
 
@@ -184,9 +185,7 @@ ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
     MPICXX=${SHERLOCK_OPENMPI_INSTALL_DIR}/bin/mpic++ \
     MPIFC=${SHERLOCK_OPENMPI_INSTALL_DIR}/bin/mpifort \
     MPIEXEC=${SHERLOCK_OPENMPI_INSTALL_DIR}/bin/mpiexec \
-#    CUDAC=${SHERLOCK_CUDA_INSTALL_DIR}/bin/nvcc \
 # An additional `LD_LIBRARY_PATH` action is needed for the tools to work.
-    LD_LIBRARY_PATH=${SHERLOCK_OPENMPI_INSTALL_DIR}/lib:${SHERLOCK_GCC_INSTALL_DIR}/lib64:${SHERLOCK_OPENBLAS_INSTALL_DIR}/lib:${SHERLOCK_ZLIB_INSTALL_DIR}/lib:${LD_LIBRARY_PATH} \
-#    adding cuda shorthands
-#    CUDA_HOME=${SHERLOCK_CUDA_INSTALL_DIR}
+    LD_LIBRARY_PATH=${SHERLOCK_OPENMPI_INSTALL_DIR}/lib:${SHERLOCK_GCC_INSTALL_DIR}/lib64:${SHERLOCK_OPENBLAS_INSTALL_DIR}/lib:${SHERLOCK_ZLIB_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}
+
 
