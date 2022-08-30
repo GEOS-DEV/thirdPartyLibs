@@ -1,11 +1,11 @@
 # This Dockerfile aims at reproducing (some part of) the SHERLOCK environment.
 # Please see TotalEnergies/Pangea2.Dockerfile for fully commented version
 
-# for mpifh08 to be available
-# loaded in Sherlock module ompi4.1.2
+# While loading module ompi4.1.2 on Sherlock, the following are aut-loaded:
 #         UCX/1.12.1
 # 		  LIBFABRIC/1.14.0
-# ompi compiled with slurm pmi(x) and libevent support (discarded here)
+# Moreover ompi is compiled with slurm pmi(x) and libevent support
+# this is not reproduced here.
 
 ARG GCC_VERSION=10.1.0
 ARG OPENMPI_VERSION=4.1.2
@@ -50,11 +50,11 @@ RUN ./contrib/download_prerequisites
 
 # Fortran compiler is build and available for both TPL and GEOSX,
 # even though GEOSX should not need it.
-RUN ./configure --prefix=${SHERLOCK_GCC_INSTALL_DIR} --disable-bootstrap --disable-multilib --enable-languages=c,c++,fortran && \
+RUN ./configure --prefix=${SHERLOCK_GCC_INSTALL_DIR} --disable-multilib --enable-languages=c,c++,fortran && \
     make -j $(nproc) && \
     make install-strip
 
-FROM gcc_stage AS cuda_stage
+FROM gcc_stage AS cuda_openmpi_stage
 
 ARG SHERLOCK_GCC_INSTALL_DIR
 ARG SHERLOCK_CUDA_INSTALL_DIR
@@ -75,8 +75,6 @@ RUN sh cuda_${CUDA_VERSION}_${CUDA_SUBVERSION}_linux.run --silent --toolkit --no
 RUN rm -rf /tmp/src
 
 # `openmpi` will be build and deployed during this stage.
-FROM cuda_stage AS openmpi_stage
-
 ARG OPENMPI_VERSION
 ARG SHERLOCK_GCC_INSTALL_DIR
 ARG SHERLOCK_OPENMPI_INSTALL_DIR
@@ -108,10 +106,6 @@ FROM gcc_stage AS blas_stage
 
 #openblas and lapack versions
 ARG OPENBLAS_VERSION
-# works for intel 11th gen
-#ARG MICRO_ARCH=SKYLAKEX
-#should be for Sherlock AMD EPYC 7502 32-Core Processor
-#ARG MICRO_ARCH=ZEN auto detected with this version of openblas
 
 #retrieve env
 ARG SHERLOCK_ROOT_INSTALL_DIR
@@ -133,11 +127,9 @@ ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
 WORKDIR /tmp/src
 RUN curl -sL https://github.com/xianyi/OpenBLAS/archive/refs/tags/v${OPENBLAS_VERSION}.tar.gz | tar --strip-components=1 -xzf -
 
-#in case $PMICRO_ARCH} is not auto-detected
-#RUN make TARGET=${MICRO_ARCH} && make install PREFIX=${SHERLOCK_OPENBLAS_INSTALL_DIR}
 RUN make && make install PREFIX=${SHERLOCK_OPENBLAS_INSTALL_DIR}
 
-RUN rm -rf /tmp/src
+#RUN rm -rf /tmp/src
 #new stage for zlib
 FROM gcc_stage AS zlib_stage
 
@@ -175,7 +167,7 @@ COPY --from=gcc_stage ${SHERLOCK_GCC_INSTALL_DIR} ${SHERLOCK_GCC_INSTALL_DIR}
 COPY --from=openmpi_stage ${SHERLOCK_OPENMPI_INSTALL_DIR} ${SHERLOCK_OPENMPI_INSTALL_DIR}
 COPY --from=blas_stage ${SHERLOCK_OPENBLAS_INSTALL_DIR} ${SHERLOCK_OPENBLAS_INSTALL_DIR}
 COPY --from=zlib_stage ${SHERLOCK_ZLIB_INSTALL_DIR} ${SHERLOCK_ZLIB_INSTALL_DIR}
-COPY --from=cuda_stage ${SHERLOCK_CUDA_INSTALL_DIR} ${SHERLOCK_CUDA_INSTALL_DIR}
+COPY --from=cuda_openmpi_stage ${SHERLOCK_CUDA_INSTALL_DIR} ${SHERLOCK_CUDA_INSTALL_DIR}
 
 # GEOSX does not need fortran compilers; we expose it anyway (see comments above).
 ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
