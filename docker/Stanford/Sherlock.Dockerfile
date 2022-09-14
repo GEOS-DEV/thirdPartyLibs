@@ -127,9 +127,13 @@ ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
 WORKDIR /tmp/src
 RUN curl -sL https://github.com/xianyi/OpenBLAS/archive/refs/tags/v${OPENBLAS_VERSION}.tar.gz | tar --strip-components=1 -xzf -
 
+
+# Beware openblas might fail to auto-detect arch on which the docker is running
+# if the chip is too new for version 0.3. This would make this docker file obsolete
+# and force to find another combination of gcc-ompi-cuda-blas that are accessible on Sherlock
 RUN make && make install PREFIX=${SHERLOCK_OPENBLAS_INSTALL_DIR}
 
-#RUN rm -rf /tmp/src
+
 #new stage for zlib
 FROM gcc_stage AS zlib_stage
 
