@@ -100,6 +100,7 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     before_script:
+    - DOCKER_ROOT_IMAGE=ubuntu:20.04
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
   - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3)
@@ -109,6 +110,16 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     before_script:
+    - DOCKER_ROOT_IMAGE=ubuntu:20.04
+    - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
+    - echo "**/*.rpm" >> .dockerignore
+  - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
+    <<: *geosx_linux_build
+    before_script:
+    - DOCKER_ROOT_IMAGE=ubuntu:22.04
+    - GCC_MAJOR_VERSION=11
+    - DOCKER_REPOSITORY=geosx/ubuntu22.04-gcc${GCC_MAJOR_VERSION}
+    - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - echo "**/*.rpm" >> .dockerignore
   - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-10.1.243)
