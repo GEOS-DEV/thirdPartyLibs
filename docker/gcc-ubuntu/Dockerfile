@@ -43,7 +43,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # And we want to test GEOSX's python configuration script.
 # Unfortunately argparse (standard library's package used by GEOSX)
 # is not in the python-minimal package so we install the whole std lib.
-    python
+    python3
 
 # Installing more recent cmake version (3.10.2 in ubuntu is not enough)
 ARG CMAKE_VERSION=3.14.5
