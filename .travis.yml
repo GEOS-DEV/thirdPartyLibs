@@ -1,5 +1,7 @@
 language: minimal
- 
+vm:
+  size: large
+
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
