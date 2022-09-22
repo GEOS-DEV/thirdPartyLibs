@@ -28,6 +28,7 @@ geosx_osx_build: &geosx_osx_build
 geosx_linux_build: &geosx_linux_build
   stage: build
   os: linux
+  dist: focal
   services: docker
   script:
   # We save memory for the docker context
