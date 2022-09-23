@@ -16,7 +16,7 @@ RUN rm /etc/apt/sources.list.d/*.list \
     zlib1g-dev \
     openmpi-bin \
     libopenmpi-dev \
-    python
+    python3
 
 # Installing latest CMake version available on Lassen
 ARG CMAKE_VERSION=3.14.5

@@ -86,7 +86,7 @@ RUN yum -y install \
     lapack-devel \
     zlib-devel \
     openmpi-devel \
-    python
+    python3
 
 ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
     CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \

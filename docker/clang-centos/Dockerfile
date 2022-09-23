@@ -31,7 +31,7 @@ RUN yum -y install \
     ${TMP_DIR}/gcc493-2.0-6.ch6.x86_64.rpm \
     ${TMP_DIR}/clang-9.0.0-3-2.tce.ch6.x86_64.rpm \
     openmpi-devel \
-    python
+    python3
 
 RUN rm ${TMP_DIR}/*.rpm
 
