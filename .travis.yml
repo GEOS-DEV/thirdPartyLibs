@@ -124,6 +124,7 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu22.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
+    - INSTALL_DIR=/opt/GEOSX_TPL/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
     - echo "**/*.rpm" >> .dockerignore
 #  - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-10.1.243)
 #    <<: *geosx_linux_build
