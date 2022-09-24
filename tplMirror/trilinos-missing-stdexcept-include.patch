@@ -1,0 +1,10 @@
+--- packages/kokkos/core/src/impl/Kokkos_Command_Line_Parsing.cpp	2022-06-10 14:27:04.000000000 -0700
++++ packages/kokkos/core/src/impl/Kokkos_Command_Line_Parsing.cpp.patched	2022-09-23 21:16:37.000000000 -0700
+@@ -45,6 +45,7 @@
+ #include <string>
+ #include <sstream>
+ #include <cstring>
++#include <stdexcept>
+ #include <impl/Kokkos_Command_Line_Parsing.hpp>
+ /** Duplicates of Kokkos_Error.cpp/hpp, reproduced here
+  * for use in non-Kokkos applications
