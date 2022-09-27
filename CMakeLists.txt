@@ -419,6 +419,12 @@ if (ENABLE_CALIPER)
     set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
+    set(CALIPER_WITH_CUPTI OFF)
+
+    if(ENABLE_CALIPER_WITH_CUPTI)
+        set(CALIPER_WITH_CUPTI ON)
+    endif()
+
     ExternalProject_Add( caliper
                          URL ${CALIPER_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/caliper
@@ -445,8 +451,7 @@ if (ENABLE_CALIPER)
                                     -D PAPI_PREFIX:STRING=${PAPI_PREFIX}
                                     -D WITH_ADIAK:BOOL=ON
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
-                                    -D WITH_CUPTI=${ENABLE_CUDA}
-                                    -D CUPTI_PREFIX=${CUDA_TOOLKIT_ROOT_DIR}/nvidia/extras/CUPTI
+                                    -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
                        )
 
