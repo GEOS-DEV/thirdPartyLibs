@@ -7,7 +7,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 RUN yum install -y \
     make \
-    python \
+    python3 \
     zlib-devel
 
 # centos:7.6 offers a 2.8 version of cmake which is too old.
