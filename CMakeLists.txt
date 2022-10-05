@@ -416,8 +416,14 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/caliper-2.4.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
+
+    set(CALIPER_WITH_CUPTI OFF)
+
+    if(ENABLE_CALIPER_WITH_CUPTI)
+        set(CALIPER_WITH_CUPTI ON)
+    endif()
 
     ExternalProject_Add( caliper
                          URL ${CALIPER_URL}
@@ -445,8 +451,7 @@ if (ENABLE_CALIPER)
                                     -D PAPI_PREFIX:STRING=${PAPI_PREFIX}
                                     -D WITH_ADIAK:BOOL=ON
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
-                                    -D WITH_CUPTI=${ENABLE_CUDA}
-                                    -D CUPTI_PREFIX=${CUDA_TOOLKIT_ROOT_DIR}/nvidia/extras/CUPTI
+                                    -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
                        )
 
@@ -528,7 +533,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-12-18-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-13-4-0.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 

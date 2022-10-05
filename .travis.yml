@@ -1,5 +1,7 @@
 language: minimal
- 
+vm:
+  size: large
+
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
@@ -19,8 +21,7 @@ geosx_osx_build: &geosx_osx_build
   - cd build-darwin-clang-release
   - make
   # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
-  # And `after_success` does not fail the build in case of error.
-  # We impose 3.9 version as a workaround the update to protobuf/googlecloud-storage - To be challenged if upgrade at some point  
+  # We impose 3.9 version as a workaround the update to protobuf/googlecloud-storage - To be challenged if upgrade at some point.
   - brew upgrade python@3.9
   - python3.9 -m pip install google-cloud-storage
   - cd ${TRAVIS_BUILD_DIR}
@@ -30,6 +31,7 @@ geosx_osx_build: &geosx_osx_build
 geosx_linux_build: &geosx_linux_build
   stage: build
   os: linux
+  dist: focal
   services: docker
   script:
   # We save memory for the docker context
@@ -66,8 +68,6 @@ jobs:
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
     - DOCKER_ROOT_IMAGE=totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
     - INSTALL_DIR=/workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-    before_script:
-    - echo "**/*.rpm" >> .dockerignore
   - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 10.2.89p2)
     <<: *geosx_linux_build
     env:
@@ -76,8 +76,6 @@ jobs:
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-GPU.cmake
     - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-    before_script:
-    - echo "**/*.rpm" >> .dockerignore
   - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
     <<: *geosx_linux_build
     env:
@@ -86,8 +84,6 @@ jobs:
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-CPU.cmake
     - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-    before_script:
-    - echo "**/*.rpm" >> .dockerignore
   - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
     <<: *geosx_linux_build
     env:
@@ -96,8 +92,6 @@ jobs:
     - DOCKER_ROOT_IMAGE=jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
     - HOST_CONFIG=docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10.cmake
     - INSTALL_DIR=/home/groups/tchelepi/geosx-sherlock/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-    before_script:
-      - echo "**/*.rpm" >> .dockerignore
   - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
     <<: *geosx_linux_build
     env:
@@ -106,15 +100,8 @@ jobs:
       - DOCKER_ROOT_IMAGE=jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
       - HOST_CONFIG=docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
       - INSTALL_DIR=/home/groups/tchelepi/geosx-sherlock/GPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-    before_script:
-      - echo "**/*.rpm" >> .dockerignore
   - name: Mac OSX
     <<: *geosx_osx_build
-  - name: Centos (7.6, clang 9.0.0 + gcc 4.9.3, open-mpi 1.10.7)
-    <<: *geosx_linux_build
-    env:
-    - DOCKER_REPOSITORY=geosx/centos7.7.1908-clang9.0.0
-    - DOCKERFILE=docker/clang-centos/Dockerfile
   - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
     <<: *geosx_linux_build
     env:
@@ -122,8 +109,8 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     before_script:
+    - DOCKER_ROOT_IMAGE=ubuntu:20.04
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
-    - echo "**/*.rpm" >> .dockerignore
   - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3)
     <<: *geosx_linux_build
     env:
@@ -131,8 +118,17 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     before_script:
+    - DOCKER_ROOT_IMAGE=ubuntu:20.04
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
-    - echo "**/*.rpm" >> .dockerignore
+  - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
+    <<: *geosx_linux_build
+    before_script:
+    - DOCKER_ROOT_IMAGE=ubuntu:22.04
+    - GCC_MAJOR_VERSION=11
+    - DOCKER_REPOSITORY=geosx/ubuntu22.04-gcc${GCC_MAJOR_VERSION}
+    - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
+    - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
+    - INSTALL_DIR=/opt/GEOSX/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
   - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-10.1.243)
     <<: *geosx_linux_build
     env:
