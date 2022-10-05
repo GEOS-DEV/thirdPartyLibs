@@ -94,14 +94,6 @@ jobs:
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     - DOCKER_ROOT_IMAGE=ubuntu:20.04
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
-  - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3)
-    <<: *geosx_linux_build
-    before_script:
-    - GCC_MAJOR_VERSION=10
-    - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
-    - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
-    - DOCKER_ROOT_IMAGE=ubuntu:20.04
-    - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
   - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3) - github codespaces
     <<: *geosx_linux_build
     before_script:
