@@ -20,13 +20,13 @@ if [[ -z "${HOST_CONFIG}" ]]; then
   exit 1
 fi
 
-python ${TPL_SRC_DIR}/scripts/config-build.py \
-       --hostconfig ${TPL_SRC_DIR}/${HOST_CONFIG} \
-       --buildtype Release \
-       --buildpath ${TPL_BUILD_DIR} \
-       --installpath ${GEOSX_TPL_DIR} \
-       -DNUM_PROC=$(nproc) \
-       $*
+python3 ${TPL_SRC_DIR}/scripts/config-build.py \
+        --hostconfig ${TPL_SRC_DIR}/${HOST_CONFIG} \
+        --buildtype Release \
+        --buildpath ${TPL_BUILD_DIR} \
+        --installpath ${GEOSX_TPL_DIR} \
+        -DNUM_PROC=$(nproc) \
+        $*
 # Note that since docker is not used for mac,\
 # an other version of this build configuration exists
 # in the .travis.yml part dedicated to osx
