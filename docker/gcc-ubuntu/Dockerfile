@@ -108,7 +108,7 @@ COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
 WORKDIR ${TPL_BUILD_DIR}
-RUN make
+RUN make -k
 
 # Last step is setting everything for a complete slave that will build GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
