@@ -4,7 +4,7 @@ ARG ARCH
 ARG DOCKER_ROOT_IMAGE
 FROM ${ARCH}${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 
-RUN apt-get --allow-unauthenticated update && apt-get install -y gnupg
+RUN apt-get --allow-unauthenticated update && apt-get --allow-unauthenticated install -y gnupg
 # RUN apt-get update && apt-get install -y gnupg
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
 RUN apt-get update
