@@ -108,7 +108,7 @@ jobs:
     <<: *geosx_linux_build
     arch: arm64
     before_script:
-    - ARCH=arm64
+    - ARCH=arm64v8
     - DOCKER_ROOT_IMAGE=ubuntu:22.04
     - GCC_MAJOR_VERSION=11
     - DOCKER_REPOSITORY=geosx/ubuntu22.04-${ARCH}-gcc${GCC_MAJOR_VERSION}
