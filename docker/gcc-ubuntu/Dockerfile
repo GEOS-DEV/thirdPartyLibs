@@ -4,6 +4,7 @@ ARG ARCH
 ARG DOCKER_ROOT_IMAGE
 FROM ${ARCH}${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 
+RUN apt-get update && apt-get install -y gnupg
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
 
 # All the environment variables defined in this Dockerfile
