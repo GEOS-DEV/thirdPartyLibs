@@ -1,7 +1,8 @@
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
+ARG ARCH
 ARG DOCKER_ROOT_IMAGE
-FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
+FROM ${ARCH}${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
