@@ -194,6 +194,7 @@ def main(calling_script, args, unknown_args):
     # Dump the cmake command to file for convenience
     cmake_cmd = os.path.join(build_path, "cmake_cmd")
     with open(cmake_cmd, "w") as cmd_file:
+        cmd_file.write("#!/bin/bash" + os.linesep)
         cmd_file.write(" ".join(cmake_line) + os.linesep)
     st = os.stat(cmake_cmd)
     os.chmod(cmake_cmd, st.st_mode | stat.S_IEXEC)
