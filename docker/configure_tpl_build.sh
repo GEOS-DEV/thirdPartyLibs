@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ -z "${TPL_SRC_DIR}" ]]; then
   echo "Environment variable \"TPL_SRC_DIR\" is undefined."

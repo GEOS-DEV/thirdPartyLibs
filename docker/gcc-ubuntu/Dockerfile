@@ -4,11 +4,11 @@ ARG ARCH
 ARG DOCKER_ROOT_IMAGE
 FROM ${ARCH}${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 
-RUN apt-get -y --allow-unauthenticated --allow-insecure-repositories update
-RUN apt-get -y --allow-unauthenticated install gnupg
-# RUN apt-get update && apt-get install -y gnupg
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
-RUN apt-get update
+# RUN apt-get -y --allow-unauthenticated --allow-insecure-repositories update
+# RUN apt-get -y --allow-unauthenticated install gnupg
+# # RUN apt-get update && apt-get install -y gnupg
+# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
+# RUN apt-get update
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
