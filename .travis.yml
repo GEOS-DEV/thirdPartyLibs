@@ -106,6 +106,10 @@ jobs:
   #   - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
   - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
     <<: *geosx_linux_build
+    addons:
+      apt:
+        packages:
+          - docker-ce
     dist: focal
     arch: arm64
     before_script:
