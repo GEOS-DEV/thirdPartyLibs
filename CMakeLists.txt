@@ -129,6 +129,7 @@ message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
                      URL ${UNCRUSTIFY_URL}
+                     URL_HASH MD5=23fbf1c33699b214a4dff0870ae1e0c6
                      PREFIX ${PROJECT_BINARY_DIR}/uncrustify
                      INSTALL_DIR ${UNCRUSTIFY_DIR}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
