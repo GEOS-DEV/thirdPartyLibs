@@ -34,7 +34,6 @@ geosx_linux_build: &geosx_linux_build
   dist: focal
   services: docker
   script:
-  - git lfs pull
   # We save memory for the docker context
   - echo .git > .dockerignore
   # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
@@ -112,6 +111,7 @@ jobs:
       - sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       - sudo apt-get update
       - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+      - sudo apt-get -y install git-lfs
     arch: arm64
     before_script:
     - ARCH=arm64v8
