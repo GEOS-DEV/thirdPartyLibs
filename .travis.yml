@@ -34,6 +34,7 @@ geosx_linux_build: &geosx_linux_build
   dist: focal
   services: docker
   script:
+  - git lfs pull
   # We save memory for the docker context
   - echo .git > .dockerignore
   # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
