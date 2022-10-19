@@ -1209,6 +1209,14 @@ if( ENABLE_FESAPI )
 
     list(APPEND build_list minizip)
 
+    if( ENABLE_MPI )
+        set( FESAPI_C_COMPILER ${MPI_C_COMPILER} )
+        set( FESAPI_CXX_COMPILER ${MPI_CXX_COMPILER} )
+    else()
+        set( FESAPI_C_COMPILER ${CMAKE_C_COMPILER} )
+        set( FESAPI_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+    endif( ENABLE_MPI )
+
     #
     # Then Fesapi
     #
@@ -1223,9 +1231,9 @@ if( ENABLE_FESAPI )
                         BUILD_COMMAND make -j ${NUM_PROC}
                         INSTALL_COMMAND make install
                         DEPENDS hdf5 minizip boost
-                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                                    -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
+                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}                                    
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
