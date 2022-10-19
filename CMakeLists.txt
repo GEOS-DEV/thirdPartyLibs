@@ -1230,7 +1230,7 @@ if( ENABLE_FESAPI )
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
-                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost                                    
+                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost
                                     -DWITH_EXAMPLE:BOOL=OFF
                                     -DWITH_DOTNET_WRAPPING:BOOL=OFF
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
