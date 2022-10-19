@@ -1190,6 +1190,12 @@ if( ENABLE_FESAPI )
     #
     # ENABLE Minizip
     #
+    
+    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
+    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit 
+    # path thus it has to be fixed regardless of the platform
+    set( MINIZIP_CMAKE_INSTALL_LIBDIR "lib" )
+
     set(MINIZIP_DIR "${CMAKE_INSTALL_PREFIX}/minizip")
     set(MINIZIP_URL "${TPL_MIRROR_DIR}/Minizip-1.1_cmake0.1.tar.gz")
     message(STATUS "Building Minizip found at ${MINIZIP_URL}")
@@ -1205,6 +1211,7 @@ if( ENABLE_FESAPI )
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                                 -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                 -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+                                -DCMAKE_INSTALL_LIBDIR=${MINIZIP_CMAKE_INSTALL_LIBDIR}
                                 )
 
     list(APPEND build_list minizip)
