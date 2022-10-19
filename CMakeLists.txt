@@ -390,7 +390,7 @@ list(APPEND build_list chai )
 ################################
 if (ENABLE_CALIPER)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
-    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.0.tar.gz")
+    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.2.tar.gz")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
     ExternalProject_Add( adiak
@@ -413,6 +413,7 @@ if (ENABLE_CALIPER)
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                        )
 
 
