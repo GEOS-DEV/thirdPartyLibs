@@ -5,7 +5,7 @@ vm:
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
-  osx_image: xcode13.2
+  osx_image: xcode13.4
   install:
   - BREW_OPENMPI_VERSION=4.1.2
   - BREW_OPENMPI_TAP=${USER}/local-open-mpi
