@@ -17,7 +17,7 @@ geosx_osx_build: &geosx_osx_build
   - git lfs pull
   script:
   - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
-  - python3 scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -ip ${GEOSX_TPL_DIR} -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -DENABLE_VTK:BOOL=OFF -DENABLE_TRILINOS:BOOL=OFF
+  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -ip ${GEOSX_TPL_DIR} -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -DENABLE_VTK:BOOL=OFF -DENABLE_TRILINOS:BOOL=OFF
   - cd build-darwin-clang-release
   - make
   # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
