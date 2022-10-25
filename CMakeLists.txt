@@ -1174,7 +1174,8 @@ if( ENABLE_FESAPI )
     message(STATUS "Extract Boost found at ${BOOST_URL}")
 
     set(BOOST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost/ CACHE STRING "Set the value of BOOST_ROOT to point to the root folder of your boost install." FORCE)
-        
+    set(Boost_NO_SYSTEM_PATHS TRUE CACHE BOOL "Supress search paths other than BOOST_ROOT" FORCE)
+
     ExternalProject_Add( boost
                         URL ${BOOST_URL}
                         PREFIX ${PROJECT_BINARY_DIR}/boost
