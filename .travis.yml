@@ -6,6 +6,9 @@ geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
   osx_image: xcode13.4
+  env:
+  - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL
+  - GEOSX_DIR=/usr/local/GEOSX
   install:
   - BREW_OPENMPI_VERSION=4.1.1
   - BREW_OPENMPI_TAP=${USER}/local-open-mpi
@@ -16,7 +19,7 @@ geosx_osx_build: &geosx_osx_build
   - git lfs install
   - git lfs pull
   script:
-  - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}
+  - sudo mkdir -p -m a=rwx ${GEOSX_DIR}
   - python3 scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -ip ${GEOSX_TPL_DIR} -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -DENABLE_VTK:BOOL=OFF -DENABLE_TRILINOS:BOOL=OFF
   - cd build-darwin-clang-release
   - make
