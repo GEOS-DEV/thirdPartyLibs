@@ -1174,8 +1174,6 @@ if( ENABLE_FESAPI )
     message(STATUS "Extract Boost found at ${BOOST_URL}")
 
     set(BOOST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost/ CACHE STRING "Set the value of BOOST_ROOT to point to the root folder of your boost install." FORCE)
-    set(Boost_NO_SYSTEM_PATHS TRUE CACHE BOOL "Suppress search paths other than BOOST_ROOT" FORCE)
-    set(Boost_NO_BOOST_CMAKE TRUE CACHE BOOL "Disables the search for boost-cmake " FORCE)
 
     ExternalProject_Add( boost
                         URL ${BOOST_URL}
@@ -1247,7 +1245,9 @@ if( ENABLE_FESAPI )
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
-                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost
+                                    -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
+                                    -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
+                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost                                    
                                     -DWITH_EXAMPLE:BOOL=OFF
                                     -DWITH_DOTNET_WRAPPING:BOOL=OFF
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
