@@ -6,7 +6,6 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 RUN yum install -y \
-    make \
     python3 \
     zlib-devel
 
@@ -17,6 +16,7 @@ RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERS
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
 RUN yum install -y \
+    make \
     bc \
     file \
     bison \
@@ -44,3 +44,5 @@ RUN yum -y install \
     graphviz \
     libxml2 \
     git
+
+RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja

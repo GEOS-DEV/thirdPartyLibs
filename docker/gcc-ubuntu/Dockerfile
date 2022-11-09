@@ -26,7 +26,6 @@ RUN apt-get update
 # DEBIAN_FRONTEND and TZ variables fix this.
 RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
-    make \
 # gfortran 8, 9 and 10 depend on libgfortran5.
     gcc-${GCC_MAJOR_VERSION} \
     g++-${GCC_MAJOR_VERSION} \
@@ -78,6 +77,7 @@ ENV OMPI_FC=$FC
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
     gfortran-${GCC_MAJOR_VERSION} \
+    make \
     bc \
     file \
     bison \
@@ -117,4 +117,5 @@ RUN apt-get install -y --no-install-recommends \
     graphviz \
     libxml2-utils \
     git \
-    ghostscript
+    ghostscript \
+    ninja-build
