@@ -20,7 +20,7 @@ RUN rm /etc/apt/sources.list.d/*.list \
 
 # Installing latest CMake version available on Lassen
 ARG CMAKE_VERSION=3.21.7
-RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 # Installing clang
 RUN curl -fsSL http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz | tar --directory=/usr/local --strip-components=1 -xJf -
