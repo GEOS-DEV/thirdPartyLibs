@@ -19,7 +19,7 @@ RUN rm /etc/apt/sources.list.d/*.list \
     python3
 
 # Installing latest CMake version available on Lassen
-ARG CMAKE_VERSION=3.17.5
+ARG CMAKE_VERSION=3.21.7
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 # Installing clang
@@ -81,7 +81,5 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 RUN apt-get install -y --no-install-recommends \
     openssh-client \
     texlive \
-    graphviz
-
-# The ninja version provided by the current ubuntu version is too old.
-RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
+    graphviz \
+    ninja-build
