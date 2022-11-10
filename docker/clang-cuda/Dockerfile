@@ -81,5 +81,6 @@ COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 RUN apt-get install -y --no-install-recommends \
     openssh-client \
     texlive \
-    graphviz \
-    ninja-build
+    graphviz
+
+RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
