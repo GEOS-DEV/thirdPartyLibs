@@ -25,8 +25,7 @@ echo "Building the TPLs for $HOST_CONFIG to be installed at $INSTALL_DIR. Progre
 ssh $MACHINE -t "
 . /etc/profile  &&
 cd $PWD &&
-export HYPRE_CUDA_SM=70 &&
-export CUDA_HOME=/usr/tce/packages/cuda/cuda-10.1.243 &&
+module load cmake/3.22.4 &&
 python scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
 cd build-$CONFIG-release &&
 $GET_A_NODE make &&

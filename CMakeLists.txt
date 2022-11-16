@@ -317,7 +317,7 @@ ExternalProject_Add( raja
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND} VERBOSE=1
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -736,7 +736,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-07a8def6f8b7dfdffa4208d962f08f5e5d80ccaa.zip")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-b93beb946541cd425749254f511e1d805e944fea.zip")
   set( HYPRE_DEPENDS "" )
 
 
