@@ -317,7 +317,7 @@ ExternalProject_Add( raja
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND} VERBOSE=1
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -390,7 +390,7 @@ list(APPEND build_list chai )
 ################################
 if (ENABLE_CALIPER)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
-    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.0.tar.gz")
+    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.2.tar.gz")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
     ExternalProject_Add( adiak
@@ -413,6 +413,7 @@ if (ENABLE_CALIPER)
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                        )
 
 
@@ -736,7 +737,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-07a8def6f8b7dfdffa4208d962f08f5e5d80ccaa.zip")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-b93beb946541cd425749254f511e1d805e944fea.zip")
   set( HYPRE_DEPENDS "" )
 
 
