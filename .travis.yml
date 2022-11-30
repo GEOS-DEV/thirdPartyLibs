@@ -128,13 +128,13 @@ jobs:
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - INSTALL_DIR=/opt/GEOSX/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-  - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-11.1.1)
+  - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-11.2.2)
     <<: *geosx_linux_build
     env:
-    - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda11.1.1
+    - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda11.2.2
     - DOCKERFILE=docker/clang-cuda/Dockerfile
-  - name: Centos (7.9, gcc 8.3.1, open-mpi 1.10.7, cuda 11.1.1)
+  - name: Centos (7.9, gcc 8.3.1, open-mpi 1.10.7, cuda 11.2.2)
     <<: *geosx_linux_build
     env:
-    - DOCKER_REPOSITORY=geosx/centos7.9-gcc8.3.1-cuda11.1.1
+    - DOCKER_REPOSITORY=geosx/centos7.9-gcc8.3.1-cuda11.2.2
     - DOCKERFILE=docker/gcc-cuda/Dockerfile

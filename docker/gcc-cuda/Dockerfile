@@ -1,5 +1,5 @@
 ARG TMP_DIR=/tmp
-FROM nvidia/cuda:11.1.1-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:11.2.2-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
