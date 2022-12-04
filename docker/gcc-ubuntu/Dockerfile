@@ -118,3 +118,7 @@ RUN apt-get install -y --no-install-recommends \
     libxml2-utils \
     git \
     ghostscript
+
+# Install python packages required for testing
+RUN apt-get install -y --no-install-recommends python3-pip
+RUN python3 -m pip install yapf
