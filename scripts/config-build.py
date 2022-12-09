@@ -78,6 +78,11 @@ def parse_args(cli_arguments):
                         action='store_true',
                         help="create an eclipse project file.")
 
+    parser.add_argument("-n",
+                        "--ninja",
+                        action='store_true', 
+                        help="Create a ninja project.")
+
     parser.add_argument("-x",
                         "--xcode",
                         action='store_true',
@@ -177,6 +182,9 @@ def main(calling_script, args, unknown_args):
 
     if args.eclipse:
         cmake_line.append('-G"Eclipse CDT4 - Unix Makefiles"')
+
+    if args.ninja:
+        cmake_line.append('-GNinja')
 
     if args.xcode:
         cmake_line.append('-GXcode')
