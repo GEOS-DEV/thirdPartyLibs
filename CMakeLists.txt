@@ -1229,7 +1229,7 @@ if( ENABLE_FESAPI )
     # Then Fesapi
     #
     set(FESAPI_DIR "${CMAKE_INSTALL_PREFIX}/fesapi")
-    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.4.0.0.tar.gz")
+    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.5.0.0.tar.gz")
     message(STATUS "Building Fesapi found at ${FESAPI_URL}")
 
     ExternalProject_Add( fesapi
@@ -1239,11 +1239,13 @@ if( ENABLE_FESAPI )
                         BUILD_COMMAND make -j ${NUM_PROC}
                         INSTALL_COMMAND make install
                         DEPENDS hdf5 minizip boost
-                        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}                                    
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
+                                    -DHDF5_PREFER_PARALLEL:BOOL=TRUE
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
