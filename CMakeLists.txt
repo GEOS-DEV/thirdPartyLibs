@@ -1244,6 +1244,7 @@ if( ENABLE_FESAPI )
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+                                    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=TRUE
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}                                                                        
                                     -DHDF5_PREFER_PARALLEL:BOOL=TRUE
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
