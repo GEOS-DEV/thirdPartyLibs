@@ -7,7 +7,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 # Installing dependencies
 RUN rm /etc/apt/sources.list.d/*.list \
     && apt-get update \
-    && apt-get install -y --no-install-recommends \ 
+    && apt-get install -y --no-install-recommends \
     curl \
     gfortran \
     libtbb2 \
@@ -16,17 +16,15 @@ RUN rm /etc/apt/sources.list.d/*.list \
     zlib1g-dev \
     openmpi-bin \
     libopenmpi-dev \
-    python3
+    python3 \
+    clang
 
 # Installing latest CMake version available on Lassen
 ARG CMAKE_VERSION=3.21.7
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
-# Installing clang
-RUN curl -fsSL http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz | tar --directory=/usr/local --strip-components=1 -xJf -
-
-ENV CC=/usr/local/bin/clang \
-    CXX=/usr/local/bin/clang++ \
+ENV CC=/usr/bin/clang \
+    CXX=/usr/bin/clang++ \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
