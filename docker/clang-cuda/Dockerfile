@@ -1,6 +1,9 @@
 ARG TMP_DIR=/tmp
 FROM nvidia/cuda:11.2.2-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
+ENV TZ=America/Los_Angeles
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
