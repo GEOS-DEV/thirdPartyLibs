@@ -1,7 +1,9 @@
 ARG TMP_DIR=/tmp
 FROM nvidia/cuda:11.2.2-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
+
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && \
     dpkg-reconfigure -f noninteractive tzdata
 
 ARG INSTALL_DIR
