@@ -1,28 +1,24 @@
 ARG TMP_DIR=/tmp
 FROM nvidia/cuda:11.2.2-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
-
-RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && \
-    dpkg-reconfigure -f noninteractive tzdata
-
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
-# Installing dependencies
-RUN rm /etc/apt/sources.list.d/*.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-    curl \
-    gfortran \
-    libtbb2 \
-    libblas-dev \
-    liblapack-dev \
-    zlib1g-dev \
-    openmpi-bin \
-    libopenmpi-dev \
-    python3 \
-    clang
+# Installing dependencies, non interactive definition of time zone (tzdata).
+RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
+    rm /etc/apt/sources.list.d/*.list && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        curl \
+        gfortran \
+        libtbb2 \
+        libblas-dev \
+        liblapack-dev \
+        zlib1g-dev \
+        openmpi-bin \
+        libopenmpi-dev \
+        python3 \
+        clang
 
 # Installing latest CMake version available on Lassen
 ARG CMAKE_VERSION=3.21.7
