@@ -1085,6 +1085,7 @@ if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
     set( VTK_URL "${TPL_MIRROR_DIR}/VTK-59d89108f4.tar.gz" )
 
+
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
     # Depending on the platfor, the install directory could be 'lib' or 'lib64'.
@@ -1092,6 +1093,12 @@ if( ENABLE_VTK )
     # Defining explicitly 'lib' deals with this issue.
     # I'm no cmake expert and I do not know if there was a better way to deal with it.
     set( VTK_CMAKE_INSTALL_LIBDIR "lib" )
+
+    # This compile option will enclose all of the VTK library within a vtk_geosx namespace.
+    # This mangling is needed in order to ensure that the VTK included with geosx does
+    # not interfere with another VTK version that may be linked dynamically at runtime
+    # (when using ParaView's Catalyst implementation for example).
+    set( VTK_ABI_NAMESPACE_NAME "vtk_geosx" )
 
 if( ENABLE_MPI )
     set( VTK_C_COMPILER ${MPI_C_COMPILER} )
@@ -1111,7 +1118,6 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/VTK-ABI.patch
@@ -1140,7 +1146,8 @@ endif( ENABLE_MPI )
                                     -D VTK_MODULE_ENABLE_VTK_IOXML=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOLegacy=YES
                                     -D VTK_BUILD_TESTING=OFF
-                                    -D VTK_LEGACY_REMOVE=ON )
+                                    -D VTK_LEGACY_REMOVE=ON 
+                                    -D VTK_ABI_NAMESPACE_NAME=${VTK_ABI_NAMESPACE_NAME} )
 
     list( APPEND build_list vtk )
 endif( ENABLE_VTK )

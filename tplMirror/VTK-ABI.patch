@@ -1,0 +1,65 @@
+diff --git a/Common/Core/vtkValueFromString.cxx b/Common/Core/vtkValueFromString.cxx
+index 9e619a87a5..93ca79486d 100644
+--- a/Common/Core/vtkValueFromString.cxx
++++ b/Common/Core/vtkValueFromString.cxx
+@@ -203,6 +203,8 @@ const char* ParseInt(const char* it, const char* end, bool minus_sign, int base,
+ }
+ }
+ 
++VTK_ABI_NAMESPACE_BEGIN
++
+ // Overload for integers
+ template <typename T,
+   typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type =
+diff --git a/Filters/Core/vtkFieldDataToDataSetAttribute.cxx b/Filters/Core/vtkFieldDataToDataSetAttribute.cxx
+index 9a8b23c67b..d8a451eca8 100644
+--- a/Filters/Core/vtkFieldDataToDataSetAttribute.cxx
++++ b/Filters/Core/vtkFieldDataToDataSetAttribute.cxx
+@@ -28,6 +28,7 @@
+ 
+ #include <set>
+ 
++VTK_ABI_NAMESPACE_BEGIN
+ vtkStandardNewMacro(vtkFieldDataToDataSetAttribute);
+ 
+ //------------------------------------------------------------------------------
+diff --git a/Rendering/LICOpenGL2/vtkCompositeSurfaceLICMapper.cxx b/Rendering/LICOpenGL2/vtkCompositeSurfaceLICMapper.cxx
+index 6b00e7ff0f..b8d879ac9b 100644
+--- a/Rendering/LICOpenGL2/vtkCompositeSurfaceLICMapper.cxx
++++ b/Rendering/LICOpenGL2/vtkCompositeSurfaceLICMapper.cxx
+@@ -54,6 +54,8 @@
+ 
+ #include "vtkSurfaceLICInterface.h"
+ 
++VTK_ABI_NAMESPACE_BEGIN
++
+ vtkStandardNewMacro(vtkCompositeSurfaceLICMapper);
+ //------------------------------------------------------------------------------
+ vtkCompositeSurfaceLICMapper::vtkCompositeSurfaceLICMapper() = default;
+diff --git a/Rendering/OpenGL2/vtkOpenGLBatchedPolyDataMapper.cxx b/Rendering/OpenGL2/vtkOpenGLBatchedPolyDataMapper.cxx
+index d46b537d33..1ea50351bf 100644
+--- a/Rendering/OpenGL2/vtkOpenGLBatchedPolyDataMapper.cxx
++++ b/Rendering/OpenGL2/vtkOpenGLBatchedPolyDataMapper.cxx
+@@ -42,7 +42,6 @@
+ #include "vtkUnsignedIntArray.h"
+ #include <sstream>
+ 
+-VTK_ABI_NAMESPACE_BEGIN
+ namespace
+ {
+ template <typename T>
+@@ -64,6 +63,8 @@ private:
+ 
+ } // end anonymous namespace
+ 
++VTK_ABI_NAMESPACE_BEGIN
++
+ //------------------------------------------------------------------------------
+ vtkStandardNewMacro(vtkOpenGLBatchedPolyDataMapper);
+ 
+@@ -1643,3 +1644,5 @@ int vtkOpenGLBatchedPolyDataMapper::CanUseTextureMapForColoring(vtkDataObject*)
+ 
+   return 1;
+ }
++
++VTK_ABI_NAMESPACE_END
