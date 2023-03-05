@@ -5,7 +5,7 @@ vm:
 geosx_osx_build: &geosx_osx_build
   stage: build
   os: osx
-  osx_image: xcode13.2
+  osx_image: xcode13.4
   install:
   - BREW_OPENMPI_VERSION=4.1.1
   - BREW_OPENMPI_TAP=${USER}/local-open-mpi
@@ -16,17 +16,16 @@ geosx_osx_build: &geosx_osx_build
   - git lfs install
   - git lfs pull
   script:
-  - GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
-  - python scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -ip ${GEOSX_TPL_DIR} -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -DENABLE_VTK:BOOL=OFF
+  - GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
+  - GEOSX_TPL_DIR=${GEOSX_DIR}/GEOSX_TPL
+  - python3 scripts/config-build.py -hc ${TRAVIS_BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -ip ${GEOSX_TPL_DIR} -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -DENABLE_VTK:BOOL=OFF -DENABLE_TRILINOS:BOOL=OFF
   - cd build-darwin-clang-release
   - make
-  # The deployment phase is done here because the `deploy` stage of travis does not work for PR.
-  # We impose 3.9 version as a workaround the update to protobuf/googlecloud-storage - To be challenged if upgrade at some point.
-  - brew upgrade python@3.9
-  - python3.9 -m pip install google-cloud-storage
+  # The deployment phase is done here because the `deploy` stage of travis does not work for PR.  
+  - python3 -m pip install google-cloud-storage
   - cd ${TRAVIS_BUILD_DIR}
   - openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  - python3.9 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_OPENMPI_VERSION}
+  - python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_OPENMPI_VERSION}
 
 geosx_linux_build: &geosx_linux_build
   stage: build
@@ -84,6 +83,22 @@ jobs:
     - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-CPU.cmake
     - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
+  - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
+    - DOCKERFILE=docker/Stanford/Dockerfile
+    - DOCKER_ROOT_IMAGE=jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+    - HOST_CONFIG=docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10.cmake
+    - INSTALL_DIR=/home/groups/tchelepi/geosx-sherlock/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
+  - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
+    <<: *geosx_linux_build
+    env:
+    - DOCKER_REPOSITORY=geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
+    - DOCKERFILE=docker/Stanford/Dockerfile
+    - DOCKER_ROOT_IMAGE=jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+    - HOST_CONFIG=docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
+    - INSTALL_DIR=/home/groups/tchelepi/geosx-sherlock/GPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
   - name: Mac OSX
     <<: *geosx_osx_build
   - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
@@ -112,10 +127,10 @@ jobs:
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
     - INSTALL_DIR=/opt/GEOSX/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
-  - name: Ubuntu (18.04, clang 8.0.0 + gcc 8.3.1, open-mpi 2.1.1, cuda-10.1.243)
+  - name: Ubuntu (20.04, clang 10.0.0 + gcc 9.4.0, open-mpi 4.0.3, cuda-11.2.152)
     <<: *geosx_linux_build
     env:
-    - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
+    - DOCKER_REPOSITORY=geosx/ubuntu20.04-clang10.0.0-cuda11.2.152
     - DOCKERFILE=docker/clang-cuda/Dockerfile
   - name: Centos (7.6, gcc 8.3.1, open-mpi 1.10.7, cuda 10.1.243)
     <<: *geosx_linux_build

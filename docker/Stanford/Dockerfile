@@ -9,9 +9,9 @@ RUN yum install -y \
     python3 \
     zlib-devel
 
-# centos:7.6 offers a 2.8 version of cmake which is too old.
-ARG CMAKE_VERSION=3.19.8
-RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+# centos:7.9
+ARG CMAKE_VERSION=3.20.3
+RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 

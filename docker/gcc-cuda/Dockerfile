@@ -80,7 +80,6 @@ RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_V
 
 # Installing dependencies
 RUN yum -y install \
-    make \
     tbb \
     blas-devel \
     lapack-devel \
@@ -107,6 +106,7 @@ ENV OMPI_FC=${FC}
 
 RUN yum install -y \
     tbb-devel \
+    make \
     bc \
     file \
     bison \
@@ -144,3 +144,5 @@ RUN yum install -y \
     texlive \
     graphviz \
     git
+
+RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
