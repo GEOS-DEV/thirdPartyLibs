@@ -103,21 +103,20 @@ jobs:
     <<: *geosx_osx_build
   - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
     <<: *geosx_linux_build
-    env:
+    before_script:
     - GCC_MAJOR_VERSION=9
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
-    before_script:
     - DOCKER_ROOT_IMAGE=ubuntu:20.04
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
-  - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3)
+  - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3) - github codespaces
     <<: *geosx_linux_build
-    env:
+    before_script:
+    # This docker root image brings the components to use github's codespaces feature.
+    - DOCKER_ROOT_IMAGE=mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
     - GCC_MAJOR_VERSION=10
     - DOCKER_REPOSITORY=geosx/ubuntu20.04-gcc${GCC_MAJOR_VERSION}
     - DOCKERFILE=docker/gcc-ubuntu/Dockerfile
-    before_script:
-    - DOCKER_ROOT_IMAGE=ubuntu:20.04
     - DOCKER_COMPILER_BUILD_ARG="--build-arg GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}"
   - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
     <<: *geosx_linux_build
