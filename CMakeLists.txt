@@ -737,7 +737,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-52802b646e371663095d9a15b70f51d30c353975.zip")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-461b6eee60b05ee735ad54a66878bf44be31b5dc.tar.gz")
   set( HYPRE_DEPENDS "" )
 
 
@@ -845,7 +845,7 @@ if(ENABLE_SUITESPARSE)
     elseif( GEOSX_GLOBALINDEX_TYPE_FLAG EQUAL 2 )
         set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     endif()
- 
+
     set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
     set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
     set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
@@ -1191,9 +1191,9 @@ if( ENABLE_FESAPI )
     #
     # ENABLE Minizip
     #
-    
+
     # Depending on the platform, the install directory could be 'lib' or 'lib64'.
-    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit 
+    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit
     # path thus it has to be fixed regardless of the platform
     set( MINIZIP_CMAKE_INSTALL_LIBDIR "lib" )
 
@@ -1241,14 +1241,14 @@ if( ENABLE_FESAPI )
                         DEPENDS hdf5 minizip boost
                         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}                                    
+                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
                                     -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
-                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost                                    
+                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost
                                     -DWITH_EXAMPLE:BOOL=OFF
                                     -DWITH_DOTNET_WRAPPING:BOOL=OFF
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
