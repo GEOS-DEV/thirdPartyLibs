@@ -306,8 +306,8 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.03.0.tar.gz")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.10.5.tar.gz")
+# set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -318,6 +318,7 @@ ExternalProject_Add( raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND} VERBOSE=1
+                    #  BUILD_COMMAND make VERBOSE=1
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -325,7 +326,8 @@ ExternalProject_Add( raja
                                 -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                # -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
@@ -337,6 +339,7 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D RAJA_ENABLE_VECTORIZATION:BOOL=OFF
                     )
 
 list(APPEND build_list raja )
@@ -346,7 +349,8 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
+# set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.10.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
