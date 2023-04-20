@@ -1229,7 +1229,7 @@ if( ENABLE_FESAPI )
     # Then Fesapi
     #
     set(FESAPI_DIR "${CMAKE_INSTALL_PREFIX}/fesapi")
-    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.6.0.0.tar.gz")
+    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.7.0.0.tar.gz")
     message(STATUS "Building Fesapi found at ${FESAPI_URL}")
 
     ExternalProject_Add( fesapi
