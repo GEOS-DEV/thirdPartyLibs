@@ -25,7 +25,7 @@ echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL
 ssh $MACHINE -t "
 . /etc/profile  &&
 cd $PWD &&
-module load cmake/3.22.4 &&
+module load cmake/3.23.1 &&
 python3 scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
 cd build-$CONFIG-release &&
 $GET_A_NODE make &&
