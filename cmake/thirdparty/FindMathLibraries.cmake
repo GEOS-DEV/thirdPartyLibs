@@ -6,7 +6,9 @@ if( ENABLE_MKL )
     endif()
 
     message( STATUS "MKL found" )
-
+    message( "MKL_INCLUDE_DIRS=${MKL_INCLUDE_DIRS}" )
+    message( "MKL_LIBRARIES=${MKL_LIBRARIES}" )
+    
     set( BLAS_LIBRARIES "${MKL_LIBRARIES}" CACHE STRING "" FORCE )
     set( LAPACK_LIBRARIES "${MKL_LIBRARIES}" CACHE STRING "" FORCE) 
 

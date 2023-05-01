@@ -20,13 +20,13 @@ LOG_FILE=$CONFIG.log
 HOST_CONFIG=$GEOSX_DIR/host-configs/LLNL/$CONFIG.cmake
 INSTALL_DIR=$INSTALL_DIR/install-$CONFIG-release
 
-echo "Building the TPLs for $HOST_CONFIG to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
+echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
 ssh $MACHINE -t "
 . /etc/profile  &&
 cd $PWD &&
-module load cmake/3.22.4 &&
-python scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
+module load cmake/3.23.1 &&
+python3 scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
 cd build-$CONFIG-release &&
 $GET_A_NODE make &&
 exit" > $LOG_FILE 2>&1
