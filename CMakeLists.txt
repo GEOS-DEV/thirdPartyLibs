@@ -306,8 +306,8 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.03.0.tar.gz")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.10.5.tar.gz")
+#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -346,7 +346,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.10.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -1071,7 +1071,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.1.0.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.2.6.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1099,9 +1099,9 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-disable_traits.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-duplicate-points-fix.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-cmake-fix.patch
+#                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-disable_traits.patch
+#                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-duplicate-points-fix.patch
+#                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-cmake-fix.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
