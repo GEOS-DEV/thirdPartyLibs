@@ -1232,6 +1232,10 @@ if( ENABLE_FESAPI )
     set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.4.0.0.tar.gz")
     message(STATUS "Building Fesapi found at ${FESAPI_URL}")
 
+    if( CMAKE_BUILD_TYPE MATCHES Debug )
+        set(minizip_postfix "_d")
+    endif()
+
     ExternalProject_Add( fesapi
                         URL ${FESAPI_URL}
                         PREFIX ${PROJECT_BINARY_DIR}/fesapi
@@ -1245,7 +1249,7 @@ if( ENABLE_FESAPI )
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
-                                    -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
+                                    -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip${minizip_postfix}.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
                                     -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
                                     -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost
