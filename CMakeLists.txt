@@ -343,7 +343,7 @@ ExternalProject_Add( raja
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
-                     BUILD_COMMAND ${TPL_BUILD_COMMAND} VERBOSE=1
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
