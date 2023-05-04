@@ -55,7 +55,7 @@ option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
-set(NUM_PROC "16" CACHE STRING "")
+set(NUM_PROC "1" CACHE STRING "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
@@ -306,8 +306,8 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.10.5.tar.gz")
-#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
+#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.10.5.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/raja-c1ff3a6e0e3599be4174a89283983297474f1ddc.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -326,10 +326,11 @@ ExternalProject_Add( raja
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D RAJA_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CUDA_ARCH}
+                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_TESTS:BOOL=OFF
                                 -D ENABLE_EXAMPLES:BOOL=OFF
@@ -346,7 +347,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.10.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-36297e526706a805957b3fb77425cec1de864227.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -364,8 +365,10 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
