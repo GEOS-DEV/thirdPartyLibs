@@ -75,8 +75,8 @@ RUN yum install -y \
     devtoolset-8-gcc-gfortran
 
 # Installing latest CMake version available on Lassen
-ARG CMAKE_VERSION=3.17.5
-RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+ARG CMAKE_VERSION=3.22.6
+RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 # Installing dependencies
 RUN yum -y install \
