@@ -1137,7 +1137,7 @@ endif( ENABLE_VTK )
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-8.0.1.tar.gz")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-9.1.0.tar.gz")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
