@@ -55,7 +55,7 @@ option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
-set(NUM_PROC "1" CACHE STRING "")
+set(NUM_PROC "36" CACHE STRING "")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
@@ -322,9 +322,7 @@ ExternalProject_Add( raja
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D RAJA_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
@@ -961,7 +959,8 @@ prefix    = ${SCOTCH_DIR}
     file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
     if ( NOT DEFINED SCOTCH_NUM_PROC )
-      set( SCOTCH_NUM_PROC ${NUM_PROC} )
+#      set( SCOTCH_NUM_PROC ${NUM_PROC} )
+      set( SCOTCH_NUM_PROC 2 )
     endif()
     ExternalProject_Add( scotch
                          URL ${SCOTCH_URL}
@@ -1102,15 +1101,13 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-#                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-disable_traits.patch
-#                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-duplicate-points-fix.patch
-#                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-cmake-fix.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
+				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}		
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
