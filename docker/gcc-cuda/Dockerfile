@@ -75,7 +75,7 @@ RUN yum install -y \
     devtoolset-8-gcc-gfortran
 
 # Installing latest CMake version available on Lassen
-ARG CMAKE_VERSION=3.22.6
+ARG CMAKE_VERSION=3.23.1
 RUN curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 # Installing dependencies
@@ -121,6 +121,8 @@ ARG HOST_CONFIG
 
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
+ARG CMAKE_CUDA_ARCHITECTURES=70
+
 ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
 ENV HYPRE_CUDA_SM=70
@@ -130,6 +132,7 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR} \
     -DCUDA_ARCH=${CUDA_ARCH} \
+    -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
 WORKDIR ${TPL_BUILD_DIR}
 RUN make

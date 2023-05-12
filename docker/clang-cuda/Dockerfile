@@ -21,7 +21,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         clang
 
 # Installing latest CMake version available on Lassen
-ARG CMAKE_VERSION=3.21.7
+ARG CMAKE_VERSION=3.23.1
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 ENV CC=/usr/bin/clang \
@@ -57,6 +57,7 @@ ARG HOST_CONFIG
 
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
+ARG CMAKE_CUDA_ARCHITECTURES=70
 ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 
 ENV HYPRE_CUDA_SM=70
@@ -68,6 +69,7 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_HYPRE_CUDA=${ENABLE_CUDA} \
     -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR} \
     -DCUDA_ARCH=${CUDA_ARCH} \
+    -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
