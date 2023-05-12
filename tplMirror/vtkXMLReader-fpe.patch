@@ -1,5 +1,5 @@
---- vtkXMLReader.cxx	2023-02-14 20:03:53.000000000 -0800
-+++ vtkXMLReader.cxx.new	2023-05-12 08:52:36.017274000 -0700
+--- IO/XML/vtkXMLReader.cxx	2023-02-14 20:03:53.000000000 -0800
++++ IO/XML/vtkXMLReader.cxx.patch	2023-05-12 08:52:36.017274000 -0700
 @@ -1958,7 +1958,7 @@
    if (!this->AbortExecute)
    {
