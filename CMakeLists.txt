@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.23.1)
 ################################
 # GEOS_TPL
 ################################
@@ -55,7 +55,12 @@ option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
-set(NUM_PROC "36" CACHE STRING "")
+include(ProcessorCount)
+ProcessorCount(NUM_CORES)
+			    
+set(NUM_PROC ${NUM_CORES} CACHE STRING "")
+message( "Running with NUM_PROC = ${NUM_PROC}")
+
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
