@@ -130,7 +130,9 @@ jobs:
         HOST_CONFIG: ${{ matrix.HOST_CONFIG }}
         DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE }}
 
-        PULL_REQUEST_NUMBER: ${{ github.event.number }}
+        # Test PR tag for now
+        PULL_REQUEST_NUMBER: Testing
+        #PULL_REQUEST_NUMBER: ${{ github.event.number }}
         BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
