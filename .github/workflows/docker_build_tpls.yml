@@ -46,7 +46,7 @@ jobs:
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: han12/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
             DOCKERFILE=: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: afranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+            DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
             HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
             INSTALL_DIR: /home/groups/tchelepi/geosx-sherlock/GPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
             OS: ubuntu-22.04
@@ -60,10 +60,10 @@ jobs:
           - name: Mac OSX
             OS: macos-12
           - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
-            DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc9
+            DOCKER_REPOSITORY: han12/ubuntu20.04-gcc9
             DOCKERFILE: docker/gcc-ubuntu/Dockerfile
             DOCKER_ROOT_IMAGE: ubuntu:20.04
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=11"
+            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
             OS: ubuntu-22.04
           - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3) - github codespaces
             DOCKER_REPOSITORY: han12/ubuntu20.04-gcc10
@@ -95,6 +95,7 @@ jobs:
         lfs: true
 
     - name: Set up Docker Buildx
+      if: contains(matrix.os, 'ubuntu-22.04')
       uses: docker/setup-buildx-action@v2
 
     # TODO Add details for pushing to Docker
