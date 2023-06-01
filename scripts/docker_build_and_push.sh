@@ -32,7 +32,10 @@ then
   BREW_OPENMPI_TAP=${USER}/local-open-mpi
   brew tap-new ${BREW_OPENMPI_TAP}
   brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
-  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} git-lfs
+  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install \
+    ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
+    git-lfs \
+    gcc-11
   git lfs install
   git lfs pull
   GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
