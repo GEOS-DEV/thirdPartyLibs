@@ -23,69 +23,69 @@ jobs:
 
       matrix:
         include:
-          - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
-            DOCKER_REPOSITORY: han12/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
-            DOCKER_ROOT_IMAGE: totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
-            INSTALL_DIR: /workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
-            OS: ubuntu-22.04
-          - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 10.2.89p2)
-            DOCKER_REPOSITORY: han12/pecan-gpu-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
-            DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
-            HOST_CONFIG: docker/TotalEnergies/pecan-GPU.cmake
-            INSTALL_DIR: /data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
-            OS: ubuntu-22.04
-          - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
-            DOCKER_REPOSITORY: han12/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
-            DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
-            HOST_CONFIG: docker/TotalEnergies/pecan-CPU.cmake
-            INSTALL_DIR: /data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
-            OS: ubuntu-22.04
-          - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
-            DOCKER_REPOSITORY: han12/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
-            DOCKERFILE: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
-            HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10.cmake
-            INSTALL_DIR: /home/groups/tchelepi/geosx-sherlock/CPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
-            OS: ubuntu-22.04
-          - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
-            DOCKER_REPOSITORY: han12/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
-            DOCKERFILE: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
-            HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
-            INSTALL_DIR: /home/groups/tchelepi/geosx-sherlock/GPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
-            OS: ubuntu-22.04
+          # - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
+          #   DOCKER_REPOSITORY: han12/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
+          #   DOCKERFILE: docker/TotalEnergies/Dockerfile
+          #   DOCKER_ROOT_IMAGE: totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
+          #   INSTALL_DIR: /workrd/SCR/GEOSX/install/gcc8/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+          #   OS: ubuntu-22.04
+          # - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 10.2.89p2)
+          #   DOCKER_REPOSITORY: han12/pecan-gpu-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
+          #   DOCKERFILE: docker/TotalEnergies/Dockerfile
+          #   DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+          #   HOST_CONFIG: docker/TotalEnergies/pecan-GPU.cmake
+          #   INSTALL_DIR: /data/gpfs/Users/j0436735/travis-deployments/GPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+          #   OS: ubuntu-22.04
+          # - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
+          #   DOCKER_REPOSITORY: han12/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
+          #   DOCKERFILE: docker/TotalEnergies/Dockerfile
+          #   DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+          #   HOST_CONFIG: docker/TotalEnergies/pecan-CPU.cmake
+          #   INSTALL_DIR: /data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+          #   OS: ubuntu-22.04
+          # - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
+          #   DOCKER_REPOSITORY: han12/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
+          #   DOCKERFILE: docker/Stanford/Dockerfile
+          #   DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+          #   HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10.cmake
+          #   INSTALL_DIR: /home/groups/tchelepi/geosx-sherlock/CPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+          #   OS: ubuntu-22.04
+          # - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
+          #   DOCKER_REPOSITORY: han12/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
+          #   DOCKERFILE: docker/Stanford/Dockerfile
+          #   DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+          #   HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
+          #   INSTALL_DIR: /home/groups/tchelepi/geosx-sherlock/GPU/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+          #   OS: ubuntu-22.04
           - name: Mac OSX
             OS: macos-12
-          - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
-            DOCKER_REPOSITORY: han12/ubuntu20.04-gcc9
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
-            DOCKER_ROOT_IMAGE: ubuntu:20.04
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
-            OS: ubuntu-22.04
-          - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3) - github codespaces
-            DOCKER_REPOSITORY: han12/ubuntu20.04-gcc10
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
-            DOCKER_ROOT_IMAGE: mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=10"
-            OS: ubuntu-22.04
-          - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
-            DOCKER_ROOT_IMAGE: ubuntu:22.04
-            DOCKER_REPOSITORY: han12/ubuntu22.04-gcc11
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=11"
-            INSTALL_DIR: /opt/GEOSX/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
-            OS: ubuntu-22.04
-          - name: Ubuntu (20.04, clang 10.0.0 + gcc 9.4.0, open-mpi 4.0.3, cuda-11.2.152)
-            DOCKER_REPOSITORY: han12/ubuntu20.04-clang10.0.0-cuda11.2.152
-            DOCKERFILE: docker/clang-cuda/Dockerfile
-            OS: ubuntu-22.04
-          - name: Centos (7.6, gcc 8.3.1, open-mpi 1.10.7, cuda 10.1.243)
-            DOCKER_REPOSITORY: han12/centos7.6.1810-gcc8.3.1-cuda10.1.243
-            DOCKERFILE: docker/gcc-cuda/Dockerfile
-            OS: ubuntu-22.04
+          # - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
+          #   DOCKER_REPOSITORY: han12/ubuntu20.04-gcc9
+          #   DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+          #   DOCKER_ROOT_IMAGE: ubuntu:20.04
+          #   DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
+          #   OS: ubuntu-22.04
+          # - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3) - github codespaces
+          #   DOCKER_REPOSITORY: han12/ubuntu20.04-gcc10
+          #   DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+          #   DOCKER_ROOT_IMAGE: mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
+          #   DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=10"
+          #   OS: ubuntu-22.04
+          # - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
+          #   DOCKER_ROOT_IMAGE: ubuntu:22.04
+          #   DOCKER_REPOSITORY: han12/ubuntu22.04-gcc11
+          #   DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+          #   DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=11"
+          #   INSTALL_DIR: /opt/GEOSX/GEOSX_TPL-${{ github.event.number }}-${{github.run_number}}-${{ github.sha }}
+          #   OS: ubuntu-22.04
+          # - name: Ubuntu (20.04, clang 10.0.0 + gcc 9.4.0, open-mpi 4.0.3, cuda-11.2.152)
+          #   DOCKER_REPOSITORY: han12/ubuntu20.04-clang10.0.0-cuda11.2.152
+          #   DOCKERFILE: docker/clang-cuda/Dockerfile
+          #   OS: ubuntu-22.04
+          # - name: Centos (7.6, gcc 8.3.1, open-mpi 1.10.7, cuda 10.1.243)
+          #   DOCKER_REPOSITORY: han12/centos7.6.1810-gcc8.3.1-cuda10.1.243
+          #   DOCKERFILE: docker/gcc-cuda/Dockerfile
+          #   OS: ubuntu-22.04
 
     steps:
     - name: Checkout
