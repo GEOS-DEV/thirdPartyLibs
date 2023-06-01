@@ -1,7 +1,7 @@
 #!/bin/bash
 env
 
-if [ "$OS" == "ubuntu-latest" ]
+if [ "$OS" == "ubuntu-22.04" ]
 then
   # We save memory for the docker context
   echo .git > .dockerignore
@@ -28,31 +28,31 @@ then
 
 elif [ "$OS" == "macos-12" ]
 then
-  # It is not immediate to get the version of open-mpi we want.
-  # (The revision is identified through its git commit hash of
-  # the https://github.com/Homebrew/homebrew-core repository).
-  # To find the version, a convenient way is to browse
-  # the `Formula/open-mpi.rb` history.)
-  BREW_HASH=fd64066273528a594e1f83c9eba20556e925e51c
-  BREW_URL=https://raw.github.com/Homebrew/homebrew-core/${BREW_HASH}
-  brew update > /dev/null 2>&1
-  wget ${BREW_URL}/Formula/open-mpi.rb
-  HOMEBREW_NO_AUTO_UPDATE=1 brew install ./open-mpi.rb
-  for dep in `brew deps open-mpi.rb`; do brew install $dep; done
-  wget ${BREW_URL}/Formula/git-lfs.rb
-  HOMEBREW_NO_AUTO_UPDATE=1 brew install ./git-lfs.rb
-  for dep in `brew deps git-lfs.rb`; do brew install $dep; done
+  BREW_OPENMPI_VERSION=4.1.1
+  BREW_OPENMPI_TAP=${USER}/local-open-mpi
+  brew tap-new ${BREW_OPENMPI_TAP}
+  brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
+  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} git-lfs
   git lfs install
   git lfs pull
-  GEOSX_TPL_DIR=/usr/local/GEOSX/GEOSX_TPL && sudo mkdir -p -m a=rwx ${GEOSX_TPL_DIR}/..
-  python scripts/config-build.py -hc ${BUILD_DIR}/host-configs/darwin-clang.cmake -bt Release -ip ${GEOSX_TPL_DIR} -DNUM_PROC=$(nproc) -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF -DENABLE_VTK:BOOL=OFF
+  GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
+  GEOSX_TPL_DIR=${GEOSX_DIR}/GEOSX_TPL
+  python3 scripts/config-build.py \
+    -hc ${BUILD_DIR}/host-configs/darwin-clang.cmake \
+    -bt Release \
+    -ip ${GEOSX_TPL_DIR} \
+    -DNUM_PROC=$(nproc) \
+    -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF \
+    -DENABLE_VTK:BOOL=OFF \
+    -DENABLE_TRILINOS:BOOL=OFF
   cd build-darwin-clang-release
   make
 
-  python3 -m pip install google-cloud-storage 
-  cd ${BUILD_DIR}
-  openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
+  # TODO: Update Google Cloud authentication process
+  # python3 -m pip install google-cloud-storage 
+  # cd ${BUILD_DIR}
+  # openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
+  # python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
 
 else
   echo "os $OS not found"
