@@ -36,7 +36,7 @@ then
     ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
     git-lfs #\
   #  gcc@11
-  ls -R /
+  ls -R /usr/bin
   git lfs install
   git lfs pull
   GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
