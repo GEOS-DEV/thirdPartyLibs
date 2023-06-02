@@ -34,8 +34,8 @@ then
   brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
   HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install \
     ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
-    git-lfs #\
-  #  gcc@11
+    git-lfs \
+    gcc@11
   ls -R /usr/bin
   git lfs install
   git lfs pull
