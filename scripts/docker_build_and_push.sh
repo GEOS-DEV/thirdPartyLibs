@@ -37,6 +37,7 @@ then
     git-lfs \
     gcc@11
   ls -R /usr/bin
+  which gfortran
   git lfs install
   git lfs pull
   GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
