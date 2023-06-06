@@ -35,16 +35,13 @@ then
   HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install \
     ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
     git-lfs
-  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew reinstall --verbose \
-    gcc@11
-  #ls -R /usr/bin
   echo ?????????????????????
   brew info gcc@11
-  which gfortran
+  which gfortran-11
   which gcc
   whereis gcc
-  whereis gfortran
-  gfortran --version
+  whereis gfortran-11
+  gfortran-11 --version
   echo ?????????????????????
   git lfs install
   git lfs pull
