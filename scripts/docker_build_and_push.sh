@@ -59,7 +59,8 @@ then
   #   -DENABLE_VTK:BOOL=OFF \
   #   -DENABLE_TRILINOS:BOOL=OFF
   # cd build-darwin-clang-release
-  make
+  # make
+  exit 1
 
   # TODO: Update Google Cloud authentication process
   # python3 -m pip install google-cloud-storage 
