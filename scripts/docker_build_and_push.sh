@@ -45,6 +45,7 @@ then
   whereis mpifort
   whereis mpicc
   whereis mpicxx
+  printenv
   echo ?????????????????????
   git lfs install
   git lfs pull
@@ -59,8 +60,7 @@ then
   #   -DENABLE_VTK:BOOL=OFF \
   #   -DENABLE_TRILINOS:BOOL=OFF
   # cd build-darwin-clang-release
-  # make
-  exit 1
+  make
 
   # TODO: Update Google Cloud authentication process
   # python3 -m pip install google-cloud-storage 
