@@ -32,7 +32,7 @@ then
   BREW_OPENMPI_TAP=${USER}/local-open-mpi
   brew tap-new ${BREW_OPENMPI_TAP}
   brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
-  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install \
+  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install --verbose \
     ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
     git-lfs
   echo ?????????????????????
