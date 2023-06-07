@@ -42,20 +42,23 @@ then
   whereis gcc
   whereis gfortran-11
   gfortran-11 --version
+  whereis mpifort
+  whereis mpicc
+  whereis mpicxx
   echo ?????????????????????
   git lfs install
   git lfs pull
-  GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
-  GEOSX_TPL_DIR=${GEOSX_DIR}/GEOSX_TPL
-  python3 scripts/config-build.py \
-    -hc ${BUILD_DIR}/host-configs/darwin-clang.cmake \
-    -bt Release \
-    -ip ${GEOSX_TPL_DIR} \
-    -DNUM_PROC=$(nproc) \
-    -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF \
-    -DENABLE_VTK:BOOL=OFF \
-    -DENABLE_TRILINOS:BOOL=OFF
-  cd build-darwin-clang-release
+  # GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
+  # GEOSX_TPL_DIR=${GEOSX_DIR}/GEOSX_TPL
+  # python3 scripts/config-build.py \
+  #   -hc ${BUILD_DIR}/host-configs/darwin-clang.cmake \
+  #   -bt Release \
+  #   -ip ${GEOSX_TPL_DIR} \
+  #   -DNUM_PROC=$(nproc) \
+  #   -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF \
+  #   -DENABLE_VTK:BOOL=OFF \
+  #   -DENABLE_TRILINOS:BOOL=OFF
+  # cd build-darwin-clang-release
   make
 
   # TODO: Update Google Cloud authentication process
