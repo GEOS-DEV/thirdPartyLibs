@@ -57,7 +57,7 @@ then
   python3 -m pip install google-cloud-storage 
   cd ${BUILD_DIR}
   openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
+  python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_OPENMPI_VERSION}
 
 else
   echo "os $OS not found"
