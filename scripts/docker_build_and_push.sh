@@ -28,35 +28,16 @@ then
 
 elif [ "$OS" == "macos-12" ]
 then
-  ls /usr/local/bin
+  # Symbolic link so packages can find gfortran
   ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
-  ls /usr/local/bin
   BREW_OPENMPI_VERSION=4.1.1
   BREW_OPENMPI_TAP=${USER}/local-open-mpi
   brew tap-new ${BREW_OPENMPI_TAP}
   brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
-  # No nproc by default....
+  # Install coreutils to access nproc command
   HOMEBREW_NO_AUTO_UPDATE=1 brew install --verbose coreutils
   HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install --verbose \
-    ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
-    git-lfs
-  echo ?????????????????????
-  brew info gcc@11
-  which gfortran-11
-  which gfortran
-  which gcc
-  which nproc
-  whereis gcc
-  whereis gfortran-11
-  whereis gfortran
-  whereis nproc
-  gfortran-11 --version
-  gfortran --version
-  whereis mpifort
-  whereis mpicc
-  whereis mpicxx
-  printenv
-  echo ?????????????????????
+    ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION}
   git lfs install
   git lfs pull
   GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
@@ -73,10 +54,10 @@ then
   make
 
   # TODO: Update Google Cloud authentication process
-  # python3 -m pip install google-cloud-storage 
-  # cd ${BUILD_DIR}
-  # openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  # python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
+  python3 -m pip install google-cloud-storage 
+  cd ${BUILD_DIR}
+  openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
+  python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_HASH}
 
 else
   echo "os $OS not found"
