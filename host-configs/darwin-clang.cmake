@@ -4,7 +4,7 @@ message( "CONFIG_NAME = ${CONFIG_NAME}" )
 
 set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE PATH "")
-set(CMAKE_Fortran_COMPILER "/usr/local/bin/gfortran-11" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/local/bin/gfortran" CACHE PATH "")
 set(ENABLE_FORTRAN OFF CACHE BOOL "" FORCE)
 
 set(ENABLE_MPI ON CACHE PATH "")
