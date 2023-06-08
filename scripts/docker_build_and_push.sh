@@ -35,8 +35,8 @@ then
   brew tap-new ${BREW_OPENMPI_TAP}
   brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
   # Install coreutils to access nproc command
-  HOMEBREW_NO_AUTO_UPDATE=1 brew install --verbose coreutils
-  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install --verbose \
+  HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install \
     ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION}
   git lfs install
   git lfs pull
