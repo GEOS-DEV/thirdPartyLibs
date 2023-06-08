@@ -35,6 +35,8 @@ then
   BREW_OPENMPI_TAP=${USER}/local-open-mpi
   brew tap-new ${BREW_OPENMPI_TAP}
   brew extract --version=${BREW_OPENMPI_VERSION} open-mpi ${BREW_OPENMPI_TAP}
+  # No nproc by default....
+  HOMEBREW_NO_AUTO_UPDATE=1 brew install --verbose coreutils
   HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_MAKE_JOBS=$(nproc) brew install --verbose \
     ${BREW_OPENMPI_TAP}/open-mpi@${BREW_OPENMPI_VERSION} \
     git-lfs
@@ -43,9 +45,11 @@ then
   which gfortran-11
   which gfortran
   which gcc
+  which nproc
   whereis gcc
   whereis gfortran-11
   whereis gfortran
+  whereis nproc
   gfortran-11 --version
   gfortran --version
   whereis mpifort
