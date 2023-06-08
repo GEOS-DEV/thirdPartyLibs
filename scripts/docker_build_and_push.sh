@@ -28,6 +28,9 @@ then
 
 elif [ "$OS" == "macos-12" ]
 then
+  ls /usr/local/bin
+  ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+  ls /usr/local/bin
   BREW_OPENMPI_VERSION=4.1.1
   BREW_OPENMPI_TAP=${USER}/local-open-mpi
   brew tap-new ${BREW_OPENMPI_TAP}
@@ -38,10 +41,13 @@ then
   echo ?????????????????????
   brew info gcc@11
   which gfortran-11
+  which gfortran
   which gcc
   whereis gcc
   whereis gfortran-11
+  whereis gfortran
   gfortran-11 --version
+  gfortran --version
   whereis mpifort
   whereis mpicc
   whereis mpicxx
@@ -49,17 +55,17 @@ then
   echo ?????????????????????
   git lfs install
   git lfs pull
-  # GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
-  # GEOSX_TPL_DIR=${GEOSX_DIR}/GEOSX_TPL
-  # python3 scripts/config-build.py \
-  #   -hc ${BUILD_DIR}/host-configs/darwin-clang.cmake \
-  #   -bt Release \
-  #   -ip ${GEOSX_TPL_DIR} \
-  #   -DNUM_PROC=$(nproc) \
-  #   -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF \
-  #   -DENABLE_VTK:BOOL=OFF \
-  #   -DENABLE_TRILINOS:BOOL=OFF
-  # cd build-darwin-clang-release
+  GEOSX_DIR=/usr/local/GEOSX && sudo mkdir -p -m a=rwx ${GEOSX_DIR}
+  GEOSX_TPL_DIR=${GEOSX_DIR}/GEOSX_TPL
+  python3 scripts/config-build.py \
+    -hc ${BUILD_DIR}/host-configs/darwin-clang.cmake \
+    -bt Release \
+    -ip ${GEOSX_TPL_DIR} \
+    -DNUM_PROC=$(nproc) \
+    -DGEOSXTPL_ENABLE_DOXYGEN:BOOL=OFF \
+    -DENABLE_VTK:BOOL=OFF \
+    -DENABLE_TRILINOS:BOOL=OFF
+  cd build-darwin-clang-release
   make
 
   # TODO: Update Google Cloud authentication process
