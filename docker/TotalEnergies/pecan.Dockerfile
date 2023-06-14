@@ -10,7 +10,7 @@ ARG GCC_HOME=/apps/gcc/${GCC_VERSION}/x86_64
 ARG UCX_HOME=/hrtc/apps/devtools/ucx/${UCX_VERSION}/x86_64_nocuda/gcc/${GCC_VERSION}
 ARG OPENMPI_HOME=/hrtc/apps/mpi/openmpi/${OPENMPI_VERSION}/RDHPC/gcc/${GCC_VERSION}
 # While the installation directory is defined here, the patches and exact versions are still defined in the CUDA stage.
-ARG CUDA_HOME=/hrtc/apps/cuda/10.2.89/x86_64
+ARG CUDA_HOME=/hrtc/apps/cuda/11.2.0/x86_64
 
 FROM centos:7.7.1908 AS shared_components
 
@@ -143,13 +143,9 @@ ENV PATH=${GCC_HOME}/bin:${PATH} \
     LD_LIBRARY_PATH=${GCC_HOME}/lib64
 
 WORKDIR /tmp/src
-ADD https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run .
-ADD https://developer.download.nvidia.com/compute/cuda/10.2/Prod/patches/1/cuda_10.2.1_linux.run .
-ADD https://developer.download.nvidia.com/compute/cuda/10.2/Prod/patches/2/cuda_10.2.2_linux.run .
+ADD https://developer.download.nvidia.com/compute/cuda/11.2.0/local_installers/cuda_11.2.0_460.27.04_linux.run .
 RUN mkdir -p ${CUDA_HOME}
-RUN sh cuda_10.2.89_440.33.01_linux.run --silent --toolkit --no-man-page --installpath=${CUDA_HOME}
-RUN sh cuda_10.2.1_linux.run --silent --toolkit --no-man-page --installpath=${CUDA_HOME}
-RUN sh cuda_10.2.2_linux.run --silent --toolkit --no-man-page --installpath=${CUDA_HOME}
+RUN sh cuda_11.2.0_460.27.04_linux.run --silent --toolkit --no-man-page --installpath=${CUDA_HOME}
 
 FROM shared_components AS intel_stage
 
