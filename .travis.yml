@@ -80,7 +80,7 @@ jobs:
     env:
     - DOCKER_REPOSITORY=geosx/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
     - DOCKERFILE=docker/TotalEnergies/Dockerfile
-    - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2-no-geosx:0.0.1
+    - DOCKER_ROOT_IMAGE=totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.2.0-no-geosx:0.0.1
     - HOST_CONFIG=docker/TotalEnergies/pecan-CPU.cmake
     - INSTALL_DIR=/data/gpfs/Users/j0436735/travis-deployments/CPU/GEOSX_TPL-${TRAVIS_PULL_REQUEST}-${TRAVIS_BUILD_NUMBER}-${TRAVIS_COMMIT:0:7}
   - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
