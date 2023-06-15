@@ -24,7 +24,8 @@ then
   --label "org.opencontainers.image.title=Building environment for GEOSX" \
   .
 
-  docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+  # TODO: Update Docker authentication process
+  # docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
 elif [ "$OS" == "macos-12" ]
 then
@@ -54,10 +55,10 @@ then
   make
 
   # TODO: Update Google Cloud authentication process
-  python3 -m pip install google-cloud-storage 
-  cd ${BUILD_DIR}
-  openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
-  python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_OPENMPI_VERSION}
+  # python3 -m pip install google-cloud-storage 
+  # cd ${BUILD_DIR}
+  # openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv -in geosx-key.json.enc -out geosx-key.json -d
+  # python3 macosx_TPL_mngt.py ${GEOSX_TPL_DIR} geosx-key.json ${BREW_OPENMPI_VERSION}
 
 else
   echo "os $OS not found"
