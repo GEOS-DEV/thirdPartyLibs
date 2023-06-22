@@ -13,7 +13,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    #TODO: Change DOCKER_REPOSITORY root back to "geosx"
     strategy:
 
       # In-progress jobs will not be cancelled if there is a failure
@@ -128,10 +127,7 @@ jobs:
         INSTALL_DIR: ${{ matrix.INSTALL_DIR }}
         HOST_CONFIG: ${{ matrix.HOST_CONFIG }}
         DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE }}
-
-        # Test PR tag for now
-        PULL_REQUEST_NUMBER: Testing
-        #PULL_REQUEST_NUMBER: ${{ github.event.number }}
+        PULL_REQUEST_NUMBER: ${{ github.event.number }}
         BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
