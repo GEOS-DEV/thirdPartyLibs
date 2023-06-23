@@ -31,7 +31,7 @@ chgrp -R GEOS $INSTALL_DIR
 ./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz gcc-12 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
 ./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen gcc-8-cuda-11       "lalloc 1 -qpdebug" $@ &
 ./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-13-cuda-11       "lalloc 1 -qpdebug" $@ &
-
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-10-cuda-11       "lalloc 1 -qpdebug" $@ &
 
 wait
 echo "Complete"
