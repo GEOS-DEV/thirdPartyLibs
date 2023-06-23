@@ -14,7 +14,7 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 ################################
 # BLT
 ################################
-set( BLT_CXX_STD c++14 CACHE STRING "" FORCE )
+set( BLT_CXX_STD c++17 CACHE STRING "" FORCE )
 
 if (DEFINED BLT_SOURCE_DIR)
     # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
@@ -327,7 +327,6 @@ ExternalProject_Add( raja
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CUDA_ARCH:CACHE=${CUDA_ARCH}
 				-D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_TESTS:BOOL=OFF
