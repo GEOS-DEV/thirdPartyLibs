@@ -766,7 +766,7 @@ if( ENABLE_HYPRE )
     set( HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
   endif()
 
-  if( ENABLE_HYPRE_CUDA )
+  if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     list( APPEND HYPRE_DEPENDS chai )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
     set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
@@ -778,6 +778,8 @@ if( ENABLE_HYPRE )
 			   --with-umpire-lib-dirs=${CHAI_DIR}/lib \
   			   --with-umpire-libs=umpire " )
 
+  elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    message( FATAL_ERROR "hip tpls build only supported through spack" )
   endif()
 
   if( CMAKE_HOST_APPLE )
