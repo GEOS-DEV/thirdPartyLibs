@@ -21,7 +21,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         clang
 
 # Installing latest CMake version available on Lassen
-ARG CMAKE_VERSION=3.21.7
+ARG CMAKE_VERSION=3.23.1
 RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
 
 ENV CC=/usr/bin/clang \
