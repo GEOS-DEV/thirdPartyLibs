@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.23.1)
 ################################
 # GEOS_TPL
 ################################
@@ -55,7 +55,12 @@ option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
-set(NUM_PROC "16" CACHE STRING "")
+include(ProcessorCount)
+ProcessorCount(NUM_CORES)
+			    
+set(NUM_PROC ${NUM_CORES} CACHE STRING "")
+message( "Running with NUM_PROC = ${NUM_PROC}")
+
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
@@ -306,8 +311,8 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.03.0.tar.gz")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
+#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.10.5.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/raja-c1ff3a6e0e3599be4174a89283983297474f1ddc.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -325,9 +330,10 @@ ExternalProject_Add( raja
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D RAJA_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-				-D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
+                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_TESTS:BOOL=OFF
                                 -D ENABLE_EXAMPLES:BOOL=OFF
@@ -344,7 +350,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-36297e526706a805957b3fb77425cec1de864227.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -362,8 +368,10 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -958,7 +966,8 @@ prefix    = ${SCOTCH_DIR}
     file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
     if ( NOT DEFINED SCOTCH_NUM_PROC )
-      set( SCOTCH_NUM_PROC ${NUM_PROC} )
+#      set( SCOTCH_NUM_PROC ${NUM_PROC} )
+      set( SCOTCH_NUM_PROC 2 )
     endif()
     ExternalProject_Add( scotch
                          URL ${SCOTCH_URL}
@@ -1071,7 +1080,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.1.0.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.2.6.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1099,16 +1108,14 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-			 PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-disable_traits.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-duplicate-points-fix.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-cmake-fix.patch
-			       COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
+                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
+				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}		
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
