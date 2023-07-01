@@ -27,11 +27,11 @@ rm -rf toBeDeleted &
 echo "Building all LC TPLs from $GEOSX_DIR to be installed at $INSTALL_DIR"
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz clang@14 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz gcc@12 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang@upstream       "lalloc 1 -qpdebug" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang13-cuda11       "lalloc 1 -qpdebug" $@ &
-
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz clang-14 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz gcc-12 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen gcc-8-cuda-11       "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-13-cuda-11       "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-10-cuda-11       "lalloc 1 -qpdebug" $@ &
 
 wait
 echo "Complete"
