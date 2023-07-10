@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.23.1)
 project(geosx_tpl LANGUAGES C CXX Fortran)
 
 option( GEOSXTPL_ENABLE_DOXYGEN "" ON )
-if ( ENABLE_DOXYGEN EQUAL OFF )
+if ( ENABLE_DOXYGEN )
     set( GEOSXTPL_ENABLE_DOXYGEN "OFF" )
 endif()
 set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
