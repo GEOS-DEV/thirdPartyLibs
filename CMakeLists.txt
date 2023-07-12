@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.23.1)
 ################################
 # GEOS_TPL
 ################################
@@ -14,7 +14,7 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 ################################
 # BLT
 ################################
-set( BLT_CXX_STD c++14 CACHE STRING "" FORCE )
+set( BLT_CXX_STD c++17 CACHE STRING "" FORCE )
 
 if (DEFINED BLT_SOURCE_DIR)
     # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
@@ -55,7 +55,12 @@ option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
-set(NUM_PROC "16" CACHE STRING "")
+include(ProcessorCount)
+ProcessorCount(NUM_CORES)
+			    
+set(NUM_PROC ${NUM_CORES} CACHE STRING "")
+message( "Running with NUM_PROC = ${NUM_PROC}")
+
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
@@ -306,8 +311,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.10.5.tar.gz")
-# set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/raja-v2023.06.0-RC.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -323,15 +327,13 @@ ExternalProject_Add( raja
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS:PATH=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                # -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D RAJA_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
-                                -D CUDA_ARCH:CACHE=${CUDA_ARCH}
+                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_TESTS:BOOL=OFF
                                 -D ENABLE_EXAMPLES:BOOL=OFF
@@ -349,8 +351,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-# set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.10.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-d4a0a5700caed3858a8f285abc710cf7ac35fe59.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -368,8 +369,10 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -539,7 +542,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-13-4-0.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/Trilinos-trilinos-release-13-4-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -741,7 +744,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-52802b646e371663095d9a15b70f51d30c353975.zip")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-461b6eee60b05ee735ad54a66878bf44be31b5dc.tar.gz")
   set( HYPRE_DEPENDS "" )
 
 
@@ -772,7 +775,7 @@ if( ENABLE_HYPRE )
     set( HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
   endif()
 
-  if( ENABLE_HYPRE_CUDA )
+  if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     list( APPEND HYPRE_DEPENDS chai )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
     set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
@@ -784,6 +787,8 @@ if( ENABLE_HYPRE )
 			   --with-umpire-lib-dirs=${CHAI_DIR}/lib \
   			   --with-umpire-libs=umpire " )
 
+  elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    message( FATAL_ERROR "hip tpls build only supported through spack" )
   endif()
 
   if( CMAKE_HOST_APPLE )
@@ -849,7 +854,7 @@ if(ENABLE_SUITESPARSE)
     elseif( GEOSX_GLOBALINDEX_TYPE_FLAG EQUAL 2 )
         set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     endif()
- 
+
     set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
     set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
     set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
@@ -962,7 +967,7 @@ prefix    = ${SCOTCH_DIR}
     file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
     if ( NOT DEFINED SCOTCH_NUM_PROC )
-      set( SCOTCH_NUM_PROC ${NUM_PROC} )
+      set( SCOTCH_NUM_PROC 2 )
     endif()
     ExternalProject_Add( scotch
                          URL ${SCOTCH_URL}
@@ -970,7 +975,7 @@ prefix    = ${SCOTCH_DIR}
                          INSTALL_DIR ${SCOTCH_DIR}
                          BINARY_DIR ${SCOTCH_BUILD_DIR}
                          CONFIGURE_COMMAND cp ${PROJECT_BINARY_DIR}/scotch_makefile.inc ${SCOTCH_BUILD_DIR}/Makefile.inc
-                         BUILD_COMMAND make -j ${SCOTCH_NUM_PROC} ptscotch scotch ptesmumps esmumps
+                         BUILD_COMMAND make -j 2 ptscotch scotch ptesmumps esmumps
                          INSTALL_COMMAND make install
                        )
 
@@ -1075,7 +1080,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.1.0.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.2.6.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1103,15 +1108,14 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-disable_traits.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-duplicate-points-fix.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-cmake-fix.patch
+                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
+				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}		
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
@@ -1141,7 +1145,7 @@ endif( ENABLE_VTK )
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-8.0.1.tar.gz")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-10.0.0.tar.gz")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
@@ -1195,9 +1199,9 @@ if( ENABLE_FESAPI )
     #
     # ENABLE Minizip
     #
-    
+
     # Depending on the platform, the install directory could be 'lib' or 'lib64'.
-    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit 
+    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit
     # path thus it has to be fixed regardless of the platform
     set( MINIZIP_CMAKE_INSTALL_LIBDIR "lib" )
 
@@ -1245,14 +1249,14 @@ if( ENABLE_FESAPI )
                         DEPENDS hdf5 minizip boost
                         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}                                    
+                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
                                     -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
                                     -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
-                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost                                    
+                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost
                                     -DWITH_EXAMPLE:BOOL=OFF
                                     -DWITH_DOTNET_WRAPPING:BOOL=OFF
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
