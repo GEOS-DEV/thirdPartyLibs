@@ -12,6 +12,8 @@ then
   # Where the TPL are installed in the docker can be specified by parameter INSTALL_DIR.
   # Unlike DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
   DOCKER_TAG=${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}
+  echo "${DOCKER_USERNAME}"
+  echo "${DOCKER_REPOSITORY}:${DOCKER_TAG}"
   docker build ${DOCKER_COMPILER_BUILD_ARG} \
   --build-arg HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake} \
   --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE:-undefined} \
