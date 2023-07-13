@@ -24,5 +24,4 @@ docker build ${DOCKER_COMPILER_BUILD_ARG} \
 --label "org.opencontainers.image.title=Building environment for GEOSX" \
 .
 
-# TODO: Update Docker authentication process
-# docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
