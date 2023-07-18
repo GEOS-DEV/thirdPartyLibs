@@ -15,16 +15,16 @@ echo "Docker tag is ${DOCKER_REPOSITORY}:${DOCKER_TAG}"
 INSTALL_DIR=${INSTALL_DIR_ROOT:-/opt/GEOSX/GEOSX_TPL}-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
 echo "Installation directory is ${INSTALL_DIR}"
 
-#docker build ${DOCKER_COMPILER_BUILD_ARG} \
-#--build-arg HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake} \
-#--build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE:-undefined} \
-#--build-arg INSTALL_DIR=${INSTALL_DIR} \
-#--tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
-#--file ${DOCKERFILE} \
-#--label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
-#--label "org.opencontainers.image.source=https://github.com/GEOSX/thirdPartyLibs" \
-#--label "org.opencontainers.image.revision=${COMMIT}" \
-#--label "org.opencontainers.image.title=Building environment for GEOSX" \
-#.
-#
-#docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+docker build ${DOCKER_COMPILER_BUILD_ARG} \
+--build-arg HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake} \
+--build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE:-undefined} \
+--build-arg INSTALL_DIR=${INSTALL_DIR} \
+--tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
+--file ${DOCKERFILE} \
+--label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
+--label "org.opencontainers.image.source=https://github.com/GEOSX/thirdPartyLibs" \
+--label "org.opencontainers.image.revision=${COMMIT}" \
+--label "org.opencontainers.image.title=Building environment for GEOSX" \
+.
+
+docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
