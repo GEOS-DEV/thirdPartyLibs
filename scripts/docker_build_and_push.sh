@@ -10,11 +10,10 @@ echo .git > .dockerignore
 # Where the TPL are installed in the docker can be specified by parameter INSTALL_DIR.
 # Unlike DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
 DOCKER_TAG=${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}
-echo "${DOCKER_USERNAME}"
-echo "${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+echo "Docker tag is ${DOCKER_REPOSITORY}:${DOCKER_TAG}"
 
 INSTALL_DIR=${INSTALL_DIR_ROOT}-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
-echo "${INSTALL_DIR}"
+echo "Installation directory is ${INSTALL_DIR}"
 
 #docker build ${DOCKER_COMPILER_BUILD_ARG} \
 #--build-arg HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake} \
