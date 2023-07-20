@@ -324,6 +324,8 @@ ExternalProject_Add( raja
                      DEPENDS ${RAJA_DEPENDS}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND} VERBOSE=1
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/raja-stdexcept.patch
+                           COMMAND patch -p1 < ${TPL_MIRROR_DIR}/raja-cstdlib.patch
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
@@ -1244,7 +1246,7 @@ endif (ENABLE_CATALYST)
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-10.0.0.tar.gz")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-9.1.0.zip")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
