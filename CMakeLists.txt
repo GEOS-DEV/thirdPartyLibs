@@ -360,6 +360,8 @@ ExternalProject_Add( chai
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     PATCH_COMMAND 
+                                patch -p0 < ${TPL_MIRROR_DIR}/umpire.patch
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
