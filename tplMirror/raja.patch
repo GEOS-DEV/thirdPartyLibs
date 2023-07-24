@@ -1,0 +1,21 @@
+--- tpl/camp/include/camp/resource/host.hpp	2023-07-21 18:30:33.445333417 +0200
++++ tpl/camp/include/camp/resource/host.hpp.patch	2023-07-21 18:30:25.375381080 +0200
+@@ -11,6 +11,7 @@
+ #ifndef __CAMP_HOST_HPP
+ #define __CAMP_HOST_HPP
+ 
++#include <cstdlib>
+ #include "camp/resource/event.hpp"
+ #include "camp/resource/platform.hpp"
+ 
+--- tpl/camp/include/camp/resource.hpp	2023-06-12 17:18:04.329377349 +0200
++++ tpl/camp/include/camp/resource.hpp.patch	2023-06-12 17:18:22.615934478 +0200
+@@ -19,7 +19,7 @@
+ #include "camp/helpers.hpp"
+ #include "camp/resource/event.hpp" 
+ #include "camp/resource/host.hpp"
+-
++#include <stdexcept>
+ #if defined(CAMP_HAVE_CUDA)
+ #include "camp/resource/cuda.hpp"
+ #endif

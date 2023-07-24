@@ -320,6 +320,8 @@ ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
+                     PATCH_COMMAND 
+                        patch -p0 < ${TPL_MIRROR_DIR}/raja.patch
                      DEPENDS ${RAJA_DEPENDS}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND} VERBOSE=1
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -356,12 +358,12 @@ ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
+                     PATCH_COMMAND 
+                                patch -p0 < ${TPL_MIRROR_DIR}/umpire.patch
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                     CMAKE_GENERATOR ${TPL_GENERATOR}
-                     PATCH_COMMAND 
-                                patch -p0 < ${TPL_MIRROR_DIR}/umpire.patch
+                     CMAKE_GENERATOR ${TPL_GENERATOR}                     
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -386,7 +388,7 @@ ExternalProject_Add( chai
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
-				-D UMPIRE_ENABLE_C=ON
+				                -D UMPIRE_ENABLE_C=ON
                     )
 
 list(APPEND build_list chai )
