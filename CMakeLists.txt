@@ -987,8 +987,7 @@ endif()
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.19.4.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
