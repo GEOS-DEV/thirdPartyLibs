@@ -24,8 +24,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 # llnl-tpl-base.cmake contents
 
 # Set up the tpls
-set(GEOSX_TPL_ROOT_DIR /usr/gapps/GEOSX/thirdPartyLibs CACHE PATH "")
-set(GEOSX_TPL_DIR ${GEOSX_TPL_ROOT_DIR}/2023-07-07/install-${CONFIG_NAME}-release CACHE PATH "")
+#set(GEOSX_TPL_ROOT_DIR /usr/gapps/GEOSX/thirdPartyLibs CACHE PATH "")
+#set(GEOSX_TPL_DIR ${GEOSX_TPL_ROOT_DIR}/2023-07-07/install-${CONFIG_NAME}-release CACHE PATH "")
+set(GEOSX_TPL_DIR /usr/workspace/han12/thirdPartyLibs/install-lassen-eas-clang-14-cuda-11-release CACHE PATH "")
 ##########################################################
 
 
@@ -98,7 +99,8 @@ set(OpenMP_Fortran_FLAGS "-qsmp=omp" CACHE STRING "")
 set(OpenMP_Fortran_LIB_NAMES "" CACHE STRING "")
 
 # MPI
-set(MPI_HOME /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-13.0.1-gcc-8.3.1 CACHE PATH "")
+#set(MPI_HOME /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-13.0.1-gcc-8.3.1 CACHE PATH "")
+set(MPI_HOME /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-ibm-14.0.6 CACHE PATH "")
 set(MPI_Fortran_COMPILER /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19-cuda-11.8.0/bin/mpifort CACHE PATH "")
 
 #include(${CMAKE_CURRENT_LIST_DIR}/lassen-base.cmake)
@@ -141,7 +143,17 @@ set(ENABLE_CUDA_NVTOOLSEXT OFF CACHE BOOL "")
 # ESSL
 set(ENABLE_ESSL ON CACHE BOOL "" FORCE )
 set(ESSL_INCLUDE_DIRS /usr/tcetmp/packages/essl/essl-6.3.0.2/include CACHE STRING "" FORCE )
+#set(ESSL_LIBRARIES /usr/tcetmp/packages/essl/essl-6.3.0.2/lib64/libesslsmpcuda.so
+#                   ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcublas.so
+#                   ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcublasLt.so
+#                   ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcudart.so
+#                   /usr/tcetmp/packages/essl/essl-6.3.0.2/lib64/liblapackforessl.so
+#                   /usr/tcetmp/packages/essl/essl-6.3.0.2/lib64/liblapackforessl_.so
+#                   CACHE PATH "" FORCE )
 set(ESSL_LIBRARIES /usr/tcetmp/packages/essl/essl-6.3.0.2/lib64/libesslsmpcuda.so
+	           /usr/tce/packages/xl/xl-2023.06.28-cuda-11.8.0/alllibs/libxlsmp.so
+	           /usr/tce/packages/xl/xl-2023.06.28-cuda-11.8.0/alllibs/libxlfmath.so
+	           /usr/tce/packages/xl/xl-2023.06.28-cuda-11.8.0/alllibs/libxlf90_r.so
                    ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcublas.so
                    ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcublasLt.so
                    ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcudart.so
