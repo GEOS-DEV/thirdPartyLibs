@@ -10,9 +10,9 @@ set(CONFIG_NAME "lassen-eas-gcc-11-cuda-11" CACHE PATH "")
 #set(COMPILER_DIR  /usr/tce/packages/gcc/gcc-8.3.1)
 set(COMPILER_DIR /usr/tce/packages/xl/xl-2023.06.28-cuda-11.8.0)
 #set(CMAKE_C_COMPILER ${COMPILER_DIR}/bin/gcc CACHE PATH "")
-set(CMAKE_C_COMPILER ${COMPILER_DIR}/bin/xlc CACHE PATH "")
+set(CMAKE_C_COMPILER ${COMPILER_DIR}/bin/xlc_r CACHE PATH "")
 #set(CMAKE_CXX_COMPILER ${COMPILER_DIR}/bin/g++ CACHE PATH "")
-set(CMAKE_CXX_COMPILER ${COMPILER_DIR}/bin/xlC CACHE PATH "")
+set(CMAKE_CXX_COMPILER ${COMPILER_DIR}/bin/xlC_r CACHE PATH "")
 
 # C++ options
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -mcpu=power9 -mtune=power9" CACHE STRING "")
@@ -107,7 +107,7 @@ set(FORTRAN_MANGLE_NO_UNDERSCORE OFF CACHE BOOL "")
 # MPI
 #set(MPI_HOME /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1 CACHE PATH "")
 set(MPI_HOME /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2023.06.28-cuda-11.8.0 CACHE PATH "")
-set(MPI_Fortran_COMPILER ${MPI_HOME}/bin/mpifort CACHE PATH "")
+set(MPI_Fortran_COMPILER ${MPI_HOME}/bin/mpixlf CACHE PATH "")
 
 #include(${CMAKE_CURRENT_LIST_DIR}/lassen-base.cmake)
 
@@ -131,8 +131,8 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # MPI
 set(ENABLE_MPI ON CACHE BOOL "")
-set(MPI_C_COMPILER ${MPI_HOME}/bin/mpicc CACHE PATH "")
-set(MPI_CXX_COMPILER ${MPI_HOME}/bin/mpicxx CACHE PATH "")
+set(MPI_C_COMPILER ${MPI_HOME}/bin/mpixlc CACHE PATH "")
+set(MPI_CXX_COMPILER ${MPI_HOME}/bin/mpixlC CACHE PATH "")
 set(MPIEXEC lrun CACHE STRING "")
 set(MPIEXEC_NUMPROC_FLAG -n CACHE STRING "")
 set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "")
