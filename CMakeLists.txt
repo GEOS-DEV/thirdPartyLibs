@@ -1190,6 +1190,8 @@ if (ENABLE_CATALYST)
                                 -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                                 -DCMAKE_CXX_STANDARD=11
+                                -DADIOS2_USE_Fortran=OFF
+                                -DADIOS2_USE_MPI=ON
                                 -DNoGitVersionString:BOOL=ON
                                  )
 
@@ -1212,7 +1214,7 @@ if (ENABLE_CATALYST)
  
 
   set(CATALYST_IMPLEMENTATION_DIR "${CMAKE_INSTALL_PREFIX}/catalyst_implementation")
-  set(CATALYST_IMPLEMENTATION_URL "${TPL_MIRROR_DIR}/adioscatalyst-124a42d13c.tar.gz")
+  set(CATALYST_IMPLEMENTATION_URL "${TPL_MIRROR_DIR}/adioscatalyst-db414c63.tar.gz")
 
   set(ADIOS_CMAKE_PREFIX ${ADIOS_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/adios2/)
 
