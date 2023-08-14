@@ -311,7 +311,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/raja-v2023.06.0-RC.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.0.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -349,7 +349,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-d4a0a5700caed3858a8f285abc710cf7ac35fe59.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2023.06.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -423,7 +423,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.10.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -742,7 +742,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-461b6eee60b05ee735ad54a66878bf44be31b5dc.tar.gz")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.29.0.tar.gz")
   set( HYPRE_DEPENDS "" )
 
 
