@@ -921,7 +921,7 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v6.0.9.tar.gz" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.3.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
 
@@ -953,12 +953,12 @@ CFLAGS    = ${SCOTCH_C_FLAGS}
 CLIBFLAGS =
 LDFLAGS   = ${SCOTCH_LD_FLAGS}
 CP        = cp
-LEX       = flex -Pscotchyy -olex.yy.c
+FLEX      = flex
 LN        = ln
 MKDIR     = mkdir -p
 MV        = mv
 RANLIB    = ranlib
-YACC      = bison -pscotchyy -y -b y
+BISON     = bison
 prefix    = ${SCOTCH_DIR}
 " )
 
@@ -987,8 +987,7 @@ endif()
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.19.4.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
