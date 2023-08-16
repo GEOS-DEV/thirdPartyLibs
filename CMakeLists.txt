@@ -312,7 +312,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.1.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
