@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.23.1)
 ################################
 project(geosx_tpl LANGUAGES C CXX Fortran)
 
+set( ENABLE_DOXYGEN ON CACHE BOOL "" )
 option( GEOSXTPL_ENABLE_DOXYGEN "" ON )
 if ( NOT ENABLE_DOXYGEN )
     set( GEOSXTPL_ENABLE_DOXYGEN "OFF" )
@@ -311,7 +312,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/raja-v2023.06.0-RC.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.1.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -349,7 +350,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-d4a0a5700caed3858a8f285abc710cf7ac35fe59.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2023.06.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -423,7 +424,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.10.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -742,7 +743,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-461b6eee60b05ee735ad54a66878bf44be31b5dc.tar.gz")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.29.0.tar.gz")
   set( HYPRE_DEPENDS "" )
 
 
@@ -921,7 +922,7 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v6.0.9.tar.gz" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.3.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
 
@@ -953,12 +954,12 @@ CFLAGS    = ${SCOTCH_C_FLAGS}
 CLIBFLAGS =
 LDFLAGS   = ${SCOTCH_LD_FLAGS}
 CP        = cp
-LEX       = flex -Pscotchyy -olex.yy.c
+FLEX      = flex
 LN        = ln
 MKDIR     = mkdir -p
 MV        = mv
 RANLIB    = ranlib
-YACC      = bison -pscotchyy -y -b y
+BISON     = bison
 prefix    = ${SCOTCH_DIR}
 " )
 
@@ -987,8 +988,7 @@ endif()
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.19.4.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
