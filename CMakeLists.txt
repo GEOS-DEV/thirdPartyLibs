@@ -514,7 +514,7 @@ endif()
 # PUGIXML
 ################################
 set(PUGIXML_DIR "${CMAKE_INSTALL_PREFIX}/pugixml")
-set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.8.0.tar.gz")
+set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.13.tar.gz")
 
 message(STATUS "Building PUGIXML found at ${PUGIXML_URL}")
 
