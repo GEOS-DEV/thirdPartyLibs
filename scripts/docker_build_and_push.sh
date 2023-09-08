@@ -12,7 +12,7 @@ echo .git > .dockerignore
 DOCKER_TAG=${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}
 echo "Docker tag is ${DOCKER_REPOSITORY}:${DOCKER_TAG}"
 
-INSTALL_DIR=${INSTALL_DIR_ROOT}/GEOSX_TPL-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
+INSTALL_DIR=${INSTALL_DIR_ROOT}/GEOS_TPL-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
 echo "Installation directory is ${INSTALL_DIR}"
 
 docker build ${DOCKER_COMPILER_BUILD_ARG} \
@@ -22,9 +22,9 @@ docker build ${DOCKER_COMPILER_BUILD_ARG} \
 --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
 --file ${DOCKERFILE} \
 --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
---label "org.opencontainers.image.source=https://github.com/GEOSX/thirdPartyLibs" \
+--label "org.opencontainers.image.source=https://github.com/GEOS-DEV/thirdPartyLibs" \
 --label "org.opencontainers.image.revision=${COMMIT}" \
---label "org.opencontainers.image.title=Building environment for GEOSX" \
+--label "org.opencontainers.image.title=Building environment for GEOS" \
 .
 
 docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
