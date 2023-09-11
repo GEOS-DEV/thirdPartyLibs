@@ -30,13 +30,13 @@ jobs:
             DOCKERFILE: docker/TotalEnergies/Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx:0.0.1
             HOST_CONFIG: docker/TotalEnergies/pecan-GPU.cmake
-            INSTALL_DIR_ROOT: /data/gpfs/Users/j0436735/travis-deployments/GPU
+            INSTALL_DIR_ROOT: /shared/data1/Users/j0436735/travis-deployments/GPU
           - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
             DOCKER_REPOSITORY: geosx/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
             DOCKERFILE: docker/TotalEnergies/Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx:0.0.1
             HOST_CONFIG: docker/TotalEnergies/pecan-CPU.cmake
-            INSTALL_DIR_ROOT: /data/gpfs/Users/j0436735/travis-deployments/CPU
+            INSTALL_DIR_ROOT: /shared/data1/Users/j0436735/travis-deployments/CPU
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
             DOCKERFILE: docker/Stanford/Dockerfile
