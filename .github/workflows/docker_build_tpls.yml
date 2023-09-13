@@ -95,9 +95,9 @@ jobs:
         DOCKERFILE: ${{ matrix.DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
-        INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT && matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
-        HOST_CONFIG: ${{ matrix.HOST_CONFIG && matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
-        DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE && matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
+        INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
+        HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
+        DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
         PULL_REQUEST_NUMBER: ${{ github.event.number }}
         BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
