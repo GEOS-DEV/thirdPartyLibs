@@ -188,29 +188,33 @@ message(STATUS "Building HDF5 found at ${HDF5_URL}")
 if( ${ENABLE_MPI} )
   set( HDF5_C_COMPILER ${MPI_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${MPI_CXX_COMPILER} )
-  set( HDF5_ENABLE_PARALLEL "--enable-parallel")
 else()
   set( HDF5_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-  set( HDF5_ENABLE_PARALLEL "")
 endif()
-
-set(HDF5_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
 
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
-                     CONFIGURE_COMMAND ../hdf5/configure
-                                       CC=${HDF5_C_COMPILER}
-                                       CXX=${HDF5_CXX_COMPILER}
-                                       --enable-build-mode=production
-                                       --prefix=<INSTALL_DIR>
-                                       ${HDF5_ENABLE_PARALLEL}
-                                       --enable-shared=yes
-                                       CFLAGS=${HDF5_C_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install )
+                     INSTALL_COMMAND make install
+                     CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
+                                -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
+                                -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_BUILD_TYPE:STRING=Release
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
+                                -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS:BOOL=ON
+                                -D BUILD_STATIC_LIBS:BOOL=OFF
+                                )
 
 list(APPEND HDF5_DEPENDENCIES hdf5 )
 list(APPEND build_list hdf5 )
