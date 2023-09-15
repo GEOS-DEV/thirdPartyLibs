@@ -1100,7 +1100,7 @@ if( ENABLE_VTK )
     # This mangling is needed in order to ensure that the VTK included with geosx does
     # not interfere with another VTK version that may be linked dynamically at runtime
     # (when using ParaView's Catalyst implementation for example).
-    set( VTK_ABI_NAMESPACE_NAME "vtk_geosx" )
+    set( VTK_ABI_NAMESPACE_NAME "vtk_geos" )
 
 if( ENABLE_MPI )
     set( VTK_C_COMPILER ${MPI_C_COMPILER} )
