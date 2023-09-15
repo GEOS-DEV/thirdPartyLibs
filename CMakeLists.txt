@@ -65,7 +65,7 @@ message( "Running with NUM_PROC = ${NUM_PROC}")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
-set( CMAKE_VERBOSE_MAKEFILE BOOL OFF "" )
+set( CMAKE_VERBOSE_MAKEFILE OFF "" )
 
 # Set up C flags
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
