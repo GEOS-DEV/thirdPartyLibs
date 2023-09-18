@@ -206,7 +206,7 @@ ExternalProject_Add( hdf5
                                 -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_BUILD_TYPE:STRING=Release
+                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
                                 -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
