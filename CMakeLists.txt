@@ -1255,7 +1255,7 @@ if( ENABLE_FESAPI )
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                    -DHDF5_ROOT:PATH=${HDF5_DIR}
+                                    -DCMAKE_PREFIX_PATH:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
