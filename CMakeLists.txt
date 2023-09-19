@@ -1266,7 +1266,16 @@ if( ENABLE_FESAPI )
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
                                     -DWITH_PYTHON_WRAPPING:BOOL=OFF
                                     -DWITH_RESQML2_2:BOOL=OFF
-                                    -DWITH_TEST:BOOL=OFF)
+                                    -DWITH_TEST:BOOL=OFF
+                                    # Next lines prevent compilation
+                                    # errors due to an issue with the
+                                    # detection of the hdf5 version in
+                                    # fesapi < 2.4.0.0 (on CentOS, for
+                                    # Release build of hdf5)
+                                    -DWITH_LOCAL_HDF5:BOOL=ON
+                                    -DHDF5_INCLUDE_DIRS:PATH=${HDF5_DIR}/include
+                                    -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_MODULE_SUFFIX}
+                                  )
 
     list(APPEND build_list fesapi )
 
