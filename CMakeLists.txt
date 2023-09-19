@@ -1088,7 +1088,7 @@ if( ENABLE_VTK )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
-    # Depending on the platfor, the install directory could be 'lib' or 'lib64'.
+    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
     # This makes the 'rpath' task more complicated to deal with a single script ('CMAKE_INSTALL_RPATH' option).
     # Defining explicitly 'lib' deals with this issue.
     # I'm no cmake expert and I do not know if there was a better way to deal with it.
