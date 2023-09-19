@@ -212,6 +212,10 @@ ExternalProject_Add( hdf5
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS:BOOL=ON
                                 -D BUILD_STATIC_LIBS:BOOL=OFF
+                                -D BUILD_TESTING:BOOL=OFF
+                                -D HDF5_BUILD_EXAMPLES:BOOL=OFF
+                                -D HDF5_BUILD_TOOLS:BOOL=OFF
+                                -D HDF5_BUILD_UTILS:BOOL=OFF
                                 )
 
 list(APPEND HDF5_DEPENDENCIES hdf5 )
