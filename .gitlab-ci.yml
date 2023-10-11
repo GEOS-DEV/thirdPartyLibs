@@ -37,8 +37,8 @@ test_spack_tioga:
     NNODES: 1
     NPROCS: 64
     QUEUE: pdebug
-    WALL_TIME: 90
-    LLNL_SLURM_SCHEDULER_PARAMETERS: "-N $NNODES -n $NPROCS -t $WALL_TIME"
+#    WALL_TIME: 90
+#    LLNL_SLURM_SCHEDULER_PARAMETERS: "-N $NNODES -n $NPROCS -t $WALL_TIME"
     CLUSTER: tioga
     SYS_TYPE: toss_4_x86_64_ib_cray
   script:
