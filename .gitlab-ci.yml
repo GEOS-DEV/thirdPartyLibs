@@ -47,7 +47,7 @@ test_spack_tioga:
 test_lc_tpls:
   stage: test
   variables:
-    INSTALL_DIR=builds
+    INSTALL_DIR: builds
   script:
     - git clone -b $GEOS_BRANCH git@github.com:GEOS-DEV/GEOS.git ${GEOS_DIR}
     - cd ${GEOS_DIR}
