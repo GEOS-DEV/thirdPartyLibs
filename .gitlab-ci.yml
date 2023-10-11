@@ -41,10 +41,9 @@ test_spack_tioga:
     LLNL_SLURM_SCHEDULER_PARAMETERS: "-N $NNODES -n $NPROCS -t $WALL_TIME"
     CLUSTER: tioga
     SYS_TYPE: toss_4_x86_64_ib_cray
-  extends:
-    - .test_spack
   script:
-    - !reference [ .test_spack, script ]
+    - git clone git@github.com:spack/spack.git
+    - srun -N 1 -t 90 -n 1 scripts/spack-install.sh ${CLUSTER} ${SYS_TYPE} 64
 
 test_lc_tpls:
   stage: test
