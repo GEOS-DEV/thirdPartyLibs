@@ -47,7 +47,7 @@ test_spack_tioga:
 test_lc_tpls:
   stage: test
   variables:
-    - INSTALL_DIR=builds
+    INSTALL_DIR=builds
   script:
     - git clone -b $GEOS_BRANCH git@github.com:GEOS-DEV/GEOS.git ${GEOS_DIR}
     - cd ${GEOS_DIR}
@@ -73,11 +73,11 @@ deploy_lc_tpls:
   dependencies:
     - test_lc_tpls
   variables:
-    - XSU: xsu geosadmn
-    - TPL_ROOT_DIR: /usr/gapps/GEOSX/thirdPartyLibs
-    - DATE: $(date +'%Y-%m-%d')
-    - INSTALL_DIR: ${TPL_ROOT_DIR}/${DATE}
-    - BRANCH: feature/update-tpls-${DATE}
+    XSU: xsu geosadmn
+    TPL_ROOT_DIR: /usr/gapps/GEOSX/thirdPartyLibs
+    DATE: $(date +'%Y-%m-%d')
+    INSTALL_DIR: ${TPL_ROOT_DIR}/${DATE}
+    BRANCH: feature/update-tpls-${DATE}
   script:
     - git clone -b $GEOS_BRANCH git@github.com:GEOS-DEV/GEOS.git ${GEOS_DIR}
     - cd ${GEOS_DIR}
