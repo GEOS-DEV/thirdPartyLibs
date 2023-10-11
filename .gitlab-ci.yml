@@ -1,5 +1,3 @@
-timeout: 4h
-
 stages:
   - test
   - deploy
