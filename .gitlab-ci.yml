@@ -34,8 +34,8 @@ test_spack_tioga:
     - tioga
     - shell
   variables:
-    NNODES: 1
-    NPROCS: 64
+#    NNODES: 1
+#    NPROCS: 64
     QUEUE: pdebug
 #    WALL_TIME: 90
 #    LLNL_SLURM_SCHEDULER_PARAMETERS: "-N $NNODES -n $NPROCS -t $WALL_TIME"
