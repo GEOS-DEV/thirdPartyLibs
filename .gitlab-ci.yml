@@ -11,6 +11,41 @@ variables:
   GEOS_TPL_BASE: ${GEOS_DIR}/src/coreComponents/LvArray/host-configs/LLNL/llnl-tpls-base.cmake
   INSTALL_SYSTEM: "false"
 
+
+.test_spack:
+  script:
+    - git clone git@github.com:spack/spack.git
+    - srun -N 1 -t 90 -n 1 scripts/spack-install.sh ${CLUSTER} ${SYS_TYPE} 64
+#    - source spack/share/spack/setup-env.sh
+#    - spack env create ${CLUSTER}-${SYS_TYPE} spack-environments/${CLUSTER}-${SYS_TYPE}/spack.yaml
+#    - spack env activate ${CLUSTER}-${SYS_TYPE}
+#    - spack install
+
+.install_spack:
+  script:
+    - git clone git@github.com:spack/spack.git
+    - source spack/share/spack/setup-env.sh
+    - modifyYaml.py -i spack-environment/${CLUSTER-${SYSTEM}/spack.yaml -o spack-environments/${CLUSTER}-${SYSTEM}/spack.yaml -y "spack:config:install_tree:root:/usr/WS1/GEOS/GEOSX/TPLs_$(date +'%Y-%m-%d')"
+    - spack env create ${CLUSTER}-${SYS_TYPE} spack-environments/${CLUSTER}-${SYS_TYPE}/spack.yaml
+    - spack env activate ${CLUSTER}-${SYS_TYPE}
+    - spack install
+
+test_spack_tioga:
+  stage: test
+  tags:
+    - tioga
+    - shell
+  variables:
+    NNODES: 1
+    NPROCS: 64
+    QUEUE: pdebug
+    WALL_TIME: 90
+    LLNL_SLURM_SCHEDULER_PARAMETERS: "-N $NNODES -n $NPROCS -t $WALL_TIME"
+    CLUSTER: tioga
+    SYS_TYPE: toss_4_x86_64_ib_cray
+  extends: [.test_spack]
+
+
 test_lc_tpls:
   stage: test
   variables:
