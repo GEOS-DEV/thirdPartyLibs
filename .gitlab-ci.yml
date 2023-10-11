@@ -40,7 +40,7 @@ deploy_lc_tpls:
   dependencies:
     - test_lc_tpls
   variables:
-    - XSU: xsu mdgadmin
+    - XSU: xsu geosadmn
     - TPL_ROOT_DIR: /usr/gapps/GEOSX/thirdPartyLibs
     - DATE: $(date +'%Y-%m-%d')
     - INSTALL_DIR: ${TPL_ROOT_DIR}/${DATE}
