@@ -27,11 +27,11 @@ rm -rf toBeDeleted &
 echo "Building all LC TPLs from $GEOSX_DIR to be installed at $INSTALL_DIR"
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz clang-14 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz gcc-12 "srun -N 1 -t 90 -n 1 -A geosecp" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen gcc-8-cuda-11       "lalloc 1 -qpdebug" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-13-cuda-11       "lalloc 1 -qpdebug" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-10-cuda-11       "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz clang-14 "srun -N 1 -t 90 -n 1 -A geosecp -J quartz-clang-14-tpls" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz gcc-12 "srun -N 1 -t 90 -n 1 -A geosecp -J quartz-gcc-12-tpls" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen gcc-8-cuda-11 "bsub -J lassen-gcc-8-cuda-11-tpls -nnodes 1 -Is -W 60 -core_isolation 2 /usr/tce/packages/lalloc/lalloc-2.0/bin/lexec" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-13-cuda-11 "bsub -J lassen-clang-13-cuda-11-tpls -nnodes 1 -Is -W 60 -core_isolation 2 /usr/tce/packages/lalloc/lalloc-2.0/bin/lexec" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-10-cuda-11 "bsub -J lassen-clang-10-cuda-11-tpls -nnodes 1 -Is -W 60 -core_isolation 2 /usr/tce/packages/lalloc/lalloc-2.0/bin/lexec" $@ &
 
 wait
 echo "Complete"
