@@ -1,0 +1,78 @@
+timeout: 4h
+
+stages:
+  - test
+  - deploy
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  GEOS_DIR: "geos"
+  GEOS_BRANCH: "feature/wrtobin/tpl-gitlab-ci-cd" # Default branch, can be overridden when CI is run manually
+  GEOS_TPL_BASE: ${GEOS_DIR}/src/coreComponents/LvArray/host-configs/LLNL/llnl-tpls-base.cmake
+  INSTALL_SYSTEM: "false"
+
+test_lc_tpls:
+  stage: test
+  variables:
+    - INSTALL_DIR=builds
+  script:
+    - git clone -b $GEOS_BRANCH git@github.com:GEOS-DEV/GEOS.git ${GEOS_DIR}
+    - cd ${GEOS_DIR}
+    - git submodule init src/cmake/blt
+    - git submodule init src/coreComponents/LvArray
+    - git submodule init src/coreComponents/constitutive/PVTPackage
+    - git submodule init src/coreComponents/fileIO/coupling/hdf5_interface
+    - git submodule update
+    - cd ..
+    - mkdir -p ${INSTALL_DIR}
+    - ./scripts/setupLC-TPL.bash ${GEOS_DIR} ${INSTALL_DIR}
+    - echo "set(GEOS_TPL_ROOT_DIR ${TPL_ROOT_DIR} CACHE PATH \"\")" > ${GEOS_TPL_BASE}
+    - echo "set(GEOS_TPL_DIR \$\{GEOS_TPL_ROOT_DIR\}/${TPL_DIR}/install-\$\{CONFIG_NAME\}-release CACHE PATH \"\")" >> ${GEOS_TPL_BASE}
+    - cd ${GEOS_DIR}
+    - scripts/setupLC.bash
+  tags:
+    - quartz
+    - shell
+  when: manual
+
+deploy_lc_tpls:
+  stage: deploy
+  dependencies:
+    - test_lc_tpls
+  variables:
+    - XSU: xsu mdgadmin
+    - TPL_ROOT_DIR: /usr/gapps/GEOSX/thirdPartyLibs
+    - DATE: $(date +'%Y-%m-%d')
+    - INSTALL_DIR: ${TPL_ROOT_DIR}/${DATE}
+    - BRANCH: feature/update-tpls-${DATE}
+  script:
+    - git clone -b $GEOS_BRANCH git@github.com:GEOS-DEV/GEOS.git ${GEOS_DIR}
+    - cd ${GEOS_DIR}
+    - git submodule init src/cmake/blt
+    - git submodule init src/coreComponents/LvArray
+    - git submodule init src/coreComponents/constitutive/PVTPackage
+    - git submodule init src/coreComponents/fileIO/coupling/hdf5_interface
+    - git submodule update
+    - cd ..
+    - ${XSU} mkdir -p ${INSTALL_DIR}
+    - ${XSU} ./scripts/setupLC-TPL.bash ${GEOS_DIR} ${INSTALL_DIR}
+    - echo "set(GEOS_TPL_ROOT_DIR ${TPL_ROOT_DIR} CACHE PATH \"\")" > ${GEOS_TPL_BASE}
+    - echo "set(GEOS_TPL_DIR \$\{GEOS_TPL_ROOT_DIR\}/${TPL_DIR}/install-\$\{CONFIG_NAME\}-release CACHE PATH \"\")" >> ${GEOS_TPL_BASE}
+    - cd ${GEOS_DIR}
+    - scripts/setupLC.bash
+    - cd ${GEOS_DIR}/src/coreComponents/LvArray
+    - git checkout -b ${BRANCH}
+    - git add -A
+    - git commit -m "Update lc tpl install location."
+    - git push origin ${BRANCH}
+    - cd ${GEOS_DIR}
+    - git checkout -b ${BRANCH}
+    - git add -A
+    - git commit -m "Update lc tpl install location."
+    - git push origin ${BRANCH}
+  tags:
+    - quartz
+    - shell
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $INSTALL_SYSTEM == "true"'
