@@ -7,7 +7,7 @@ spack:
     install_tree:
       root: $spack/opt/spack/
       projections:
-        all: install-{target}-{compiler.name}-{compiler.version}/{name}-{version}
+        all: install-{os}-{target}-{compiler.name}-{compiler.version}/{name}
   compilers:
   - compiler:
       spec: gcc@8.3.1
