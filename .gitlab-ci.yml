@@ -44,10 +44,11 @@ variables:
   script:
     - git clone git@github.com:spack/spack.git
     - srun -N 1 -t 90 -n 1 scripts/spack-install.sh ${CLUSTER} ${SYS_TYPE} 64
-#    - source spack/share/spack/setup-env.sh
-#    - spack env create ${CLUSTER}-${SYS_TYPE} spack-environments/${CLUSTER}-${SYS_TYPE}/spack.yaml
-#    - spack env activate ${CLUSTER}-${SYS_TYPE}
-#    - spack install
+    # - source spack/share/spack/setup-env.sh
+    # - spack env create ${CLUSTER}-${SYS_TYPE} spack-environments/${CLUSTER}-${SYS_TYPE}/spack.yaml
+    # - spack env activate ${CLUSTER}-${SYS_TYPE}
+    # - spack install
+    # - spack env deactivate
 
 .install_spack:
   script:
@@ -59,6 +60,7 @@ variables:
     # - spack env activate ${CLUSTER}-${SYS_TYPE}
     # - spack install
     # - INSTALL_SCHEME=${SPACK_INSTALL_SCHEME}
+    # - spack env deactivate
 
 test_spack_tioga:
   stage: test
