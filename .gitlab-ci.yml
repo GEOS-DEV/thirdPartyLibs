@@ -81,7 +81,7 @@ test_spack_tioga:
     - git clone git@github.com:spack/spack.git ${SPACK_DIR}
     - SPACK_DIR_ABS=$(realpath "${SPACK_DIR}")
     - srun -N 1 -t 90 -n 1 scripts/spack-install.sh "${SPACK_DIR_ABS}" "${CLUSTER}" "${SYS_TYPE}"" 64
-    - sed -i '7s|.*|set(GEOSX_TPL_DIR "${SPACK_DIR}/opt/spack/install-rhel8-x86_64-cce-15.0.0a/" CACHE PATH "")|' "${TIOGA_TPL_BASE}"
+    - sed -i '7s|.*|set(GEOSX_TPL_DIR "${SPACK_DIR_ABS}/opt/spack/install-rhel8-x86_64-cce-15.0.0a/" CACHE PATH "")|' "${TIOGA_TPL_BASE}"
     - cd ${GEOS_DIR}
     - ./scripts/config-build.py -hc host-configs/LLNL/tioga-cce-15.camke -bt Release
     - cd build-tioga-cce-15-release
