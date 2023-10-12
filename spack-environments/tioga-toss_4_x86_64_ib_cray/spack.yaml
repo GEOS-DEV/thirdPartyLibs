@@ -7,7 +7,7 @@ spack:
     install_tree:
       root: $spack/opt/spack/
       projections:
-        all: install-{arch}-{compiler.name}-{compiler.version}/{name}-{version}
+        all: install-{target}-{compiler.name}-{compiler.version}/{name}-{version}
   compilers:
   - compiler:
       spec: gcc@8.3.1
@@ -61,10 +61,13 @@ spack:
       flags: {}
       operating_system: rhel8
       target: x86_64
-      modules: []
+      modules:
+        - PrgEnv-cray/8.4.0
+        - rocm/5.4.3
+        - cce/15.0.0
       environment:
         set:
-          TCE_ROCM_PATH: /opt/rocm-5.3.3
+          TCE_ROCM_PATH: /opt/rocm-5.4.3
           CRAY_PE_USE_CLANG: /opt/cray/pe/cce/15.0.0/cce-clang/x86_64/bin/clang
       extra_rpaths: []
   - compiler:
@@ -498,23 +501,16 @@ spack:
         prefix: /opt/cray/pe/cce/12.0.2
       buildable: false
     cray-mpich:
-      version: [8.1.12, 8.1.16, 8.1.18, 8.1.21, 8.1.26]
+      version: [8.1.24,8.1.26]
       externals:
-      - spec: cray-mpich@8.1.12
+      - spec: cray-mpich@8.1.24
         modules:
-        - cray-mpich/8.1.12
-      - spec: cray-mpich@8.1.16
-        modules:
-        - cray-mpich/8.1.16
-      - spec: cray-mpich@8.1.18
-        modules:
-        - cray-mpich/8.1.18
-      - spec: cray-mpich@8.1.21
-        modules:
-        - cray-mpich/8.1.21
+        - cray-mpich/8.1.24
+        prefix: /opt/cray/pe/mpich/8.1.24/ofi/crayclang/10.0
       - spec: cray-mpich@8.1.26
         modules:
         - cray-mpich/8.1.26
+        prefix: /opt/cray/pe/mpich/8.1.26/ofi/crayclang/16.0
       target: []
       compiler: []
       buildable: false
@@ -738,20 +734,12 @@ spack:
       buildable: false
     cray-libsci:
       buildable: false
-      version: [21.08.1.2, 22.08.1.1, 23.05.1.4]
+      version: [23.05.1.4]
       externals:
-      - spec: cray-libsci@21.08.1.2
-        modules:
-        - cray-libsci/21.08.1.2
-        - cray-mpich/8.1.16
-      - spec: cray-libsci@22.08.1.1
-        modules:
-        - cray-libsci/22.08.1.1
-        - cray-mpich/8.1.18
       - spec: cray-libsci@23.05.1.4
         modules:
         - cray-libsci/23.05.1.4
-        - cray-mpich/8.1.26
+        - cray-mpich/8.1.24
     tcsh:
       buildable: false
       version: [6.20.00]
@@ -1072,16 +1060,17 @@ spack:
       - spec: rocm-gdb@5.4.0
         prefix: /opt/rocm-5.4.0
   specs:
-  - conduit%cce@16.0.0 ~fortran ~hdf5_compat generator=make ^hdf5+hl+mpi~fortran ^cray-mpich@8.1.26
-  - raja@develop%cce@16.0.0 +rocm amdgpu_target=gfx90a ^hip@5.6.0 ^cmake@3.24.2
-  - chai@develop%cce@16.0.0~examples~openmp+raja+rocm amdgpu_target=gfx90a generator=make ^raja@develop+rocm
-    amdgpu_target=gfx90a ^umpire@develop~examples+rocm amdgpu_target=gfx90a ^hip@5.6.0
-    ^blt@0.5.2 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^camp+rocm amdgpu_target=gfx90a
+  - conduit%cce@15.0.0a ~fortran ~hdf5_compat generator=make ^hdf5+hl+mpi~fortran ^cray-mpich@8.1.24
+  - raja@develop%cce@15.0.0a +rocm amdgpu_target=gfx90a ^hip@5.4.3 ^cmake@3.24.2
+  - chai@develop%cce@15.0.0a~examples~openmp+raja+rocm amdgpu_target=gfx90a generator=make ^raja@develop+rocm
+    amdgpu_target=gfx90a ^umpire@develop~examples+rocm amdgpu_target=gfx90a ^hip@5.4.3
+    ^blt@0.5.2 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^camp+rocm amdgpu_target=gfx90a
     ^cmake@3.24.2
-  - hypre@develop%cce@16.0.0~int64~fortran+rocm+unified-memory amdgpu_target=gfx90a ^hip@5.6.0
-    ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^cray-mpich@8.1.26 ^cray-libsci@23.05.1.4
-  - pugixml%cce@16.0.0 generator=make
-  - fmt%cce@16.0.0 generator=make
-  - suite-sparse@5.10.1%cce@16.0.0~cuda~graphblas~openmp+pic~tbb
-  - caliper@master%cce@16.0.0~adiak~libdw~papi+rocm amdgpu_target=gfx90a generator=make ^hip@5.6.0
-    ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0
+  - hypre@develop%cce@15.0.0a~int64~fortran+rocm+unified-memory amdgpu_target=gfx90a ^hip@5.4.3
+    ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^cray-mpich@8.1.24 ^cray-libsci@23.05.1.4
+    ^rocprim@5.4.3 ^rocrand@5.4.3 ^rocsparse@5.4.3 ^rocthrust@5.4.3
+  - pugixml%cce@15.0.0a generator=make
+  - fmt%cce@15.0.0a generator=make
+  - suite-sparse@5.10.1%cce@15.0.0a~cuda~graphblas~openmp+pic~tbb
+  - caliper@master%cce@15.0.0a~adiak~libdw~papi+rocm amdgpu_target=gfx90a generator=make ^hip@5.4.3
+    ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3
