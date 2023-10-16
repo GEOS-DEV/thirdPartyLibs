@@ -109,14 +109,11 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 # I extract the deployed TPLs from the TPL building stqge.
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
 
-# Install `sccache` binaries to speed up the build of `geos`.
-RUN apt-get install -y --no-install-recommends curl ca-certificates && \
-    mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.5.4/sccache-v0.5.4-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf - && \
-    apt-get purge --auto-remove -y curl
 # Any tool specific to building GEOSX shall be installed in this stage.
 RUN apt-get install -y --no-install-recommends \
     openssh-client \
+# `ca-certificates` is needed by `sccache` to download the cached compilations.
+    ca-certificates \
     texlive \
     texlive-latex-extra \
     graphviz \
@@ -124,3 +121,11 @@ RUN apt-get install -y --no-install-recommends \
     git \
     ghostscript \
     ninja-build
+
+# Install `sccache` binaries to speed up the build of `geos`.
+RUN apt-get install -y --no-install-recommends curl && \
+    mkdir -p /opt/sccache/bin && \
+    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.5.4/sccache-v0.5.4-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf - && \
+    apt-get purge --auto-remove -y curl
+# This environment variable is meant to be used instead of an hard-coded path.
+ENV SCCACHE=/opt/sccache/bin/sccache
