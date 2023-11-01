@@ -58,11 +58,12 @@ cd ..
 echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR"
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-# ./scripts/setupLC-TPL-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz clang-14 "%clang@14.0.6 +docs" "srun -N 1 -t 150 -n 1 -A geosecp" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz gcc-12 "%gcc@12.1.1 +docs" "srun -N 1 -t 150 -n 1 -A geosecp" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR rzgenie clang-14 "%clang@14.0.6 +docs" "srun -N 1 -t 150 -n 1 -A geosecp" $@ &
+# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz clang-14 "%clang@14.0.6 +docs" "srun -N 1 -t 150 -n 1 -A geosecp" $@ &
+# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz gcc-12 "%gcc@12.1.1 +docs" "srun -N 1 -t 150 -n 1 -A geosecp" $@ &
+# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70" "lalloc 1 -W 150" $@ &
 
 wait
 echo "Removing temporary GEOS repo tempGEOS..."

@@ -20,15 +20,17 @@ shift
 CONFIG=$MACHINE-$COMPILER
 LOG_FILE=$CONFIG.log
 HOST_CONFIG=$GEOSX_DIR/host-configs/LLNL/$CONFIG.cmake
-INSTALL_DIR=$INSTALL_DIR/install-$CONFIG-release
+#INSTALL_DIR=$INSTALL_DIR/install-$CONFIG-release
 
 #echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
 ssh $MACHINE -t "
 . /etc/profile  &&
-cd tempGEOS &&
-$GET_A_NODE ./scripts/uberenv/uberenv.py --spec=$SPEC --prefix $INSTALL_DIR $@ &&
+cd $PWD/tempGEOS &&
+echo $SPEC &&
+echo $GET_A_NODE &&
+$GET_A_NODE ./scripts/uberenv/uberenv.py --spec=$SPEC --prefix $INSTALL_DIR &&
 exit" > $LOG_FILE 2>&1
 
 # ssh $MACHINE -t "
