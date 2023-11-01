@@ -186,35 +186,29 @@ message(STATUS "Building HDF5 found at ${HDF5_URL}")
 if( ${ENABLE_MPI} )
   set( HDF5_C_COMPILER ${MPI_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${MPI_CXX_COMPILER} )
+  set( HDF5_ENABLE_PARALLEL "--enable-parallel")
 else()
   set( HDF5_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+  set( HDF5_ENABLE_PARALLEL "")
 endif()
+
+set(HDF5_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
 
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
+                     CONFIGURE_COMMAND ../hdf5/configure
+                                       CC=${HDF5_C_COMPILER}
+                                       CXX=${HDF5_CXX_COMPILER}
+                                       --enable-build-mode=production
+                                       --prefix=<INSTALL_DIR>
+                                       ${HDF5_ENABLE_PARALLEL}
+                                       --enable-shared=yes
+                                       CFLAGS=${HDF5_C_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
-                     CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
-                                -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
-                                -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
-                                -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-                                -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
-                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
-                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D BUILD_SHARED_LIBS:BOOL=ON
-                                -D BUILD_STATIC_LIBS:BOOL=OFF
-                                -D BUILD_TESTING:BOOL=OFF
-                                -D HDF5_BUILD_EXAMPLES:BOOL=OFF
-                                -D HDF5_BUILD_TOOLS:BOOL=OFF
-                                -D HDF5_BUILD_UTILS:BOOL=OFF
-                                )
+                     INSTALL_COMMAND make install )
 
 list(APPEND HDF5_DEPENDENCIES hdf5 )
 list(APPEND build_list hdf5 )
@@ -1086,7 +1080,7 @@ if( ENABLE_VTK )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
-    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
+    # Depending on the platfor, the install directory could be 'lib' or 'lib64'.
     # This makes the 'rpath' task more complicated to deal with a single script ('CMAKE_INSTALL_RPATH' option).
     # Defining explicitly 'lib' deals with this issue.
     # I'm no cmake expert and I do not know if there was a better way to deal with it.
@@ -1253,7 +1247,7 @@ if( ENABLE_FESAPI )
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                    -DCMAKE_PREFIX_PATH:PATH=${HDF5_DIR}
+                                    -DHDF5_ROOT:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
@@ -1264,19 +1258,7 @@ if( ENABLE_FESAPI )
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
                                     -DWITH_PYTHON_WRAPPING:BOOL=OFF
                                     -DWITH_RESQML2_2:BOOL=OFF
-                                    -DWITH_TEST:BOOL=OFF
-                                    # Next lines prevent compilation
-                                    # errors due to an issue with the
-                                    # detection of the hdf5 version in
-                                    # fesapi < 2.4.0.0 (on CentOS, for
-                                    # Release build of hdf5, see
-                                    # https://github.com/F2I-Consulting/fesapi/issues/326)
-                                    # It should be possible to remove it when
-                                    # fesapi-2.9.0.0 will be released
-                                    -DWITH_LOCAL_HDF5:BOOL=ON
-                                    -DHDF5_INCLUDE_DIRS:PATH=${HDF5_DIR}/include
-                                    -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_MODULE_SUFFIX}
-                                  )
+                                    -DWITH_TEST:BOOL=OFF)
 
     list(APPEND build_list fesapi )
 
