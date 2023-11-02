@@ -42,9 +42,9 @@ exit" > $LOG_FILE 2>&1
 # $GET_A_NODE make &&
 # exit" > $LOG_FILE 2>&1
 
-## Check the last three lines of the log file. A BLT smoke test should be the last
-## thing built and should show up on one of the final lines.
-tail -3 $LOG_FILE | grep -E "\[100%\] Built target blt_.*_smoke" > /dev/null
+## Check the last ten lines of the log file.
+## A successful install should show up on one of the final lines.
+tail -10 $LOG_FILE | grep -E "Successfully installed geos" > /dev/null
 if [ $? -eq 0 ]; then
     chmod g+rx -R $INSTALL_DIR
     chgrp GEOS -R $INSTALL_DIR
