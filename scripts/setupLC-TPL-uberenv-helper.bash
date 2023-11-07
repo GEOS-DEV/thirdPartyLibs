@@ -7,7 +7,7 @@ GEOS_BRANCH=$1
 INSTALL_DIR=$2
 MACHINE=$3
 COMPILER=$4
-SPEC=$5
+SPEC=\"${5}\"
 GET_A_NODE=$6
 
 ## Eat up the command line arguments so the rest can be forwarded to config-build.
@@ -19,7 +19,7 @@ shift
 
 CONFIG=$MACHINE-$COMPILER
 LOG_FILE=$CONFIG.log
-HOST_CONFIG=$GEOSX_DIR/host-configs/LLNL/$CONFIG.cmake
+# HOST_CONFIG=$GEOSX_DIR/host-configs/LLNL/$CONFIG.cmake
 #INSTALL_DIR=$INSTALL_DIR/install-$CONFIG-release
 
 #echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
@@ -30,7 +30,7 @@ ssh $MACHINE -t "
 cd $PWD/tempGEOS &&
 echo $SPEC &&
 echo $GET_A_NODE &&
-$GET_A_NODE ./scripts/uberenv/uberenv.py --spec=$SPEC --prefix $INSTALL_DIR &&
+$GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix $INSTALL_DIR --spack-env-name ${CONFIG}_env --skip-setup &&
 exit" > $LOG_FILE 2>&1
 
 # ssh $MACHINE -t "
