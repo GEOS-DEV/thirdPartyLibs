@@ -58,7 +58,7 @@ option( ENABLE_NINJA "" OFF )
 
 include(ProcessorCount)
 ProcessorCount(NUM_CORES)
-			    
+
 set(NUM_PROC ${NUM_CORES} CACHE STRING "")
 message( "Running with NUM_PROC = ${NUM_PROC}")
 
@@ -741,7 +741,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-2.29.0.tar.gz")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-3-gcf43b1653.tar.gz")
   set( HYPRE_DEPENDS "" )
 
 
@@ -1111,7 +1111,7 @@ endif( ENABLE_MPI )
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
-				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}		
+				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
