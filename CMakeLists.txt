@@ -294,6 +294,19 @@ set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
 set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11-bsd.tgz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
+# -w compiler flag is needed to build Silo release 4.11 with
+# AppleClang or regular Clang due to implicit declaration of
+# 'zfp_init_zfp'. This issue is fixed by release 4.11.1 so it will be
+# possible to remove the `-w` flag when we will use this latter (see
+# https://github.com/LLNL/Silo/issues/224).
+#
+# This -w flag was exported inside the HDF5_C_FLAGS variable when hdf5 was built
+# using autogen.
+#
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+  # HDF5_C_FLAGS is used only here so we can overwritting it
+  LIST( APPEND HDF5_C_FLAGS -w )
+endif()
 
 ExternalProject_Add( silo
                      URL ${SILO_URL}
