@@ -1275,7 +1275,7 @@ if( ENABLE_FESAPI )
                                     # fesapi-2.9.0.0 will be released
                                     -DWITH_LOCAL_HDF5:BOOL=ON
                                     -DHDF5_INCLUDE_DIRS:PATH=${HDF5_DIR}/include
-                                    -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_MODULE_SUFFIX}
+                                    -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
                                   )
 
     list(APPEND build_list fesapi )
