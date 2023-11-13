@@ -191,6 +191,16 @@ else()
   set( HDF5_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
 endif()
 
+# Build hdf5 in RelWithDebInfo mode to avoid errors when compiling
+# Silo: Silo's autogen script fails to find the hdf5 library if it is
+# built in Debug mode with CMake due to hdf5 naming convention (see
+# https://github.com/LLNL/Silo/issues/369).
+if( CMAKE_BUILD_TYPE MATCHES Debug )
+  set( HDF5_CMAKE_BUILD_TYPE RelWithDebInfo )
+else()
+  set( HDF5_CMAKE_BUILD_TYPE CMAKE_BUILD_TYPE )
+endif()
+
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
@@ -203,7 +213,7 @@ ExternalProject_Add( hdf5
                                 -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-                                -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                -D CMAKE_BUILD_TYPE:STRING=${HDF5_CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
