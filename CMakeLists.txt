@@ -1288,14 +1288,10 @@ if( ENABLE_FESAPI )
                                     -DWITH_PYTHON_WRAPPING:BOOL=OFF
                                     -DWITH_RESQML2_2:BOOL=OFF
                                     -DWITH_TEST:BOOL=OFF
-                                    # Next lines prevent compilation
-                                    # errors due to an issue with the
-                                    # detection of the hdf5 version in
-                                    # fesapi < 2.4.0.0 (on CentOS, for
-                                    # Release build of hdf5, see
-                                    # https://github.com/F2I-Consulting/fesapi/issues/326)
-                                    # It should be possible to remove it when
-                                    # fesapi-2.9.0.0 will be released
+                                    # Next lines prevent compilation errors due to an issue
+                                    # with the detection of the hdf5 version in fesapi < 2.4.0.0
+                                    # (on CentOS, for Release build of hdf5, see https://github.com/F2I-Consulting/fesapi/issues/326)
+                                    # It should be possible to remove it when fesapi-2.9.0.0 will be released
                                     -DWITH_LOCAL_HDF5:BOOL=ON
                                     -DHDF5_INCLUDE_DIRS:PATH=${HDF5_DIR}/include
                                     -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
