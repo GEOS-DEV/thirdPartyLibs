@@ -304,7 +304,7 @@ message(STATUS "Building SILO found at ${SILO_URL}")
 # using autogen.
 #
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-  # HDF5_C_FLAGS is used only here so we can overwritting it
+  # HDF5_C_FLAGS is used only here so we can overwrite it
   LIST( APPEND HDF5_C_FLAGS -w )
 endif()
 
