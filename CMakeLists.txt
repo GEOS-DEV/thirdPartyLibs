@@ -316,7 +316,8 @@ ExternalProject_Add( silo
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND ../silo/configure
                                           CC=${HDF5_C_COMPILER}
-                                          CFLAGS=${HDF5_C_FLAGS}
+                                          # Ensure that silo is built with position independent code
+                                          "CFLAGS=${HDF5_C_FLAGS} -fpic"
                                           CXX=${HDF5_CXX_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --disable-fortran
