@@ -125,7 +125,7 @@ RUN apt-get install -y --no-install-recommends \
 # Install `sccache` binaries to speed up the build of `geos`.
 RUN apt-get install -y --no-install-recommends curl && \
     mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.5.4/sccache-v0.5.4-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf - && \
+    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.2/sccache-v0.7.2-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf - && \
     apt-get purge --auto-remove -y curl
 # This environment variable is meant to be used instead of an hard-coded path.
 ENV SCCACHE=/opt/sccache/bin/sccache
