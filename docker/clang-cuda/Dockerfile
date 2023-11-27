@@ -86,5 +86,5 @@ RUN apt-get install -y --no-install-recommends \
     ninja-build
 
 RUN mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.5.4/sccache-v0.5.4-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.3/sccache-v0.7.3-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
 ENV SCCACHE=/opt/sccache/bin/sccache
