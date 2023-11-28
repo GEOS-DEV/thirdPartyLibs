@@ -12,10 +12,10 @@ HYPRE_SRC_DIR=${HYPRE_DIR}/src
 cd ${BASE_DIR}
 rm -rf ${HYPRE_DIR}
 git clone https://github.com/hypre-space/hypre.git ${HYPRE_DIR}
-git checkout ${VERSION}
 
 # Assign git variables
 cd ${HYPRE_DIR}
+git checkout ${VERSION}
 HYPRE_DEVELOP_STRING=$(git -C ${HYPRE_SRC_DIR} describe --match 'v*' --long --abbrev=9)
 HYPRE_DEVELOP_LASTAG=$(git -C ${HYPRE_SRC_DIR} describe --match 'v*' --abbrev=0)
 HYPRE_DEVELOP_NUMBER=$(git -C ${HYPRE_SRC_DIR} rev-list --count $HYPRE_DEVELOP_LASTAG..HEAD)
