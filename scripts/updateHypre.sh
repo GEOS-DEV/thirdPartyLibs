@@ -4,12 +4,13 @@
 VERSION=${1:-"master"}
 
 # Local variables
-BASE_DIR=$(pwd)
-HYPRE_DIR=${BASE_DIR}/hypre-${VERSION}
+GEOSTPL_DIR=$(dirname $(dirname $(realpath $0)))
+TPL_MIRROR_DIR=${GEOSTPL_DIR}/tplMirror
+HYPRE_DIR=${GEOSTPL_DIR}/hypre-${VERSION}
 HYPRE_SRC_DIR=${HYPRE_DIR}/src
 
 # Fetch hypre repository
-cd ${BASE_DIR}
+cd ${GEOSTPL_DIR}
 rm -rf ${HYPRE_DIR}
 git clone https://github.com/hypre-space/hypre.git ${HYPRE_DIR}
 
@@ -41,11 +42,16 @@ rm -rf ${HYPRE_DIR}/src/test/TEST_*
 # Remove git folder
 rm -rf ${HYPRE_DIR}/.git
 
-# Create tarball
-HYPRE_DIR=${BASE_DIR}/hypre-${HYPRE_DEVELOP_STRING}
-cd ${BASE_DIR}
+# Create tarball and move it to tplMirror
+HYPRE_DIR=${GEOSTPL_DIR}/hypre-${HYPRE_DEVELOP_STRING}
+cd ${GEOSTPL_DIR}
 mv hypre-${VERSION} ${HYPRE_DIR}
 tar czvf hypre-${HYPRE_DEVELOP_STRING}.tar.gz hypre-${HYPRE_DEVELOP_STRING}
+mv hypre-${HYPRE_DEVELOP_STRING}.tar.gz ${TPL_MIRROR_DIR}
 
 # Remove temporary directory
 rm -rf ${HYPRE_DIR}
+
+# Update CMakeLists
+echo -e "Updating CMakeLists..."
+sed -i "s|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-.*\.tar\.gz\" )|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-${HYPRE_DEVELOP_STRING}.tar.gz\" )|" CMakeLists.txt
