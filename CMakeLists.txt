@@ -741,7 +741,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-3-gcf43b1653.tar.gz")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-8-g61fa167d7.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
