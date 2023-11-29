@@ -1,0 +1,1076 @@
+spack:
+  config:
+    build_stage:
+    - $spack/var/spack/spack-stage/build-$arch-$date/
+    install_missing_compilers: false
+    misc_cache: $spack/.cache
+    install_tree:
+      root: $spack/opt/spack/
+      projections:
+        all: install-{target}-{compiler.name}-{compiler.version}/{name}-{version}
+  compilers:
+  - compiler:
+      spec: gcc@8.3.1
+      paths:
+        cc: /usr/bin/gcc
+        cxx: /usr/bin/g++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: gcc@10.2.1
+      paths:
+        cc: /opt/rh/gcc-toolset-10/root/bin/gcc
+        cxx: /opt/rh/gcc-toolset-10/root/bin/g++
+        f77: /opt/rh/gcc-toolset-10/root/bin/gfortran
+        fc: /opt/rh/gcc-toolset-10/root/bin/gfortran
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: cce@16.0.0
+      paths:
+        cc: /opt/cray/pe/cce/16.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/16.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/16.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/16.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.6.0
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/16.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@15.0.0a
+      paths:
+        cc: /opt/cray/pe/cce/15.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/15.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/15.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/15.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules:
+        - PrgEnv-cray/8.4.0
+        - rocm/5.4.3
+        - cce/15.0.0
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.4.3
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/15.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@15.0.0c
+      paths:
+        cc: /opt/cray/pe/cce/15.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/15.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/15.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/15.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.4.1
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/15.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@15.0.0b
+      paths:
+        cc: /opt/cray/pe/cce/15.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/15.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/15.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/15.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.4.0
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/15.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@15.0.0
+      paths:
+        cc: /opt/cray/pe/cce/15.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/15.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/15.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/15.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.3.0
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/15.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@14.0.4
+      paths:
+        cc: /opt/cray/pe/cce/14.0.4/bin/craycc
+        cxx: /opt/cray/pe/cce/14.0.4/bin/crayCC
+        f77: /opt/cray/pe/cce/14.0.4/bin/crayftn
+        fc: /opt/cray/pe/cce/14.0.4/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.2.3
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/14.0.4/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@14.0.3
+      paths:
+        cc: /opt/cray/pe/cce/14.0.3/bin/craycc
+        cxx: /opt/cray/pe/cce/14.0.3/bin/crayCC
+        f77: /opt/cray/pe/cce/14.0.3/bin/crayftn
+        fc: /opt/cray/pe/cce/14.0.3/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.2.3
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/14.0.3/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@14.0.2
+      paths:
+        cc: /opt/cray/pe/cce/14.0.2/bin/craycc
+        cxx: /opt/cray/pe/cce/14.0.2/bin/crayCC
+        f77: /opt/cray/pe/cce/14.0.2/bin/crayftn
+        fc: /opt/cray/pe/cce/14.0.2/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.2.1
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/14.0.2/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@14.0.1
+      paths:
+        cc: /opt/cray/pe/cce/14.0.1/bin/craycc
+        cxx: /opt/cray/pe/cce/14.0.1/bin/crayCC
+        f77: /opt/cray/pe/cce/14.0.1/bin/crayftn
+        fc: /opt/cray/pe/cce/14.0.1/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.1.1
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/14.0.1/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@14.0.0
+      paths:
+        cc: /opt/cray/pe/cce/14.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/14.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/14.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/14.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-5.1.1
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/14.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@13.0.2
+      paths:
+        cc: /opt/cray/pe/cce/13.0.2/bin/craycc
+        cxx: /opt/cray/pe/cce/13.0.2/bin/crayCC
+        f77: /opt/cray/pe/cce/13.0.2/bin/crayftn
+        fc: /opt/cray/pe/cce/13.0.2/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-4.5.2
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/13.0.2/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@13.0.1
+      paths:
+        cc: /opt/cray/pe/cce/13.0.1/bin/craycc
+        cxx: /opt/cray/pe/cce/13.0.1/bin/crayCC
+        f77: /opt/cray/pe/cce/13.0.1/bin/crayftn
+        fc: /opt/cray/pe/cce/13.0.1/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-4.5.2
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/13.0.1/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@13.0.0
+      paths:
+        cc: /opt/cray/pe/cce/13.0.0/bin/craycc
+        cxx: /opt/cray/pe/cce/13.0.0/bin/crayCC
+        f77: /opt/cray/pe/cce/13.0.0/bin/crayftn
+        fc: /opt/cray/pe/cce/13.0.0/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-4.3.1
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/13.0.0/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@12.0.3
+      paths:
+        cc: /opt/cray/pe/cce/12.0.3/bin/craycc
+        cxx: /opt/cray/pe/cce/12.0.3/bin/crayCC
+        f77: /opt/cray/pe/cce/12.0.3/bin/crayftn
+        fc: /opt/cray/pe/cce/12.0.3/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-4.2.0
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/12.0.3/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: cce@12.0.2
+      paths:
+        cc: /opt/cray/pe/cce/12.0.2/bin/craycc
+        cxx: /opt/cray/pe/cce/12.0.2/bin/crayCC
+        f77: /opt/cray/pe/cce/12.0.2/bin/crayftn
+        fc: /opt/cray/pe/cce/12.0.2/bin/crayftn
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set:
+          TCE_ROCM_PATH: /opt/rocm-4.2.0
+          CRAY_PE_USE_CLANG: /opt/cray/pe/cce/12.0.2/cce-clang/x86_64/bin/clang
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@4.2.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-4.2.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.2.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.2.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.2.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@4.3.1
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@4.5.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@4.5.2
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.0.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.0.2
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.2/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.2/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.2/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.0.2/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.6.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.6.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.6.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.6.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.6.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.1.1
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.1.1/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.1.1/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.1.1/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.1.1/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.2.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.2.1
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.1/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.1/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.1/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.1/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.2.3
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.3/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.3/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.3/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.2.3/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.3.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.3.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.3.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.3.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.3.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.4.0
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.0/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.0/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.0/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.0/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules:
+      - rocmcc/5.4.0
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: rocmcc@5.4.1
+      paths:
+        cc: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.1/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.1/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.1/bin/amdflang
+        fc: /usr/tce/packages/rocmcc-tce/rocmcc-5.4.1/bin/amdflang
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  packages:
+    all:
+      compiler: [gcc@8.3.1]
+      target: [x86_64]
+      providers:
+        iconv: [libc]
+    cce:
+      externals:
+      - spec: cce@16.0.0
+        preifx: /opt/cray/pe/cce/16.0.0
+      - spec: cce@15.0.0c
+        prefix: /opt/cray/pe/cce/15.0.0
+      - spec: cce@15.0.0b
+        prefix: /opt/cray/pe/cce/15.0.0
+      - spec: cce@15.0.0a
+        prefix: /opt/cray/pe/cce/15.0.0
+      - spec: cce@15.0.0
+        prefix: /opt/cray/pe/cce/15.0.0
+      - spec: cce@14.0.4
+        prefix: /opt/cray/pe/cce/14.0.4
+      - spec: cce@14.0.3
+        prefix: /opt/cray/pe/cce/14.0.3
+      - spec: cce@14.0.2
+        prefix: /opt/cray/pe/cce/14.0.2
+      - spec: cce@14.0.1
+        prefix: /opt/cray/pe/cce/14.0.1
+      - spec: cce@14.0.0
+        prefix: /opt/cray/pe/cce/14.0.0
+      - spec: cce@13.0.2
+        prefix: /opt/cray/pe/cce/13.0.2
+      - spec: cce@13.0.1
+        prefix: /opt/cray/pe/cce/13.0.1
+      - spec: cce@13.0.0
+        prefix: /opt/cray/pe/cce/13.0.0
+      - spec: cce@12.0.3
+        prefix: /opt/cray/pe/cce/12.0.3
+      - spec: cce@12.0.2
+        prefix: /opt/cray/pe/cce/12.0.2
+      buildable: false
+    cray-mpich:
+      version: [8.1.24,8.1.26]
+      externals:
+      - spec: cray-mpich@8.1.24
+        modules:
+        - cray-mpich/8.1.24
+        prefix: /opt/cray/pe/mpich/8.1.24/ofi/crayclang/10.0
+      - spec: cray-mpich@8.1.26
+        modules:
+        - cray-mpich/8.1.26
+        prefix: /opt/cray/pe/mpich/8.1.26/ofi/crayclang/16.0
+      target: []
+      compiler: []
+      buildable: false
+      providers: {}
+    gcc:
+      externals:
+      - spec: gcc@10.2.1%gcc@8.3.1
+        prefix: /opt/rh/gcc-toolset-10/root
+      version: [10.2.1]
+    libc: #libc only has dummy 1.0 versions in spack
+      externals:
+      - spec: libc@1.0+iconv
+        prefix: /
+      variants: +iconv
+      version: [1.0]
+    ncurses:
+      externals:
+      - spec: ncurses@6.1~symlinks+termlib
+        prefix: /usr
+      version: [6.1]
+      variants: ~symlinks+termlib
+    pcre2:
+      externals:
+      - spec: pcre2@10.32
+        prefix: /usr
+      version: [10.32]
+    perl:
+      externals:
+      - spec: perl@5.26.3+cpanm+shared+threads
+        prefix: /usr
+      variants: +cpanm+shared+threads
+      version: [5.26.3]
+    libidn2:
+      externals:
+      - spec: libidn2@2.2.0
+        prefix: /usr
+      version: [2.2.0]
+    expat:
+      externals:
+      - spec: expat@2.2.5~libbsd
+        prefix: /usr
+      version: [2.2.5]
+      variants: ~libbsd
+    autoconf:
+      buildable: false
+      version: [2.69]
+      externals:
+      - spec: autoconf@2.69
+        prefix: /usr
+    autoconf-archive:
+      buildable: false
+      version: [2022.02.01]
+      externals:
+      - spec: autoconf-archive@2022.02.01
+        prefix: /usr
+    automake:
+      externals:
+      - spec: automake@1.16.1
+        prefix: /usr
+      version: [1.16.1]
+    m4:
+      buildable: false
+      version: [1.4.18]
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+    libtool:
+      externals:
+      - spec: libtool@2.4.6
+        prefix: /usr
+      version: [2.4.6]
+    gettext:
+      externals:
+      - spec: gettext@0.19.8.1+curses+libunistring+libxml2~git+xz~tar~bzip2
+        prefix: /usr
+      version: [0.19.8.1]
+      variants: +curses+libunistring+libxml2~git+xz~tar~bzip2
+    tk:
+      externals:
+      - spec: tk@8.6+xft~xss
+        prefix: /usr/share/tk8.6/
+      version: [8.6]
+      variants: +xft~xss
+    openssl:
+      buildable: false
+      version: [1.1.1]
+      target: []
+      providers: {}
+      externals:
+      - spec: openssl@1.1.1
+        prefix: /usr
+    openssh:
+      externals:
+      - spec: openssh@8.0p1
+        prefix: /usr
+      buildable: false
+    curl:
+      externals:
+      - spec: curl@7.61.1 ~libssh+libssh2+gssapi+nghttp2
+        prefix: /usr
+      buildable: false
+    findutils:
+      externals:
+      - spec: findutils@4.6.0
+        prefix: /usr
+      buildable: false
+    libxml2:
+      externals:
+      - spec: libxml2@2.9.7
+        prefix: /usr
+      buildable: false
+    libpciaccess:
+      externals:
+      - spec: libpciaccess@0.11.1
+        prefix: /usr
+      buildable: false
+    slurm:
+      externals:
+      - spec: slurm@20.11.5
+        prefix: /usr
+      buildable: false
+    libfabric:
+      version: [1.7.2, 2.0]
+      buildable: false
+      externals:
+      - spec: libfabric@1.7.2
+        modules:
+        - libfabric/1.7.2-llnl
+      - spec: libfabric@2.0
+        modules:
+        - libfabric/2.0
+    ucx:
+      externals:
+      - spec: ucx@1.9.0
+        prefix: /usr
+      buildable: false
+    hwloc:
+      externals:
+      - spec: hwloc@2.4.1
+        prefix: /usr
+      buildable: false
+    pkgconf:
+      externals:
+      - spec: pkgconf@1.4.2
+        prefix: /usr
+      buildable: false
+    libedit:
+      externals:
+      - spec: libedit@3.1
+        prefix: /usr
+      buildable: false
+    krb5:
+      externals:
+      - spec: krb5@1.18.2
+        prefix: /usr
+      buildable: false
+    bison:
+      externals:
+      - spec: bison@3.0.4
+        prefix: /usr
+      buildable: false
+    munge:
+      externals:
+      - spec: munge@0.5.3
+        prefix: /usr
+      buildable: false
+    go:
+      externals:
+      - spec: go@1.15.13
+        prefix: /usr
+      buildable: false
+    python:
+      buildable: false
+      version: [3.9.12]
+      externals:
+      - spec: python@3.9.12
+        modules:
+        - python/3.9.12
+    readline:
+      buildable: false
+      version: [7.0]
+      externals:
+      - spec: readline@7.0
+        prefix: /usr/lib64
+    gdbm:
+      buildable: false
+      version: [1.18.1]
+      externals:
+      - spec: gdbm@1.18.1
+        prefix: /usr/lib64
+    autoreconf:
+      buildable: false
+      version: [2.69]
+      externals:
+      - spec: autoreconf@2.69
+        prefix: /usr
+    cmake:
+      version: [3.14.5, 3.19.2, 3.21.1, 3.22.2, 3.23.1, 3.24.2]
+      externals:
+      - spec: cmake@3.14.5
+        modules:
+        - cmake/3.14.5
+      - spec: cmake@3.19.2
+        modules:
+        - cmake/3.19.2
+      - spec: cmake@3.21.1
+        modules:
+        - cmake/3.21.1
+      - spec: cmake@3.22.2
+        modules:
+        - cmake/3.22.2
+      - spec: cmake@3.23.1
+        modules:
+        - cmake/3.23.1
+      - spec: cmake@3.24.2
+        modules:
+        - cmake/3.24.2
+    openmpi:
+      buildable: false
+    mpich:
+      buildable: false
+    cray-libsci:
+      buildable: false
+      version: [23.05.1.4]
+      externals:
+      - spec: cray-libsci@23.05.1.4
+        modules:
+        - cray-libsci/23.05.1.4
+        - cray-mpich/8.1.24
+    tcsh:
+      buildable: false
+      version: [6.20.00]
+      externals:
+      - spec: tcsh@6.20.00
+        prefix: /usr
+    hip:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hip@5.4.3
+        prefix: /opt/rocm-5.4.3/hip
+        extra_attributes:
+          compilers:
+            hip: /opt/rocm-5.4.3/hip/bin/hipcc
+      - spec: hip@5.6.0
+        prefix: /opt/rocm-5.6.0/
+        extra_attributes:
+          compilers:
+            hip: /opt/rocm-5.6.0/bin/hipcc
+      - spec: hip@5.4.0
+        prefix: /opt/rocm-5.4.0/hip
+        extra_attributes:
+          compilers:
+            hip: /opt/rocm-5.4.0/hip/bin/hipcc
+    llvm-amdgpu:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: llvm-amdgpu@5.4.3
+        prefix: /opt/rocm-5.4.3/llvm
+      - spec: llvm-amdgpu@5.6.0
+        prefix: /opt/rocm-5.6.0/llvm
+      - spec: llvm-amdgpu@5.4.0
+        prefix: /opt/rocm-5.4.0/llvm
+    rocm-device-libs:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocm-device-libs@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocm-device-libs@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hsa-rocr-dev:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hsa-rocr-dev@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hsa-rocr-dev@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hsakmt-roct:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hsakmt-roct@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hsakmt-roct@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hsakmt-roct@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocminfo:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocminfo@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocminfo@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocminfo@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rccl:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rccl@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rccl@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rccl@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipify-clang:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hipify-clang@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hipify-clang@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hipify-clang@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipblas:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hipblas@5.4.3
+        prefix: /opt/rocm-5.4.3/hipblas
+      - spec: hipblas@5.6.0
+        prefix: /opt/rocm-5.6.0/hipblas
+      - spec: hipblas@5.4.0
+        prefix: /opt/rocm-5.4.0/hipblas
+    hipcub:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hipcub@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hipcub@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hipcub@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipsparse:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hipsparse@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hipsparse@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hipsparse@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipfort:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hipfort@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hipfort@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hipfort@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipfft:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: hipfft@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: hipfft@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: hipfft@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-opencl:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-opencl@5.4.3
+        prefix: /opt/rocm-5.4.3/opencl
+      - spec: rocm-opencl@5.6.0
+        prefix: /opt/rocm-5.6.0/opencl
+      - spec: rocm-opencl@5.4.0
+        prefix: /opt/rocm-5.4.0/opencl
+    rocm-clang-ocl:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-clang-ocl@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocm-clang-ocl@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocm-clang-ocl@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-opencl-runtime:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-opencl-runtime@5.4.3
+        prefix: /opt/rocm-5.4.3/opencl
+      - spec: rocm-opencl-runtime@5.6.0
+        prefix: /opt/rocm-5.6.0/opencl
+      - spec: rocm-opencl-runtime@5.4.0
+        prefix: /opt/rocm-5.4.0/opencl
+    rocm-openmp-extras:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-openmp-extras@5.4.3
+        prefix: /opt/rocm-5.4.3/llvm
+      - spec: rocm-openmp-extras@5.6.0
+        prefix: /opt/rocm-5.6.0/llvm
+      - spec: rocm-openmp-extras@5.4.0
+        prefix: /opt/rocm-5.4.0/llvm
+    rocblas:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocblas@5.4.3
+        prefix: /opt/rocm-5.4.3/rocblas
+      - spec: rocblas@5.6.0
+        prefix: /opt/rocm-5.6.0/rocblas
+      - spec: rocblas@5.4.0
+        prefix: /opt/rocm-5.4.0/rocblas
+    rocfft:
+      variants: amdgpu_target=gfx90a amdgpu_target_sram_ecc=gfx90a
+    rocrand:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocrand@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocrand@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocrand@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocthrust:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocthrust@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocthrust@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocthrust@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocsolver:
+      variants: amdgpu_target=gfx90a
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocsolver@5.4.3
+        prefix: /opt/rocm-5.4.3/rocsolver
+      - spec: rocsolver@5.6.0
+        prefix: /opt/rocm-5.6.0/rocsolver
+      - spec: rocsolver@5.4.0
+        prefix: /opt/rocm-5.4.0/rocsolver
+    rocsparse:
+      variants: amdgpu_target=gfx90a
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocsparse@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocsparse@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocsparse@5.4.0
+        prefix: /opt/rocm-5.4.0
+    roctracer-dev:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: roctracer-dev@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: roctracer-dev@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: roctracer-dev@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocprofiler-dev:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocprofiler-dev@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocprofiler-dev@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocprofiler-dev@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocprim:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocprim@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocprim@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocprim@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-smi:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocmsmi@5.4.3
+        prefix: /opt/rocm-5.4.3/rocm_smi
+      - spec: rocm-smi@5.6.0
+        prefix: /opt/rocm-5.6.0/rocm_smi
+      - spec: rocm-smi@5.4.0
+        prefix: /opt/rocm-5.6.0/rocm.2.0
+    rocm-smi-lib:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-smi-lib@5.4.3
+        prefix: /opt/rocm-5.4.3/rocm_smi
+      - spec: rocm-smi-lib@5.6.0
+        prefix: /opt/rocm-5.6.0/rocm_smi
+      - spec: rocm-smi-lib@5.4.0
+        prefix: /opt/rocm-5.6.0/rocm.2.0
+    miopen-hip:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: miopen-hip@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: miopen-hip@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: miopen-hip@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocalution:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocalution@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocalution@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocalution@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-gdb:
+      version: [5.4.3, 5.6.0, 5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-gdb@5.4.3
+        prefix: /opt/rocm-5.4.3
+      - spec: rocm-gdb@5.6.0
+        prefix: /opt/rocm-5.6.0
+      - spec: rocm-gdb@5.4.0
+        prefix: /opt/rocm-5.4.0
+  specs:
+  - conduit%cce@15.0.0a ~fortran ~hdf5_compat generator=make ^hdf5+hl+mpi~fortran ^cray-mpich@8.1.24
+  - raja@develop%cce@15.0.0a +rocm amdgpu_target=gfx90a ^hip@5.4.3 ^cmake@3.24.2
+  - chai@develop%cce@15.0.0a~examples~openmp+raja+rocm amdgpu_target=gfx90a generator=make ^raja@develop+rocm
+    amdgpu_target=gfx90a ^umpire@develop~examples+rocm amdgpu_target=gfx90a ^hip@5.4.3
+    ^blt@0.5.2 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^camp+rocm amdgpu_target=gfx90a
+    ^cmake@3.24.2
+  - hypre@develop%cce@15.0.0a~int64~fortran+rocm+unified-memory amdgpu_target=gfx90a ^hip@5.4.3
+    ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^cray-mpich@8.1.24 ^cray-libsci@23.05.1.4
+    ^rocprim@5.4.3 ^rocrand@5.4.3 ^rocsparse@5.4.3 ^rocthrust@5.4.3
+  - pugixml%cce@15.0.0a generator=make
+  - fmt%cce@15.0.0a generator=make
+  - suite-sparse@5.10.1%cce@15.0.0a~cuda~graphblas~openmp+pic~tbb
+  - caliper@master%cce@15.0.0a~adiak~libdw~papi+rocm amdgpu_target=gfx90a generator=make ^hip@5.4.3
+    ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3
