@@ -51,17 +51,17 @@ git clone -b $GEOS_BRANCH https://github.com/GEOS-DEV/GEOS.git tempGEOS
 cd tempGEOS
 git submodule init scripts/uberenv
 git submodule update
-./scripts/uberenv/uberenv.py --prefix $INSTALL_DIR --setup-only --spack-env-file scripts/spack_configs/toss_4_x86_64_ib/spack.yaml
+# ./scripts/uberenv/uberenv.py --prefix $INSTALL_DIR --setup-only --spack-env-file scripts/spack_configs/toss_4_x86_64_ib/spack.yaml
 cd ..
 
 echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR"
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-#./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz clang-14 "%clang@14.0.6 +docs" "salloc -N 1 -t 150 -n 1 " $@ &
-# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz gcc-12 "%gcc@12.1.1 +docs" "srun -N 1 -t 150 -n 1 -A geosecp" $@ &
-# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz clang-14 "%clang@14.0.6 +docs" "salloc -N 1 -t 150 " $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz gcc-12 "%gcc@12.1.1 +docs" "salloc -N 1 -t 150 " $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
-# ./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 
 wait
 

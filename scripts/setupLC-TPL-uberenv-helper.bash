@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Builds the TPLs for a specific system and host config.
-## Usage ./setupLC-TPL-uberenv-helper.bash pathToGeosxDirectory pathToInstallDirectory machine compiler commandToGetANode [extra arguments to config-build ]
+## Usage ./setupLC-TPL-uberenv-helper.bash pathToGeosxDirectory pathToInstallDirectory machine compiler commandToGetANode
 #GEOSX_DIR=$1
 GEOS_BRANCH=$1
 INSTALL_DIR=$2
@@ -30,8 +30,10 @@ ssh $MACHINE -t "
 cd $PWD/tempGEOS &&
 echo $SPEC &&
 echo $GET_A_NODE &&
-$GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix $INSTALL_DIR --spack-env-name ${CONFIG}_env --skip-setup &&
+$GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix ${INSTALL_DIR}/${CONFIG}_tpls --spack-env-name ${CONFIG}_env &&
 exit" > $LOG_FILE 2>&1
+
+# $GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix $INSTALL_DIR --spack-env-name ${CONFIG}_env --skip-setup &&
 
 # ssh $MACHINE -t "
 # . /etc/profile  &&
@@ -48,9 +50,9 @@ tail -10 $LOG_FILE | grep -E "Successfully installed geos" > /dev/null
 if [ $? -eq 0 ]; then
     chmod g+rx -R $INSTALL_DIR
     chgrp GEOS -R $INSTALL_DIR
-    echo "Build of $HOST_CONFIG completed successfully."
+    echo "Build of ${CONFIG} completed successfully."
     exit 0
 else
-    echo "Build of $HOST_CONFIG seemed to fail, check $LOG_FILE."
+    echo "Build of ${CONFIG} seemed to fail, check $LOG_FILE."
     exit 1
 fi
