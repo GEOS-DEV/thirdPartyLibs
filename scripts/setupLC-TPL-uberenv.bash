@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Builds the TPLs on all LC systems. Must be run from the top level TPL directory.
-## Usage ./setupLC-TPL.bash branchToBuild pathToInstallDirectory [extra arguments to config-build ]
+## Usage ./setupLC-TPL.bash branchToBuild pathToInstallDirectory
 GEOS_BRANCH=$1
 INSTALL_DIR=$2
 
@@ -24,13 +24,13 @@ killall() {
 branch_exists=$(git ls-remote https://github.com/GEOS-DEV/GEOS.git $GEOS_BRANCH | wc -l)
 
 if [[ $branch_exists != 1 ]] ; then
-    echo "Branch $GEOS_BRANCH does not exist in GEOS repository"
-    exit
+  echo "Branch $GEOS_BRANCH does not exist in GEOS repository"
+  exit
 fi
 
 if [[ -z $INSTALL_DIR ]]; then
-    echo "No installation directory path was provided"
-    exit
+  echo "No installation directory path was provided"
+  exit
 fi
 
 if [[ ! -d $INSTALL_DIR ]]; then
@@ -51,25 +51,26 @@ git clone -b $GEOS_BRANCH https://github.com/GEOS-DEV/GEOS.git tempGEOS
 cd tempGEOS
 git submodule init scripts/uberenv
 git submodule update
-# ./scripts/uberenv/uberenv.py --prefix $INSTALL_DIR --setup-only --spack-env-file scripts/spack_configs/toss_4_x86_64_ib/spack.yaml
 cd ..
 
-echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR"
+echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR..."
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz clang-14 "%clang@14.0.6 +docs" "salloc -N 1 -t 150 " $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR quartz gcc-12 "%gcc@12.1.1 +docs" "salloc -N 1 -t 150 " $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $GEOS_BRANCH $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR quartz clang-14 "%clang@14.0.6 +docs" "salloc -N 1 -t 150 " $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR quartz gcc-12 "%gcc@12.1.1 +docs" "salloc -N 1 -t 150 " $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 
+# Note: Estimated completion time is ~90 minutes.
+# Check log files for unreported completion of jobs.
 wait
 
-echo "Copying generated host-configs..."
+echo "Copying generated host-configs from tempGEOS directory..."
 cd tempGEOS && cp *.cmake ..
 
-#echo "Removing temporary GEOS repo tempGEOS..."
-#rm -rf tempGEOS
+echo "Removing temporary GEOS repo tempGEOS..."
+rm -rf tempGEOS
 
 echo "Complete"
 

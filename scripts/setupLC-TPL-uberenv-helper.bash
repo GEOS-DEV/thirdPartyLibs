@@ -1,14 +1,12 @@
 #!/bin/bash
 
 ## Builds the TPLs for a specific system and host config.
-## Usage ./setupLC-TPL-uberenv-helper.bash pathToGeosxDirectory pathToInstallDirectory machine compiler commandToGetANode
-#GEOSX_DIR=$1
-GEOS_BRANCH=$1
-INSTALL_DIR=$2
-MACHINE=$3
-COMPILER=$4
-SPEC=\"${5}\"
-GET_A_NODE=$6
+## Usage ./setupLC-TPL-uberenv-helper.bash pathToInstallDirectory machine compiler spackSpecToBuild commandToGetANode
+INSTALL_DIR=$1
+MACHINE=$2
+COMPILER=$3
+SPEC=\"${4}\"
+GET_A_NODE=$5
 
 ## Eat up the command line arguments so the rest can be forwarded to config-build.
 shift
@@ -19,30 +17,14 @@ shift
 
 CONFIG=$MACHINE-$COMPILER
 LOG_FILE=$CONFIG.log
-# HOST_CONFIG=$GEOSX_DIR/host-configs/LLNL/$CONFIG.cmake
-#INSTALL_DIR=$INSTALL_DIR/install-$CONFIG-release
 
-#echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
 ssh $MACHINE -t "
 . /etc/profile  &&
 cd $PWD/tempGEOS &&
-echo $SPEC &&
-echo $GET_A_NODE &&
 $GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix ${INSTALL_DIR}/${CONFIG}_tpls --spack-env-name ${CONFIG}_env &&
 exit" > $LOG_FILE 2>&1
-
-# $GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix $INSTALL_DIR --spack-env-name ${CONFIG}_env --skip-setup &&
-
-# ssh $MACHINE -t "
-# . /etc/profile  &&
-# cd $PWD &&
-# module load cmake/3.23.1 &&
-# python3 scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
-# cd build-$CONFIG-release &&
-# $GET_A_NODE make &&
-# exit" > $LOG_FILE 2>&1
 
 ## Check the last ten lines of the log file.
 ## A successful install should show up on one of the final lines.
