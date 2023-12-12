@@ -1,0 +1,456 @@
+# This is a Spack Environment file.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+
+spack:
+  modules:
+    default:
+      lmod:
+        core_compilers:
+        - gcc@7.5.0
+        - gcc@7-os
+  packages:
+    mesa:
+      buildable: false
+      version: [21.2.1]
+      externals:
+      - spec: mesa@21.2.1
+        prefix: /sw/crusher/spack-envs/base/opt/linux-sles15-x86_64/gcc-7.5.0/mesa-21.2.1-cbfrg4yfizu6ouirpoql7j7l62emid5c/
+        modules:
+        - mesa/21.2.1
+    curl:
+      buildable: false
+      version: [4.6.0]
+      externals:
+      - spec: curl@4.6.0
+        prefix: /usr
+    gnutls:
+      buildable: false
+      version: [30.23.2]
+      externals:
+      - spec: gnutls@30.23.2
+        prefix: /usr
+    gettext:
+      buildable: false
+      version: [0.20.2]
+      externals:
+      - spec: gettext@0.20.2
+        prefix: /usr
+    libxml2:
+      buildable: false
+      version: [2.9.7]
+      externals:
+      - spec: libxml2@2.9.7
+        prefix: /usr
+    ncurses:
+      buildable: false
+      version: [5.9]
+      externals:
+      - spec: ncurses@5.9
+        prefix: /usr
+    automake:
+      buildable: false
+      version: [1.15.1]
+      externals:
+      - spec: automake@1.15.1
+        prefix: /usr/bin
+    python:
+      buildable: false
+      version: [3.9.13]
+      externals:
+      - spec: python@3.9.13
+        prefix: /sw/crusher/spack-envs/base/opt/cray-sles15-zen3/cce-14.0.0/python-3.9.13-psyaekfxbe4oz5wwcqqoh5l6cfwbtbhc
+    perl:
+      buildable: false
+      version: [5.26.1]
+      externals:
+      - spec: perl@5.26.1
+        prefix: /usr/bin
+    readline:
+      buildable: false
+      version: [7.0]
+      externals:
+      - spec: readline@7.0
+        prefix: /usr/lib64
+    gdbm:
+      buildable: false
+      version: [1.12]
+      externals:
+      - spec: gdbm@1.12
+        prefix: /usr/lib64
+    m4:
+      buildable: false
+      version: [1.4.18]
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+    autoconf:
+      buildable: false
+      version: [2.69]
+      externals:
+      - spec: autoconf@2.69
+        modules:
+        - autoconf/2.69
+    autoreconf:
+      buildable: false
+      version: [2.69]
+      externals:
+      - spec: autoreconf@2.69
+        prefix: /usr/bin
+    libiconv:
+      buildable: false
+      version: [2.31]
+      externals:
+      - spec: libiconv@2.31
+        prefix: /usr/
+    cmake:
+      buildable: false
+      version: [3.20.4, 3.21.3, 3.23.2]
+      externals:
+      - spec: cmake@3.20.4
+        prefix: /usr/
+      - spec: cmake@3.21.3
+        modules:
+        - cmake/3.21.3
+      - spec: cmake@3.23.2
+        modules:
+        - cmake/3.23.2
+    openmpi:
+      buildable: false
+    mpich:
+      buildable: false
+    cray-mpich:
+      version: [8.1.12, 8.1.16, 8.1.18, 8.1.23]
+      externals:
+      - spec: cray-mpich@8.1.12
+        prefix: /opt/cray/pe/mpich/8.1.12/ofi/crayclang/10.0
+        modules:
+        - cray-mpich/8.1.12
+      - spec: cray-mpich@8.1.16
+        prefix: /opt/cray/pe/mpich/8.1.16/ofi/crayclang/10.0
+        modules:
+        - cray-mpich/8.1.16
+      - spec: cray-mpich@8.1.18
+        prefix: /opt/cray/pe/mpich/8.1.18/ofi/crayclang/10.0
+        modules:
+        - cray-mpich/8.1.18
+      - spec: cray-mpich@8.1.23
+        prefix: /opt/cray/pe/mpich/8.1.23/ofi/crayclang/10.0
+        modules:
+        - cray-mpich/8.1.23
+      target: []
+      compiler: []
+      buildable: false
+      providers: {}
+    cray-libsci:
+      buildable: false
+      version: [21.08.1.2, 22.08.1.1]
+      externals:
+      - spec: cray-libsci@21.08.1.2
+        modules:
+        - cray-libsci/21.08.1.2
+        - cray-mpich/8.1.16
+      - spec: cray-libsci@22.08.1.1
+        modules:
+        - cray-libsci/22.08.1.1
+        - cray-mpich/8.1.18
+    tcsh:
+      buildable: false
+      version: [6.20.00]
+      externals:
+      - spec: tcsh@6.20.00
+        prefix: /usr
+    hip:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hip@5.4.0
+        prefix: /opt/rocm-5.4.0/hip
+        extra_attributes:
+          compilers:
+            hip: /opt/rocm-5.4.0/hip/bin/hipcc
+    hip-rocclr:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hip-rocclr@5.4.0
+        prefix: /opt/rocm-5.4.0/rocclr
+    comgr:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: comgr@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-cmake:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-cmake@5.4.0
+        prefix: /opt/rocm-5.4.0
+    llvm-amdgpu:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: llvm-amdgpu@5.4.0
+        prefix: /opt/rocm-5.4.0/llvm
+    rocm-device-libs:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hsa-rocr-dev:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hsakmt-roct:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hsakmt-roct@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocminfo:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocminfo@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rccl:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rccl@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipify-clang:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hipify-clang@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipblas:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hipblas@5.4.0
+        prefix: /opt/rocm-5.4.0/hipblas
+    hipcub:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hipcub@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipsparse:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hipsparse@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipfort:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hipfort@5.4.0
+        prefix: /opt/rocm-5.4.0
+    hipfft:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: hipfft@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-opencl:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-opencl@5.4.0
+        prefix: /opt/rocm-5.4.0/opencl
+    rocm-clang-ocl:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-clang-ocl@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-opencl-runtime:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-opencl-runtime@5.4.0
+        prefix: /opt/rocm-5.4.0/opencl
+    rocm-openmp-extras:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-openmp-extras@5.4.0
+        prefix: /opt/rocm-5.4.0/llvm
+    rocblas:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocblas@5.4.0
+        prefix: /opt/rocm-5.4.0/rocblas
+    rocfft:
+      variants: amdgpu_target=gfx90a amdgpu_target_sram_ecc=gfx90a
+    rocrand:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocrand@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocthrust:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocthrust@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocsolver:
+      variants: amdgpu_target=gfx90a
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocsolver@5.4.0
+        prefix: /opt/rocm-5.4.0/rocsolver
+    rocsparse:
+      variants: amdgpu_target=gfx90a
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocsparse@5.4.0
+        prefix: /opt/rocm-5.4.0
+    roctracer-dev:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: roctracer-dev@5.4.0
+        prefix: /opt/rocm-4.5.2
+    rocprofiler-dev:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocprofiler-dev@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocprim:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocprim@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-smi:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocmsmi@5.4.0
+        prefix: /opt/rocm-5.4.0/rocm_smi
+    rocm-smi-lib:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-smi-lib@5.4.0
+        prefix: /opt/rocm-5.4.0/rocm_smi
+    miopen-hip:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: miopen-hip@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocalution:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocalution@5.4.0
+        prefix: /opt/rocm-5.4.0
+    rocm-gdb:
+      version: [5.4.0]
+      buildable: false
+      externals:
+      - spec: rocm-gdb@5.4.0
+        prefix: /opt/rocm-5.4.0
+    slurm:
+      buildable: false
+      version: [20.11.3]
+      target: []
+      compiler: []
+      providers: {}
+      externals:
+      - spec: slurm@20.11.3
+        prefix: /usr
+    openssl:
+      buildable: false
+      version: [1.1.1]
+      target: []
+      providers: {}
+      externals:
+      - spec: openssl@1.1.1
+        prefix: /usr
+    libfabric:
+      version: [1.13.0.0]
+      buildable: false
+      externals:
+      - spec: libfabric@1.13.0.0
+        prefix: /opt/cray/libfabric/1.13.0.0
+    llvm:
+      version: [12.0.1]
+      buildable: false
+      externals:
+      - spec: llvm@12.0.1
+        prefix: /opt/cray/pe/craype/2.7.13/
+    all:
+      buildable: true
+      version: []
+      target: [zen3]
+      providers:
+        mpi: [cray-mpich@8.1.16, cray-mpich@8.1.18, cray-mpich@8.1.23]
+        lapack: [cray-libsci@21.08.1.2, cray-libsci@22.08.1.1]
+        blas: [cray-libsci@21.08.1.2, cray-libsci@22.08.1.1]
+        scalapack: [netlib-scalapack]
+      compiler: [cce@15.0.0]
+  view: false
+  upstreams:
+    olcf:
+      install_tree: /sw/crusher/spack-envs/base/opt
+      modules:
+        lmod: /sw/crusher/spack-envs/base/modules/spack
+        tcl: /sw/crusher/spack-envs/base/modules/flat
+  config:
+    install_tree:
+      root: /lustre/orion/geo127/world-shared/tpls/2023-04-04/
+      projections:
+        all: install-frontier-{compiler.name}@{compiler.version}/{name}-{version}
+    build_stage:
+    - $spack/var/spack/spack-stage/cce-15.0.0/
+  compilers:
+  - compiler:
+      spec: cce@15.0.0
+      paths:
+        cc: /opt/cray/pe/craype/2.7.16/bin/cc
+        cxx: /opt/cray/pe/craype/2.7.16/bin/CC
+        f77: /opt/cray/pe/craype/2.7.16/bin/ftn
+        fc: /opt/cray/pe/craype/2.7.16/bin/ftn
+      operating_system: sles15
+      target: any
+      modules:
+      - PrgEnv-cray
+      - cce/15.0.0
+      - cray-mpich/8.1.23
+      - craype-accel-amd-gfx90a
+      environment:
+        append_path:
+          PKG_CONFIG_PATH: /usr/lib64/pkgconfig
+        set:
+          MPICH_GPU_SUPPORT_ENABLED: 1
+          # PE_MPICH_GTL_DIR_amd_gfx90a: "-L${CRAY_MPICH_ROOTDIR}/gtl/lib"
+          # PE_MPICH_GTL_LIBS_amd_gfx90a: "-lmpi_gtl_hsa"
+  specs:
+  - conduit%cce@15.0.0 ~blt_find_mpi ~fortran ~hdf5_compat ^hdf5@1.12.2+hl+mpi~fortran
+  - camp%cce@15.0.0 +rocm amdgpu_target=gfx90a ^hip@5.4.0
+  - raja@2022.03.0%cce@15.0.0 +rocm amdgpu_target=gfx90a ^hip@5.4.0
+  - umpire@2022.03.0%cce@15.0.0 +rocm amdgpu_target=gfx90a ^hip@5.4.0
+  - chai@2022.03.0%cce@15.0.0~examples~openmp+raja+rocm amdgpu_target=gfx90a ^raja@2022.03.0+rocm
+    amdgpu_target=gfx90a ^umpire@2022.03.0~examples+rocm amdgpu_target=gfx90a ^hip@5.4.0
+    ^blt@0.5.2 ^hsa-rocr-dev@5.4.0 ^llvm-amdgpu@5.4.0 ^camp+rocm amdgpu_target=gfx90a
+  - pugixml%cce@15.0.0
+  - fmt@8.0.1%cce@15.0.0
+  - suite-sparse@5.10.1%cce@15.0.0~cuda~graphblas~openmp+pic~tbb
+  - caliper@2.8.0%cce@15.0.0~adiak~libdw+rocm amdgpu_target=gfx90a ^hip@5.4.0 ^hsa-rocr-dev@5.4.0
+    ^llvm-amdgpu@5.4.0
