@@ -1,0 +1,187 @@
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage::
+    - $spack/../build_stage
+
+  # Regular TPLs do not need views
+  view: false
+
+  compilers::
+  # Pangea 2 compiler
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: centos7
+      paths:
+        cc: /data_local/sw/gcc/RHEL7/8.3.0/bin/gcc
+        cxx: /data_local/sw/gcc/RHEL7/8.3.0/bin/g++
+        f77: /data_local/sw/gcc/RHEL7/8.3.0/bin/gfortran
+        fc: /data_local/sw/gcc/RHEL7/8.3.0/bin/gfortran
+      spec: gcc@8.3.0
+      target: x86_64
+  # Pecan CPU/GPU compiler
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: centos7
+      paths:
+        cc: /apps/gcc/8.2.0/x86_64/bin/gcc
+        cxx: /apps/gcc/8.2.0/x86_64/bin/g++
+        f77: /apps/gcc/8.2.0/x86_64/bin/gfortran
+        fc: /apps/gcc/8.2.0/x86_64/bin/gfortran
+      spec: gcc@8.2.0
+      target: x86_64
+
+  packages:
+    all:
+      target: [x86_64]
+      compiler: [gcc, clang]
+      providers:
+        blas: [intel-mkl]
+        lapack: [intel-mkl]
+        mpi: [openmpi]
+
+
+    blt:
+      require: "@git.5a792c1775e7a7628d84dcde31652a689f1df7b5=develop"
+
+    hypre:
+      require: "@git.d475cdfc63ac59ea9a554493a06e4033b8d6fade"
+
+    chai:
+      require: "@git.6fe3470ad020303530af2f3dbbfe18826bd3319b=develop"
+
+    umpire:
+      require: "@git.4bd9b2ded81d3216b3f62e2aad62d0e34fe2c256=develop"
+
+    raja:
+      require: "@git.e330b2560747d5417cd7bd265fab3fb91d32ecbd=develop"
+
+    camp:
+      require: "@git.ac34c25b722a06b138bc045d38bfa5e8fa3ec9c5=main"
+
+    uncrustify:
+      require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
+
+    superlu-dist:
+      require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+
+    autoconf:
+      version: [2.71]
+      buildable: false
+      externals:
+      - spec: autoconf@2.71
+        prefix: /usr
+    automake:
+      version: [1.16.5]
+      buildable: false
+      externals:
+      - spec: automake@1.16.5
+        prefix: /usr
+    bison:
+      version: [3.8.2]
+      buildable: false
+      externals:
+      - spec: bison@3.8.2
+        prefix: /usr
+    cmake:
+      version: [3.28.3]
+      buildable: false
+      externals:
+      - spec: cmake@3.28.3
+        prefix: /usr/local
+    cuda:
+      buildable: False
+      externals:
+      - spec: cuda@11.5.1 +allow-unsupported-compilers
+        prefix: /hrtc/apps/cuda/11.5.119/x86_64/centos7
+    flex:
+      version: [2.6.4]
+      buildable: false
+      externals:
+      - spec: flex@2.6.4
+        prefix: /usr
+
+    # Lock down blas, lapack implementation
+    intel-mkl:
+      buildable: False
+      externals:
+        # Pangea 2
+        - spec: intel-mkl@2019.3.199%gcc@8.3.0 threads=openmp
+          prefix: /opt/intel/compilers_and_libraries_2019.3.199/linux/mkl/
+        # Pecan CPU/GPU
+        - spec: intel-mkl@2019.5.281%gcc@8.2.0 threads=openmp
+          prefix: /opt/intel/compilers_and_libraries_2019.5.281/linux/mkl/
+    blas:
+      buildable: false
+
+    lapack:
+      buildable: false
+
+    m4:
+      buildable: false
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+
+    # Spack may grab for mpi & we don't want to use them
+    mpi:
+      buildable: false
+
+    openmpi:
+      externals:
+      # Pangea2
+      - spec: openmpi@2.1.5%gcc@8.3.0
+        prefix: /data_local/sw/OpenMPI/RHEL7/2.1.5/gcc/8.3.0
+      # Pecan CPU/GPU
+      - spec: openmpi@4.0.1%gcc@8.2.0
+        prefix: /hrtc/apps/mpi/openmpi/4.0.1/RDHPC/gcc/8.2.0
+    perl:
+      buildable: false
+      externals:
+      - spec: perl@5.34.0
+        prefix: /usr
+    pkg-config:
+      buildable: false
+      externals:
+      - spec: pkg-config@0.29.2
+        prefix: /usr
+    py-sphinx:
+      buildable: false
+      externals:
+      - spec: py-sphinx@4.3.2
+        prefix: /usr
+    python:
+      buildable: false
+      externals:
+      - spec: python@3.10.12
+        prefix: /usr
+    tar:
+      buildable: false
+      externals:
+      - spec: tar@1.34
+        prefix: /usr
+    unzip:
+      buildable: false
+      externals:
+      - spec: unzip@6.0
+        prefix: /usr
+    xz:
+      buildable: false
+      externals:
+      - spec: xz@5.2.5
+        prefix: /usr
