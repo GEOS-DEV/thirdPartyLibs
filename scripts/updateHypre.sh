@@ -42,6 +42,9 @@ rm -rf ${HYPRE_DIR}/src/test/TEST_*
 # Remove git folder
 rm -rf ${HYPRE_DIR}/.git
 
+# Remove old hypre dir
+git rm ${TPL_MIRROR_DIR}/hypre*.tar.gz
+
 # Create tarball and move it to tplMirror
 HYPRE_DIR=${GEOSTPL_DIR}/hypre-${HYPRE_DEVELOP_STRING}
 cd ${GEOSTPL_DIR}
@@ -55,3 +58,7 @@ rm -rf ${HYPRE_DIR}
 # Update CMakeLists
 echo -e "Updating CMakeLists..."
 sed -i "s|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-.*\.tar\.gz\" )|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-${HYPRE_DEVELOP_STRING}.tar.gz\" )|" CMakeLists.txt
+
+# Stage changes
+git add ${GEOSTPL_DIR}/CMakeLists.txt
+git add ${TPL_MIRROR_DIR}/hypre*.tar.gz
