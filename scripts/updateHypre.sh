@@ -13,6 +13,10 @@ HYPRE_SRC_DIR=${HYPRE_DIR}/src
 cd ${GEOSTPL_DIR}
 rm -rf ${HYPRE_DIR}
 git clone https://github.com/hypre-space/hypre.git ${HYPRE_DIR}
+if [[ $? != "0" ]]; then
+    echo -e "git clone failed! Exiting..."
+    exit 1
+fi
 
 # Assign git variables
 cd ${HYPRE_DIR}
