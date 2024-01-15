@@ -842,6 +842,7 @@ if( ENABLE_HYPRE )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
+  --with-print-errors \
   ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
