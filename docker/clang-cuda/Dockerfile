@@ -1,5 +1,5 @@
 ARG TMP_DIR=/tmp
-FROM nvidia/cuda:11.2.2-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:11.8.0-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
@@ -84,3 +84,7 @@ RUN apt-get install -y --no-install-recommends \
     texlive \
     graphviz \
     ninja-build
+
+RUN mkdir -p /opt/sccache/bin && \
+    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.3/sccache-v0.7.3-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+ENV SCCACHE=/opt/sccache/bin/sccache

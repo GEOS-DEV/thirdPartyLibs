@@ -4,8 +4,9 @@ cmake_minimum_required(VERSION 3.23.1)
 ################################
 project(geosx_tpl LANGUAGES C CXX Fortran)
 
+set( ENABLE_DOXYGEN ON CACHE BOOL "" )
 option( GEOSXTPL_ENABLE_DOXYGEN "" ON )
-if ( ENABLE_DOXYGEN EQUAL OFF )
+if ( NOT ENABLE_DOXYGEN )
     set( GEOSXTPL_ENABLE_DOXYGEN "OFF" )
 endif()
 set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
@@ -58,14 +59,12 @@ option( ENABLE_NINJA "" OFF )
 
 include(ProcessorCount)
 ProcessorCount(NUM_CORES)
-			    
+
 set(NUM_PROC ${NUM_CORES} CACHE STRING "")
 message( "Running with NUM_PROC = ${NUM_PROC}")
 
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
-
-set( CMAKE_VERBOSE_MAKEFILE BOOL OFF "" )
 
 # Set up C flags
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
@@ -188,29 +187,45 @@ message(STATUS "Building HDF5 found at ${HDF5_URL}")
 if( ${ENABLE_MPI} )
   set( HDF5_C_COMPILER ${MPI_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${MPI_CXX_COMPILER} )
-  set( HDF5_ENABLE_PARALLEL "--enable-parallel")
 else()
   set( HDF5_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-  set( HDF5_ENABLE_PARALLEL "")
 endif()
 
-set(HDF5_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_RELEASE}")
+# Build hdf5 in RelWithDebInfo mode to avoid errors when compiling
+# Silo: Silo's autogen script fails to find the hdf5 library if it is
+# built in Debug mode with CMake due to hdf5 naming convention (see
+# https://github.com/LLNL/Silo/issues/369).
+if( CMAKE_BUILD_TYPE MATCHES Debug )
+  set( HDF5_CMAKE_BUILD_TYPE RelWithDebInfo )
+else()
+  set( HDF5_CMAKE_BUILD_TYPE CMAKE_BUILD_TYPE )
+endif()
 
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
-                     CONFIGURE_COMMAND ../hdf5/configure
-                                       CC=${HDF5_C_COMPILER}
-                                       CXX=${HDF5_CXX_COMPILER}
-                                       --enable-build-mode=production
-                                       --prefix=<INSTALL_DIR>
-                                       ${HDF5_ENABLE_PARALLEL}
-                                       --enable-shared=yes
-                                       CFLAGS=${HDF5_C_FLAGS}
                      BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install )
+                     INSTALL_COMMAND make install
+                     CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
+                                -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
+                                -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
+                                -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_BUILD_TYPE:STRING=${HDF5_CMAKE_BUILD_TYPE}
+                                -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
+                                -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D BUILD_SHARED_LIBS:BOOL=ON
+                                -D BUILD_STATIC_LIBS:BOOL=OFF
+                                -D BUILD_TESTING:BOOL=OFF
+                                -D HDF5_BUILD_EXAMPLES:BOOL=OFF
+                                -D HDF5_BUILD_TOOLS:BOOL=OFF
+                                -D HDF5_BUILD_UTILS:BOOL=OFF
+                                )
 
 list(APPEND HDF5_DEPENDENCIES hdf5 )
 list(APPEND build_list hdf5 )
@@ -280,6 +295,19 @@ set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
 set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11-bsd.tgz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
+# -w compiler flag is needed to build Silo release 4.11 with
+# AppleClang or regular Clang due to implicit declaration of
+# 'zfp_init_zfp'. This issue is fixed by release 4.11.1 so it will be
+# possible to remove the `-w` flag when we will use this latter (see
+# https://github.com/LLNL/Silo/issues/224).
+#
+# This -w flag was exported inside the HDF5_C_FLAGS variable when hdf5 was built
+# using autogen.
+#
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+  # HDF5_C_FLAGS is used only here so we can overwrite it
+  LIST( APPEND HDF5_C_FLAGS -w )
+endif()
 
 ExternalProject_Add( silo
                      URL ${SILO_URL}
@@ -289,7 +317,8 @@ ExternalProject_Add( silo
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND ../silo/configure
                                           CC=${HDF5_C_COMPILER}
-                                          CFLAGS=${HDF5_C_FLAGS}
+                                          # Ensure that silo is built with position independent code
+                                          "CFLAGS=${HDF5_C_FLAGS} -fpic"
                                           CXX=${HDF5_CXX_COMPILER}
                                           --prefix=<INSTALL_DIR>
                                           --disable-fortran
@@ -312,7 +341,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/raja-v2023.06.0-RC.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.1.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -352,7 +381,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-d4a0a5700caed3858a8f285abc710cf7ac35fe59.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2023.06.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -429,7 +458,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.10.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -520,7 +549,7 @@ endif()
 # PUGIXML
 ################################
 set(PUGIXML_DIR "${CMAKE_INSTALL_PREFIX}/pugixml")
-set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.8.0.tar.gz")
+set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.13.tar.gz")
 
 message(STATUS "Building PUGIXML found at ${PUGIXML_URL}")
 
@@ -749,7 +778,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-461b6eee60b05ee735ad54a66878bf44be31b5dc.tar.gz")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-8-g61fa167d7.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -928,7 +957,7 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v6.0.9.tar.gz" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.3.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
 
@@ -960,12 +989,12 @@ CFLAGS    = ${SCOTCH_C_FLAGS}
 CLIBFLAGS =
 LDFLAGS   = ${SCOTCH_LD_FLAGS}
 CP        = cp
-LEX       = flex -Pscotchyy -olex.yy.c
+FLEX      = flex
 LN        = ln
 MKDIR     = mkdir -p
 MV        = mv
 RANLIB    = ranlib
-YACC      = bison -pscotchyy -y -b y
+BISON     = bison
 prefix    = ${SCOTCH_DIR}
 " )
 
@@ -994,8 +1023,7 @@ endif()
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.19.4.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
@@ -1090,7 +1118,7 @@ if( ENABLE_VTK )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
-    # Depending on the platfor, the install directory could be 'lib' or 'lib64'.
+    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
     # This makes the 'rpath' task more complicated to deal with a single script ('CMAKE_INSTALL_RPATH' option).
     # Defining explicitly 'lib' deals with this issue.
     # I'm no cmake expert and I do not know if there was a better way to deal with it.
@@ -1127,7 +1155,7 @@ endif( ENABLE_MPI )
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
-				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}		
+				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
@@ -1354,7 +1382,7 @@ if( ENABLE_FESAPI )
                                     -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
                                     -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
                                     -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                    -DHDF5_ROOT:PATH=${HDF5_DIR}
+                                    -DCMAKE_PREFIX_PATH:PATH=${HDF5_DIR}
                                     -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
                                     -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
                                     -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
@@ -1365,7 +1393,15 @@ if( ENABLE_FESAPI )
                                     -DWITH_JAVA_WRAPPING:BOOL=OFF
                                     -DWITH_PYTHON_WRAPPING:BOOL=OFF
                                     -DWITH_RESQML2_2:BOOL=OFF
-                                    -DWITH_TEST:BOOL=OFF)
+                                    -DWITH_TEST:BOOL=OFF
+                                    # Next lines prevent compilation errors due to an issue
+                                    # with the detection of the hdf5 version in fesapi < 2.4.0.0
+                                    # (on CentOS, for Release build of hdf5, see https://github.com/F2I-Consulting/fesapi/issues/326)
+                                    # It should be possible to remove it when fesapi-2.9.0.0 will be released
+                                    -DWITH_LOCAL_HDF5:BOOL=ON
+                                    -DHDF5_INCLUDE_DIRS:PATH=${HDF5_DIR}/include
+                                    -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
+                                  )
 
     list(APPEND build_list fesapi )
 
