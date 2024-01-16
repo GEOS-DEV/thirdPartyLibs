@@ -75,6 +75,12 @@ jobs:
           - name: Centos (7.7, gcc 8.3.1, open-mpi 1.10.7, cuda 11.8.89)
             DOCKER_REPOSITORY: geosx/centos7.7-gcc8.3.1-cuda11.8.89
             DOCKERFILE: docker/gcc-cuda/Dockerfile
+          - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
+            DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
+            DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
+            HOST_CONFIG: host-configs/TOTAL/pangea3-gcc8.4.1-openmpi-4.1.2.cmake
+            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:2
+            HOST_ARCH: ppc64le
 
     steps:
     - name: Checkout
@@ -96,6 +102,7 @@ jobs:
       run: printenv
 
     - name: Run the docker build and push docker script
+      if: ${{ matrix.HOST_ARCH }}
       env:
         DOCKERFILE: ${{ matrix.DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
@@ -107,6 +114,13 @@ jobs:
         BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
+
+      uses: uraimo/run-on-arch-action@v2
+      with:
+        arch: none
+        distro: none
+        base_image: ${{ matrix.DOCKER_ROOT_IMAGE }}
+
       run: bash -x ./scripts/docker_build_and_push.sh
 
   # Convenience job - passes when all docker images are built.
