@@ -1,6 +1,6 @@
 name: Docker Build TPLs
 
-on: pull_request
+on: push,pull_request
 
 # Cancels in-progress workflows for a PR when updated
 concurrency:
