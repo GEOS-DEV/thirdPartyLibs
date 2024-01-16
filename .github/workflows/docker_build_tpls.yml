@@ -120,8 +120,7 @@ jobs:
         arch: none
         distro: none
         base_image: ${{ matrix.DOCKER_ROOT_IMAGE }}
-
-      run: bash -x ./scripts/docker_build_and_push.sh
+        run: bash -x ./scripts/docker_build_and_push.sh
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
