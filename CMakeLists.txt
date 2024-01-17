@@ -386,7 +386,7 @@ ExternalProject_Add( chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
-		     PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/umpire_fcompare-debug-second.patch
+                     PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/umpire_fcompare-debug-second.patch
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -414,7 +414,7 @@ ExternalProject_Add( chai
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
-				-D UMPIRE_ENABLE_C=ON
+                                -D UMPIRE_ENABLE_C=ON
                     )
 
 list(APPEND build_list chai )
@@ -806,14 +806,15 @@ if( ENABLE_HYPRE )
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     list( APPEND HYPRE_DEPENDS chai )
     string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
-    set( HYPRE_CUDA_FLAGS "--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
-    	 		   --enable-cusparse \
-			   --enable-unified-memory \
-			   --with-gpu-arch=${HYPRE_CUDA_SM} \
-    	 		   --with-umpire \
-			   --with-umpire-include=${CHAI_DIR}/include \
-			   --with-umpire-lib-dirs=${CHAI_DIR}/lib \
-  			   --with-umpire-libs=umpire " )
+    set( HYPRE_CUDA_FLAGS "\
+--with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
+--enable-cusparse \
+--enable-unified-memory \
+--with-gpu-arch=${HYPRE_CUDA_SM} \
+--with-umpire \
+--with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib-dirs=${CHAI_DIR}/lib \
+--with-umpire-libs=umpire " )
 
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     message( FATAL_ERROR "hip tpls build only supported through spack" )
@@ -878,7 +879,7 @@ if(ENABLE_SUITESPARSE)
     set( SUITESPARSE_DEPENDS metis )
 
     if( GEOSX_GLOBALINDEX_TYPE_FLAG EQUAL 0 )
-    	set( SUITESPARSE_LONG_INT_FLAGS "-DSuiteSparse_long=int -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
+        set( SUITESPARSE_LONG_INT_FLAGS "-DSuiteSparse_long=int -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     elseif( GEOSX_GLOBALINDEX_TYPE_FLAG EQUAL 2 )
         set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     endif()
@@ -1142,7 +1143,7 @@ endif( ENABLE_MPI )
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
-				    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                                    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
