@@ -1242,7 +1242,7 @@ if (ENABLE_CATALYST)
  
 
   set(CATALYST_IMPLEMENTATION_DIR "${CMAKE_INSTALL_PREFIX}/catalyst_implementation")
-  set(CATALYST_IMPLEMENTATION_URL "${TPL_MIRROR_DIR}/adioscatalyst-mw-f889ce38.tar.gz")
+  set(CATALYST_IMPLEMENTATION_URL "${TPL_MIRROR_DIR}/adioscatalyst-8a4ee7ca.tar.gz")
 
   set(ADIOS_CMAKE_PREFIX ${ADIOS_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/adios2/)
 
