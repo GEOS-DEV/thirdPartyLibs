@@ -389,9 +389,6 @@ ExternalProject_Add( chai
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                     PATCH_COMMAND patch
-                        src/tpl/umpire/src/tpl/umpire/camp/include/camp/resource.hpp
-                        < ${TPL_MIRROR_DIR}/chai-stdexcept.patch
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -471,7 +468,6 @@ if (ENABLE_CALIPER)
                          INSTALL_DIR ${CALIPER_DIR}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                         PATCH_COMMAND patch src/mpi/mpi_machine.cpp < ${TPL_MIRROR_DIR}/caliper-uint.patch
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          DEPENDS adiak
                          CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
