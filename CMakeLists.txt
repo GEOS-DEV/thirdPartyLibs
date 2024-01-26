@@ -1272,7 +1272,7 @@ endif (ENABLE_CATALYST)
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-10.0.0.zip")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-10.0.0.tar.gz")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
