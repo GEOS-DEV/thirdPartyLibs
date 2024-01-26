@@ -48,7 +48,7 @@ jobs:
             DOCKERFILE: docker/Stanford/Dockerfile
             DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
             HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
-            INSTALL_DIR_ROOT: /oak/stanford/schools/ees/COLLABORATIONS/geosx/GPU
+            INSTALL_DIR_ROOT: /home/groups/tchelepi/geosx-sherlock/GPU
           - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
             DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc9
             DOCKERFILE: docker/gcc-ubuntu/Dockerfile
