@@ -20,7 +20,7 @@ docker build ${DOCKER_COMPILER_BUILD_ARG} \
 --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE} \
 --build-arg INSTALL_DIR=${INSTALL_DIR} \
 --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
---file ${DOCKERFILE} \
+--file ${TPL_DOCKERFILE} \
 --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
 --label "org.opencontainers.image.source=https://github.com/GEOS-DEV/thirdPartyLibs" \
 --label "org.opencontainers.image.revision=${COMMIT}" \

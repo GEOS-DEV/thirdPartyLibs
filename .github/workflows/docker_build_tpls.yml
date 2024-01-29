@@ -1,8 +1,6 @@
 name: Docker Build TPLs
 
-on:
-  push:
-  pull_request:
+on: pull_request
 
 # Cancels in-progress workflows for a PR when updated
 concurrency:
@@ -24,64 +22,64 @@ jobs:
         include:
           - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
             DOCKER_REPOSITORY: geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            TPL_DOCKERFILE: docker/TotalEnergies/Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
             INSTALL_DIR_ROOT: /workrd/SCR/GEOSX/install/gcc8
           - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 11.5.119)
             DOCKER_REPOSITORY: geosx/pecan-gpu-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            TPL_DOCKERFILE: docker/TotalEnergies/Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx:0.0.1
             HOST_CONFIG: docker/TotalEnergies/pecan-GPU.cmake
             INSTALL_DIR_ROOT: /shared/data1/Users/j0436735/travis-deployments/GPU
           - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
             DOCKER_REPOSITORY: geosx/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            TPL_DOCKERFILE: docker/TotalEnergies/Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx:0.0.1
             HOST_CONFIG: docker/TotalEnergies/pecan-CPU.cmake
             INSTALL_DIR_ROOT: /shared/data1/Users/j0436735/travis-deployments/CPU
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
-            DOCKERFILE: docker/Stanford/Dockerfile
+            TPL_DOCKERFILE: docker/Stanford/Dockerfile
             DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
             HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10.cmake
             INSTALL_DIR_ROOT: /oak/stanford/schools/ees/COLLABORATIONS/geosx/CPU
           - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
-            DOCKERFILE: docker/Stanford/Dockerfile
+            TPL_DOCKERFILE: docker/Stanford/Dockerfile
             DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
             HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
             INSTALL_DIR_ROOT: /oak/stanford/schools/ees/COLLABORATIONS/geosx/GPU
           - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
             DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc9
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+            TPL_DOCKERFILE: docker/gcc-ubuntu/Dockerfile
             DOCKER_ROOT_IMAGE: ubuntu:20.04
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
           - name: Ubuntu (20.04, gcc 10.3.0, open-mpi 4.0.3) - github codespaces
             DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc10
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+            TPL_DOCKERFILE: docker/gcc-ubuntu/Dockerfile
             DOCKER_ROOT_IMAGE: mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=10"
           - name: Ubuntu (22.04, gcc 11.2.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc11
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+            TPL_DOCKERFILE: docker/gcc-ubuntu/Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=11"
           - name: Ubuntu (22.04, gcc 12.3.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc12
-            DOCKERFILE: docker/gcc-ubuntu/Dockerfile
+            TPL_DOCKERFILE: docker/gcc-ubuntu/Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
           - name: Ubuntu (20.04, clang 10.0.0 + gcc 9.4.0, open-mpi 4.0.3, cuda-11.8.89)
             DOCKER_REPOSITORY: geosx/ubuntu20.04-clang10.0.0-cuda11.8.89
-            DOCKERFILE: docker/clang-cuda/Dockerfile
+            TPL_DOCKERFILE: docker/clang-cuda/Dockerfile
           - name: Centos (7.7, gcc 8.3.1, open-mpi 1.10.7, cuda 11.8.89)
             DOCKER_REPOSITORY: geosx/centos7.7-gcc8.3.1-cuda11.8.89
-            DOCKERFILE: docker/gcc-cuda/Dockerfile
+            TPL_DOCKERFILE: docker/gcc-cuda/Dockerfile
           - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
             DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
-            DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
+            TPL_DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
             HOST_CONFIG: host-configs/TOTAL/pangea3-gcc8.4.1-openmpi-4.1.2.cmake
-            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:2
+            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:3
             HOST_ARCH: ppc64le
 
     steps:
@@ -103,10 +101,10 @@ jobs:
     - name: Print environment
       run: printenv
 
-    - name: Run the docker build and push docker script
-      if: ${{ matrix.HOST_ARCH }}
+    - name: Run the docker build and push docker script for non ppc64 arch
+      if: ${{ !matrix.HOST_ARCH }}
       env:
-        DOCKERFILE: ${{ matrix.DOCKERFILE }}
+        TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
         INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
@@ -116,13 +114,43 @@ jobs:
         BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
+      run: bash -x ./scripts/docker_build_and_push.sh
+
+    - name: Run the docker build and push docker script for ppc64 arch
+      if: ${{ matrix.HOST_ARCH }}
 
       uses: uraimo/run-on-arch-action@v2
       with:
-        arch: none
-        distro: none
-        base_image: ${{ matrix.DOCKER_ROOT_IMAGE }}
-        run: bash -x ./scripts/docker_build_and_push.sh
+        arch: ppc64le
+        distro: ubuntu20.04
+        env: |
+          TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
+          DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+          INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
+          HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
+          DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
+          PULL_REQUEST_NUMBER: ${{ github.event.number || '0' }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          COMMIT: ${{ github.sha }}
+          BUILD_DIR: ${{ github.workspace }}
+          DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+          INSTALL_DIR: ${INSTALL_DIR_ROOT}/GEOS_TPL-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
+
+        run: |
+          echo "-- Step 1: Install Docker on host ppc64le image "
+          apt -qq update
+          DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt -qq install -y apt-transport-https ca-certificates curl software-properties-common gnupg
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          chmod a+r /etc/apt/keyrings/docker.gpg
+          echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+           $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+           tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get -qq update
+          apt-get -qq install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+          echo "-- Step 2: Build TPLs on pangea reproduction "
+          bash -x ./scripts/docker_build_and_push.sh
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
