@@ -101,21 +101,21 @@ jobs:
     - name: Print environment
       run: printenv
 
-    - name: Run the docker build and push docker script for non ppc64 arch
-      if: ${{ !matrix.HOST_ARCH }}
-      runs-on: ubuntu-22.04
-      env:
-        TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
-        DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
-        DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
-        INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
-        HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
-        DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
-        PULL_REQUEST_NUMBER: ${{ github.event.number }}
-        BUILD_NUMBER: ${{ github.run_number }}
-        COMMIT: ${{ github.sha }}
-        BUILD_DIR: ${{ github.workspace }}
-      run: bash -x ./scripts/docker_build_and_push.sh
+    # - name: Run the docker build and push docker script for non ppc64 arch
+    #   if: ${{ !matrix.HOST_ARCH }}
+    #   runs-on: ubuntu-22.04
+    #   env:
+    #     TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
+    #     DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+    #     DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
+    #     INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
+    #     HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
+    #     DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
+    #     PULL_REQUEST_NUMBER: ${{ github.event.number }}
+    #     BUILD_NUMBER: ${{ github.run_number }}
+    #     COMMIT: ${{ github.sha }}
+    #     BUILD_DIR: ${{ github.workspace }}
+    #   run: bash -x ./scripts/docker_build_and_push.sh
 
     - name: Run the docker build and push docker script for ppc64 arch
       if: ${{ matrix.HOST_ARCH }}
@@ -155,7 +155,8 @@ jobs:
           apt-get -qq update
           apt-get -qq install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
           echo "-- Step 2: Build TPLs on pangea reproduction "
-          bash -x ./scripts/docker_build_and_push.sh
+          bash -x lscpu
+          #bash -x ./scripts/docker_build_and_push.sh
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
