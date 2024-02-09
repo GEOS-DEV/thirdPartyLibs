@@ -103,6 +103,7 @@ jobs:
 
     - name: Run the docker build and push docker script for non ppc64 arch
       if: ${{ !matrix.HOST_ARCH }}
+      runs-on: ubuntu-22.04
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
@@ -118,7 +119,7 @@ jobs:
 
     - name: Run the docker build and push docker script for ppc64 arch
       if: ${{ matrix.HOST_ARCH }}
-
+      runs-on: self-hosted
       uses: uraimo/run-on-arch-action@v2
       with:
         arch: ppc64le
@@ -137,6 +138,10 @@ jobs:
           INSTALL_DIR: ${INSTALL_DIR_ROOT}/GEOS_TPL-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
 
         run: |
+          echo "-- Step 0: Copy certs "
+          RUNNER_CERTIFICATES_DIR=/etc/pki/ca-trust/source/anchors/
+          mkdir -p ${GITHUB_WORKSPACE}/certificates
+          cp ${RUNNER_CERTIFICATES_DIR}/*.crt* ${GITHUB_WORKSPACE}/certificates
           echo "-- Step 1: Install Docker on host ppc64le image "
           apt -qq update
           DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt -qq install -y apt-transport-https ca-certificates curl software-properties-common gnupg
