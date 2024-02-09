@@ -11,7 +11,7 @@ jobs:
   build_images:
     name: ${{ matrix.name }}
 
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
 
     strategy:
 
@@ -119,7 +119,6 @@ jobs:
 
     - name: Run the docker build and push docker script for ppc64 arch
       if: ${{ matrix.HOST_ARCH }}
-      runs-on: self-hosted
       uses: uraimo/run-on-arch-action@v2
       with:
         arch: ppc64le
