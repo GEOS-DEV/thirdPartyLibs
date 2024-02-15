@@ -773,7 +773,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-8-g61fa167d7.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-44-geab5f9f7f.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -845,6 +845,7 @@ if( ENABLE_HYPRE )
   FC=${HYPRE_Fortran_COMPILER} \
   FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
   --prefix=${HYPRE_DIR} \
+  --with-print-errors \
   ${HYPRE_DEBUG_FLAG} \
   ${HYPRE_INT_FLAG} \
   --with-blas-lib=\"${BLAS_LINK_LINE}\" \
