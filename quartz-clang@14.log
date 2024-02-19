@@ -1,0 +1,180 @@
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+[config-build.py]:[INFO]: Passing the following unknown arguments directly to cmake: ['srun', '-N', '1', '-t', '90', '1', '-A', 'uco']
+[config-build.py]:[INFO]: Using host config file: '/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake'.
+[config-build.py]:[INFO]: Build path is: build-quartz-clang@14-debug
+[config-build.py]:[INFO]: Creating build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'...
+[config-build.py]:[INFO]: Creating install path '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-release'...
+[config-build.py]:[INFO]: Extracting cmake entry from host config file /usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake
+[config-build.py]:[INFO]: Could not find a cmake entry in host config file. Using ${PATH}.
+[config-build.py]:[WARNING]: Additional argument 'srun' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-N' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-t' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '90' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-A' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument 'uco' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[INFO]: Changing to build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'
+[config-build.py]:[INFO]: Executing cmake line: 'cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-release -GNinja srun -N 1 -t 90 1 -A uco -C/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake /usr/WS1/appleton/PSAAPSpace/thirdPartyLibs'
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug/srun"
+
+
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "1"
+
+
+CMake Error: Unknown argument -t
+CMake Error: Run 'cmake --help' for all supported options.
+bash: line 5: cd: build-quartz-clang@14-Debug: No such file or directory
+[config-build.py]:[INFO]: Passing the following unknown arguments directly to cmake: ['srun', '-N', '1', '-t', '90', '1', '-A', 'uco']
+[config-build.py]:[INFO]: Using host config file: '/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake'.
+[config-build.py]:[INFO]: Build path is: build-quartz-clang@14-debug
+[config-build.py]:[INFO]: Creating build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'...
+[config-build.py]:[INFO]: Install directory '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-release' already exists. Deleting...
+[config-build.py]:[INFO]: Creating install path '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-release'...
+[config-build.py]:[INFO]: Extracting cmake entry from host config file /usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake
+[config-build.py]:[INFO]: Could not find a cmake entry in host config file. Using ${PATH}.
+[config-build.py]:[WARNING]: Additional argument 'srun' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-N' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-t' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '90' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-A' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument 'uco' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[INFO]: Changing to build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'
+[config-build.py]:[INFO]: Executing cmake line: 'cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-release -GNinja srun -N 1 -t 90 1 -A uco -C/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake /usr/WS1/appleton/PSAAPSpace/thirdPartyLibs'
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug/srun"
+
+
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "1"
+
+
+CMake Error: Unknown argument -t
+CMake Error: Run 'cmake --help' for all supported options.
+./scripts/setupLC-TPL-helper.bash: line 32: cd: build-quartz-clang@14-Debug: No such file or directory
+srun: job 2246131 queued and waiting for resources
+srun: job 2246131 has been allocated resources
+srun: error: quartz152: task 0: Exited with exit code 2
+make: *** No targets specified and no makefile found.  Stop.
+[config-build.py]:[INFO]: Passing the following unknown arguments directly to cmake: ['srun', '-N', '1', '-t', '90', '1', '-A', 'uco']
+[config-build.py]:[INFO]: Using host config file: '/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake'.
+[config-build.py]:[INFO]: Build path is: build-quartz-clang@14-debug
+[config-build.py]:[INFO]: Creating build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'...
+[config-build.py]:[INFO]: Creating install path '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug'...
+[config-build.py]:[INFO]: Extracting cmake entry from host config file /usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake
+[config-build.py]:[INFO]: Could not find a cmake entry in host config file. Using ${PATH}.
+[config-build.py]:[WARNING]: Additional argument 'srun' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-N' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-t' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '90' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-A' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument 'uco' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[INFO]: Changing to build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'
+[config-build.py]:[INFO]: Executing cmake line: 'cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug -GNinja srun -N 1 -t 90 1 -A uco -C/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake /usr/WS1/appleton/PSAAPSpace/thirdPartyLibs'
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug/srun"
+
+
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "1"
+
+
+CMake Error: Unknown argument -t
+CMake Error: Run 'cmake --help' for all supported options.
+./scripts/setupLC-TPL-helper.bash: line 32: cd: build-quartz-clang@14-Debug: No such file or directory
+srun: job 2246323 queued and waiting for resources
+srun: job 2246323 has been allocated resources
+srun: error: quartz116: task 0: Exited with exit code 2
+make: *** No targets specified and no makefile found.  Stop.
+[config-build.py]:[INFO]: Passing the following unknown arguments directly to cmake: ['srun', '-N', '1', '-t', '90', '1', '-A', 'uco']
+[config-build.py]:[INFO]: Using host config file: '/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake'.
+[config-build.py]:[INFO]: Build path is: build-quartz-clang@14-debug
+[config-build.py]:[INFO]: Creating build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'...
+[config-build.py]:[INFO]: Install directory '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug' already exists. Deleting...
+[config-build.py]:[INFO]: Creating install path '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug'...
+[config-build.py]:[INFO]: Extracting cmake entry from host config file /usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake
+[config-build.py]:[INFO]: Could not find a cmake entry in host config file. Using ${PATH}.
+[config-build.py]:[WARNING]: Additional argument 'srun' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-N' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-t' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '90' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-A' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument 'uco' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[INFO]: Changing to build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'
+[config-build.py]:[INFO]: Executing cmake line: 'cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug -GNinja srun -N 1 -t 90 1 -A uco -C/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake /usr/WS1/appleton/PSAAPSpace/thirdPartyLibs'
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug/srun"
+
+
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "1"
+
+
+CMake Error: Unknown argument -t
+CMake Error: Run 'cmake --help' for all supported options.
+./scripts/setupLC-TPL-helper.bash: line 32: cd: build-quartz-clang@14-Debug: No such file or directory
+srun: job 2246324 queued and waiting for resources
+srun: job 2246324 has been allocated resources
+srun: error: quartz60: task 0: Exited with exit code 2
+make: *** No targets specified and no makefile found.  Stop.
+[config-build.py]:[INFO]: Passing the following unknown arguments directly to cmake: ['srun', '-N', '1', '-t', '90', '1', '-A', 'uco']
+[config-build.py]:[INFO]: Using host config file: '/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake'.
+[config-build.py]:[INFO]: Build path is: build-quartz-clang@14-debug
+[config-build.py]:[INFO]: Creating build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'...
+[config-build.py]:[INFO]: Install directory '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug' already exists. Deleting...
+[config-build.py]:[INFO]: Creating install path '/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug'...
+[config-build.py]:[INFO]: Extracting cmake entry from host config file /usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake
+[config-build.py]:[INFO]: Could not find a cmake entry in host config file. Using ${PATH}.
+[config-build.py]:[WARNING]: Additional argument 'srun' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-N' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-t' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '90' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '1' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument '-A' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[WARNING]: Additional argument 'uco' does not start with '-D'. Keeping it nevertheless.
+[config-build.py]:[INFO]: Changing to build directory '/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug'
+[config-build.py]:[INFO]: Executing cmake line: 'cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/workspace/appleton/PSAAPSpace/GEOS/install-quartz-clang@14-Debug -GNinja srun -N 1 -t 90 1 -A uco -C/usr/workspace/appleton/PSAAPSpace/GEOS/host-configs/LLNL/quartz-clang@14.cmake /usr/WS1/appleton/PSAAPSpace/thirdPartyLibs'
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "/usr/WS1/appleton/PSAAPSpace/thirdPartyLibs/build-quartz-clang@14-debug/srun"
+
+
+CMake Warning:
+  Ignoring extra path from command line:
+
+   "1"
+
+
+CMake Error: Unknown argument -t
+CMake Error: Run 'cmake --help' for all supported options.
+./scripts/setupLC-TPL-helper.bash: line 40: cd: build-quartz-clang@14-Debug: No such file or directory
+srun: job 2246326 queued and waiting for resources
+srun: job 2246326 has been allocated resources
+srun: error: quartz60: task 0: Exited with exit code 2
+make: *** No targets specified and no makefile found.  Stop.

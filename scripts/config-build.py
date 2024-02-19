@@ -113,7 +113,16 @@ def main(calling_script, args, unknown_args):
     ########################
     scripts_dir = os.path.dirname(os.path.abspath(calling_script))
 
-    cache_file = os.path.abspath(args.host_config)
+    temp_host_config = args.host_config
+    temp_host_config_alt = temp_host_config.replace("@", "-")
+
+    if os.path.exists(os.path.abspath(temp_host_config)):
+        cache_file = os.path.abspath(temp_host_config)
+    elif os.path.exists(os.path.abspath(temp_host_config_alt)):
+        cache_file = os.path.abspath(temp_host_config_alt)
+    else:
+        loggin.info("Could not find a cmake entry in host config file for ${temp_host_config} using ${PATH}.")
+
     platform_info = os.path.split(cache_file)[1]
     if platform_info.endswith(".cmake"):
         platform_info = platform_info[:-6]
