@@ -34,6 +34,11 @@ else()
     endif()
 endif()
 
+option(ENABLE_MPI          "Enables MPI support" ON)
+
+message( STATUS " The value of ENABLE_MPI is ${ENABLE_MPI}. " )
+message( STATUS " The value of BLT_SOURCE_DIR is ${BLT_SOURCE_DIR}. " )
+
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 ################################
@@ -917,6 +922,7 @@ if( ENABLE_SCOTCH )
     set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v6.0.9.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
+    message( STATUS " The value of ENABLE_MPI is ${ENABLE_MPI}. " )
 
     if( NOT ENABLE_MPI )
         message( FATAL_ERROR "Building Scotch without MPI is not supported." )
