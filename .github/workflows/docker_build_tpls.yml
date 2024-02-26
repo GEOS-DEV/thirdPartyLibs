@@ -155,8 +155,7 @@ jobs:
           apt-get -qq update
           apt-get -qq install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
           echo "-- Step 2: Build TPLs on pangea reproduction "
-          bash -x lscpu
-          #bash -x ./scripts/docker_build_and_push.sh
+          bash -x ./scripts/docker_build_and_push.sh
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
