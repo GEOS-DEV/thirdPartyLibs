@@ -138,10 +138,6 @@ jobs:
           INSTALL_DIR: ${INSTALL_DIR_ROOT}/GEOS_TPL-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
 
         run: |
-          echo "-- Step 0: Copy certs "
-          RUNNER_CERTIFICATES_DIR=/etc/pki/ca-trust/source/anchors/
-          mkdir -p ${GITHUB_WORKSPACE}/certificates
-          cp ${RUNNER_CERTIFICATES_DIR}/*.crt* ${GITHUB_WORKSPACE}/certificates
           echo "-- Step 1: Install Docker on host ppc64le image "
           apt -qq update
           DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt -qq install -y apt-transport-https ca-certificates curl software-properties-common gnupg
