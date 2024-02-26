@@ -1,9 +1,27 @@
 # This Dockerfile is used to build a docker image reproducing the Pangea installation over a ppc64le architecture:
 # It is not directly callable by the TPL ci but the built image is.
-
  
 # syntax=docker/dockerfile:1
-FROM almalinux:8
+FROM ppc64le/almalinux:8
+
+# Install other needed packages
+RUN dnf install -y \
+    # gcc deps \
+    libmpc-devel.ppc64le glibc-devel \
+    # mpirun deps  \
+    librdmacm hwloc \
+    git git-lfs \
+    python38-devel python38-numpy \
+    zlib-devel \
+    make \
+    bc \
+    file \
+    # Scotch deps \
+    bison \
+    flex \
+    # vtk deps \
+    patch && \
+    git-lfs install #&& alternatives --set python /usr/bin/python3
 
 # copy pangea tree for modules needed by TPLs
 COPY ./tarball/liblustreapi.so.1 /lib64/
@@ -24,12 +42,12 @@ ENV CPATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/
     LD_RUN_PATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib64:${LD_RUN_PATH}" \
     MANPATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/share/man:${MANPATH}" \
     PATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin:${PATH}" \
-   CC=gcc \
-   CXX=g++ \
-   F77=gfortran \
-   F90=gfortran \
-   FC=gfortran \
-   GCC_ROOT=/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v
+    CC=gcc \
+    CXX=g++ \
+    F77=gfortran \
+    F90=gfortran \
+    FC=gfortran \
+    GCC_ROOT=/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v
 
 ## ompi
 ADD ./tarball/ompi-*.tgz /
@@ -74,7 +92,7 @@ ENV CPATH="/data_local/sw/cuda/11.5.0/include:${CPATH}" \
 ADD ./tarball/openblas-*.tgz /
 
 ENV LD_LIBRARY_PATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/lib:${LD_LIBRARY_PATH}" \
-   LIBRARY_PATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/lib:${LIBRARY_PATH}" \
+    LIBRARY_PATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/lib:${LIBRARY_PATH}" \
     PATH="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/bin:${PATH}" \
     OPENBLAS_ROOT="/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp"
 
@@ -84,36 +102,18 @@ ADD ./tarball/lsf-*.tgz /
 ENV LD_LIBRARY_PATH="/data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib:${LD_LIBRARY_PATH}" \
     PATH="/data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/etc:/data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/bin:${PATH}"
 
-# Install other needed packages
-RUN dnf install -y \
-    # gcc deps \
-    libmpc-devel.ppc64le glibc-devel \
-    # mpirun deps  \
-    librdmacm hwloc \
-    git git-lfs \
-    python38-devel \
-    zlib-devel \
-    make \
-    bc \
-    file \
-    # Scotch deps \
-    bison \
-    flex \
-    # vtk deps \
-    patch && \
-    git-lfs install && alternatives --set python /usr/bin/python3 
-
 # Uncomment the two following lines to test the TPLs build
 #
-# RUN git clone  https://github.com/GEOS-DEV/thirdPartyLibs.git && \
+#RUN cd /root && git clone --depth=1  https://github.com/GEOS-DEV/thirdPartyLibs.git && \
 #    cd thirdPartyLibs && git submodule init && git submodule update
 
-# RUN cd thirdPartyLibs && python scripts/config-build.py \
+#RUN cd /root/thirdPartyLibs && python3 scripts/config-build.py \
 #    --hostconfig=host-configs/TOTAL/pangea3-gcc8.4.1-openmpi-4.1.2.cmake \
-#    --buildtype=Release --installpath=/home/tpls-Release -DNUM_PROC=8 && \
-#    make -C build-pangea3-gcc8.4.1-openmpi-4.1.2-release -j
+#    --buildtype=Release --installpath=/opt/tpls -DNUM_PROC=32 && \
+#    make -C build-pangea3-gcc8.4.1-openmpi-4.1.2-release -j && \
+#    cd .. && rm -rf thirdPartyLibs
 
-# Install tools needed by geos
+# Install tools needed by geos ci
 RUN dnf -y --enablerepo=powertools install \
     ninja-build \
     openssh-clients \
@@ -125,3 +125,4 @@ RUN dnf -y --enablerepo=powertools install \
 RUN dnf makecache --refresh && dnf -y install cargo openssl-devel
 RUN cargo install sccache --locked && mkdir -p /opt/sccache/ && cp -r /root/.cargo/bin /opt/sccache/
 RUN dnf remove -y cargo openssl-devel
+ENV SCCACHE=/opt/sccache/bin/sccache
