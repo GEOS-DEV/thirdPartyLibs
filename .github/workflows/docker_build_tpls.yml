@@ -11,7 +11,7 @@ jobs:
   build_images:
     name: ${{ matrix.name }}
 
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
 
     strategy:
 
@@ -40,15 +40,15 @@ jobs:
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
             TPL_DOCKERFILE: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
+            DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.7.1-openblas0.3.10-zlib1.2.11-no-geosx:0.0.2
             HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10.cmake
-            INSTALL_DIR_ROOT: /oak/stanford/schools/ees/COLLABORATIONS/geosx/CPU
-          - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10, zlib 1.2.11)
-            DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11
+            INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/CPU
+          - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 11.7.1, openblas 0.3.10, zlib 1.2.11)
+            DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.7.1-openblas0.3.10-zlib1.2.11
             TPL_DOCKERFILE: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: jafranc/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.5.0-openblas0.3.10-zlib1.2.11-no-geosx:0.0.1
-            HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.5.0-sm80.cmake
-            INSTALL_DIR_ROOT: /oak/stanford/schools/ees/COLLABORATIONS/geosx/GPU
+            DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda11.7.1-openblas0.3.10-zlib1.2.11-no-geosx:0.0.2
+            HOST_CONFIG: docker/Stanford/sherlock-gcc10-ompi4.1.2-openblas0.3.10-cuda11.7.1-sm70.cmake
+            INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
           - name: Ubuntu (20.04, gcc 9.3.0, open-mpi 4.0.3)
             DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc9
             TPL_DOCKERFILE: docker/gcc-ubuntu/Dockerfile
@@ -101,6 +101,7 @@ jobs:
     - name: Print environment
       run: printenv
 
+    #  Commented for preliminary tests (to avoid useless resources consumption)
     # - name: Run the docker build and push docker script for non ppc64 arch
     #   if: ${{ !matrix.HOST_ARCH }}
     #   runs-on: ubuntu-22.04
