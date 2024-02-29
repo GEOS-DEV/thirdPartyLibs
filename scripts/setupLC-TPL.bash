@@ -127,11 +127,9 @@ module -T load cmake >> "$LOG_FILE" 2>&1
 echo " " >> "$LOG_FILE"
 
 python3 scripts/config-build.py -hc $HOST_CONFIG -bt $BUILD_TYPE -ip $INSTALL_DIR | tee -a "$LOG_FILE" 2>&1 
-cd build-$CONFIG-${BUILD_TYPE,,} 
-echo "changed to build-$CONFIG-${BUILD_TYPE,,} directory " | tee -a "$LOG_FILE" 2>&1
-cd .. | tee -a "$LOG_FILE" 2>&1
-echo "changed to ${ORIGINAL_DIR} directory " | tee -a "$LOG_FILE" 2>&1
-srun -N1 -t90 make | tee -a "$LOG_FILE" 2>&1
+cd build-$MACHINE-$COMPILER-${BUILD_TYPE,,} 
+echo "changed to build-$MACHINE-$COMPILER-${BUILD_TYPE,,}  directory " | tee -a "$LOG_FILE" 2>&1
+srun -N1 -t60 -ppdebug make | tee -a "$LOG_FILE" 2>&1
 # echo " $GET_A_NODE"
 # $GET_A_NODE make |
 
