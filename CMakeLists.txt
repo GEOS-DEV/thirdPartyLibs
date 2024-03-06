@@ -294,40 +294,33 @@ set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
 set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11-bsd.tgz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
-# -w compiler flag is needed to build Silo release 4.11 with
-# AppleClang or regular Clang due to implicit declaration of
-# 'zfp_init_zfp'. This issue is fixed by release 4.11.1 so it will be
-# possible to remove the `-w` flag when we will use this latter (see
-# https://github.com/LLNL/Silo/issues/224).
-#
-# This -w flag was exported inside the HDF5_C_FLAGS variable when hdf5 was built
-# using autogen.
-#
-if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-  # HDF5_C_FLAGS is used only here so we can overwrite it
-  LIST( APPEND HDF5_C_FLAGS -w )
-endif()
+string(REPLACE ";" " " HDF5_C_FLAGS_STR "${HDF5_C_FLAGS}")
+
+# -Wno-error=xxx flags are needed to build Silo release 4.11 with
+# AppleClang or regular Clang due to implicit declaration of 'zfp_init_zfp'.
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config_silo_for_geos "\
+../silo/configure \
+CC=\"${HDF5_C_COMPILER}\" \
+CXX=\"${HDF5_CXX_COMPILER}\" \
+CFLAGS=\"${HDF5_C_FLAGS_STR} ${C_FLAGS_NO_WARNINGS} -Wno-error=implicit-function-declaration -Wno-error=int-conversion\" \
+LIBS=\"-ldl\" \
+--prefix=${SILO_DIR} \
+--build=${SILO_BUILD_TYPE} \
+--with-hdf5=${HDF5_DIR}/include,${HDF5_DIR}/lib \
+--disable-fortran \
+--enable-optimization \
+--disable-silex \
+--enable-shared=no \
+--enable-static=yes \
+--with-pic=yes\n")
 
 ExternalProject_Add( silo
                      URL ${SILO_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
-                     PATCH_COMMAND patch  src/hdf5_drv/H5FDsilo.c  < ${TPL_MIRROR_DIR}/silo-4.11.patch
+                     PATCH_COMMAND patch src/hdf5_drv/H5FDsilo.c < ${TPL_MIRROR_DIR}/silo-4.11.patch
                      DEPENDS ${HDF5_DEPENDENCIES}
-                     CONFIGURE_COMMAND ../silo/configure
-                                          CC=${HDF5_C_COMPILER}
-                                          # Ensure that silo is built with position independent code
-                                          "CFLAGS=${HDF5_C_FLAGS} -fpic"
-                                          CXX=${HDF5_CXX_COMPILER}
-                                          --prefix=<INSTALL_DIR>
-                                          --disable-fortran
-                                          --enable-optimization
-                                          --with-hdf5=${HDF5_DIR}/include,${HDF5_DIR}/lib
-                                          LIBS=-ldl
-                                          --disable-silex
-                                          --enable-shared=no
-                                          --enable-static=yes
-                                          --build=${SILO_BUILD_TYPE}
+                     CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_silo_for_geos && . ${PROJECT_BINARY_DIR}/config_silo_for_geos
                      BUILD_COMMAND make -j ${NUM_PROC}
                      INSTALL_COMMAND make install )
 
@@ -835,7 +828,7 @@ if( ENABLE_HYPRE )
     set( HYPRE_DEBUG_FLAG "--enable-debug" )
   endif()
 
-  file( WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geosx "\
+  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geos "\
   ./configure \
   CC=${HYPRE_C_COMPILER} \
   CFLAGS=\"${HYPRE_C_FLAGS}\" \
@@ -851,7 +844,7 @@ if( ENABLE_HYPRE )
   --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
   ${HYPRE_SUPERLU_FLAGS} \
   ${HYPRE_OPENMP_FLAG} \
-  ${HYPRE_CUDA_FLAGS}\
+  ${HYPRE_CUDA_FLAGS} \
   ${HYPRE_CALIPER_FLAGS}\n")
 
   ExternalProject_Add( hypre
@@ -860,7 +853,7 @@ if( ENABLE_HYPRE )
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                       CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geosx && . ${PROJECT_BINARY_DIR}/config_hypre_for_geosx
+                       CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geos && . ${PROJECT_BINARY_DIR}/config_hypre_for_geos
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
                        INSTALL_COMMAND make install
                        )
@@ -929,9 +922,9 @@ make ${SUITESPARSE_CONFIG_ARGS} install && \
 cd ..\n" )
     endforeach()
 
-    file(WRITE ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx "make config ${SUITESPARSE_CONFIG_ARGS}\n" )
-    file(WRITE ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx ${SUITESPARSE_BUILD_CMD})
-    file(WRITE ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx ${SUITESPARSE_INSTALL_CMD})
+    file(WRITE ${PROJECT_BINARY_DIR}/config_suitesparse_for_geos "make config ${SUITESPARSE_CONFIG_ARGS}\n")
+    file(WRITE ${PROJECT_BINARY_DIR}/build_suitesparse_for_geos ${SUITESPARSE_BUILD_CMD})
+    file(WRITE ${PROJECT_BINARY_DIR}/install_suitesparse_for_geos ${SUITESPARSE_INSTALL_CMD})
 
     ExternalProject_Add( suitesparse
                          URL ${SUITESPARSE_URL}
@@ -939,9 +932,9 @@ cd ..\n" )
                          INSTALL_DIR ${SUITESPARSE_DIR}
                          DEPENDS ${SUITESPARSE_DEPENDS}
                          BINARY_DIR ${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse
-                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
-                         BUILD_COMMAND cat ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
-                         INSTALL_COMMAND cat ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx && . ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx
+                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_suitesparse_for_geos && . ${PROJECT_BINARY_DIR}/config_suitesparse_for_geos
+                         BUILD_COMMAND cat ${PROJECT_BINARY_DIR}/build_suitesparse_for_geos && . ${PROJECT_BINARY_DIR}/build_suitesparse_for_geos
+                         INSTALL_COMMAND cat ${PROJECT_BINARY_DIR}/install_suitesparse_for_geos && . ${PROJECT_BINARY_DIR}/install_suitesparse_for_geos
                        )
 
     list(APPEND build_list suitesparse )
@@ -961,7 +954,7 @@ if( ENABLE_SCOTCH )
         message( FATAL_ERROR "Building Scotch without MPI is not supported." )
     endif()
 
-    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -fPIC -DINTSIZE64 -DIDXSIZE64 -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -Drestrict=__restrict" )
+    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -Wno-error=implicit-function-declaration -fPIC -DINTSIZE64 -DIDXSIZE64 -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -Drestrict=__restrict" )
     set( SCOTCH_LD_FLAGS "-lm" )
 
     # OSX does not have pthread barriers used by Scotch
@@ -994,7 +987,7 @@ BISON     = bison
 prefix    = ${SCOTCH_DIR}
 " )
 
-    file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
+    file(WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
     if ( NOT DEFINED SCOTCH_NUM_PROC )
       set( SCOTCH_NUM_PROC 2 )
@@ -1069,7 +1062,7 @@ if( ENABLE_PETSC )
     string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
     string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 
-    file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
+    file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geos "\
 ./configure \
 --prefix=${PETSC_INSTALL_DIR} \
 --CC=${PETSC_C_COMPILER} \
@@ -1096,7 +1089,7 @@ ${PETSC_DEP_FLAG}\n")
                          DEPENDS ${PETSC_DEPENDS}
                          BINARY_DIR ${PROJECT_BINARY_DIR}/petsc/src/petsc
                          INSTALL_DIR ${PETSC_INSTALL_DIR}
-                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx
+                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_petsc_for_geos && . ${PROJECT_BINARY_DIR}/config_petsc_for_geos
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
                         )
@@ -1317,6 +1310,8 @@ add_dependencies( tpl ${build_list}  )
 
 # Clean up
 add_custom_command( TARGET tpl POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_suitesparse_for_geosx
-                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/build_suitesparse_for_geosx
-                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/install_suitesparse_for_geosx )
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_silo_for_geos
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_hypre_for_geos
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_suitesparse_for_geos
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/build_suitesparse_for_geos
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/install_suitesparse_for_geos )
