@@ -20,9 +20,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         python3 \
         clang
 
-# Installing latest CMake version available on Lassen
-ARG CMAKE_VERSION=3.28.3
-RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
@@ -86,7 +84,5 @@ RUN apt-get install -y --no-install-recommends \
     ninja-build
 
 # Install `sccache` binaries to speed up the build of `geos`.
-ARG SCACHE_VERSION=0.7.7
-RUN mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v${SCACHE_VERSION}/sccache-v${SCACHE_VERSION}-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+RUN ${TPL_SRC_DIR}/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

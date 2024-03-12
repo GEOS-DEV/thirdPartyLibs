@@ -41,12 +41,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
-# Installing more recent cmake version (3.22.1 in ubuntu is not enough)
-ARG CMAKE_VERSION=3.28.3
-# We install (and uninstall) `curl` and some SSL certificates only for downloading `cmake`.
-RUN apt-get install -y --no-install-recommends curl ca-certificates && \
-    curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - && \
-    apt-get purge --auto-remove -y curl ca-certificates
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 ENV CC=/usr/bin/clang-${CLANG_MAJOR_VERSION} \
     CXX=/usr/bin/clang++-${CLANG_MAJOR_VERSION} \
@@ -119,11 +114,5 @@ RUN apt-get install -y --no-install-recommends \
     ghostscript \
     ninja-build
 
-# Install `sccache` binaries to speed up the build of `geos`.
-ARG SCACHE_VERSION=0.7.7
-RUN apt-get install -y --no-install-recommends curl && \
-    mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v${SCACHE_VERSION}/sccache-v${SCACHE_VERSION}-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf - && \
-    apt-get purge --auto-remove -y curl
-# This environment variable is meant to be used instead of an hard-coded path.
+RUN ${TPL_SRC_DIR}/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
