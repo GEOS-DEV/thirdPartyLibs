@@ -84,6 +84,8 @@ COPY . ${TPL_SRC_DIR}
 
 RUN yum install -y \
     openssh-client \
+    ca-certificates \
+    curl \
     texlive \
     graphviz \
     git

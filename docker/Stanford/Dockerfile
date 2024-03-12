@@ -42,6 +42,8 @@ COPY . ${TPL_SRC_DIR}
 
 RUN yum -y install \
     openssh-clients \
+    ca-certificates \
+    curl \
     texlive \
     graphviz \
     libxml2 \

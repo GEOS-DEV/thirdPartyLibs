@@ -82,6 +82,8 @@ COPY . ${TPL_SRC_DIR}
 
 RUN apt-get install -y --no-install-recommends \
     openssh-client \
+    ca-certificates \
+    curl \
     texlive \
     graphviz \
     ninja-build

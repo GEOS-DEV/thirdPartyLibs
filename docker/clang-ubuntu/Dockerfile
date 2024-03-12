@@ -107,6 +107,7 @@ RUN apt-get install -y --no-install-recommends \
     openssh-client \
 # `ca-certificates` is needed by `sccache` to download the cached compilations.
     ca-certificates \
+    curl \
     texlive \
     texlive-latex-extra \
     graphviz \
