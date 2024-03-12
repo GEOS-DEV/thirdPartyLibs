@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 set -e
 
 # Installing latest `CMake` version available

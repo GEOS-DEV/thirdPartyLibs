@@ -43,6 +43,7 @@ RUN apt-get install -y --no-install-recommends \
     file \
     bison \
     flex \
+    ca-certificates \
     curl \
     patch
 

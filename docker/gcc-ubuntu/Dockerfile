@@ -75,8 +75,8 @@ RUN apt-get install -y --no-install-recommends \
     file \
     bison \
     flex \
+    ca-certificates \
     curl \
-# GEOSX patches some tpl. Remove when it's not the case anymore.
     patch
 
 # Temporary local variables dedicated to the TPL build

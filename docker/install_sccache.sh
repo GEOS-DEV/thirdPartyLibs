@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 set -e
 
 # Install `sccache` binaries to speed up the build of `geos`

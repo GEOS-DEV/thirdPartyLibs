@@ -45,6 +45,7 @@ RUN yum install -y \
     file \
     bison \
     flex \
+    ca-certificates \
     curl \
     patch
 
