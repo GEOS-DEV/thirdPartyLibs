@@ -24,6 +24,7 @@ ENV TPL_BUILD_DIR=${TMP_DIR}/build
 # Note that docker seems to forget about the ARGs after each FROM statement.
 # This is why we repeat it below.
 ARG GCC_MAJOR_VERSION
+ARG BUILD_DIR
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
@@ -87,6 +88,7 @@ RUN apt-get install -y --no-install-recommends \
 
 # Get host config file from docker build arguments
 ARG HOST_CONFIG
+ARG BUILD_DIR
 
 # This COPY statement is a hack to use the clone that Travis-CI
 # already did at the beginning of the build.
@@ -98,10 +100,11 @@ RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
 WORKDIR ${TPL_BUILD_DIR}
-RUN make
+# RUN make
 
 # Last step is setting everything for a complete slave that will build GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+COPY . ${TPL_SRC_DIR}
 
 # I extract the deployed TPLs from the TPL building stqge.
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
