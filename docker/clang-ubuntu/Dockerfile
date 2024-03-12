@@ -27,6 +27,7 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
     clang-${CLANG_MAJOR_VERSION} \
+    cmake \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
     libtbb2 \
