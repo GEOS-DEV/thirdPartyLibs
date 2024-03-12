@@ -117,3 +117,5 @@ RUN apt-get install -y --no-install-recommends \
 
 RUN ${TPL_SRC_DIR}/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
+
+RUN rm -r ${TPL_SRC_DIR}
