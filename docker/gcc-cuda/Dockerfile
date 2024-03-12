@@ -3,8 +3,6 @@ ARG TMP_DIR=/tmp
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
 
-COPY . ${TPL_SRC_DIR}
-
 FROM nvidia/cuda:11.8.0-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
@@ -27,7 +25,8 @@ RUN yum -y install \
     openmpi-devel \
     python3
 
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
+RUN ls -l
+RUN docker/install_cmake.sh
 
 ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
     CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \
@@ -66,6 +65,8 @@ ARG CMAKE_CUDA_ARCHITECTURES=70
 
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
+
+COPY . ${TPL_SRC_DIR}
 
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \

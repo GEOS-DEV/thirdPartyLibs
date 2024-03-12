@@ -3,8 +3,6 @@ ARG TMP_DIR=/tmp
 ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
 
-COPY . ${TPL_SRC_DIR}
-
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
@@ -26,7 +24,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         python3 \
         clang
 
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
+RUN docker/install_cmake.sh
 
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
@@ -65,6 +63,7 @@ ARG CMAKE_CUDA_ARCHITECTURES=70
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 
+COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DENABLE_HYPRE_DEVICE="CUDA" \
