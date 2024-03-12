@@ -2,12 +2,6 @@
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
 ARG DOCKER_ROOT_IMAGE
 
-# The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
-# The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
-# Note that docker seems to forget about the ARGs after each FROM statement.
-# This is why we repeat it below.
-ARG GCC_MAJOR_VERSION
-
 FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
@@ -24,6 +18,12 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 ENV TMP_DIR=/tmp
 ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ENV TPL_BUILD_DIR=${TMP_DIR}/build
+
+# The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
+# The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
+# Note that docker seems to forget about the ARGs after each FROM statement.
+# This is why we repeat it below.
+ARG GCC_MAJOR_VERSION
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
