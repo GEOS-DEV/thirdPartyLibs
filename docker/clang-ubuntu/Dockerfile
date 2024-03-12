@@ -27,7 +27,6 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
     clang-${CLANG_MAJOR_VERSION} \
-    cmake \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
     libtbb2 \
@@ -41,6 +40,13 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # Unfortunately argparse (standard library's package used by GEOSX)
 # is not in the python-minimal package so we install the whole std lib.
     python3
+
+# Installing more recent cmake version (3.22.1 in ubuntu is not enough)
+ARG CMAKE_VERSION=3.28.3
+# We install (and uninstall) `curl` and some SSL certificates only for downloading `cmake`.
+RUN apt-get install -y --no-install-recommends curl ca-certificates && \
+    curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - && \
+    apt-get purge --auto-remove -y curl ca-certificates
 
 ENV CC=/usr/bin/clang-${CLANG_MAJOR_VERSION} \
     CXX=/usr/bin/clang++-${CLANG_MAJOR_VERSION} \
