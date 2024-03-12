@@ -9,10 +9,6 @@ RUN yum install -y \
     python3 \
     zlib-devel
 
-# centos:7.6 offers a 2.8 version of cmake which is too old.
-ARG CMAKE_VERSION=3.23.1
-RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
-
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
 RUN yum install -y \
@@ -21,6 +17,8 @@ RUN yum install -y \
     file \
     bison \
     flex \
+    ca-certificates \
+    curl \
     patch
 
 ARG TMP_DIR=/tmp
@@ -30,6 +28,7 @@ ARG TPL_BUILD_DIR=${TMP_DIR}/build
 ARG HOST_CONFIG
 
 COPY . ${TPL_SRC_DIR}
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
@@ -47,6 +46,5 @@ RUN yum -y install \
 
 RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
 
-RUN mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.3/sccache-v0.7.3-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+RUN ${TPL_SRC_DIR}/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
