@@ -13,8 +13,6 @@ RUN yum install -y \
     python3 \
     zlib-devel
 
-RUN docker/install_cmake.sh
-
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
 RUN yum install -y \
@@ -30,6 +28,7 @@ RUN yum install -y \
 ARG HOST_CONFIG
 
 COPY . ${TPL_SRC_DIR}
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 WORKDIR ${TPL_BUILD_DIR}
 RUN make

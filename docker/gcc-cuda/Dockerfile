@@ -25,9 +25,6 @@ RUN yum -y install \
     openmpi-devel \
     python3
 
-RUN ls -l
-RUN docker/install_cmake.sh
-
 ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
     CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \
     MPICC=/usr/lib64/openmpi/bin/mpicc \
@@ -67,7 +64,7 @@ ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 
 COPY . ${TPL_SRC_DIR}
-
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DENABLE_HYPRE_DEVICE="CUDA" \

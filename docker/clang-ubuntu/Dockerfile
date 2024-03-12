@@ -47,8 +47,6 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
-RUN docker/install_cmake.sh
-
 ENV CC=/usr/bin/clang-${CLANG_MAJOR_VERSION} \
     CXX=/usr/bin/clang++-${CLANG_MAJOR_VERSION} \
     MPICC=/usr/bin/mpicc \
@@ -92,7 +90,7 @@ ARG HOST_CONFIG
 # It replaces another git clone (including the lfs) and
 # prevents us from installing git, git-lfs and ca-certificates.
 COPY . ${TPL_SRC_DIR}
-
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!

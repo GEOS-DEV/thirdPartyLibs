@@ -24,8 +24,6 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         python3 \
         clang
 
-RUN docker/install_cmake.sh
-
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
     MPICC=/usr/bin/mpicc \
@@ -64,6 +62,7 @@ ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 
 COPY . ${TPL_SRC_DIR}
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DENABLE_HYPRE_DEVICE="CUDA" \
