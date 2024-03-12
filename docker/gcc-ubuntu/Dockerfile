@@ -116,5 +116,5 @@ RUN apt-get install -y --no-install-recommends \
     ghostscript \
     ninja-build
 
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/install_sccache.sh
+RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
