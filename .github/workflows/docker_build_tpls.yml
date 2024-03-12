@@ -69,7 +69,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc12
             DOCKERFILE: docker/gcc-ubuntu/Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
-          - name: Ubuntu (22.04, clang 15.0.7, gcc 11.4.0, open-mpi 4.1.2)
+          - name: Ubuntu (22.04, clang 15.0.7 + gcc 11.4.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-clang15
             DOCKERFILE: docker/clang-ubuntu/Dockerfile
