@@ -51,8 +51,6 @@ ARG TPL_BUILD_DIR=${TMP_DIR}/build
 
 ARG HOST_CONFIG
 
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
-
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
 ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
@@ -62,6 +60,7 @@ ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 
 COPY . ${TPL_SRC_DIR}
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DENABLE_HYPRE_DEVICE="CUDA" \
