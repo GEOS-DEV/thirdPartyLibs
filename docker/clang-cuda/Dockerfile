@@ -20,8 +20,6 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         python3 \
         clang
 
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
-
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
     MPICC=/usr/bin/mpicc \
@@ -52,6 +50,8 @@ ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
 
 ARG HOST_CONFIG
+
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70

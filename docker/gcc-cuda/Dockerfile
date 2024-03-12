@@ -12,8 +12,6 @@ RUN yum install -y \
     devtoolset-8-gcc-c++ \
     devtoolset-8-gcc-gfortran
 
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
-
 # Installing dependencies
 RUN yum -y install \
     tbb \
@@ -59,6 +57,8 @@ ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ARG CUDA_ARCH=sm_70
 ARG CMAKE_CUDA_COMPILER=${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc
 ARG CMAKE_CUDA_ARCHITECTURES=70
+
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}

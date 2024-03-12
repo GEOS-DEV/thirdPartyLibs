@@ -41,8 +41,6 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
-
 ENV CC=/usr/bin/clang-${CLANG_MAJOR_VERSION} \
     CXX=/usr/bin/clang++-${CLANG_MAJOR_VERSION} \
     MPICC=/usr/bin/mpicc \
@@ -83,6 +81,8 @@ ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 ARG TPL_BUILD_DIR=${TMP_DIR}/build
 # Get host config file from docker build arguments
 ARG HOST_CONFIG
+
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 # This COPY statement is a hack to use the clone that Travis-CI
 # already did at the beginning of the build.
