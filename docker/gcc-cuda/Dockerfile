@@ -45,6 +45,7 @@ RUN yum install -y \
     file \
     bison \
     flex \
+    curl \
     patch
 
 ARG TMP_DIR

@@ -43,6 +43,7 @@ RUN apt-get install -y --no-install-recommends \
     file \
     bison \
     flex \
+    curl \
     patch
 
 ARG TMP_DIR

@@ -72,6 +72,7 @@ RUN apt-get install -y --no-install-recommends \
     file \
     bison \
     flex \
+    curl \
 # GEOSX patches some tpl. Remove when it's not the case anymore.
     patch
 
