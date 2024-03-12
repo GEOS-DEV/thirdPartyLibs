@@ -86,7 +86,9 @@ ARG HOST_CONFIG
 # It replaces another git clone (including the lfs) and
 # prevents us from installing git, git-lfs and ca-certificates.
 COPY . ${TPL_SRC_DIR}
+
 RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
+
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
@@ -98,6 +100,7 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
 # I extract the deployed TPLs from the TPL building stqge.
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
+COPY . ${TPL_SRC_DIR}
 
 # Any tool specific to building GEOSX shall be installed in this stage.
 RUN apt-get install -y --no-install-recommends \

@@ -28,7 +28,9 @@ RUN yum install -y \
 ARG HOST_CONFIG
 
 COPY . ${TPL_SRC_DIR}
+
 RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
+
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
@@ -36,6 +38,7 @@ RUN make
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
+COPY . ${TPL_SRC_DIR}
 
 RUN yum -y install \
     openssh-clients \

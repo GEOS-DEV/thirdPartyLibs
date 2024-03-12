@@ -63,7 +63,9 @@ ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 
 COPY . ${TPL_SRC_DIR}
+
 RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
+
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DENABLE_HYPRE_DEVICE="CUDA" \
@@ -78,6 +80,7 @@ RUN make
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 
 COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
+COPY . ${TPL_SRC_DIR}
 
 RUN yum install -y \
     openssh-client \
