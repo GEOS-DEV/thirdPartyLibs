@@ -1,7 +1,3 @@
-# Temporary local variables dedicated to the TPL build
-ENV TMP_DIR=/tmp
-ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
 ARG DOCKER_ROOT_IMAGE
@@ -18,10 +14,12 @@ FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
+# Temporary local variables dedicated to the TPL build
+ENV TMP_DIR=/tmp
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+
 # The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
 # The CLANG_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
-# Note that docker seems to forget about the ARGs after each FROM statement.
-# This is why we repeat it below.
 ARG CLANG_MAJOR_VERSION
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
@@ -60,8 +58,6 @@ ENV OMPI_CC=$CC \
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
-# This is the version from the `docker build` command line.
-# It is repeated because docker forgets about the ARGs after FROM statements.
 ARG GCC_MAJOR_VERSION
 
 ENV FC=/usr/bin/gfortran-${GCC_MAJOR_VERSION} \

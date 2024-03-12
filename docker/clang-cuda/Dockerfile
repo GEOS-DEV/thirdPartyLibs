@@ -1,11 +1,10 @@
-# Temporary local variables dedicated to the TPL build
-ENV TMP_DIR=/tmp
-ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
+
+ENV TMP_DIR=/tmp
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 # Installing dependencies, non interactive definition of time zone (tzdata).
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \

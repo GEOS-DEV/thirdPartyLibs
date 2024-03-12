@@ -1,7 +1,3 @@
-# Temporary local variables dedicated to the TPL build
-ENV TMP_DIR=/tmp
-ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
 ARG DOCKER_ROOT_IMAGE
@@ -23,6 +19,10 @@ FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 # We forward it using an environment variable.
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
+
+# Temporary local variables dedicated to the TPL build
+ENV TMP_DIR=/tmp
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
@@ -62,6 +62,10 @@ ENV OMPI_CC=$CC \
 # This stage is dedicated to TPLs uniquely.
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
+
+# This is the version from the `docker build` command line.
+# It is repeated because docker forgets about the ARGs after FROM statements.
+ARG GCC_MAJOR_VERSION
 
 ENV FC=/usr/bin/gfortran-${GCC_MAJOR_VERSION} \
     MPIFC=/usr/bin/mpifort

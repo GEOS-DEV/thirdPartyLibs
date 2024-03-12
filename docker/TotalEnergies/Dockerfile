@@ -1,12 +1,12 @@
-ENV TMP_DIR=/tmp 
-ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-
 # The docker base image can be pecan or pangea.
 ARG DOCKER_ROOT_IMAGE
 FROM ${DOCKER_ROOT_IMAGE} as tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
+
+ENV TMP_DIR=/tmp 
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 RUN yum install -y \
     python3 \

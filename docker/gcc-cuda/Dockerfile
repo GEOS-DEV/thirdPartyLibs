@@ -1,11 +1,10 @@
-# Temporary local variables dedicated to the TPL build
-ENV TMP_DIR=/tmp 
-ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-
 FROM nvidia/cuda:11.8.0-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=${INSTALL_DIR}
+
+ENV TMP_DIR=/tmp 
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 # Using gcc 8.3.1 provided by the Software Collections (SCL).
 RUN yum install -y \
