@@ -41,13 +41,6 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
-# Installing more recent cmake version (3.10.2 in ubuntu is not enough)
-ARG CMAKE_VERSION=3.23.1
-# We install (and uninstall) `curl` and some SSL certificates only for downloading `cmake`.
-RUN apt-get install -y --no-install-recommends curl ca-certificates && \
-    curl -fsSL https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf - && \
-    apt-get purge --auto-remove -y curl ca-certificates
-
 ENV CC=/usr/bin/clang-${CLANG_MAJOR_VERSION} \
     CXX=/usr/bin/clang++-${CLANG_MAJOR_VERSION} \
     MPICC=/usr/bin/mpicc \
@@ -72,8 +65,8 @@ ENV FC=/usr/bin/gfortran-${GCC_MAJOR_VERSION} \
 ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
-    libtbb-dev \
     gfortran-${GCC_MAJOR_VERSION} \
+    libtbb-dev \
     make \
     bc \
     file \
