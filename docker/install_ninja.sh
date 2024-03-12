@@ -2,7 +2,7 @@
 set -x
 set -e
 
-# Installing latest `CMake` version available
+# Installing latest `ninja` version available
 PREFIX=/usr/local
 VERSION=1.11.1
 
