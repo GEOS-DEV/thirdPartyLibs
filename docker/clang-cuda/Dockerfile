@@ -85,6 +85,8 @@ RUN apt-get install -y --no-install-recommends \
     graphviz \
     ninja-build
 
+# Install `sccache` binaries to speed up the build of `geos`.
+ARG SCACHE_VERSION=0.7.7
 RUN mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.3/sccache-v0.7.3-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+    curl -fsSL https://github.com/mozilla/sccache/releases/download/v${SCACHE_VERSION}/sccache-v${SCACHE_VERSION}-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
 ENV SCCACHE=/opt/sccache/bin/sccache

@@ -88,6 +88,8 @@ RUN yum install -y \
 
 RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
 
+# Install `sccache` binaries to speed up the build of `geos`.
+ARG SCACHE_VERSION=0.7.7
 RUN mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.3/sccache-v0.7.3-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+    curl -fsSL https://github.com/mozilla/sccache/releases/download/v${SCACHE_VERSION}/sccache-v${SCACHE_VERSION}-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
 ENV SCCACHE=/opt/sccache/bin/sccache
