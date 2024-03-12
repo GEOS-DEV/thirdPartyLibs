@@ -1,6 +1,5 @@
-ARG TMP_DIR=/tmp
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
+ENV TMP_DIR=/tmp
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 # The docker base image can be pecan or pangea.
 ARG DOCKER_ROOT_IMAGE
@@ -30,7 +29,7 @@ ARG HOST_CONFIG
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
-WORKDIR ${TPL_BUILD_DIR}
+WORKDIR ${TMP_DIR}/build
 RUN make
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain

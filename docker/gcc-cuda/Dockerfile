@@ -1,7 +1,6 @@
 # Temporary local variables dedicated to the TPL build
-ARG TMP_DIR=/tmp 
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
+ENV TMP_DIR=/tmp 
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 FROM nvidia/cuda:11.8.0-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
@@ -72,7 +71,7 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DCUDA_ARCH=${CUDA_ARCH} \
     -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
-WORKDIR ${TPL_BUILD_DIR}
+WORKDIR ${TMP_DIR}/build
 RUN make
 
 # Extract only TPL's from previous stage

@@ -1,7 +1,6 @@
 # Temporary local variables dedicated to the TPL build
-ARG TMP_DIR=/tmp
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
+ENV TMP_DIR=/tmp
+ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
 
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
@@ -94,7 +93,7 @@ RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
-WORKDIR ${TPL_BUILD_DIR}
+WORKDIR ${TMP_DIR}/build
 RUN make
 
 # Last step is setting everything for a complete slave that will build GEOSX.
