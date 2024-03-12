@@ -1,21 +1,21 @@
 #!/bin/sh
 
-if [[ -z "${TPL_SRC_DIR}" ]]; then
+if [ -z "${TPL_SRC_DIR}" ]; then
   echo "Environment variable \"TPL_SRC_DIR\" is undefined."
   exit 1
 fi
 
-if [[ -z "${TPL_BUILD_DIR}" ]]; then
+if [ -z "${TPL_BUILD_DIR}" ]; then
   echo "Environment variable \"TPL_BUILD_DIR\" is undefined."
   exit 1
 fi
 
-if [[ -z "${GEOSX_TPL_DIR}" ]]; then
+if [ -z "${GEOSX_TPL_DIR}" ]; then
   echo "Environment variable \"GEOSX_TPL_DIR\" is undefined."
   exit 1
 fi
 
-if [[ -z "${HOST_CONFIG}" ]]; then
+if [ -z "${HOST_CONFIG}" ]; then
   echo "Environment variable \"HOST_CONFIG\" is undefined."
   exit 1
 fi
