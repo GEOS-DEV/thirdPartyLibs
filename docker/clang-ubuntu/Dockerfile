@@ -1,6 +1,18 @@
+# Temporary local variables dedicated to the TPL build
+ARG TMP_DIR=/tmp
+ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ARG TPL_BUILD_DIR=${TMP_DIR}/build
+
+# This COPY statement is a hack to use the clone that Travis-CI
+# already did at the beginning of the build.
+# It replaces another git clone (including the lfs) and
+# prevents us from installing git, git-lfs and ca-certificates.
+COPY . ${TPL_SRC_DIR}
+
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
 ARG DOCKER_ROOT_IMAGE
+
 FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 
 # All the environment variables defined in this Dockerfile
@@ -41,6 +53,8 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
+
 ENV CC=/usr/bin/clang-${CLANG_MAJOR_VERSION} \
     CXX=/usr/bin/clang++-${CLANG_MAJOR_VERSION} \
     MPICC=/usr/bin/mpicc \
@@ -76,10 +90,6 @@ RUN apt-get install -y --no-install-recommends \
     curl \
     patch
 
-# Temporary local variables dedicated to the TPL build
-ARG TMP_DIR=/tmp
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
 # Get host config file from docker build arguments
 ARG HOST_CONFIG
 
@@ -87,8 +97,6 @@ ARG HOST_CONFIG
 # already did at the beginning of the build.
 # It replaces another git clone (including the lfs) and
 # prevents us from installing git, git-lfs and ca-certificates.
-COPY . ${TPL_SRC_DIR}
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!

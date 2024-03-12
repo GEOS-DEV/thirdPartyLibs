@@ -1,4 +1,10 @@
+# Temporary local variables dedicated to the TPL build
 ARG TMP_DIR=/tmp 
+ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ARG TPL_BUILD_DIR=${TMP_DIR}/build
+
+COPY . ${TPL_SRC_DIR}
+
 FROM nvidia/cuda:11.8.0-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
@@ -20,6 +26,8 @@ RUN yum -y install \
     zlib-devel \
     openmpi-devel \
     python3
+
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
     CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \
@@ -49,10 +57,6 @@ RUN yum install -y \
     curl \
     patch
 
-ARG TMP_DIR
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
-
 ARG HOST_CONFIG
 
 ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
@@ -63,8 +67,6 @@ ARG CMAKE_CUDA_ARCHITECTURES=70
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=${CUDA_TOOLKIT_ROOT_DIR}
 
-COPY . ${TPL_SRC_DIR}
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=${ENABLE_CUDA} \
     -DENABLE_HYPRE_DEVICE="CUDA" \
@@ -86,7 +88,7 @@ RUN yum install -y \
     graphviz \
     git
 
-RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
+RUN ${TPL_SRC_DIR}/docker/install_ninja.sh
 
 RUN ${TPL_SRC_DIR}/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

@@ -1,3 +1,8 @@
+ARG TMP_DIR=/tmp
+ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ARG TPL_BUILD_DIR=${TMP_DIR}/build
+COPY . ${TPL_SRC_DIR}
+
 # The docker base image can be pecan or pangea.
 ARG DOCKER_ROOT_IMAGE
 FROM ${DOCKER_ROOT_IMAGE} as tpl_toolchain_intersect_geosx_toolchain
@@ -8,6 +13,8 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 RUN yum install -y \
     python3 \
     zlib-devel
+
+RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
@@ -21,14 +28,8 @@ RUN yum install -y \
     curl \
     patch
 
-ARG TMP_DIR=/tmp
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
-
 ARG HOST_CONFIG
 
-COPY . ${TPL_SRC_DIR}
-RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
@@ -44,7 +45,7 @@ RUN yum -y install \
     libxml2 \
     git
 
-RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
+RUN ${TPL_SRC_DIR}/docker/install_ninja.sh
 
 RUN ${TPL_SRC_DIR}/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
