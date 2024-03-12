@@ -1,6 +1,5 @@
 #!/bin/sh
-set -x
-set -e
+set -xe
 
 # Installing latest `ninja` version available
 PREFIX=/usr/local
