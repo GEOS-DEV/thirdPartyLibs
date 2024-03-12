@@ -5,6 +5,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 ENV TMP_DIR=/tmp 
 ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ENV TPL_BUILD_DIR=${TMP_DIR}/build
 
 # Using gcc 8.3.1 provided by the Software Collections (SCL).
 RUN yum install -y \
@@ -70,7 +71,7 @@ RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh \
     -DCUDA_ARCH=${CUDA_ARCH} \
     -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES} \
     -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
-WORKDIR ${TMP_DIR}/build
+WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
 # Extract only TPL's from previous stage

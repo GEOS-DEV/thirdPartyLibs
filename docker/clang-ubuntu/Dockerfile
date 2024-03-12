@@ -17,6 +17,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 # Temporary local variables dedicated to the TPL build
 ENV TMP_DIR=/tmp
 ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ENV TPL_BUILD_DIR=${TMP_DIR}/build
 
 # The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
 # The CLANG_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
@@ -89,7 +90,7 @@ RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
-WORKDIR ${TMP_DIR}/build
+WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
 # Last step is setting everything for a complete slave that will build GEOSX.

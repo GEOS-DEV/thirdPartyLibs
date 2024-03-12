@@ -7,6 +7,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 ENV TMP_DIR=/tmp
 ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ENV TPL_BUILD_DIR=${TMP_DIR}/build
 
 RUN yum install -y \
     python3 \

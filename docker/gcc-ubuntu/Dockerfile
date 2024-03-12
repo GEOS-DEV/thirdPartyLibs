@@ -23,6 +23,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 # Temporary local variables dedicated to the TPL build
 ENV TMP_DIR=/tmp
 ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ENV TPL_BUILD_DIR=${TMP_DIR}/build
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
@@ -96,7 +97,7 @@ RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 # We now configure the build...
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
-WORKDIR ${TMP_DIR}/build
+WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
 # Last step is setting everything for a complete slave that will build GEOSX.

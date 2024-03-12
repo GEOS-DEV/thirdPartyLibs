@@ -7,6 +7,7 @@ ENV GEOSX_TPL_DIR=${INSTALL_DIR}
 
 ENV TMP_DIR=/tmp 
 ENV TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
+ENV TPL_BUILD_DIR=${TMP_DIR}/build
 
 RUN yum install -y \
     python3 \
@@ -29,7 +30,7 @@ ARG HOST_CONFIG
 COPY . ${TPL_SRC_DIR}
 RUN ${TPL_SRC_DIR}/docker/install_cmake.sh
 RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
-WORKDIR ${TMP_DIR}/build
+WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
