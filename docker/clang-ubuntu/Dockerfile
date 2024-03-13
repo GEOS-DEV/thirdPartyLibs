@@ -43,7 +43,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     libopenmpi-dev \
 # Some of the TPL's make "extensive" use of python in their build.
 # And we want to test GEOS's python configuration script.
-# Unfortunately argparse (standard library's package used by GEOSX)
+# Unfortunately argparse (standard library's package used by GEOS)
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
