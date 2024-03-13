@@ -108,6 +108,7 @@ RUN apt-get install -y --no-install-recommends \
 # `ca-certificates` is needed by `sccache` to download the cached compilations.
     ca-certificates \
     curl \
+    python3 \
     texlive \
     texlive-latex-extra \
     graphviz \

@@ -82,6 +82,7 @@ RUN yum install -y \
     openssh-client \
     ca-certificates \
     curl \
+    python3 \
     texlive \
     graphviz \
     git

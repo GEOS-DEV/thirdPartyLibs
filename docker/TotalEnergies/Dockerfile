@@ -41,6 +41,7 @@ RUN yum -y install \
     openssh-clients \
     ca-certificates \
     curl \
+    python3 \
     texlive \
     graphviz \
     libxml2 \

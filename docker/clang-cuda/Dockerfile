@@ -80,6 +80,7 @@ RUN apt-get install -y --no-install-recommends \
     openssh-client \
     ca-certificates \
     curl \
+    python3 \
     texlive \
     graphviz \
     ninja-build
