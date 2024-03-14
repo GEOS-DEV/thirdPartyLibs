@@ -2,7 +2,13 @@
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
 ARG DOCKER_ROOT_IMAGE
 
+# Temporary local variables dedicated to the TPL build
+ARG TMP_DIR=/tmp
+ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
+ARG BLD_DIR=$TMP_DIR/build
+
 FROM $DOCKER_ROOT_IMAGE AS tpl_toolchain_intersect_geosx_toolchain
+ARG SRC_DIR
 
 # All the environment variables defined in this Dockerfile
 # (GEOSX_TPL_DIR but also compiler information like CC, CXX...)
@@ -13,11 +19,6 @@ FROM $DOCKER_ROOT_IMAGE AS tpl_toolchain_intersect_geosx_toolchain
 # We forward it using an environment variable.
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
-
-# Temporary local variables dedicated to the TPL build
-ENV TMP_DIR=/tmp
-ENV TPL_SRC_DIR=$TMP_DIR/thirdPartyLibs
-ENV TPL_BUILD_DIR=$TMP_DIR/build
 
 # The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
 # The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
@@ -52,7 +53,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/install_cmake.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_cmake.sh
 
 ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
     CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
@@ -67,6 +68,8 @@ ENV OMPI_CC=$CC \
 # This stage is dedicated to TPLs uniquely.
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
+ARG SRC_DIR
+ARG BLD_DIR
 
 # This is the version from the `docker build` command line.
 # It is repeated because docker forgets about the ARGs after FROM statements.
@@ -91,13 +94,14 @@ RUN apt-get install -y --no-install-recommends \
 ARG HOST_CONFIG
 
 # We now configure the build...
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/configure_tpl_build.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure_tpl_build.sh
 # ... before we compile the TPLs!
-WORKDIR $TPL_BUILD_DIR
-RUN --mount=src=.,dst=$TPL_SRC_DIR make
+WORKDIR $BLD_DIR
+RUN --mount=src=.,dst=$SRC_DIR make
 
 # Last step is setting everything for a complete slave that will build GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+ARG SRC_DIR
 
 # I extract the deployed TPLs from the TPL building stqge.
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
@@ -118,5 +122,5 @@ RUN apt-get install -y --no-install-recommends \
     ninja-build
 
 # Install `sccache` binaries to speed up the build of `geos`
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/install_sccache.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
