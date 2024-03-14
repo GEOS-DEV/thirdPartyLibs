@@ -112,7 +112,7 @@ jobs:
         BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
-      run: bash -x ./scripts/docker_build_and_push.sh
+      run: bash -x ./scripts/docker-build-and-push.sh
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
