@@ -1,4 +1,4 @@
-# NOTE: see docker/docker/tpl-ubuntu-gcc.Dockerfile for detailed comments
+# NOTE: see docker/tpl-ubuntu-gcc.Dockerfile for detailed comments
 ARG TMP_DIR=/tmp 
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
