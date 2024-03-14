@@ -54,7 +54,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # is not in the python-minimal package so we install the whole std lib.
     python3
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_cmake.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
     CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
@@ -95,7 +95,7 @@ RUN apt-get install -y --no-install-recommends \
 ARG HOST_CONFIG
 
 # We now configure the build...
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure_tpl_build.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 # ... before we compile the TPLs!
 WORKDIR $BLD_DIR
 RUN --mount=src=.,dst=$SRC_DIR make
@@ -123,5 +123,5 @@ RUN apt-get install -y --no-install-recommends \
     ninja-build
 
 # Install `sccache` binaries to speed up the build of `geos`
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_sccache.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

@@ -26,7 +26,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         python3 \
         clang
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_cmake.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
@@ -65,7 +65,7 @@ ARG CMAKE_CUDA_ARCHITECTURES=70
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=$CUDA_TOOLKIT_ROOT_DIR
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure_tpl_build.sh \
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh \
     -DENABLE_CUDA=$ENABLE_CUDA \
     -DENABLE_HYPRE_DEVICE="CUDA" \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR \
@@ -90,5 +90,5 @@ RUN apt-get install -y --no-install-recommends \
     graphviz \
     ninja-build
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_sccache.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

@@ -17,7 +17,7 @@ RUN yum install -y \
     python3 \
     zlib-devel
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_cmake.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
@@ -33,7 +33,7 @@ RUN yum install -y \
 
 ARG HOST_CONFIG
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure_tpl_build.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 WORKDIR $BLD_DIR
 RUN --mount=src=.,dst=$SRC_DIR make
 
@@ -52,7 +52,7 @@ RUN yum -y install \
     libxml2 \
     git
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_ninja.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-ninja.sh
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_sccache.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

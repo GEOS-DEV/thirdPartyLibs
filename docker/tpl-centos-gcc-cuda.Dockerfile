@@ -28,7 +28,7 @@ RUN yum -y install \
     openmpi-devel \
     python3
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_cmake.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
     CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \
@@ -68,7 +68,7 @@ ARG CMAKE_CUDA_ARCHITECTURES=70
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=$CUDA_TOOLKIT_ROOT_DIR
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure_tpl_build.sh \
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh \
     -DENABLE_CUDA=$ENABLE_CUDA \
     -DENABLE_HYPRE_DEVICE="CUDA" \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR \
@@ -92,7 +92,7 @@ RUN yum install -y \
     graphviz \
     git
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_ninja.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-ninja.sh
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_sccache.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
