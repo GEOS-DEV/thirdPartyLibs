@@ -1,12 +1,13 @@
-# NOTE: see docker/gcc-ubuntu/Dockerfile for detailed comments
+# NOTE: see docker/tpl-ubuntu-gcc.Dockerfile for detailed comments
+ARG TMP_DIR=/tmp
+ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
+ARG BLD_DIR=$TMP_DIR/build
+
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
+ARG SRC_DIR
 
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
-
-ENV TMP_DIR=/tmp
-ENV TPL_SRC_DIR=$TMP_DIR/thirdPartyLibs
-ENV TPL_BUILD_DIR=$TMP_DIR/build
 
 # Installing dependencies
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
@@ -25,7 +26,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         python3 \
         clang
 
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/install_cmake.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_cmake.sh
 
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
@@ -39,6 +40,8 @@ ENV ENABLE_CUDA=ON \
 
 # Installing TPL's
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
+ARG SRC_DIR
+ARG BLD_DIR
 
 ENV FC=/usr/bin/gfortran \
     MPIFC=/usr/bin/mpifort
@@ -62,18 +65,19 @@ ARG CMAKE_CUDA_ARCHITECTURES=70
 ENV HYPRE_CUDA_SM=70
 ENV CUDA_HOME=$CUDA_TOOLKIT_ROOT_DIR
 
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/configure_tpl_build.sh \
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure_tpl_build.sh \
     -DENABLE_CUDA=$ENABLE_CUDA \
     -DENABLE_HYPRE_DEVICE="CUDA" \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR \
     -DCUDA_ARCH=$CUDA_ARCH \
     -DCMAKE_CUDA_ARCHITECTURES=$CMAKE_CUDA_ARCHITECTURES \
     -DCMAKE_CUDA_COMPILER=$CMAKE_CUDA_COMPILER
-WORKDIR $TPL_BUILD_DIR
-RUN --mount=src=.,dst=$TPL_SRC_DIR make
+WORKDIR $BLD_DIR
+RUN --mount=src=.,dst=$SRC_DIR make
 
 # Extract only TPL's from previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
@@ -86,5 +90,5 @@ RUN apt-get install -y --no-install-recommends \
     graphviz \
     ninja-build
 
-RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/install_sccache.sh
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

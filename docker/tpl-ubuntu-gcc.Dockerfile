@@ -1,11 +1,12 @@
-# Defining the building toolchain that are common to both GEOSX and its TPLs.
-# The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
-ARG DOCKER_ROOT_IMAGE
-
 # Temporary local variables dedicated to the TPL build
 ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
+
+# Defining the building toolchain that are common to both GEOSX and its TPLs.
+# The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
+ARG DOCKER_ROOT_IMAGE
+
 
 FROM $DOCKER_ROOT_IMAGE AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
