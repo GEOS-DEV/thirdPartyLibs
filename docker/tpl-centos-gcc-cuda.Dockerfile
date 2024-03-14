@@ -1,3 +1,4 @@
+# NOTE: see docker/gcc-ubuntu/Dockerfile for detailed comments
 FROM nvidia/cuda:11.8.0-devel-centos7 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR

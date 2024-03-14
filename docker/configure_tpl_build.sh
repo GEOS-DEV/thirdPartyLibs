@@ -1,12 +1,12 @@
 #!/bin/sh
 
-if [ -z "${TPL_SRC_DIR}" ]; then
-  echo "Environment variable \"TPL_SRC_DIR\" is undefined."
+if [ -z "${SRC_DIR}" ]; then
+  echo "Variable \"SRC_DIR\" is undefined."
   exit 1
 fi
 
-if [ -z "${TPL_BUILD_DIR}" ]; then
-  echo "Environment variable \"TPL_BUILD_DIR\" is undefined."
+if [ -z "${BLD_DIR}" ]; then
+  echo "Variable \"BLD_DIR\" is undefined."
   exit 1
 fi
 
@@ -16,14 +16,14 @@ if [ -z "${GEOSX_TPL_DIR}" ]; then
 fi
 
 if [ -z "${HOST_CONFIG}" ]; then
-  echo "Environment variable \"HOST_CONFIG\" is undefined."
+  echo "Variable \"HOST_CONFIG\" is undefined."
   exit 1
 fi
 
 python3 ${TPL_SRC_DIR}/scripts/config-build.py \
-        --hostconfig ${TPL_SRC_DIR}/${HOST_CONFIG} \
+        --hostconfig ${SRC_DIR}/${HOST_CONFIG} \
         --buildtype Release \
-        --buildpath ${TPL_BUILD_DIR} \
+        --buildpath ${BLD_DIR} \
         --installpath ${GEOSX_TPL_DIR} \
         -DNUM_PROC=$(nproc) \
         $*

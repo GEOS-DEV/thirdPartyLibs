@@ -1,3 +1,4 @@
+# NOTE: see docker/gcc-ubuntu/Dockerfile for detailed comments
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04 AS tpl_toolchain_intersect_geosx_toolchain
 
 ARG INSTALL_DIR
@@ -7,7 +8,7 @@ ENV TMP_DIR=/tmp
 ENV TPL_SRC_DIR=$TMP_DIR/thirdPartyLibs
 ENV TPL_BUILD_DIR=$TMP_DIR/build
 
-# Installing dependencies, non interactive definition of time zone (tzdata).
+# Installing dependencies
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
     rm /etc/apt/sources.list.d/*.list && \
     apt-get update && \
