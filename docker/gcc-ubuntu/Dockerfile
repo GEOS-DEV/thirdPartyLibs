@@ -117,5 +117,6 @@ RUN apt-get install -y --no-install-recommends \
     ghostscript \
     ninja-build
 
+# Install `sccache` binaries to speed up the build of `geos`
 RUN --mount=src=.,dst=$TPL_SRC_DIR $TPL_SRC_DIR/docker/install_sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
