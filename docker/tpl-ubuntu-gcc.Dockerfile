@@ -149,7 +149,6 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     git \
     ghostscript \
     ninja-build \
-    python3 \
     python3-dev \
     python3-mpi4py \
     python3-scipy \
