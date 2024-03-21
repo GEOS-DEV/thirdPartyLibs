@@ -69,15 +69,6 @@ RUN python3 -m pip install --upgrade pip && \
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
-ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
-    CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
-    MPICC=/usr/bin/mpicc \
-    MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
-# The multi-line definition of arguments does not seem happy
-# when a variable uses the value of another variable previously defined on the same line.
-ENV OMPI_CC=$CC \
-    OMPI_CXX=$CXX
 
 # This stage is dedicated to TPLs uniquely.
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
@@ -88,11 +79,6 @@ ARG BLD_DIR
 # This is the version from the `docker build` command line.
 # It is repeated because docker forgets about the ARGs after FROM statements.
 ARG GCC_MAJOR_VERSION
-
-ENV FC=/usr/bin/gfortran-$GCC_MAJOR_VERSION \
-    MPIFC=/usr/bin/mpifort
-# Again, troublesome multi-line definition.
-ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
@@ -107,10 +93,6 @@ RUN apt-get install -y --no-install-recommends \
 # `ca-certificates`  needed by `git` to download GEOS repo.
     ca-certificates \
     git
-
-# Copy docker environment file
-#RUN --mount=src=.,dst=$SRC_DIR cp $SRC_DIR/docker/spack.yaml /
-#COPY  docker/gcc-ubuntu/spack.yaml /
 
 
 # Clone branch with spack configs
@@ -167,16 +149,16 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     libxml2-utils \
     git \
     ghostscript \
-    ninja-build
+    ninja-build \
 # Necessary dependencies for pygeosx unit tests
-     python3-dev \
-     python3-sphinx \
-     python3-mpi4py \
-     python3-scipy \
-     python3-virtualenv \
-     python3-matplotlib \
-     python3-venv \
-     python3-pytest
+    python3-dev \
+    python3-sphinx \
+    python3-mpi4py \
+    python3-scipy \
+    python3-virtualenv \
+    python3-matplotlib \
+    python3-venv \
+    python3-pytest
 
 # Install `sccache` binaries to speed up the build of `geos`
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
