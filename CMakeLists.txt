@@ -52,6 +52,7 @@ option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
 option( ENABLE_VTK "" ON )
 option( ENABLE_VTK_WRAP_PYTHON "" OFF )
+option( ENABLE_CATALYST "Enable building catalyst2" ON)
 option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
@@ -234,7 +235,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.8.2.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.8.6.zip")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -1102,7 +1103,8 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.2.6.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-59d89108f4.tar.gz" )
+
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1111,6 +1113,12 @@ if( ENABLE_VTK )
     # Defining explicitly 'lib' deals with this issue.
     # I'm no cmake expert and I do not know if there was a better way to deal with it.
     set( VTK_CMAKE_INSTALL_LIBDIR "lib" )
+
+    # This compile option will enclose all of the VTK library within a vtk_geosx namespace.
+    # This mangling is needed in order to ensure that the VTK included with geosx does
+    # not interfere with another VTK version that may be linked dynamically at runtime
+    # (when using ParaView's Catalyst implementation for example).
+    set( VTK_ABI_NAMESPACE_NAME "vtk_geos" )
 
 if( ENABLE_MPI )
     set( VTK_C_COMPILER ${MPI_C_COMPILER} )
@@ -1130,9 +1138,9 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
+                         PATCH_COMMAND patch -p1 < ${TPL_MIRROR_DIR}/VTK-ABI.patch
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
@@ -1158,10 +1166,101 @@ endif( ENABLE_MPI )
                                     -D VTK_MODULE_ENABLE_VTK_IOXML=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOLegacy=YES
                                     -D VTK_BUILD_TESTING=OFF
-                                    -D VTK_LEGACY_REMOVE=ON )
+                                    -D VTK_LEGACY_REMOVE=ON 
+                                    -D VTK_ABI_NAMESPACE_NAME=${VTK_ABI_NAMESPACE_NAME} )
 
     list( APPEND build_list vtk )
 endif( ENABLE_VTK )
+
+################################
+# Catalyst
+################################
+
+if (ENABLE_CATALYST)
+
+  # Catalyst supports different implementations of its interface
+  set( CATALYST_IMPLEMENTATION_NAME "ADIOS2" CACHE STRING "The name of the catalyst implementation you would like to use")
+
+  # Set the type of implementations that GEOSX-TPL provides as options here
+  set_property(CACHE CATALYST_IMPLEMENTATION_NAME PROPERTY STRINGS ADIOS2)
+
+
+  message(STATUS "Catalyst implementation: " ${CATALYST_IMPLEMENTATION_NAME})
+  if (NOT CATALYST_IMPLEMENTATION_NAME STREQUAL "ADIOS2")
+    message(FATAL_ERROR "TPL only provides catalyst-adios2 implementation for now")
+  endif ()
+
+  if (NOT ENABLE_MPI)
+    message (FATAL_ERROR "ADIOS2 requires MPI in its build")
+  endif ()
+
+  set(ADIOS_DIR "${CMAKE_INSTALL_PREFIX}/adios")
+  set(ADIOS_URL "${TPL_MIRROR_DIR}/ADIOS2-2.9.0.zip")
+
+    ExternalProject_Add( adios
+                     URL ${ADIOS_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/adios
+                     INSTALL_DIR ${ADIOS_DIR}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                                -DCMAKE_CXX_STANDARD=11
+                                -DADIOS2_USE_Fortran=OFF
+                                -DADIOS2_USE_MPI=ON
+                                -DNoGitVersionString:BOOL=ON
+                                 )
+
+  set(CATALYST_DIR "${CMAKE_INSTALL_PREFIX}/catalyst")
+  set(CATALYST_URL "${TPL_MIRROR_DIR}/catalyst-afa7ec79.tar.gz")
+
+    ExternalProject_Add( catalyst
+                     URL ${CATALYST_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/catalyst
+                     INSTALL_DIR ${CATALYST_DIR}
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                                -DCMAKE_CXX_STANDARD=11
+                                -DNoGitVersionString:BOOL=ON
+                                 )
+ 
+
+  set(CATALYST_IMPLEMENTATION_DIR "${CMAKE_INSTALL_PREFIX}/catalyst_implementation")
+  set(CATALYST_IMPLEMENTATION_URL "${TPL_MIRROR_DIR}/adioscatalyst-72a75a88.tar.gz")
+
+  set(ADIOS_CMAKE_PREFIX ${ADIOS_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/adios2/)
+
+  set(CATALYST_CMAKE_PREFIX ${CATALYST_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/catalyst-2.0/)
+
+    ExternalProject_Add( catalyst_implementation
+                     URL ${CATALYST_IMPLEMENTATION_URL}
+                     PREFIX ${PROJECT_BINARY_DIR}/catalyst_implementation
+                     INSTALL_DIR ${CATALYST_IMPLEMENTATION_DIR}
+                     PATCH_COMMAND patch  CMakeLists.txt  < ${TPL_MIRROR_DIR}/adioscatalyst-cmake-version.patch
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     DEPENDS adios catalyst
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_ARGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                                -DCMAKE_CXX_STANDARD=11
+                                -DADIOS2_DIR=${ADIOS_CMAKE_PREFIX}
+                                -Dcatalyst_DIR=${CATALYST_CMAKE_PREFIX}
+                                -DNoGitVersionString:BOOL=ON
+                                 )
+
+
+
+  list(APPEND build_list adios catalyst catalyst_implementation)
+
+endif (ENABLE_CATALYST)
 
 ################################
 # FMT
