@@ -84,8 +84,7 @@ RUN git clone --branch feature/han12/spack_cleanup_recipes \
      git submodule init scripts/uberenv && \
      git submodule update && \
      ./scripts/uberenv/uberenv.py \
-       #--spec "%clang@${CLANG_MAJOR_VERSION} +docs ^caliper@2.10.0~gotcha~sampler~libunwind~libdw~papi" \
-       --spec "%clang@${CLANG_MAJOR_VERSION} +docs" \
+       --spec "%clang@${CLANG_MAJOR_VERSION} +docs ^caliper@2.10.0~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
