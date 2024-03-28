@@ -16,6 +16,19 @@ spack:
   - compiler:
       environment: {}
       extra_rpaths: []
+      flags: {}
+      modules: []
+      operating_system: ubuntu22.04
+      paths:
+        cc: /usr/bin/clang-15
+        cxx: /usr/bin/clang++-15
+        f77: /usr/bin/gfortran-11
+        fc: /usr/bin/gfortran-11
+      spec: clang@15
+      target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
       flags:
         cflags: -pthread
         cxxflags: -pthread
@@ -77,7 +90,7 @@ spack:
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc]
+      compiler: [gcc, clang]
       providers:
         blas: [netlib-blas]
         lapack: [netlib-lapack]
