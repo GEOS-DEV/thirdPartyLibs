@@ -13,7 +13,7 @@
 # SCIENTIFIC LIBRARIES
 #######################################
 
-# build all TPLs scientifc libs and let GEOS build choose which one to use
+# build all TPLs scientific libs and let GEOS build choose which one to use
 
 set( ENABLE_FESAPI      ON CACHE BOOL "" FORCE )
 set( ENABLE_HYPRE       ON CACHE BOOL "" FORCE )
@@ -27,7 +27,7 @@ set( ENABLE_TRILINOS    ON CACHE BOOL "" FORCE )
 set( ENABLE_VTK         ON CACHE BOOL "" FORCE )
 
 #######################################
-# DEVLOPMENT TOOLS
+# DEVELOPMENT TOOLS
 #######################################
 
 set( ENABLE_DOXYGEN           ON CACHE BOOL "" FORCE )
