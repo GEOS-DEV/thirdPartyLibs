@@ -44,7 +44,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/pangea4-base.cmake)
 #  - explicit optimization flags even when using cray wrappers
 
 if( NOT DEFINED ENV{GCC_PATH} )
-    message( FATAL_ERROR "GCC_PATH is not defined. Please load the PrgEnv-gnu/8.4.0 module." )
+    message( FATAL_ERROR "GCC is not loaded. Please load the PrgEnv-gnu/8.4.0 module." )
 endif()
 
 set( CMAKE_C_COMPILER       "cc"  CACHE PATH "" )
@@ -88,8 +88,6 @@ if( NOT DEFINED ENV{MKLROOT} )
 endif()
 
 set( MKL_INCLUDE_DIRS $ENV{MKLROOT}/include CACHE STRING "" )
-set( MKL_LIBRARIES    $ENV{MKLROOT}/lib/intel64/libmkl_gf_lp64.so
-                      $ENV{MKLROOT}/lib/intel64/libmkl_gnu_thread.so
-                      $ENV{MKLROOT}/lib/intel64/libmkl_core.so
+set( MKL_LIBRARIES    $ENV{MKLROOT}/lib/intel64/libmkl_rt.so
                       $ENV{GCC_PATH}/lib/gcc/x86_64-redhat-linux/12/libgomp.so
                       CACHE STRING "" )
