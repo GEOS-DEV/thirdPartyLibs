@@ -29,6 +29,19 @@ spack:
   - compiler:
       environment: {}
       extra_rpaths: []
+      flags: {}
+      modules: []
+      operating_system: ubuntu20.04
+      paths:
+        cc: /usr/bin/clang
+        cxx: /usr/bin/clang++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      spec: clang@10
+      target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
       flags:
         cflags: -pthread
         cxxflags: -pthread
@@ -145,6 +158,11 @@ spack:
       externals:
       - spec: cmake@3.23.1
         prefix: /usr/local
+    cuda:
+      buildable: False
+      externals:
+      - spec: cuda@11.8.0 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
     flex:
       version: [2.6.4]
       buildable: false
