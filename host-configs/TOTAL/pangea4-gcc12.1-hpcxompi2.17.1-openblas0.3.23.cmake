@@ -81,8 +81,8 @@ endif()
 # use :
 # - OpenBLAS library
 
-find_package(openblas)
+find_library(OPENBLAS_LIB openblas)
 
-if(NOT openblas_FOUND)
+if(NOT OPENBLAS_LIB)
     message(FATAL_ERROR "OpenBLAS is not loaded. Please load the openblas/0.3.23 module.")
 endif()
