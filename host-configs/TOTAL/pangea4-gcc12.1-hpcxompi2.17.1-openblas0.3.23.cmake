@@ -31,7 +31,7 @@
 #
 ########################################
 
-set( CONFIG_NAME "pangea4-gcc12.1-hpcxompi2.17.1-openblas/0.3.23" CACHE PATH "" )
+set( CONFIG_NAME "pangea4-gcc12.1-hpcxompi2.17.1-openblas0.3.23" CACHE PATH "" )
 
 include(${CMAKE_CURRENT_LIST_DIR}/pangea4-base.cmake)
 
