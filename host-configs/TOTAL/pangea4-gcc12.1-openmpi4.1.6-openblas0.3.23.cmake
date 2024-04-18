@@ -4,7 +4,7 @@
 #
 # Uses :
 #   - cray wrappers for gcc (cc, CC, ftn)
-#   - OpenBLAS      for BLAS and LAPACK
+#   - OpenMPI       for MPI
 #   - oneAPI MKL    for BLAS and LAPACK
 #
 #######################################
