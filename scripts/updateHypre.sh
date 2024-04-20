@@ -13,13 +13,10 @@ HYPRE_SRC_DIR=${HYPRE_DIR}/src
 cd ${GEOSTPL_DIR}
 rm -rf ${HYPRE_DIR}
 git clone https://github.com/hypre-space/hypre.git ${HYPRE_DIR}
-<<<<<<< HEAD
-=======
 if [[ $? != "0" ]]; then
     echo -e "git clone failed! Exiting..."
     exit 1
 fi
->>>>>>> 6ec4acc5be550bca50c0d9893a5861b2ee7c14e1
 
 # Assign git variables
 cd ${HYPRE_DIR}
@@ -34,7 +31,7 @@ sed -i "s/\$develop_string/$HYPRE_DEVELOP_STRING/g"  ${HYPRE_SRC_DIR}/configure
 sed -i "s/\$develop_lasttag/$HYPRE_DEVELOP_LASTAG/g" ${HYPRE_SRC_DIR}/configure
 sed -i "s/\$develop_number/$HYPRE_DEVELOP_NUMBER/g"  ${HYPRE_SRC_DIR}/configure
 sed -i "s/\$develop_branch/$HYPRE_DEVELOP_BRANCH/g"  ${HYPRE_SRC_DIR}/configure
-sed -i "s/\$HYPRE_SRCDIR\/..\/.git/\$HYPRE_SRCDIR/g"   ${HYPRE_SRC_DIR}/configure
+sed -i "s/\$HYPRE_SRCDIR\/..\/.git/\$HYPRE_SRCDIR/g" ${HYPRE_SRC_DIR}/configure
 
 # Remove git machinery from configure
 sed -i '/^[[:space:]]*develop_lastag=\$/d' ${HYPRE_SRC_DIR}/configure
@@ -49,12 +46,9 @@ rm -rf ${HYPRE_DIR}/src/test/TEST_*
 # Remove git folder
 rm -rf ${HYPRE_DIR}/.git
 
-<<<<<<< HEAD
-=======
 # Remove old hypre dir
 git rm ${TPL_MIRROR_DIR}/hypre*.tar.gz
 
->>>>>>> 6ec4acc5be550bca50c0d9893a5861b2ee7c14e1
 # Create tarball and move it to tplMirror
 HYPRE_DIR=${GEOSTPL_DIR}/hypre-${HYPRE_DEVELOP_STRING}
 cd ${GEOSTPL_DIR}
@@ -68,10 +62,7 @@ rm -rf ${HYPRE_DIR}
 # Update CMakeLists
 echo -e "Updating CMakeLists..."
 sed -i "s|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-.*\.tar\.gz\" )|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-${HYPRE_DEVELOP_STRING}.tar.gz\" )|" CMakeLists.txt
-<<<<<<< HEAD
-=======
 
 # Stage changes
 git add ${GEOSTPL_DIR}/CMakeLists.txt
 git add ${TPL_MIRROR_DIR}/hypre*.tar.gz
->>>>>>> 6ec4acc5be550bca50c0d9893a5861b2ee7c14e1
