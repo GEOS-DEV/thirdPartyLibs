@@ -765,7 +765,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.30.0-44-geab5f9f7f.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.31.0-13-g4f5d6ad50.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -802,6 +802,7 @@ if( ENABLE_HYPRE )
     set( HYPRE_CUDA_FLAGS "\
 --with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
 --enable-cusparse \
+--enable-cusolver \
 --enable-unified-memory \
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
