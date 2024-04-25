@@ -99,6 +99,21 @@ spack:
         fc: /usr/bin/gfortran-9
       spec: gcc@9
       target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: centos7
+      paths:
+        cc: /opt/rh/devtoolset-8/root/usr/bin/gcc
+        cxx: /opt/rh/devtoolset-8/root/usr/bin/g++
+        f77: /opt/rh/devtoolset-8/root/usr/bin/gfortran
+        fc: /opt/rh/devtoolset-8/root/usr/bin/gfortran
+      spec: gcc@8
+      target: x86_64
 
   packages:
     all:
@@ -178,11 +193,11 @@ spack:
     # Spack may grab for mpi & we don't want to use them
     mpi:
       buildable: false
-    mpfr:
-      buildable: false
-      externals:
-      - spec: mpfr@4.1.0
-        prefix: /usr
+    #mpfr:
+    #  buildable: false
+    #  externals:
+    #  - spec: mpfr@4.1.0
+    #    prefix: /usr
     netlib-lapack:
       buildable: false
       externals:
@@ -195,7 +210,18 @@ spack:
         prefix: /usr
     openmpi:
       externals:
-      - spec: openmpi@4.1.2
+      - spec: openmpi@4.1.2%clang
+        prefix: /usr
+      - spec: openmpi@1.10.7%gcc@8
+        prefix: /usr/lib64/openmpi
+        modules: [mpi]
+      - spec: openmpi@4.1.2%gcc@9
+        prefix: /usr
+      - spec: openmpi@4.1.2%gcc@10
+        prefix: /usr
+      - spec: openmpi@4.1.2%gcc@11
+        prefix: /usr
+      - spec: openmpi@4.1.2%gcc@12
         prefix: /usr
     perl:
       buildable: false
