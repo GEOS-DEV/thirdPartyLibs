@@ -15,7 +15,6 @@
 
 # build all TPLs scientific libs and let GEOS build choose which one to use
 
-set( ENABLE_FESAPI      ON CACHE BOOL "" FORCE )
 set( ENABLE_HYPRE       ON CACHE BOOL "" FORCE )
 set( ENABLE_MATHPRESSO  ON CACHE BOOL "" FORCE )
 set( ENABLE_PAMELA      ON CACHE BOOL "" FORCE )
@@ -63,5 +62,4 @@ set( RAJA_ENABLE_TBB    OFF         CACHE PATH "" FORCE )
 # PYTHON SETUP
 #######################################
 
-set( ENABLE_PYGEOSX         ON CACHE BOOL "" )
 set( ENABLE_VTK_WRAP_PYTHON ON CACHE BOOL "" )
