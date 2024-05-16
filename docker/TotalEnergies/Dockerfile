@@ -15,7 +15,18 @@ RUN yum install -y \
     ca-certificates \
     curl \
     python3 \
-    zlib-devel
+    zlib-devel \
+# Additional spack dependencies
+    python3-pip \
+    pkgconfig \
+    # xz \
+    unzip \
+    bzip2 \
+    && pip3 install virtualenv
+
+# Install clingo for Spack
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install clingo
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
@@ -29,18 +40,49 @@ RUN yum install -y \
     file \
     bison \
     flex \
-    patch
+    patch \
+# `ca-certificates`  needed by `git` to download GEOS repo.
+    ca-certificates \
+    autoconf \
+    automake \
+    git
 
-ARG HOST_CONFIG
+# Clone branch with spack configs
+# TODO decide landing place of spack recipes
+RUN git clone --branch feature/han12/wip_docker_spack_recipes \
+              --depth 1 \
+          --single-branch \
+          https://github.com/GEOS-DEV/GEOS.git
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
-WORKDIR $BLD_DIR
-RUN --mount=src=.,dst=$SRC_DIR make
+# Run uberenv
+# Have to create install directory first for uberenv
+# -k flag is to ignore SSL errors
+# Remove generated host-config for lvarray
+RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
+     mkdir -p ${GEOSX_TPL_DIR} && \
+     git submodule init scripts/uberenv && \
+     git submodule update && \
+     ./scripts/uberenv/uberenv.py \
+       --spec "%gcc@8.3.0~pygeosx" \
+       --spack-env-file=${SRC_DIR}/docker/total-spack.yaml \
+       --project-json=.uberenv_config.json \
+       --prefix ${GEOSX_TPL_DIR} \
+       -k && \
+# Remove host-config generated for LvArray
+     rm lvarray* && \
+# Rename and copy spack-generated host-config to root directory
+     cp *.cmake /spack-generated.cmake && \
+# Remove extraneous spack files
+     cd ${GEOSX_TPL_DIR} && \
+     rm -rf bin/ build_stage/ misc_cache/ spack/ spack-env/ .spack-db/
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
+
+# Extract the generated host-config
+COPY --from=tpl_toolchain /spack-generated.cmake /
 
 RUN yum -y install \
     openssh-clients \
