@@ -125,6 +125,7 @@ jobs:
 
     - name: Run the docker build and push docker script for ppc64 arch
       if: ${{ matrix.HOST_ARCH }}
+      runs-on: streak2
       uses: uraimo/run-on-arch-action@v2
       with:
         arch: ppc64le
