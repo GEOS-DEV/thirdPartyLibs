@@ -12,7 +12,7 @@ ARG TPL_BUILD_DIR=${TMP_DIR}/build
 ARG HOST_CONFIG
 
 COPY . ${TPL_SRC_DIR}
-RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
+RUN ${TPL_SRC_DIR}/docker/configure-tpl.sh
 WORKDIR ${TPL_BUILD_DIR}
 RUN make
 
