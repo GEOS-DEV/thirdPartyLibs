@@ -1,19 +1,27 @@
+# NOTE: see docker/tpl-ubuntu-gcc.Dockerfile for detailed comments
+ARG TMP_DIR=/tmp 
+ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
+ARG BLD_DIR=$TMP_DIR/build
+
 # The docker base image can be pecan or pangea.
 ARG DOCKER_ROOT_IMAGE
-FROM ${DOCKER_ROOT_IMAGE} as tpl_toolchain_intersect_geosx_toolchain
+FROM $DOCKER_ROOT_IMAGE as tpl_toolchain_intersect_geosx_toolchain
+ARG SRC_DIR
 
 ARG INSTALL_DIR
-ENV GEOSX_TPL_DIR=${INSTALL_DIR}
+ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 RUN yum install -y \
+    ca-certificates \
+    curl \
     python3 \
     zlib-devel
 
-# centos:7.6 offers a 2.8 version of cmake which is too old.
-ARG CMAKE_VERSION=3.23.1
-RUN curl -s https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=/usr/local --strip-components=1 -xzf -
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
+ARG SRC_DIR
+ARG BLD_DIR
 
 RUN yum install -y \
     make \
@@ -23,30 +31,28 @@ RUN yum install -y \
     flex \
     patch
 
-ARG TMP_DIR=/tmp
-ARG TPL_SRC_DIR=${TMP_DIR}/thirdPartyLibs
-ARG TPL_BUILD_DIR=${TMP_DIR}/build
-
 ARG HOST_CONFIG
 
-COPY . ${TPL_SRC_DIR}
-RUN ${TPL_SRC_DIR}/docker/configure_tpl_build.sh
-WORKDIR ${TPL_BUILD_DIR}
-RUN make
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
+WORKDIR $BLD_DIR
+RUN --mount=src=.,dst=$SRC_DIR make
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+ARG SRC_DIR
 
-COPY --from=tpl_toolchain ${GEOSX_TPL_DIR} ${GEOSX_TPL_DIR}
+COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
 RUN yum -y install \
     openssh-clients \
+    ca-certificates \
+    curl \
+    python3 \
     texlive \
     graphviz \
     libxml2 \
     git
 
-RUN curl -fsSL https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip | zcat > /usr/local/bin/ninja && chmod +x /usr/local/bin/ninja
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-ninja.sh
 
-RUN mkdir -p /opt/sccache/bin && \
-    curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.7.3/sccache-v0.7.3-x86_64-unknown-linux-musl.tar.gz | tar --directory=/opt/sccache/bin --strip-components=1 -xzf -
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache

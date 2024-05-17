@@ -1,6 +1,6 @@
 # This Dockerfile is used to build a docker image reproducing the Pangea installation over a ppc64le architecture:
 # It is not directly callable by the TPL ci but the built image is.
- 
+
 # syntax=docker/dockerfile:1
 FROM ppc64le/almalinux:8
 

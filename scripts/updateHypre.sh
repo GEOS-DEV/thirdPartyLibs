@@ -31,7 +31,7 @@ sed -i "s/\$develop_string/$HYPRE_DEVELOP_STRING/g"  ${HYPRE_SRC_DIR}/configure
 sed -i "s/\$develop_lasttag/$HYPRE_DEVELOP_LASTAG/g" ${HYPRE_SRC_DIR}/configure
 sed -i "s/\$develop_number/$HYPRE_DEVELOP_NUMBER/g"  ${HYPRE_SRC_DIR}/configure
 sed -i "s/\$develop_branch/$HYPRE_DEVELOP_BRANCH/g"  ${HYPRE_SRC_DIR}/configure
-sed -i "s/\$HYPRE_SRCDIR\/..\/.git/\$HYPRE_SRCDIR/g"   ${HYPRE_SRC_DIR}/configure
+sed -i "s/\$HYPRE_SRCDIR\/..\/.git/\$HYPRE_SRCDIR/g" ${HYPRE_SRC_DIR}/configure
 
 # Remove git machinery from configure
 sed -i '/^[[:space:]]*develop_lastag=\$/d' ${HYPRE_SRC_DIR}/configure
