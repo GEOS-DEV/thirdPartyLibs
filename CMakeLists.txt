@@ -798,7 +798,7 @@ if( ENABLE_HYPRE )
 
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     if( NOT ENABLE_CUDA )
-      message( WARNING "Setting of HYPRE device to CUDA ignored because ENABLE_CUDA is OFF" )
+      message( FATAL_ERROR "Non-compatible options: HYPRE device cannot be setted to CUDA when ENABLE_CUDA is OFF" )
     else()
       list( APPEND HYPRE_DEPENDS chai )
       string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
