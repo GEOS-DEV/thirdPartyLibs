@@ -63,7 +63,7 @@ RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
      git submodule init scripts/uberenv && \
      git submodule update && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@8.3.0~pygeosx" \
+       --spec "%gcc@8.3.0~pygeosx~openmp" \
        --spack-env-file=${SRC_DIR}/docker/total-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
