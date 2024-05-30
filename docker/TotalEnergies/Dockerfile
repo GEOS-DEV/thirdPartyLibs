@@ -78,7 +78,7 @@ RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
        # Pecan CPU
        #--spec "%gcc@8.2.0~pygeosx" \
        # Pecan GPU
-       #--spec "%gcc@8.2.0+cuda~pygeosx cuda_arch=70 ^cuda@11.5.1+allow-unsupported-compilers \
+       #--spec "%gcc@8.2.0+cuda~pygeosx cuda_arch=70 ^cuda@11.5.1+allow-unsupported-compilers" \
        # spack spec defined per image
        --spec "${SPEC}" \
        --spack-env-file=${SRC_DIR}/docker/total-spack.yaml \

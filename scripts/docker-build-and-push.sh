@@ -19,6 +19,7 @@ docker build ${DOCKER_COMPILER_BUILD_ARG} \
 --build-arg HOST_CONFIG=${HOST_CONFIG} \
 --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE} \
 --build-arg INSTALL_DIR=${INSTALL_DIR} \
+--build-arg SPEC="${SPEC}" \
 --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
 --file ${DOCKERFILE} \
 --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
