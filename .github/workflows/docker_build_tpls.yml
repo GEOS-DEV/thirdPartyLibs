@@ -139,11 +139,11 @@ jobs:
       with:
         platforms: ${{ matrix.HOST_ARCH }}
 
-    - name: Certificates deployment
-      if: ${{ matrix.HOST_ARCH }}
-      run: |
-        docker run --cpus=1 --memory=1g \
-        ubuntu:22.04
+    #- name: Certificates deployment
+    #  if: ${{ matrix.HOST_ARCH }}
+    #  run: |
+    #    docker run --cpus=1 --memory=1g \
+    #    ubuntu:22.04
 
     - name: Run the docker build and push docker script for ${{ matrix.HOST_ARCH }} arch
       if: ${{ matrix.HOST_ARCH }}
