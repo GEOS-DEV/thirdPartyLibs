@@ -132,10 +132,10 @@ jobs:
         INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
         HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
         DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
-        PULL_REQUEST_NUMBER: ${{ github.event.number }}
-        BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
+        DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+
       run: bash -x ./scripts/docker-build-and-push.sh
 
   # Convenience job - passes when all docker images are built.

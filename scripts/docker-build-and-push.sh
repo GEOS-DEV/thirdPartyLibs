@@ -8,11 +8,10 @@ echo .git > .dockerignore
 # A specific host-config file can be defined through variable HOST_CONFIG.
 # For the case of Total cluster only, DOCKER_ROOT_IMAGE is used to define docker base image.
 # Where the TPL are installed in the docker can be specified by parameter INSTALL_DIR.
-# Unlike DOCKER_TAG, these variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
-DOCKER_TAG=${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}
+# These variables shall be defined by the "yaml derived classes" in a stage prior to `script` stage.
 echo "Docker tag is ${DOCKER_REPOSITORY}:${DOCKER_TAG}"
 
-INSTALL_DIR=${INSTALL_DIR_ROOT}/GEOS_TPL-${PULL_REQUEST_NUMBER}-${BUILD_NUMBER}-${COMMIT:0:7}
+INSTALL_DIR=${INSTALL_DIR_ROOT}/GEOS_TPL-${DOCKER_TAG}-${COMMIT:0:7}
 echo "Installation directory is ${INSTALL_DIR}"
 
 docker build --progress=plain ${DOCKER_COMPILER_BUILD_ARG} \
