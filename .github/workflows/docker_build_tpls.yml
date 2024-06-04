@@ -143,7 +143,6 @@ jobs:
       if: ${{ matrix.HOST_ARCH }}
       run: |
         docker run --cpus=1 --memory=1g \
-        -v /etc/pki/ca-trust/source/anchors/:/usr/local/share/ca-certificates/llnl:ro \
         ubuntu:22.04
 
     - name: Run the docker build and push docker script for ${{ matrix.HOST_ARCH }} arch
