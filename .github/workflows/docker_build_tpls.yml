@@ -146,7 +146,7 @@ jobs:
         -v /etc/pki/ca-trust/source/anchors/:/usr/local/share/ca-certificates/llnl:ro \
         ubuntu:22.04 apt update -y
 
-    - name: Run the docker build and push docker script for ppc64 arch
+    - name: Run the docker build and push docker script for ${{ matrix.HOST_ARCH }} arch
       if: ${{ matrix.HOST_ARCH }}
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
