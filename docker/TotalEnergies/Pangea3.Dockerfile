@@ -24,9 +24,9 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 ARG HOST_CONFIG
 
 # We now configure the build...
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
+#RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 # ... before we compile the TPLs!
 WORKDIR $BLD_DIR
-RUN --mount=src=.,dst=$SRC_DIR make
+#RUN --mount=src=.,dst=$SRC_DIR make
 
 ENV SCCACHE=/opt/sccache/bin/sccache
