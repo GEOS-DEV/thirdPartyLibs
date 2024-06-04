@@ -3,8 +3,9 @@ env
 
 # We save memory for the docker context
 echo .git > .dockerignore
-# This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
+# This script will build an image from TPL_DOCKERFILE
 # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
+# This image will be tagged with the DOCKER_REPOSITORY:DOCKER_TAG tag
 # A specific host-config file can be defined through variable HOST_CONFIG.
 # For the case of Total cluster only, DOCKER_ROOT_IMAGE is used to define docker base image.
 # Where the TPL are installed in the docker can be specified by parameter INSTALL_DIR.
@@ -25,5 +26,3 @@ docker build --progress=plain ${DOCKER_COMPILER_BUILD_ARG} \
 --label "org.opencontainers.image.revision=${COMMIT}" \
 --label "org.opencontainers.image.title=Building environment for GEOS" \
 .
-
-docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}

@@ -124,7 +124,7 @@ jobs:
       with:
         platforms: ${{ matrix.HOST_ARCH }}
 
-    - name: Run the docker build and push docker script
+    - name: Run the docker build docker script
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
@@ -136,7 +136,14 @@ jobs:
         BUILD_DIR: ${{ github.workspace }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
 
-      run: bash -x ./scripts/docker-build-and-push.sh
+      run: bash -x ./scripts/docker-build.sh
+
+    - name: Push docker image
+      env:
+        DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+        DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+
+      run: docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
