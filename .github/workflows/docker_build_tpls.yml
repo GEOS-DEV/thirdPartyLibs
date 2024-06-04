@@ -118,8 +118,13 @@ jobs:
     - name: Print environment
       run: printenv
 
+    - name: Setup QEMU for ${{ matrix.HOST_ARCH }} emulation
+      if: ${{ matrix.HOST_ARCH }}
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: ${{ matrix.HOST_ARCH }}
+
     - name: Run the docker build and push docker script
-      if: ${{ !matrix.HOST_ARCH }}
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
@@ -132,28 +137,6 @@ jobs:
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
       run: bash -x ./scripts/docker-build-and-push.sh
-
-    - name: Setup QEMU for ${{ matrix.HOST_ARCH }} emulation
-      if: ${{ matrix.HOST_ARCH }}
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: ${{ matrix.HOST_ARCH }}
-
-    - name: Run the docker build and push docker script for ${{ matrix.HOST_ARCH }} arch
-      if: ${{ matrix.HOST_ARCH }}
-      env:
-        TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
-        DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
-        INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
-        HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
-        DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
-        PULL_REQUEST_NUMBER: ${{ github.event.number || '0' }}
-        BUILD_NUMBER: ${{ github.run_number }}
-        COMMIT: ${{ github.sha }}
-        BUILD_DIR: ${{ github.workspace }}
-
-      run: |
-        bash -x ./scripts/docker-build-and-push.sh
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
