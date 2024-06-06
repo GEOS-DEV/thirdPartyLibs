@@ -88,7 +88,9 @@ jobs:
             DOCKER_ROOT_IMAGE: geosx/ubi:8.9-cuda12.4
             DOCKER_REPOSITORY: geosx/ubi8.9-gcc13-cuda12.4
             DOCKERFILE: docker/tpl-ubi-gcc-cuda.Dockerfile
-
+            CMAKE_CXX_COMPILER: /opt/rh/gcc-toolset-13/root/bin/g++
+            CMAKE_C_COMPILER: /opt/rh/gcc-toolset-13/root/bin/gcc
+            CMAKE_FORTRAN_COMPILER: /opt/rh/gcc-toolset-13/root/bin/gfortran
     steps:
     - name: Checkout
       uses: actions/checkout@v4.1.6
@@ -112,6 +114,9 @@ jobs:
       env:
         DOCKERFILE: ${{ matrix.DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+        CMAKE_CXX_COMPILER: ${{ matrix.CMAKE_CXX_COMPILER }}
+        CMAKE_C_COMPILER: ${{ matrix.CMAKE_C_COMPILER }}
+        CMAKE_FORTRAN_COMPILER: ${{ matrix.CMAKE_FORTRAN_COMPILER }}
         DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
         INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
         HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}

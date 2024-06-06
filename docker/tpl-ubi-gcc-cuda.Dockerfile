@@ -2,6 +2,9 @@
 ARG TMP_DIR=/tmp 
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
+ARG CMAKE_C_COMPILER
+ARG CMAKE_CXX_COMPILER
+ARG CMAKE_FORTRAN_COMPILER
 
 FROM geosx/ubi:8.9-cuda12.4 AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -20,8 +23,8 @@ RUN yum -y install \
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
-ENV CC=/opt/rh/devtoolset-8/root/usr/bin/gcc \
-    CXX=/opt/rh/devtoolset-8/root/usr/bin/g++ \
+ENV CC=$CMAKE_C_COMPILER \
+    CXX=$CMAKE_CXX_COMPILER \
     MPICC=/usr/lib64/openmpi/bin/mpicc \
     MPICXX=/usr/lib64/openmpi/bin/mpicxx \
     MPIEXEC=/usr/lib64/openmpi/bin/mpirun
@@ -35,7 +38,7 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
 
-ENV FC=/opt/rh/devtoolset-8/root/usr/bin/gfortran \
+ENV FC=$CMAKE_FORTRAN_COMPILER \
     MPIFC=/usr/lib64/openmpi/bin/mpifort
 ENV OMPI_FC=$FC
 
