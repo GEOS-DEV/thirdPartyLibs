@@ -6,7 +6,7 @@ ARG CMAKE_C_COMPILER
 ARG CMAKE_CXX_COMPILER
 ARG CMAKE_FORTRAN_COMPILER
 
-FROM geosx/ubi:8.9-cuda12.4 AS tpl_toolchain_intersect_geosx_toolchain
+FROM geosx/ubi:8.9-cuda12.4-b5b06ad736cc8f2df227dabf8ff1da1a2f538939 AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
