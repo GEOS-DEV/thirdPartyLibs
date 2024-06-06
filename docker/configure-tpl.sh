@@ -22,7 +22,7 @@ fi
 
 python3 $SRC_DIR/scripts/config-build.py \
 --hostconfig $SRC_DIR/$HOST_CONFIG \
---buildtype Release \
+--buildtype Debug \
 --buildpath $BLD_DIR \
 --installpath $GEOSX_TPL_DIR \
 -DNUM_PROC=$(nproc) \
