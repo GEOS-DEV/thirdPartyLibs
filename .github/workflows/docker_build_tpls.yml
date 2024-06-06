@@ -84,9 +84,9 @@ jobs:
           # - name: Centos (7.7, gcc 8.3.1, open-mpi 1.10.7, cuda 11.8.89)
           #   DOCKER_REPOSITORY: geosx/centos7.7-gcc8.3.1-cuda11.8.89
           #   DOCKERFILE: docker/tpl-centos-gcc-cuda.Dockerfile
-          - name: ubi (8.9, gcc 8.3.1, open-mpi 1.10.7, cuda 12.4.1)
-            DOCKER_ROOT_IMAGE: geosx/ubi:8.9-cuda12.
-            DOCKER_REPOSITORY: geosx/ubi:8.9-gcccuda12.4
+          - name: ubi (8.9, gcc 13.2.1, open-mpi 1.10.7, cuda 12.4.1)
+            DOCKER_ROOT_IMAGE: geosx/ubi:8.9-cuda12.4
+            DOCKER_REPOSITORY: geosx/ubi:8.9-gcc13-cuda12.4
             DOCKERFILE: docker/tpl-ubi-gcc-cuda.Dockerfile
 
     steps:
