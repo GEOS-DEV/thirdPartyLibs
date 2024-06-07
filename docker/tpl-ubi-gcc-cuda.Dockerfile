@@ -13,13 +13,12 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
-RUN yum -y install \
-    ca-certificates \
-    tbb \
-    blas-devel \
-    lapack-devel \
-    zlib-devel \
-    openmpi-devel
+RUN yum -y install ca-certificates
+RUN yum -y install tbb
+RUN yum -y install blas-devel
+RUN yum -y install lapack-devel
+RUN yum -y install zlib-devel
+RUN yum -y install openmpi-devel
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
