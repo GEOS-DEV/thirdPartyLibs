@@ -13,7 +13,10 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 
-RUN yum -y search blas lapack zlib openmpi
+RUN yum search blas 
+RUN yum search lapack 
+RUN yum search zlib
+RUN yum search openmpi
 # Installing dependencies
 #RUN yum -y install tbb
 RUN yum -y install blas-devel
