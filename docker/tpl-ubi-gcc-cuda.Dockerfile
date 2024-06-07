@@ -13,16 +13,18 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 
-RUN yum search blas 
-RUN yum search lapack 
-RUN yum search zlib
-RUN yum search openmpi
+# RUN dnf search blas 
+# RUN dnf search lapack 
+RUN dnf search zlib
+RUN dnf search openmpi
 # Installing dependencies
-#RUN yum -y install tbb
-RUN yum -y install blas-devel
-RUN yum -y install lapack-devel
-RUN yum -y install zlib-devel
-RUN yum -y install openmpi-devel
+#RUN dnf -y install tbb
+RUN dnf -y install openblas
+#RUN dnf -y install lapack-devel
+RUN dnf -y install zlib-devel
+#RUN dnf -y install openmpi-devel
+RUN dnf -y install https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-5.0.3-1.src.rpm
+
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
@@ -45,7 +47,7 @@ ENV FC=$CMAKE_FORTRAN_COMPILER \
     MPIFC=/usr/lib64/openmpi/bin/mpifort
 ENV OMPI_FC=$FC
 
-RUN yum install -y \
+RUN dnf install -y \
     tbb-devel \
     bc \
     file \
@@ -78,7 +80,7 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
-RUN yum install -y \
+RUN dnf install -y \
     openssh-client \
     ca-certificates \
     texlive \
