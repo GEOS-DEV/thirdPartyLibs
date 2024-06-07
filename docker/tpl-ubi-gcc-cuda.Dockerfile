@@ -12,8 +12,8 @@ ARG SRC_DIR
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
+RUN yum search tbb
 # Installing dependencies
-RUN yum -y install ca-certificates
 RUN yum -y install tbb
 RUN yum -y install blas-devel
 RUN yum -y install lapack-devel
