@@ -119,7 +119,9 @@ jobs:
         platforms: ${{ matrix.HOST_ARCH }}
 
     - name: Print cpu infos
-      run: lscpu
+      run: |
+        lscpu
+        ls /usr/lib64
 
     - name: Run the docker build docker script
       env:
