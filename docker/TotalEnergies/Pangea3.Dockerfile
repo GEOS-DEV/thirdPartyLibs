@@ -27,6 +27,6 @@ ARG HOST_CONFIG
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 # ... before we compile the TPLs!
 WORKDIR $BLD_DIR
-RUN --mount=src=.,dst=$SRC_DIR make
+RUN --mount=src=.,dst=$SRC_DIR make tests
 
 ENV SCCACHE=/opt/sccache/bin/sccache

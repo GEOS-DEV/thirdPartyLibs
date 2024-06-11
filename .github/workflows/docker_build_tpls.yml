@@ -118,6 +118,9 @@ jobs:
       with:
         platforms: ${{ matrix.HOST_ARCH }}
 
+    - name: Print cpu infos
+      run: lscpu
+
     - name: Run the docker build docker script
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
