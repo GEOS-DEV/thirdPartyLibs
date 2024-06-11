@@ -796,9 +796,12 @@ if( ENABLE_HYPRE )
   endif()
 
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
-    list( APPEND HYPRE_DEPENDS chai )
-    string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
-    set( HYPRE_CUDA_FLAGS "\
+    if( NOT ENABLE_CUDA )
+      message( FATAL_ERROR "Non-compatible options: HYPRE device cannot be set to CUDA when ENABLE_CUDA is OFF" )
+    else()
+      list( APPEND HYPRE_DEPENDS chai )
+      string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
+      set( HYPRE_CUDA_FLAGS "\
 --with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
 --enable-cusparse \
 --enable-cusolver \
@@ -808,7 +811,7 @@ if( ENABLE_HYPRE )
 --with-umpire-include=${CHAI_DIR}/include \
 --with-umpire-lib-dirs=${CHAI_DIR}/lib \
 --with-umpire-libs=umpire " )
-
+    endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     message( FATAL_ERROR "hip tpls build only supported through spack" )
   endif()
