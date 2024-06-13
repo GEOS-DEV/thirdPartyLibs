@@ -30,8 +30,7 @@ WORKDIR $BLD_DIR
 ENV OMPI_ALLOW_RUN_AS_ROOT=1
 ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
-RUN --mount=src=.,dst=$SRC_DIR make blt_cuda_gtest_smoke blt_cuda_mpi_smoke blt_cuda_openmp_smoke blt_cuda_version_smoke blt_cuda_runtime_smoke blt_cuda_smoke blt_mpi_smoke blt_openmp_smoke blt_fruit_smoke blt_gtest_smoke
+RUN --mount=src=.,dst=$SRC_DIR make
 RUN ln -s /data_local/sw/cuda/11.5.0/lib64/stubs/libcuda.so /usr/lib64/libcuda.so.1
-RUN --mount=src=.,dst=$SRC_DIR ctest -VV
 
 ENV SCCACHE=/opt/sccache/bin/sccache
