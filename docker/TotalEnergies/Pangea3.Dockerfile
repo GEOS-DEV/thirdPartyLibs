@@ -23,10 +23,16 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # Get host config file from docker build arguments
 ARG HOST_CONFIG
 
+FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 # We now configure the build...
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 # ... before we compile the TPLs!
 WORKDIR $BLD_DIR
 RUN --mount=src=.,dst=$SRC_DIR make
+
+# Extract only TPL's from previous stage
+FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
+
+COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
 ENV SCCACHE=/opt/sccache/bin/sccache
