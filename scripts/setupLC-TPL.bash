@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ## Builds the TPLs on all LC systems. Must be run from the top level TPL directory.
-## Usage ./setupLC-TPL.bash pathToGeosxDirectory pathToInstallDirectory [extra arguments to config-build ]
-GEOSX_DIR=$1
+## Usage ./setupLC-TPL.bash pathToGeosDirectory pathToInstallDirectory [extra arguments to config-build ]
+GEOS_DIR=$1
 INSTALL_DIR=$2
 
 ## Eat up the command line arguments so the rest can be forwarded to setupLC-TPL-helper.
@@ -24,14 +24,14 @@ mkdir toBeDeleted
 mv build-* toBeDeleted
 rm -rf toBeDeleted &
 
-echo "Building all LC TPLs from $GEOSX_DIR to be installed at $INSTALL_DIR"
+echo "Building all LC TPLs from $GEOS_DIR to be installed at $INSTALL_DIR"
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz clang-14 "srun -N 1 -t 90 -n 1 -A cbronze" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR quartz gcc-12 "srun -N 1 -t 90 -n 1 -A cbronze" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen gcc-8-cuda-11       "lalloc 1 -qpdebug" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-13-cuda-11       "lalloc 1 -qpdebug" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOSX_DIR $INSTALL_DIR lassen clang-10-cuda-11       "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby clang-14 "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby gcc-12 "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen gcc-8-cuda-11       "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-11       "lalloc 1 -qpdebug" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-10-cuda-11       "lalloc 1 -qpdebug" $@ &
 
 wait
 echo "Complete"
