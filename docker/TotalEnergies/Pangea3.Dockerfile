@@ -32,5 +32,6 @@ ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
 RUN --mount=src=.,dst=$SRC_DIR make
 RUN ln -s /data_local/sw/cuda/11.5.0/lib64/stubs/libcuda.so /usr/lib64/libcuda.so.1
+RUN --mount=src=.,dst=$SRC_DIR ctest --output-on-failure
 
 ENV SCCACHE=/opt/sccache/bin/sccache
