@@ -120,17 +120,12 @@ spack:
     intel-mkl:
       buildable: False
       externals:
-        # LC
-        #- spec: intel-mkl@2020.0.166 threads=openmp
-        #  prefix: /usr/tce/packages/mkl/mkl-2020.0/
-
         # Pangea 2
         - spec: intel-mkl@2019.3.199%gcc@8.3.0 threads=openmp
           prefix: /opt/intel/compilers_and_libraries_2019.3.199/linux/mkl/
         # Pecan CPU/GPU
         - spec: intel-mkl@2019.5.281%gcc@8.2.0 threads=openmp
           prefix: /opt/intel/compilers_and_libraries_2019.5.281/linux/mkl/
-          #prefix: /apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/
     blas:
       buildable: false
 
@@ -146,11 +141,6 @@ spack:
     # Spack may grab for mpi & we don't want to use them
     mpi:
       buildable: false
-    #mpfr:
-    #  buildable: false
-    #  externals:
-    #  - spec: mpfr@4.1.0
-    #    prefix: /usr
 
     openmpi:
       externals:

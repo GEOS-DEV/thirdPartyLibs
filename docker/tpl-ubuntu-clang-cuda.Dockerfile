@@ -52,7 +52,6 @@ RUN apt-get install -y --no-install-recommends \
     bison \
     flex \
     patch \
-# `ca-certificates`  needed by `git` to download GEOS repo.
     ca-certificates \
     git
 
@@ -66,8 +65,7 @@ RUN git clone --branch feature/han12/wip_docker_spack_recipes \
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-# Remove generated host-config for lvarray
- RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
+RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      git submodule init scripts/uberenv && \
      git submodule update && \
@@ -83,7 +81,7 @@ RUN git clone --branch feature/han12/wip_docker_spack_recipes \
      cp *.cmake /spack-generated.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
-     rm -rf bin/ build_stage/ misc_cache/ spack/ spack-env/ .spack-db/
+     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
 
 
 # Extract only TPL's from previous stage

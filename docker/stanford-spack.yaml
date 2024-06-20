@@ -125,11 +125,6 @@ spack:
     # Spack may grab for mpi & we don't want to use them
     mpi:
       buildable: false
-    #mpfr:
-    #  buildable: false
-    #  externals:
-    #  - spec: mpfr@4.1.0
-    #    prefix: /usr
 
     openmpi:
       externals:

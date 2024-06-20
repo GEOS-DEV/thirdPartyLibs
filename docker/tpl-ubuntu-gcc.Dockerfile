@@ -106,8 +106,7 @@ RUN git clone --branch feature/han12/spack_cleanup_recipes \
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-# Remove generated host-config for lvarray
- RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
+RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      git submodule init scripts/uberenv && \
      git submodule update && \
