@@ -10,9 +10,9 @@ GET_A_NODE=$5
 
 if   [[ ${MACHINE} == "ruby"   ||\
         ${MACHINE} == "dane" ]]; then
-    CMAKE_VERSION=cmake/3.26.3 &&
+    CMAKE_VERSION=cmake/3.26.3 
 elif [[ ${MACHINE} == "lassen" ]]; then
-    CMAKE_VERSION=cmake/3.29.2 &&
+    CMAKE_VERSION=cmake/3.29.2 
 fi
 
 ## Eat up the command line arguments so the rest can be forwarded to config-build.
