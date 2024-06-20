@@ -6,7 +6,7 @@ GEOS_DIR=$1
 INSTALL_DIR=$2
 
 if   [[ ${LCSCHEDCLUSTER} == "ruby"   ||\
-        ${LCSCHEDCLUSTER} == "dane"   ||\ ]]; then
+        ${LCSCHEDCLUSTER} == "dane" ]]; then
     CMAKE_VERSION="3.26.3"
 elif [[ ${LCSCHEDCLUSTER} == "lassen" ]]; then
     CMAKE_VERSION="3.29.2"
