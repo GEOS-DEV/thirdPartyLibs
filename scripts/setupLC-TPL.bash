@@ -5,6 +5,13 @@
 GEOS_DIR=$1
 INSTALL_DIR=$2
 
+if   [[ ${LCSCHEDCLUSTER} == "ruby"   ||\
+        ${LCSCHEDCLUSTER} == "dane"   ||\ ]]; then
+    CMAKE_VERSION="3.26.3"
+elif [[ ${LCSCHEDCLUSTER} == "lassen" ]]; then
+    CMAKE_VERSION="3.29.2"
+fi
+
 ## Eat up the command line arguments so the rest can be forwarded to setupLC-TPL-helper.
 shift
 shift
@@ -27,12 +34,12 @@ rm -rf toBeDeleted &
 echo "Building all LC TPLs from $GEOS_DIR to be installed at $INSTALL_DIR"
 chmod -R g+rx $INSTALL_DIR
 chgrp -R GEOS $INSTALL_DIR
-./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby clang-14           "3.26.3" "srun -N 1 -t 90 -n 1 -A vortex" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby gcc-12             "3.26.3" "srun -N 1 -t 90 -n 1 -A vortex" $@ &
-./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen gcc-8-cuda-11    "3.26.3" "lalloc 1 -qpdebug"  $@ &
-./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-11 "3.29.2" "lalloc 1 -qpdebug"  $@ &
-./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-10-cuda-11 "3.29.2" "lalloc 1 -qpdebug"  $@ &
-./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-12 "3.29.2" "lalloc 1 -qpdebug"  $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby clang-14           $CMAKE_VERSION "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby gcc-12             $CMAKE_VERSION "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen gcc-8-cuda-11    $CMAKE_VERSION "lalloc 1 -qpdebug"  $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-11 $CMAKE_VERSION "lalloc 1 -qpdebug"  $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-10-cuda-11 $CMAKE_VERSION "lalloc 1 -qpdebug"  $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-12 $CMAKE_VERSION "lalloc 1 -qpdebug"  $@ &
 
 wait
 echo "Complete"
