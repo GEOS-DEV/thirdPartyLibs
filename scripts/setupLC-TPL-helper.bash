@@ -6,8 +6,7 @@ GEOS_DIR=$1
 INSTALL_DIR=$2
 MACHINE=$3
 COMPILER=$4
-CMAKE_VERSION=$5
-GET_A_NODE=$6
+GET_A_NODE=$5
 
 
 ## Eat up the command line arguments so the rest can be forwarded to config-build.
@@ -27,7 +26,12 @@ echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL
 ssh $MACHINE -t "
 . /etc/profile  &&
 cd $PWD &&
-module load cmake/$CMAKE_VERSION &&
+if   [[ ${LCSCHEDCLUSTER} == "ruby"   ||\
+        ${LCSCHEDCLUSTER} == "dane" ]]; then
+    module load cmake/3.26.3 &&
+elif [[ ${LCSCHEDCLUSTER} == "lassen" ]]; then
+    module load cmake/3.29.2 &&
+fi
 python3 scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
 cd build-$CONFIG-release &&
 $GET_A_NODE make &&
