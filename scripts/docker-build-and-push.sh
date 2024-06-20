@@ -28,4 +28,4 @@ docker build ${DOCKER_COMPILER_BUILD_ARG} \
 --label "org.opencontainers.image.title=Building environment for GEOS" \
 .
 
-docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+#docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
