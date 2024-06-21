@@ -27,10 +27,7 @@ ARG HOST_CONFIG
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 # ... before we compile the TPLs!
 WORKDIR $BLD_DIR
-ENV OMPI_ALLOW_RUN_AS_ROOT=1
-ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
-RUN --mount=src=.,dst=$SRC_DIR make blt_cuda_version_smoke
-RUN --mount=src=.,dst=$SRC_DIR ctest --output-on-failure -R blt_cuda_version_smoke
+RUN --mount=src=.,dst=$SRC_DIR make
 
 ENV SCCACHE=/opt/sccache/bin/sccache
