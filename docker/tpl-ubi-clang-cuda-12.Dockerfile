@@ -10,9 +10,11 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
-RUN subscription-manager repos --enable codeready-builder-for-rhel-8-$(arch)-rpms
+# RUN subscription-manager repos --enable codeready-builder-for-rhel-8-$(arch)-rpms
 
-RUN dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+# RUN dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+RUN dnf install -y epel-release-latest-8 
 
 RUN dnf clean all && \
     dnf -y update && \
