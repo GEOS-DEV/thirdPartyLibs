@@ -11,8 +11,10 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
-    dnf -y update && \
-    dnf -y install \
+    dnf -y update 
+
+RUN dnf -y install \
+        which \ 
         clang \ 
         gcc-gfortran \
         python3 \
