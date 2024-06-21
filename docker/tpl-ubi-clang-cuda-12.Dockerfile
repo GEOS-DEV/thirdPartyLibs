@@ -15,7 +15,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 RUN dnf clean all && \
     dnf -y update && \
     curl -o epel-release-latest-8.noarch.rpm https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
-    dnf install epel-release-latest-8.noarch.rpm 
+    dnf install -y epel-release-latest-8.noarch.rpm 
 
 RUN dnf clean all && \
     dnf -y update && \
