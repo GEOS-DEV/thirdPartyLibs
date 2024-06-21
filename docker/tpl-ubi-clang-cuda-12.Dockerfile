@@ -17,20 +17,17 @@ RUN dnf clean all && \
     curl -o epel-release-latest-8.noarch.rpm https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
     dnf install -y epel-release-latest-8.noarch.rpm 
 
-RUN dnf clean all && \
-    dnf -y update && \
+RUN dnf -y update && \
     dnf -y install \
-        ca-certificates \
-        curl \
+        clang \ 
         gcc-gfortran \
+        python3 \
         tbb \
-        blas \
-        lapack \
+        blas-devel \
+        lapack-devel \
         zlib-devel \
         openmpi \
-        openmpi-devel \
-        python3 \
-        clang        
+        openmpi-devel 
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
