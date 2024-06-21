@@ -10,16 +10,16 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
-RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
-    yum clean all && \
-    yum -y update && \
-    yum -y install \
+RUN dnf clean all && \
+    dnf -y update && \
+    dnf -y install epel-release && \
+    dnf -y install \
         ca-certificates \
         curl \
         gcc-gfortran \
         tbb \
-        blas-devel \
-        lapack-devel \
+        blas \
+        lapack \
         zlib-devel \
         openmpi \
         openmpi-devel \
