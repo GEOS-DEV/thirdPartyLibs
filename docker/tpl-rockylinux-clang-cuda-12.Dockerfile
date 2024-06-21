@@ -18,8 +18,7 @@ RUN dnf clean all && \
         python3 \
         zlib-devel \
         tbb \
-        blas-devel \
-        lapack-devel \ 
+        openblas \
         openmpi \
         openmpi-devel         
 
