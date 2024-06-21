@@ -82,7 +82,7 @@ jobs:
             DOCKERFILE: docker/tpl-centos-gcc-cuda.Dockerfile
           - name: Ubi (8, clang, cuda 12.2.2)
             DOCKER_REPOSITORY: geosx/ubi-8-cuda-12.2.2
-            DOCKERFILE: docker/tpl-ubi-clang-cuda-12.Dockerfile  
+            DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile  
 
     steps:
     - name: Checkout
