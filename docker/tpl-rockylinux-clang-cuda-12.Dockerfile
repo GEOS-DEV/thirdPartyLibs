@@ -27,7 +27,12 @@ RUN dnf -y install \
 
 RUN dnf repoquery -l openmpi        
         
-RUN which mpirun        
+# Find the location of mpicc and add to PATH
+RUN mpi_path=$(find /usr -name mpicc | head -n 1) && \
+    mpi_dir=$(dirname $mpi_path) && \
+    echo "MPI binary directory: $mpi_dir" && \
+    export PATH=$PATH:$mpi_dir && \
+    echo $PATH
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
