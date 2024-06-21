@@ -24,23 +24,21 @@ RUN dnf -y install \
         lapack \
         openmpi \
         openmpi-devel
-
-RUN dnf repoquery -l openmpi        
         
 # Find the location of mpicc and add to PATH
-RUN mpi_path=$(find /usr -name mpicc | head -n 1) && \
-    mpi_dir=$(dirname $mpi_path) && \
-    echo "MPI binary directory: $mpi_dir" && \
-    export PATH=$PATH:$mpi_dir && \
+RUN MPI_PATH=$(find /usr -name mpicc | head -n 1) && \
+    MPI_DIR=$(dirname $MPI_PATH) && \
+    echo "MPI binary directory: $MPI_DIR" && \
+    export PATH=$PATH:$MPI_DIR && \
     echo $PATH
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
-    MPICC=/usr/bin/mpicc \
-    MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
+    MPICC=$MPI_DIR/mpicc \
+    MPICXX=$MPI_DIR/mpicxx \
+    MPIEXEC=$MPI_DIR/mpirun
 
 ENV OMPI_CC=$CC \
     OMPI_CXX=$CXX
