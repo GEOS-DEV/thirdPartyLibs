@@ -18,9 +18,12 @@ RUN dnf clean all && \
         python3 \
         zlib-devel \
         tbb \
-        openblas \
+        blas \
+        lapack \
         openmpi \
-        openmpi-devel         
+        openmpi-devel
+        
+RUN which mpirun        
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
@@ -29,8 +32,10 @@ ENV CC=/usr/bin/clang \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
     MPIEXEC=/usr/bin/mpirun
+
 ENV OMPI_CC=$CC \
-    OMPI_CXX=$CXX 
+    OMPI_CXX=$CXX
+
 ENV ENABLE_CUDA=ON \
     CMAKE_CUDA_FLAGS="-restrict -arch sm_70 --expt-extended-lambda -Werror cross-execution-space-call,reorder,deprecated-declarations"
 
