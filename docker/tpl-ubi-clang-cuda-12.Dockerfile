@@ -11,10 +11,9 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf && \
-    dnf -y update && \
-    dnf -y install \
+    yum clean all && \
+    yum -y update && \
+    yum -y install \
         ca-certificates \
         curl \
         gcc-gfortran \
