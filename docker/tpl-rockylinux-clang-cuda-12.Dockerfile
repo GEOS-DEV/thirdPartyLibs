@@ -24,6 +24,8 @@ RUN dnf -y install \
         lapack \
         openmpi \
         openmpi-devel
+
+RUN dnf repoquery -l openmpi        
         
 RUN which mpirun        
 
