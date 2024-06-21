@@ -22,12 +22,14 @@ RUN dnf -y update && \
         clang \ 
         gcc-gfortran \
         python3 \
+        zlib-devel 
+        
+RUN dnf install -y \
         tbb \
         blas-devel \
-        lapack-devel \
-        zlib-devel \
+        lapack-devel \ 
         openmpi \
-        openmpi-devel 
+        openmpi-devel         
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
