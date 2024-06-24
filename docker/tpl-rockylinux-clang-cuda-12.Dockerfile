@@ -52,7 +52,7 @@ ARG SRC_DIR
 ARG BLD_DIR
 
 ENV FC=/usr/bin/gfortran \
-    MPIFC=/usr/bin/mpifort
+    MPIFC=$MPI_DIR/mpifort
 ENV OMPI_FC=$FC
 
 # Install required packages using dnf
