@@ -44,7 +44,7 @@ ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
     MPICC=/usr/lib64/openmpi/bin/mpicc \
     MPICXX=/usr/lib64/openmpi/bin/mpicxx \
-    MPIEXEC=/usr/lib64/openmpi/bin/mpirun
+    MPIEXEC=/usr/lib64/openmpi/bin/mpirun \
 
 ENV OMPI_CC=$CC \
     OMPI_CXX=$CXX
@@ -89,7 +89,9 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR \
     -DCUDA_ARCH=$CUDA_ARCH \
     -DCMAKE_CUDA_ARCHITECTURES=$CMAKE_CUDA_ARCHITECTURES \
-    -DCMAKE_CUDA_COMPILER=$CMAKE_CUDA_COMPILER
+    -DCMAKE_CUDA_COMPILER=$CMAKE_CUDA_COMPILER \
+    -DBLAS_LIBRARIES="/usr/lib64/libblas.so.3.8.0" \
+    -DLAPACK_LIBRARIES="/usr/lib64/liblapack.so.3.8.0;/usr/lib64/liblapacke.so.3.8.0"
 
 # Set the working directory
 WORKDIR $BLD_DIR
