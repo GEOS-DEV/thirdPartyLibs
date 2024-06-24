@@ -11,7 +11,8 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
-    dnf repolist enabled devel && \
+    dnf config-manager --set-enabled devel && \
+    dnf repolist &&\
     dnf -y update && \
     dnf -y install \
         ninja-build \      
