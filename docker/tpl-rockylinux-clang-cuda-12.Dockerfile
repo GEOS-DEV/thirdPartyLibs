@@ -13,6 +13,8 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 RUN dnf clean all && \
     dnf -y update 
 
+RUN dnf repolist enabled     
+
 RUN dnf -y install \
         which \ 
         clang \ 
