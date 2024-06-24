@@ -25,12 +25,18 @@ RUN dnf -y install \
         openmpi \
         openmpi-devel
         
-# Find the location of mpicc and add to PATH
+# Find the location of mpicc, blas and lapack and add to PATH
 RUN MPI_PATH=$(find /usr -name mpicc | head -n 1) && \
     MPI_DIR=$(dirname $MPI_PATH) && \
+    BLAS_DIR =$(find / -name "libblas*") && \
+    LAPACK_DIR = $(find -name "liblapack*") && \
     echo "MPI binary directory: $MPI_DIR" && \
+    echo "Blas directory: $BLAS_DIR" && \
+    echo "Lapack directory: $LAPACK_DIR" &&
     export PATH=$PATH:$MPI_DIR && \
-    echo $PATH
+    export PATH=$PATH:$BLAS_DIR && \
+    export PATH=$PATH:$LAPACK_DIR && \
+    echo $PATH 
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
