@@ -32,7 +32,7 @@ RUN MPI_PATH=$(find /usr -name mpicc | head -n 1) && \
     LAPACK_DIR = $(find -name "liblapack*") && \
     echo "MPI binary directory: $MPI_DIR" && \
     echo "Blas directory: $BLAS_DIR" && \
-    echo "Lapack directory: $LAPACK_DIR" &&
+    echo "Lapack directory: $LAPACK_DIR" && \ 
     export PATH=$PATH:$MPI_DIR && \
     export PATH=$PATH:$BLAS_DIR && \
     export PATH=$PATH:$LAPACK_DIR && \
