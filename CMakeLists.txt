@@ -52,6 +52,7 @@ option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
 option( ENABLE_VTK "" ON )
 option( ENABLE_VTK_WRAP_PYTHON "" OFF )
+option( ENABLE_GRPC "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
@@ -1211,6 +1212,33 @@ ExternalProject_Add( fmt
 
 list(APPEND build_list fmt)
 
+
+endif()
+
+################################
+# gRPC
+################################
+
+if( ENABLE_GRPC )
+
+    set(GRPC_DIR "${CMAKE_INSTALL_PREFIX}/grpc")
+    set(GRPC_URL "${TPL_MIRROR_DIR}/grpc-1.64.0.tar.gz")
+    message(STATUS "Building gRPC found at ${GRPC_URL}")
+
+    ExternalProject_Add( grpc
+                        URL ${GRPC_URL}
+                        PREFIX ${PROJECT_BINARY_DIR}/grpc
+                        INSTALL_DIR ${GRPC_DIR}
+                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                        CMAKE_ARGS -DgRPC_INSTALL=ON
+                                   -DgRPC_BUILD_TESTS=OFF
+                                   -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                   -DCMAKE_BUILD_TYPE=Release
+                                   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                        )
+
+    list(APPEND build_list grpc )
 
 ################################
 # Create target that builds all dependencies
