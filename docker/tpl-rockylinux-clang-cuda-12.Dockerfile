@@ -11,6 +11,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
+    dnf -y install dnf-plugins-core \
     dnf config-manager --set-enabled devel && \
     dnf repolist &&\
     dnf -y update && \
