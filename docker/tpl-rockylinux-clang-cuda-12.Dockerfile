@@ -44,7 +44,7 @@ ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
     MPICC=/usr/lib64/openmpi/bin/mpicc \
     MPICXX=/usr/lib64/openmpi/bin/mpicxx \
-    MPIEXEC=/usr/lib64/openmpi/bin/mpirun \
+    MPIEXEC=/usr/lib64/openmpi/bin/mpirun 
 
 ENV OMPI_CC=$CC \
     OMPI_CXX=$CXX
