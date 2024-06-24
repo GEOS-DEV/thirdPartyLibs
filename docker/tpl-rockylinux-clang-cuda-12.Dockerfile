@@ -11,11 +11,10 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
-    dnf -y update 
-
-RUN dnf repolist enabled     
-
-RUN dnf -y install \
+    dnf repolist enabled devel && \
+    dnf -y update && \
+    dnf -y install \
+        ninja-build \      
         which \ 
         clang \ 
         gcc-gfortran \
@@ -26,6 +25,8 @@ RUN dnf -y install \
         lapack \
         openmpi \
         openmpi-devel
+
+RUN dnf config-manager --set-enabled  &      
         
 # Find the location of mpicc, blas and lapack and add to PATH
 RUN MPI_PATH=$(find /usr -name mpicc | head -n 1) && \
