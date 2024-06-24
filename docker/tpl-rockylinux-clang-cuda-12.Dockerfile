@@ -28,8 +28,8 @@ RUN dnf -y install \
 # Find the location of mpicc, blas and lapack and add to PATH
 RUN MPI_PATH=$(find /usr -name mpicc | head -n 1) && \
     MPI_DIR=$(dirname $MPI_PATH) && \
-    BLAS_DIR =$(find / -name "libblas*") && \
-    LAPACK_DIR = $(find -name "liblapack*") && \
+    BLAS_DIR=$(find / -name "libblas*") && \
+    LAPACK_DIR=$(find -name "liblapack*") && \
     echo "MPI binary directory: $MPI_DIR" && \
     echo "Blas directory: $BLAS_DIR" && \
     echo "Lapack directory: $LAPACK_DIR" && \ 
