@@ -11,12 +11,8 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
-    dnf -y install dnf-plugins-core && \
-    dnf config-manager --set-enabled devel && \
-    dnf repolist &&\
     dnf -y update && \
     dnf -y install \
-        ninja-build \      
         which \ 
         clang \ 
         gcc-gfortran \
@@ -113,6 +109,8 @@ COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 # Install required packages using dnf
 RUN dnf clean all && \
     rm -rf /var/cache/dnf && \
+    dnf -y install dnf-plugins-core && \
+    dnf config-manager --set-enabled devel && \
     dnf -y update && \
     dnf -y install \
         openssh-clients \
