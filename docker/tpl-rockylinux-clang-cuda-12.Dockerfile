@@ -90,8 +90,8 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh \
     -DCUDA_ARCH=$CUDA_ARCH \
     -DCMAKE_CUDA_ARCHITECTURES=$CMAKE_CUDA_ARCHITECTURES \
     -DCMAKE_CUDA_COMPILER=$CMAKE_CUDA_COMPILER \
-    -DBLAS_LIBRARIES="/usr/lib64/libblas.so" \
-    -DLAPACK_LIBRARIES="/usr/lib64/liblapack.so"
+    -DBLAS_LIBRARIES="/usr/lib64/libblas.so.3.8.0" \
+    -DLAPACK_LIBRARIES="/usr/lib64/liblapack.so.3.8.0"
 
 # Set the working directory
 WORKDIR $BLD_DIR
