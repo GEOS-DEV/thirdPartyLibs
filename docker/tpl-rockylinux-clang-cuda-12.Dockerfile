@@ -36,9 +36,9 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 ENV CC=/usr/bin/clang \
     CXX=/usr/bin/clang++ \
-    MPICC=$MPI_DIR/mpicc \
-    MPICXX=$MPI_DIR/mpicxx \
-    MPIEXEC=$MPI_DIR/mpirun
+    MPICC=/usr/lib64/openmpi/bin/mpicc \
+    MPICXX=/usr/lib64/openmpi/bin/mpicxx \
+    MPIEXEC=/usr/lib64/openmpi/bin/mpirun
 
 ENV OMPI_CC=$CC \
     OMPI_CXX=$CXX
@@ -52,7 +52,7 @@ ARG SRC_DIR
 ARG BLD_DIR
 
 ENV FC=/usr/bin/gfortran \
-    MPIFC=$MPI_DIR/mpifort
+    MPIFC=/usr/lib64/openmpi/bin/mpifort
 ENV OMPI_FC=$FC
 
 # Install required packages using dnf
