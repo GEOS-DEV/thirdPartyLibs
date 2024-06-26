@@ -2,11 +2,18 @@
 
 ## Builds the TPLs for a specific system and host config.
 ## Usage ./setupLC-TPL-helper.bash pathToGeosxDirectory pathToInstallDirectory machine compiler commandToGetANode [extra arguments to config-build ]
-GEOSX_DIR=$1
+GEOS_DIR=$1
 INSTALL_DIR=$2
 MACHINE=$3
 COMPILER=$4
 GET_A_NODE=$5
+
+if   [[ ${MACHINE} == "ruby"   ||\
+        ${MACHINE} == "dane" ]]; then
+    CMAKE_VERSION=cmake/3.26.3 
+elif [[ ${MACHINE} == "lassen" ]]; then
+    CMAKE_VERSION=cmake/3.29.2 
+fi
 
 ## Eat up the command line arguments so the rest can be forwarded to config-build.
 shift
@@ -17,7 +24,7 @@ shift
 
 CONFIG=$MACHINE-$COMPILER
 LOG_FILE=$CONFIG.log
-HOST_CONFIG=$GEOSX_DIR/host-configs/LLNL/$CONFIG.cmake
+HOST_CONFIG=$GEOS_DIR/host-configs/LLNL/$CONFIG.cmake
 INSTALL_DIR=$INSTALL_DIR/install-$CONFIG-release
 
 echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
@@ -25,7 +32,7 @@ echo "Building the TPLs on $MACHINE for $HOST_CONFIG to be installed at $INSTALL
 ssh $MACHINE -t "
 . /etc/profile  &&
 cd $PWD &&
-module load cmake/3.23.1 &&
+module load $CMAKE_VERSION
 python3 scripts/config-build.py -hc $HOST_CONFIG -bt Release -ip $INSTALL_DIR $@ &&
 cd build-$CONFIG-release &&
 $GET_A_NODE make &&
