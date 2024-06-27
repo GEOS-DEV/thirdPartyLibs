@@ -110,10 +110,10 @@ RUN apt-get install -y --no-install-recommends \
 # -k flag is to ignore SSL errors
 #RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
 #     mkdir -p ${GEOSX_TPL_DIR} && \
-RUN --mount=src=.,dst=$SRC_DIR cd ${SRC_DIR} && \
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
-#     git submodule init scripts/uberenv && \
-#     git submodule update && \
+     git submodule init scripts/uberenv && \
+     git submodule update && \
      ./scripts/uberenv/uberenv.py \
        --spec "%gcc@${GCC_MAJOR_VERSION} +docs" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \

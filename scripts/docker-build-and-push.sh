@@ -1,9 +1,6 @@
 #!/bin/bash
 env
 
-# Setup uberenv
-git submodule update --init scripts/uberenv
-
 # We save memory for the docker context
 echo .git > .dockerignore
 # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
