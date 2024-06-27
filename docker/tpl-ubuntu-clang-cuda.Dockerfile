@@ -55,20 +55,11 @@ RUN apt-get install -y --no-install-recommends \
     ca-certificates \
     git
 
-# Clone branch with spack configs
-# TODO decide landing place of spack recipes
-RUN git clone --branch feature/han12/wip_docker_spack_recipes \
-              --depth 1 \
-          --single-branch \
-          https://github.com/GEOS-DEV/GEOS.git
-
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
-     git submodule init scripts/uberenv && \
-     git submodule update && \
      ./scripts/uberenv/uberenv.py \
        --spec "%clang@10+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers ^caliper@2.10.0~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \

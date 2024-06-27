@@ -68,9 +68,6 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
-# Temporary workaround for building newer cmake on local computer connected to lab network
-#COPY cmake-3.23.1-linux-x86_64.tar.gz /
-#RUN tar --directory=/usr/local  --strip-components=1 -xzf  cmake-3.23.1-linux-x86_64.tar.gz
 
 # This stage is dedicated to TPLs uniquely.
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
@@ -97,23 +94,11 @@ RUN apt-get install -y --no-install-recommends \
     git
 
 
-# Clone branch with spack configs
-# TODO decide landing place of spack recipes
-#RUN git clone --branch feature/han12/spack_cleanup_recipes \
-#              --depth 1 \
-#	      --single-branch \
-#	      https://github.com/GEOS-DEV/GEOS.git
-
-
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-#RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
-#     mkdir -p ${GEOSX_TPL_DIR} && \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
-#     git submodule init scripts/uberenv && \
-#     git submodule update && \
      ./scripts/uberenv/uberenv.py \
        --spec "%gcc@${GCC_MAJOR_VERSION} +docs" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \

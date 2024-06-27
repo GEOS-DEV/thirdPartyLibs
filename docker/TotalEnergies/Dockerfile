@@ -46,22 +46,13 @@ RUN yum install --disablerepo=intel-mkl-repo -y \
     automake \
     git
 
-# Clone branch with spack configs
-# TODO decide landing place of spack recipes
-RUN git clone --branch feature/han12/wip_docker_spack_recipes \
-              --depth 1 \
-          --single-branch \
-          https://github.com/GEOS-DEV/GEOS.git
-
 ARG SPEC
 
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
-     git submodule init scripts/uberenv && \
-     git submodule update && \
      ./scripts/uberenv/uberenv.py \
        # spack spec defined per image
        --spec "${SPEC}" \

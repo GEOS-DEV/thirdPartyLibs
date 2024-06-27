@@ -59,21 +59,11 @@ RUN yum install -y \
     automake \
     git
 
-
-# Clone branch with spack configs
-# TODO decide landing place of spack recipes
-RUN git clone --branch feature/han12/wip_docker_spack_recipes \
-              --depth 1 \
-          --single-branch \
-          https://github.com/GEOS-DEV/GEOS.git
-
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-RUN --mount=src=.,dst=$SRC_DIR cd GEOS && \
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
-     git submodule init scripts/uberenv && \
-     git submodule update && \
 # Create symlink to openmpi include directory
      ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include && \
      ./scripts/uberenv/uberenv.py \
