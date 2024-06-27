@@ -3,6 +3,10 @@ env
 
 # We save memory for the docker context
 echo .git > .dockerignore
+
+# Get uberenv submodule
+git submodule update --init scripts/uberenv
+
 # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
 # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
 # A specific host-config file can be defined through variable HOST_CONFIG.
