@@ -332,7 +332,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.1.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.02.2.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -370,7 +370,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2023.06.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.02.2.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
