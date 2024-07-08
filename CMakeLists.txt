@@ -423,7 +423,8 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
+    # set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.10.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -460,7 +461,7 @@ if (ENABLE_CALIPER)
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
                                     -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
-                                    -D WITH_GOTCHA=Off
+                                    # -D WITH_GOTCHA=Off
                        )
 
     list(APPEND build_list caliper adiak)

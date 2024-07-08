@@ -40,6 +40,12 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+echo "USER_NAME: ${USER_NAME}"
+echo "GEOS_DIR:  ${GEOS_DIR}"
+echo "BUILD_TYPE:  ${BUILD_TYPE}"
+echo "COMPILER:  ${COMPILER}"
+echo "ORIGINAL_DIR:  ${ORIGINAL_DIR}"
+
 # Get the machine name from uname -i and strip trailing integers
 MACHINE=$(uname -n | sed 's/[0-9]*$//')
 # Get the Bash version
@@ -91,6 +97,8 @@ killall() {
     wait
     echo DONE
 }
+
+echo "still going 1"
 
 if [ -n "$(find . -maxdepth 1 -type d -name 'build-*' -print -quit)" ]; then
     echo "Existing build directories have been found, these are being deleted. " >> "$LOG_FILE"
