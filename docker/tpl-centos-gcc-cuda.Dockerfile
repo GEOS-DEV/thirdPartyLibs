@@ -9,7 +9,11 @@ ARG SRC_DIR
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
-RUN yum -y install sed
+# Add the sed package directly from a URL
+ADD http://vault.centos.org/7.9.2009/os/x86_64/Packages/sed-4.2.2-5.el7.x86_64.rpm /tmp/sed.rpm
+
+# Install sed using rpm
+RUN rpm -ivh /tmp/sed.rpm && rm -f /tmp/sed.rpm
 
 RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
     sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo \
