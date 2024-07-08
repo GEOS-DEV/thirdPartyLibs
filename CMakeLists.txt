@@ -52,7 +52,6 @@ option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
 option( ENABLE_VTK "" ON )
 option( ENABLE_VTK_WRAP_PYTHON "" OFF )
-option( ENABLE_FESAPI "" ON )
 
 option( ENABLE_NINJA "" OFF )
 
@@ -568,7 +567,7 @@ if (ENABLE_TRILINOS)
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
     set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
+    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -1195,112 +1194,6 @@ ExternalProject_Add( fmt
 
 list(APPEND build_list fmt)
 
-################################
-# Fesapi
-################################
-
-if( ENABLE_FESAPI )
-
-    #
-    # ENABLE Boost
-    #
-    set(BOOST_DIR "${CMAKE_INSTALL_PREFIX}/boost")
-    set(BOOST_URL "${TPL_MIRROR_DIR}/boost_1_67_0.tar.gz")
-    message(STATUS "Extract Boost found at ${BOOST_URL}")
-
-    set(BOOST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost/ CACHE STRING "Set the value of BOOST_ROOT to point to the root folder of your boost install." FORCE)
-
-    ExternalProject_Add( boost
-                        URL ${BOOST_URL}
-                        PREFIX ${PROJECT_BINARY_DIR}/boost
-                        INSTALL_DIR ${BOOST_DIR}
-                        CONFIGURE_COMMAND ""
-                        BUILD_COMMAND ""
-                        INSTALL_COMMAND ""
-                        BUILD_IN_SOURCE 1)
-
-    list(APPEND build_list boost)
-
-
-    #
-    # ENABLE Minizip
-    #
-
-    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
-    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit
-    # path thus it has to be fixed regardless of the platform
-    set( MINIZIP_CMAKE_INSTALL_LIBDIR "lib" )
-
-    set(MINIZIP_DIR "${CMAKE_INSTALL_PREFIX}/minizip")
-    set(MINIZIP_URL "${TPL_MIRROR_DIR}/Minizip-1.1_cmake0.1.tar.gz")
-    message(STATUS "Building Minizip found at ${MINIZIP_URL}")
-
-    ExternalProject_Add( minizip
-                        URL ${MINIZIP_URL}
-                        PREFIX ${PROJECT_BINARY_DIR}/minizip
-                        INSTALL_DIR ${MINIZIP_DIR}
-                        BUILD_COMMAND make -j ${NUM_PROC}
-                        INSTALL_COMMAND make install
-                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
-                                -DCMAKE_INSTALL_LIBDIR=${MINIZIP_CMAKE_INSTALL_LIBDIR}
-                                )
-
-    list(APPEND build_list minizip)
-
-    if( ENABLE_MPI )
-        set( FESAPI_C_COMPILER ${MPI_C_COMPILER} )
-        set( FESAPI_CXX_COMPILER ${MPI_CXX_COMPILER} )
-    else()
-        set( FESAPI_C_COMPILER ${CMAKE_C_COMPILER} )
-        set( FESAPI_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-    endif( ENABLE_MPI )
-
-    #
-    # Then Fesapi
-    #
-    set(FESAPI_DIR "${CMAKE_INSTALL_PREFIX}/fesapi")
-    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.4.0.0.tar.gz")
-    message(STATUS "Building Fesapi found at ${FESAPI_URL}")
-
-    ExternalProject_Add( fesapi
-                        URL ${FESAPI_URL}
-                        PREFIX ${PROJECT_BINARY_DIR}/fesapi
-                        INSTALL_DIR ${FESAPI_DIR}
-                        BUILD_COMMAND make -j ${NUM_PROC}
-                        INSTALL_COMMAND make install
-                        DEPENDS hdf5 minizip boost
-                        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                    -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}
-                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                    -DCMAKE_PREFIX_PATH:PATH=${HDF5_DIR}
-                                    -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
-                                    -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
-                                    -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
-                                    -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
-                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost
-                                    -DWITH_EXAMPLE:BOOL=OFF
-                                    -DWITH_DOTNET_WRAPPING:BOOL=OFF
-                                    -DWITH_JAVA_WRAPPING:BOOL=OFF
-                                    -DWITH_PYTHON_WRAPPING:BOOL=OFF
-                                    -DWITH_RESQML2_2:BOOL=OFF
-                                    -DWITH_TEST:BOOL=OFF
-                                    # Next lines prevent compilation errors due to an issue
-                                    # with the detection of the hdf5 version in fesapi < 2.4.0.0
-                                    # (on CentOS, for Release build of hdf5, see https://github.com/F2I-Consulting/fesapi/issues/326)
-                                    # It should be possible to remove it when fesapi-2.9.0.0 will be released
-                                    -DWITH_LOCAL_HDF5:BOOL=ON
-                                    -DHDF5_INCLUDE_DIRS:PATH=${HDF5_DIR}/include
-                                    -DHDF5_LIBRARIES:PATH=${HDF5_DIR}/lib/libhdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
-                                  )
-
-    list(APPEND build_list fesapi )
-
-endif()
 
 ################################
 # Create target that builds all dependencies
