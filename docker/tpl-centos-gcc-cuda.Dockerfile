@@ -16,12 +16,18 @@ RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
 
 # Using gcc 8.3.1 provided by the Software Collections (SCL).
 RUN yum install -y \
-    centos-release-scl 
+    centos-release-scl
     
-# Additional repository configurations for SCLo
+# Modify the SCLo repository configuration
 RUN sed -i 's|^mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-sed -i 's|^baseurl=http://mirror.centos.org/centos/\$releasever/sclo/\$basearch/rh|baseurl=http://vault.centos.org/7.9.2009/sclo/x86_64/rh|g' /etc/yum.repos.d/CentOS-SCLo-scl.repo
-    
+    sed -i 's|^baseurl=http://mirror.centos.org/centos/\$releasever/sclo/\$basearch/rh|baseurl=http://vault.centos.org/7.9.2009/sclo/x86_64/rh|g' /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
+    sed -i 's|^mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
+    sed -i 's|^baseurl=http://mirror.centos.org/centos/\$releasever/sclo/\$basearch/rh|baseurl=http://vault.centos.org/7.9.2009/sclo/x86_64/rh|g' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+
+# Install necessary tools and update the system
+RUN yum -y update && \
+    yum -y install yum-utils    
+
 RUN yum install -y \
     devtoolset-8-gcc \
     devtoolset-8-gcc-c++ \
