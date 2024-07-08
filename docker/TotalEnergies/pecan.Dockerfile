@@ -14,7 +14,12 @@ ARG CUDA_HOME=/hrtc/apps/cuda/11.5.119/x86_64/centos7
 
 FROM centos:7.7.1908 AS shared_components
 
-RUN yum install -y \
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
+    sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo && \
+    sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo 
+
+RUN yum update -y && \
+    yum install -y \
     glibc-devel
 
 FROM shared_components AS gcc_stage
