@@ -20,11 +20,6 @@ jobs:
 
       matrix:
         include:
-          - name: Pangea 2 (centos 7.6, gcc 8.3.0, open-mpi 2.1.5, mkl 2019.3)
-            DOCKER_REPOSITORY: geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
-            DOCKER_ROOT_IMAGE: totogaz/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3-no-geosx:0.0.1
-            INSTALL_DIR_ROOT: /workrd/SCR/GEOSX/install/gcc8
           - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 11.5.119)
             DOCKER_REPOSITORY: geosx/pecan-gpu-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119
             DOCKERFILE: docker/TotalEnergies/Dockerfile
