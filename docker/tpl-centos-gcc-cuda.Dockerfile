@@ -12,7 +12,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
     sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo \
     sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo \
-    yum upgrade -y
+    yum upgrade
 
 # Using gcc 8.3.1 provided by the Software Collections (SCL).
 RUN yum install -y \
