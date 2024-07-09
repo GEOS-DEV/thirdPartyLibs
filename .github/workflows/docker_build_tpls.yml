@@ -75,7 +75,7 @@ jobs:
           - name: Rockylinux (8, clang 17.0.6, cuda 12.5)
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.5
             DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile  
-            RUNS_ON: streak2
+            RUNS_ON: Runner_4core_16GB
 
     steps:
     - name: Checkout

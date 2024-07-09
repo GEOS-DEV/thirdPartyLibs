@@ -619,6 +619,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_LIBDIR:PATH=lib64
                                     -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
                                     -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
