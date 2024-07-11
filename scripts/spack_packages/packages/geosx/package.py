@@ -150,7 +150,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("suite-sparse+openmp", when="+openmp")
 
     trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra'
-    depends_on('trilinos@13.4.1 ' + trilinos_packages, when='+trilinos')
+    depends_on("trilinos@13.4.1 cxxflags='-include cstdint'" + trilinos_packages, when='+trilinos')
     depends_on("trilinos~openmp", when="~openmp")
     depends_on("trilinos+openmp", when="+openmp")
 
