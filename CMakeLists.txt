@@ -562,7 +562,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/Trilinos-trilinos-release-13-4-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-15-1-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -620,6 +620,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_LIBDIR:PATH=lib64
                                     -D TPL_ENABLE_MPI:BOOL=${ENABLE_MPI}
                                     -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -764,7 +765,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.31.0-13-g4f5d6ad50.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.31.0-26-gf6cfb0355.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -1170,7 +1171,7 @@ endif( ENABLE_VTK )
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-10.0.0.tar.gz")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-11.0.1.tar.gz")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
