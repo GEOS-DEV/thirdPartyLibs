@@ -233,7 +233,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.8.2.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.9.2.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -280,7 +280,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D BLT_CXX_STD:STRING=c++11
+                                -D BLT_CXX_STD:STRING=c++14
                                 )
 
 list(APPEND build_list conduit )
@@ -332,7 +332,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2023.06.1.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.02.2.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -370,7 +370,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2023.06.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.02.2.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -378,7 +378,6 @@ ExternalProject_Add( chai
                      URL ${CHAI_URL}
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
-                     PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/umpire_fcompare-debug-second.patch
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -417,7 +416,7 @@ list(APPEND build_list chai )
 ################################
 if (ENABLE_CALIPER)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
-    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.2.tar.gz")
+    set(ADIAK_URL "${TPL_MIRROR_DIR}/adiak-0.4.0.tar.gz")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
     ExternalProject_Add( adiak
@@ -445,7 +444,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.10.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.11.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
