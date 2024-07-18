@@ -1,19 +1,12 @@
 #######################################
 # Pangea 4 image : gcc - hpcxompi - onemkl
-#
-# Uses :
-#   - fake cray wrappers for gcc (cc, CC, ftn), they just point to the real gcc (real install requires licences)
-#   - flags              for craype-x86-milan CPU target
-#   - oneAPI MKL         for BLAS and LAPACK
-#   - HPC-X OpenMPI      for MPI
-#
 #######################################
 #
 # Installs :
 #   - gcc                  = 12.1
 #   - hpcx                 = 2.17.1
 #   - intel-oneapi-mkl     = 2023.2.0
-#   - cmake                = 3.27.2
+#   - cmake                = 3.27.9
 #   - python               = 3.11
 #
 #######################################
@@ -38,18 +31,21 @@ LABEL maintainer="TotalEnergies HPC Team"
 # ------
 # ARGS
 ARG GCC_VERSION=12.1
-ARG CMAKE_VERSION=3.27.2
+ARG CMAKE_VERSION=3.27.9
 ARG PYTHON_VERSION=3.11
 # ------
 # INSTALL
-# gcc 12.1
+# gcc
 RUN spack install gcc@$GCC_VERSION
-# python 3.11
-RUN spack load gcc@$GCC_VERSION && spack install python@$PYTHON_VERSION %gcc@$GCC_VERSION
-# cmake 3.27.2
-RUN spack load gcc@$GCC_VERSION && spack install cmake@$CMAKE_VERSION %gcc@$GCC_VERSION
-# intel-oneapi-mkl 2023.2.0
-RUN spack load gcc@$GCC_VERSION && spack install intel-oneapi-mkl@$ONEAPI_MKL_VERSION %gcc@$GCC_VERSION
+RUN . /opt/spack/share/spack/setup-env.sh &&\
+    spack load gcc@$GCC_VERSION &&\
+    spack compiler find
+# python
+RUN spack install python@$PYTHON_VERSION %gcc@$GCC_VERSION
+# show compilers
+RUN spack compilers
+# cmake
+RUN spack install cmake@$CMAKE_VERSION %gcc@$GCC_VERSION
 
 # -------------------------------------
 # PANGEA4 - GCC-HPCX-MKL [GCC - CMAKE - PYTHON - HPCX - ONEAPI-MKL]
@@ -62,18 +58,18 @@ LABEL maintainer="TotalEnergies HPC Team"
 # ------
 # ARGS
 ARG ONEAPI_MKL_VERSION=2023.2.0
-ARG HPCX_TARBALL="hpcx-v2.17.1-gcc-mlnx_ofed-redhat8-cuda12-x86_64.tbz"
+ARG HPCX_VERSION="hpcx-v2.17.1-gcc-mlnx_ofed-redhat8-cuda12-x86_64"
+ARG HPCX_TARBALL="$HPCX_VERSION.tbz"
 ARG HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.17.1/$HPCX_TARBALL"
 # ------
 # INSTALL
-# intel-oneapi-mkl 2023.2.0
-RUN spack load gcc@$GCC_VERSION && spack install intel-oneapi-mkl@$ONEAPI_MKL_VERSION %gcc@$GCC_VERSION
-# hpcx 2.17.1 (untar in /sw directory)
-# not available in spack -> download and untar
+# intel-oneapi-mkl
+RUN spack install intel-oneapi-mkl@$ONEAPI_MKL_VERSION %gcc@$GCC_VERSION
+# hpcx not available in spack -> download and untar (untar in /sw directory)
 RUN mkdir -p /sw
-RUN wget $HPCX_URL -O /tmp/hpcx-v2.17.1-gcc-mlnx_ofed-redhat8-cuda12-x86_64.tbz
-RUN tar -xvf /tmp/hpcx-v2.17.1-gcc-mlnx_ofed-redhat8-cuda12-x86_64.tbz -C /sw
-ENV HPCX_HOME=/sw/hpcx-v2.17.1-gcc-mlnx_ofed-redhat8-cuda12-x86_64
+RUN wget $HPCX_URL -O /tmp/$HPCX_TARBALL
+RUN tar -xvf /tmp/$HPCX_TARBALL -C /sw
+ENV HPCX_HOME=/sw/$HPCX_VERSION
 # ------
 # ENV
 # - create spack env

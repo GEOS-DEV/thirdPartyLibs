@@ -28,9 +28,11 @@ ARG HOST_CONFIG
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # ------
 # INSTALL
-RUN spack env activate prgenv && --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
+RUN spack env activate prgenv && \
+    --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
 WORKDIR $BLD_DIR
-RUN spack env activate prgenv && --mount=src=.,dst=$SRC_DIR make
+RUN spack env activate prgenv && \
+    --mount=src=.,dst=$SRC_DIR make
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 # ------
 # CACHE
