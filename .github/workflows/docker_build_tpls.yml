@@ -69,11 +69,11 @@ jobs:
             RUNS_ON: ubuntu-latest
           - name: Rockylinux (8, gcc 8.5, cuda 12.5)
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc8-cuda12.5
-            TPL_DOCKERFILE: docker/tpl-rockylinux-gcc-cuda-12.Dockerfile    
+            TPL_DOCKERFILE: docker/tpl-rockylinux-gcc-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
           - name: Rockylinux (8, clang 17.0.6, cuda 12.5)
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.5
-            TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile  
+            TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
           - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
             DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
