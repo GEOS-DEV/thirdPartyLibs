@@ -1,16 +1,16 @@
 #######################################
-# Pangea 4 image : gcc - hpcxompi - onemkl
+# Pangea 4 tpl image
 #
 # Description :
 #   - generic image for building geos tpls on Pangea 4 environments
 #   - the docker base image can be any pangea4 docker file
-#   - tools of the base image are expected to be available in prgenv spack environment
+#   - tools of the base image are expected to be sourced in the set_env.sh script
 #######################################
 
 # -------------------------------------
 # PANGEA4 - TPL TOOLCHAIN
 ARG DOCKER_ROOT_IMAGE
-FROM $DOCKER_ROOT_IMAGE as pangea4_tpl_toolchain
+FROM $DOCKER_ROOT_IMAGE AS pangea4_tpl_toolchain
 # ------
 # LABELS
 LABEL description="Pangea 4 image : geos_tpl"
@@ -28,12 +28,11 @@ ARG HOST_CONFIG
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # ------
 # INSTALL
-RUN spack env activate prgenv && \
-    --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
+RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
+                               $SRC_DIR/docker/configure-tpl.sh
 WORKDIR $BLD_DIR
-RUN spack env activate prgenv && \
-    --mount=src=.,dst=$SRC_DIR make
-COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
+RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
+                               make
 # ------
 # CACHE
 # install `sccache` binaries to speed up the build of `geos`
