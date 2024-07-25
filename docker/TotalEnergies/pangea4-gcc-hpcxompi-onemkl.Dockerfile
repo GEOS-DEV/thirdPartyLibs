@@ -12,7 +12,7 @@
 #######################################
 #
 # Description :
-#   - the image is based on onetechssc/pangea4:gcc12.1_v1.0 built from pangea4-gcc.Dockerfile
+#   - the image is based on onetechssc/pangea4:gcc12.1_v1.0 built from pangea4-gcc.tpl-pecan.Dockerfile
 #   - this image is deployed as onetechssc/pangea4:gcc12.1-hpcx2.17.1-onemkl2023.2.0_v1.0
 #   - oneAPI MKL is installed via spack (as done for Pangea 4)
 #   - hpcx is installed by extracting the tarball (as done for Pangea 4)

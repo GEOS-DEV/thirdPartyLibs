@@ -28,13 +28,13 @@ jobs:
             INSTALL_DIR_ROOT: /workrd/SCR/NUM/GEOS_environment/p4/install/tpl
           - name: Pecan GPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5, cuda 11.5.119)
             DOCKER_REPOSITORY: geosx/pecan-gpu-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            DOCKERFILE: docker/TotalEnergies/tpl-pecan.Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx:0.0.1
             HOST_CONFIG: docker/TotalEnergies/pecan-GPU.cmake
             INSTALL_DIR_ROOT: /shared/data1/Users/j0436735/travis-deployments/GPU
           - name: Pecan CPU (centos 7.7, gcc 8.2.0, open-mpi 4.0.1, mkl 2019.5)
             DOCKER_REPOSITORY: geosx/pecan-cpu-gcc8.2.0-openmpi4.0.1-mkl2019.5
-            DOCKERFILE: docker/TotalEnergies/Dockerfile
+            DOCKERFILE: docker/TotalEnergies/tpl-pecan.Dockerfile
             DOCKER_ROOT_IMAGE: totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx:0.0.1
             HOST_CONFIG: docker/TotalEnergies/pecan-CPU.cmake
             INSTALL_DIR_ROOT: /shared/data1/Users/j0436735/travis-deployments/CPU
