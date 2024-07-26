@@ -34,6 +34,7 @@ ARG ONEAPI_MKL_VERSION=2023.2.0
 ARG HPCX_VERSION="hpcx-v2.17.1-gcc-mlnx_ofed-redhat8-cuda12-x86_64"
 ARG HPCX_TARBALL="$HPCX_VERSION.tbz"
 ARG HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.17.1/$HPCX_TARBALL"
+ARG CRAY_WRAPPERS_DIR=/sw/cray-wrappers
 # ------
 # INSTALL
 # intel-oneapi-mkl
@@ -47,18 +48,18 @@ ENV HPCX_HOME=/sw/$HPCX_VERSION
 # ------
 # ENV
 # - create wrappers for gcc
-RUN mkdir -p /sw/cray-wrappers && \
+RUN mkdir -p $CRAY_WRAPPERS_DIR && \
     spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION intel-oneapi-mkl@$ONEAPI_MKL_VERSION && \
     GCC_INSTALL_DIR=$(spack location -i gcc@$GCC_VERSION) && \
-    ln -s ${GCC_INSTALL_DIR}/bin/gcc /sw/cray-wrappers/cc && \
-    ln -s ${GCC_INSTALL_DIR}/bin/g++ /sw/cray-wrappers/CC && \
-    ln -s ${GCC_INSTALL_DIR}/bin/gfortran /sw/cray-wrappers/ftn
+    ln -s ${GCC_INSTALL_DIR}/bin/gcc $CRAY_WRAPPERS_DIR/cc && \
+    ln -s ${GCC_INSTALL_DIR}/bin/g++ $CRAY_WRAPPERS_DIR/CC && \
+    ln -s ${GCC_INSTALL_DIR}/bin/gfortran $CRAY_WRAPPERS_DIR/ftn
 # create env script
 RUN <<EOF cat > /root/set_env.sh
 #!/bin/bash
 spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION intel-oneapi-mkl@$ONEAPI_MKL_VERSION && \
 source ${HPCX_HOME}/hpcx-init.sh
 hpcx_load
-PATH=/sw/cray-wrappers:\$PATH
+PATH=$CRAY_WRAPPERS_DIR:\$PATH
 EOF
 RUN chmod +x /root/set_env.sh
