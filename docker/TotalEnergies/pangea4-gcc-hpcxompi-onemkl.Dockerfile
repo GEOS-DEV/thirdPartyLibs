@@ -49,14 +49,16 @@ ENV HPCX_HOME=/sw/$HPCX_VERSION
 # - create wrappers for gcc
 RUN mkdir -p /sw/cray-wrappers && \
     spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION intel-oneapi-mkl@$ONEAPI_MKL_VERSION && \
-    GCC_INSTALL_DIR=\$(spack location -i gcc@$GCC_VERSION) && \
-    ln -s ${GCC_INSTALL_DIR}/bin/gcc cc && \
-    ln -s ${GCC_INSTALL_DIR}/bin/g++ CC && \
-    ln -s ${GCC_INSTALL_DIR}/bin/gfortran ftn
+    GCC_INSTALL_DIR=$(spack location -i gcc@$GCC_VERSION) && \
+    ln -s ${GCC_INSTALL_DIR}/bin/gcc /sw/cray-wrappers/cc && \
+    ln -s ${GCC_INSTALL_DIR}/bin/g++ /sw/cray-wrappers/CC && \
+    ln -s ${GCC_INSTALL_DIR}/bin/gfortran /sw/cray-wrappers/ftn
 # create env script
 RUN <<EOF cat > /root/set_env.sh
 #!/bin/bash
+spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION intel-oneapi-mkl@$ONEAPI_MKL_VERSION && \
 source ${HPCX_HOME}/hpcx-init.sh
+hpcx_load
 PATH=/sw/cray-wrappers:\$PATH
 EOF
 RUN chmod +x /root/set_env.sh

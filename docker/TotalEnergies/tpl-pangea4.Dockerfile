@@ -31,7 +31,7 @@ ENV HPCX_MPI_DIR=\${HPCX_HOME}
 # ------
 # INSTALL
 RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
-                               $SRC_DIR/docker/configure-tpl.sh
+                               $SRC_DIR/docker/configure-tpl.sh -DMKL_LIBRARIES=\${MKLROOT}/lib/intel64/libmkl_rt.so
 WORKDIR $BLD_DIR
 RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
                                make
