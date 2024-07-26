@@ -26,6 +26,7 @@ jobs:
             DOCKER_ROOT_IMAGE: onetechssc/pangea4:gcc12.1-hpcxompi2.17.1-onemkl2023.2.0_v1.0
             HOST_CONFIG: host-configs/TOTAL/pangea4-gcc12.1-hpcxompi2.17.1-onemkl2023.2.0.cmake
             INSTALL_DIR_ROOT: /workrd/SCR/NUM/GEOS_environment/p4/install/tpl
+            RUNS_ON: ubuntu-latest
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
             DOCKERFILE: docker/Stanford/Dockerfile
