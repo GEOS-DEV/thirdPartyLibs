@@ -27,7 +27,6 @@ ARG HOST_CONFIG
 # ENV
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 ENV GCC_PATH=\${GCC_INSTALL_DIR}
-ENV HPCX_MPI_DIR=\${HPCX_HOME}
 # ------
 # INSTALL
 RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
