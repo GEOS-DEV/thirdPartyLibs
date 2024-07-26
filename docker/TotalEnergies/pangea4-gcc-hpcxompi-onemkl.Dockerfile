@@ -38,22 +38,25 @@ ARG HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.17.1/$HPCX_TARBALL"
 # INSTALL
 # intel-oneapi-mkl
 RUN spack install intel-oneapi-mkl@$ONEAPI_MKL_VERSION %gcc@$GCC_VERSION
-# hpcx not available in spack -> download and untar (untar in /sw directory)
-RUN mkdir -p /sw
-RUN spack load wget && \
-    wget $HPCX_URL -O /tmp/$HPCX_TARBALL
-RUN tar -xvf /tmp/$HPCX_TARBALL -C /sw
+# hpcx not available in spack -> download and untar in /sw directory
+RUN mkdir -p /sw && \
+    spack load wget && \
+    wget $HPCX_URL -O /tmp/$HPCX_TARBALL && \
+    tar -xvf /tmp/$HPCX_TARBALL -C /sw
 ENV HPCX_HOME=/sw/$HPCX_VERSION
 # ------
 # ENV
-# - wrappers for gcc
+# - create wrappers for gcc
+RUN mkdir -p /sw/cray-wrappers && \
+    spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION intel-oneapi-mkl@$ONEAPI_MKL_VERSION && \
+    GCC_INSTALL_DIR=\$(spack location -i gcc@$GCC_VERSION) && \
+    ln -s ${GCC_INSTALL_DIR}/bin/gcc cc && \
+    ln -s ${GCC_INSTALL_DIR}/bin/g++ CC && \
+    ln -s ${GCC_INSTALL_DIR}/bin/gfortran ftn
+# create env script
 RUN <<EOF cat > /root/set_env.sh
 #!/bin/bash
-spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION intel-oneapi-mkl@$ONEAPI_MKL_VERSION
-GCC_INSTALL_DIR=\$(spack location -i gcc@$GCC_VERSION)
-export GCC_INSTALL_DIR=\$GCC_INSTALL_DIR
-export CC=\${GCC_INSTALL_DIR}/bin/gcc
-export CXX=\${GCC_INSTALL_DIR}/bin/g++
-export FC=\${GCC_INSTALL_DIR}/bin/gfortran
+source ${HPCX_HOME}/hpcx-init.sh
+PATH=/sw/cray-wrappers:\$PATH
 EOF
 RUN chmod +x /root/set_env.sh

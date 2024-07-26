@@ -15,5 +15,6 @@ Below is a table summarizing the purpose and key characteristics of each Dockerf
 
 ## DockerHub
 
-The Docker images built from the ${cluster}.Dockerfile are available on DockerHub under the `onetechssc` organization for:
+The Docker images built from the ${cluster}.Dockerfile are available on DockerHub under for:
   - pangea4 cluster : [onetechssc/pangea4](https://hub.docker.com/r/onetechssc/pangea4)
+  - pecan cluster : [totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx](https://hub.docker.com/r/totogaz/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda11.5.119-no-geosx)
