@@ -1,6 +1,6 @@
 #######################################
 #
-# Pangea4 - gcc - openmpi - openblas
+# Pangea3 - gcc - openmpi - openblas - cuda
 #
 #######################################
 #
