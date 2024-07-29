@@ -29,13 +29,15 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 ENV GCC_PATH=\${GCC_INSTALL_DIR}
 # ------
 # INSTALL
+#   - configure TPLs
 RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
                                $SRC_DIR/docker/configure-tpl.sh -DMKL_LIBRARIES=\${MKLROOT}/lib/intel64/libmkl_rt.so
+#   - build TPLs
 WORKDIR $BLD_DIR
 RUN --mount=src=.,dst=$SRC_DIR source /root/set_env.sh && \
-                               make
-# ------
-# CACHE
-# install `sccache` binaries to speed up the build of `geos`
+                               make \
+#   - install ninja for geos build
+RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-ninja.sh
+#   - install `sccache` binaries to speed up the build of `geos`
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
