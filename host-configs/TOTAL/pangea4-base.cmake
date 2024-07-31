@@ -46,7 +46,7 @@ set( ENABLE_CALIPER    ON CACHE BOOL "" FORCE )
 # RAJA/CHAI SETUP
 #######################################
 
-set( ENABLE_OPENMP      OFF         CACHE BOOL "" FORCE )
+set( ENABLE_OPENMP      ON          CACHE BOOL "" FORCE )
 set( ENABLE_CUDA        OFF         CACHE BOOL "" FORCE )
 
 set( ENABLE_CHAI        ON          CACHE BOOL   "" FORCE )
