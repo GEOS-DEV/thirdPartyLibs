@@ -46,6 +46,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version('master', branch='master')
     version('develop', branch='develop')
+    # GEOS Added
+    version("15.1.1", sha256="2108d633d2208ed261d09b2d6b2fbae7a9cdc455dd963c9c94412d38d8aaefe4")
+
     version("13.4.1", sha256="5465cbff3de7ef4ac7d40eeff9d99342c00d9d20eee0a5f64f0a523093f5f1b3")
     version("13.4.0", sha256="39550006e059043b7e2177f10467ae2f77fe639901aee91cbc1e359516ff8d3e")
     version('13.2.0', commit='4a5f7906a6420ee2f9450367e9cc95b28c00d744')  # tag trilinos-release-13-2-0
@@ -73,7 +76,11 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant('complex', default=False, description='Enable complex numbers in Trilinos')
     variant('cuda_rdc', default=False, description='Turn on RDC for CUDA build')
     variant('rocm_rdc', default=False, description='Turn on RDC for ROCm build')
-    variant('cxxstd', default='14', values=['11', '14', '17'], multi=False)
+
+    # GEOS Adjusted
+    variant('cxxstd', default='17', values=['11', '14', '17'], multi=False)
+    # variant('cxxstd', default='14', values=['11', '14', '17'], multi=False)
+
     variant('debug', default=False, description='Enable runtime safety and debug checks')
     variant('explicit_template_instantiation', default=True, description='Enable explicit template instantiation (ETI)')
     variant('float', default=False, description='Enable single precision (float) numbers in Trilinos')
