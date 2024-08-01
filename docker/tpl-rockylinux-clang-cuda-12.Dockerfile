@@ -123,8 +123,11 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
 # Create symlink to openmpi include directory
      ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include && \
+# Create symlinks to blas/lapack libraries
+     ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
+     ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper@2.10.0~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -162,7 +165,10 @@ RUN dnf clean all && \
         ninja-build \
         git && \
 # Regenerate symlink to openmpi include directory
-    ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include
+    ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include && \
+# Regenerate symlinks to blas/lapack libraries
+    ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
+    ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so
 
 # Run the installation script
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh

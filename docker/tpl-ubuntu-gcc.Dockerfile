@@ -37,6 +37,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # gfortran 8, 9 and 10 depend on libgfortran5.
     gcc-$GCC_MAJOR_VERSION \
     g++-$GCC_MAJOR_VERSION \
+    gfortran-$GCC_MAJOR_VERSION \
     libgfortran5 \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
@@ -81,7 +82,6 @@ ARG GCC_MAJOR_VERSION
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
-    gfortran-$GCC_MAJOR_VERSION \
     make \
     bc \
     file \
