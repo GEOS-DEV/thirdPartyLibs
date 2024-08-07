@@ -28,6 +28,21 @@ spack:
         fc: /usr/bin/gfortran
       spec: clang@17.0.6
       target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: rocky8
+      paths:
+        cc: /usr/bin/gcc
+        cxx: /usr/bin/g++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      spec: gcc@8.5.0
+      target: x86_64
 
   packages:
     all:
