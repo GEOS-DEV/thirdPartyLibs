@@ -3,6 +3,10 @@ env
 
 # We save memory for the docker context
 echo .git > .dockerignore
+
+# Get uberenv submodule
+git submodule update --init scripts/uberenv
+
 # This script will build and push a DOCKER_REPOSITORY:DOCKER_TAG image build from DOCKERFILE
 # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
 # A specific host-config file can be defined through variable HOST_CONFIG.
@@ -19,6 +23,7 @@ docker build ${DOCKER_COMPILER_BUILD_ARG} \
 --build-arg HOST_CONFIG=${HOST_CONFIG} \
 --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE} \
 --build-arg INSTALL_DIR=${INSTALL_DIR} \
+--build-arg SPEC="${SPEC}" \
 --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
 --file ${DOCKERFILE} \
 --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
