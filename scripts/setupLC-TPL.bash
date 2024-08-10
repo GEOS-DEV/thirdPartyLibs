@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Builds the TPLs on all LC systems. Must be run from the top level TPL directory.
-## EXAMPLE ./setupLC-TPL.bash /user/workspace/username/GEOS clang@14 Release 
+## Example: ./scripts/setupLC-TPL.bash -geosPath "/usr/workspace/username/GEOS" -comp "clang@14" -bt "Release"
 
 # Default values
 USER_NAME=$(whoami)
@@ -58,6 +58,9 @@ GIT_COMMIT=$(git rev-parse --short HEAD)
 INSTALL_DIR="$GEOS_DIR/tplInstall-${MACHINE,,}-${COMPILER,,}-${BUILD_TYPE,,}"
 HOST_CONFIG=$GEOS_DIR/host-configs/LLNL/$MACHINE-$COMPILER.cmake
 
+echo "INSTALL_DIR:  ${INSTALL_DIR}"
+echo "HOST_CONFIG:  ${HOST_CONFIG}"
+
 LOG_FILE="TPLBuild-$MACHINE-$COMPILER-${BUILD_TYPE,,}.log"
 echo -e "\n---------------------------------------------------------------------------------------------------------------" > "$LOG_FILE"
 echo -e "\nGit Info:\n    - Repository URL: $GIT_REPO\n    - Repository Branch: $GIT_BRANCH\n    - Commit: $GIT_COMMIT \n" >> "$LOG_FILE" 
@@ -82,8 +85,8 @@ if (( $(echo "$BASH_VERSION < 4" | bc -l) )); then
 fi
 
 if [ ! -f "$HOST_CONFIG" ]; then
-    echo -e "Error: Host config file ${HOST_CONFIG} does not exist. \n    Please correct this and try again." >> "$LOG_FILE" 
-    echo " " >> "$LOG_FILE"
+    echo -e "Error: Host config file ${HOST_CONFIG} does not exist. \n    Please correct this and try again." # >> "$LOG_FILE" 
+    echo " " #>> "$LOG_FILE"
     exit 1
 fi
 
@@ -97,8 +100,6 @@ killall() {
     wait
     echo DONE
 }
-
-echo "still going 1"
 
 if [ -n "$(find . -maxdepth 1 -type d -name 'build-*' -print -quit)" ]; then
     echo "Existing build directories have been found, these are being deleted. " >> "$LOG_FILE"
@@ -137,20 +138,4 @@ echo " " >> "$LOG_FILE"
 python3 scripts/config-build.py -hc $HOST_CONFIG -bt $BUILD_TYPE -ip $INSTALL_DIR | tee -a "$LOG_FILE" 2>&1 
 cd build-$MACHINE-$COMPILER-${BUILD_TYPE,,} 
 echo "changed to build-$MACHINE-$COMPILER-${BUILD_TYPE,,}  directory " | tee -a "$LOG_FILE" 2>&1
-srun -N1 -t60 -ppdebug make | tee -a "$LOG_FILE" 2>&1
-# echo " $GET_A_NODE"
-# $GET_A_NODE make |
-
-# if [ "${MACHINE,,}" = "quartz" ]; then
-#     echo " ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR $MACHINE $COMPILER $BUILD_TYPE \"srun -N 1 -t 90 -n 1\" " >> "$LOG_FILE"
-#     ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR $MACHINE $COMPILER $BUILD_TYPE 'srun -N 1 -t 90 -n 1' #| tee -a "$LOG_FILE"
-# elif [ "${MACHINE,,}" = "lassen" ]; then
-#     echo " ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR $MACHINE $COMPILER $BUILD_TYPE \"lalloc 1 -qpdebug\" " >> "$LOG_FILE"
-#     ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR $MACHINE $COMPILER $BUILD_TYPE 'lalloc 1 -qpdebug' #| tee -a "$LOG_FILE"  
-# else    
-#     echo "MACHINE: ${MACHINE,,} is currently not supported. "
-# fi
-
-# # wait
-# # echo "Complete" | tee -a "$LOG_FILE"
-# echo " ${MACHINE,,}-${BUILD_TYPE,,}"
+srun -N1 -n1 make | tee -a "$LOG_FILE" 2>&1

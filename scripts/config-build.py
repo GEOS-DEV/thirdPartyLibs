@@ -116,17 +116,16 @@ def main(calling_script, args, unknown_args):
     temp_host_config = args.host_config
     temp_host_config_alt = temp_host_config.replace("@", "-")
 
-    print(temp_host_config)
-    print(temp_host_config_alt)
+    logging.info("buildtype given: '%s'." % args.build_type)
 
     if os.path.exists(os.path.abspath(temp_host_config)):
         cache_file = os.path.abspath(temp_host_config)
-        logging.info("host config found at ${temp_host_config}.")
+        logging.info(f"host config found at ${temp_host_config}.")
     elif os.path.exists(os.path.abspath(temp_host_config_alt)):
         cache_file = os.path.abspath(temp_host_config_alt)
-        logging.info("host config found at ${temp_host_config_alt}.")
+        logging.info(f"host config found at ${temp_host_config_alt}.")
     else:
-        logging.info("Could not find a cmake entry in host config file for ${temp_host_config} using ${PATH}.")
+        logging.info(f"Could not find a cmake entry in host config file for ${temp_host_config} using ${PATH}.")
 
     platform_info = os.path.split(cache_file)[1]
     if platform_info.endswith(".cmake"):
@@ -146,8 +145,6 @@ def main(calling_script, args, unknown_args):
         build_path = "-".join(["build", platform_info, args.build_type.lower()])
         if args.build_root_dir != "":
             build_path = os.path.join(args.build_root_dir, build_path)
-
-    print(build_path)
 
     logging.info("Build path is: " + build_path)
 
@@ -201,6 +198,8 @@ def main(calling_script, args, unknown_args):
 
     if args.ninja:
         cmake_line.append('-GNinja')
+    else:
+        cmake_line.append('-G "Unix Makefiles"')
 
     if args.xcode:
         cmake_line.append('-GXcode')

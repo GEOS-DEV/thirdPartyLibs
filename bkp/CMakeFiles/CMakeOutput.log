@@ -1,0 +1,612 @@
+The system is: Linux - 4.18.0-553.8.1.1toss.t4.x86_64 - x86_64
+The system is: Linux - 4.18.0-553.8.1.1toss.t4.x86_64 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is Clang, found in "/usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/3.23.1/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is Clang, found in "/usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/3.23.1/CompilerIdCXX/a.out"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_41047/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_41047.dir/build.make CMakeFiles/cmTC_41047.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang   -v -MD -MT CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCCompilerABI.c
+clang version 14.0.6
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin
+Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Candidate multilib: .;@m64
+Candidate multilib: 32;@m32
+Selected multilib: .;@m64
+ (in-process)
+ "/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/bin/clang-14" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -resource-dir /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6 -dependency-file CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include -internal-isystem /usr/local/include -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -ferror-limit 19 -fgnuc-version=4.2.1 -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -x c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCCompilerABI.c
+clang -cc1 version 14.0.6 based upon LLVM 14.0.6 default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include"
+ignoring nonexistent directory "/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include
+ /usr/local/include
+ /usr/include
+End of search list.
+Linking C executable cmTC_41047
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_41047.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang  -v CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -o cmTC_41047 
+clang version 14.0.6
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin
+Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Candidate multilib: .;@m64
+Candidate multilib: 32;@m32
+Selected multilib: .;@m64
+ "/usr/bin/ld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_41047 /lib/../lib64/crt1.o /lib/../lib64/crti.o /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10 -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -L/usr/tce/packages/clang/clang-14.0.6/lib -L/usr/tce/packages/gcc/gcc-10.3.1/lib64 CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -rpath /usr/tce/packages/clang/clang-14.0.6/lib:/usr/tce/packages/gcc/gcc-10.3.1/lib64 -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o /lib/../lib64/crtn.o
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include]
+    add: [/usr/local/include]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include] ==> [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include]
+  collapse include dir [/usr/local/include] ==> [/usr/local/include]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include;/usr/local/include;/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_41047/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_41047.dir/build.make CMakeFiles/cmTC_41047.dir/build]
+  ignore line: [gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang   -v -MD -MT CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang version 14.0.6]
+  ignore line: [Target: x86_64-unknown-linux-gnu]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin]
+  ignore line: [Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Candidate multilib: 32]
+  ignore line: [@m32]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  ignore line: [ (in-process)]
+  ignore line: [ "/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/bin/clang-14" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -resource-dir /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6 -dependency-file CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include -internal-isystem /usr/local/include -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -ferror-limit 19 -fgnuc-version=4.2.1 -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -x c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang -cc1 version 14.0.6 based upon LLVM 14.0.6 default target x86_64-unknown-linux-gnu]
+  ignore line: [ignoring nonexistent directory "/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include"]
+  ignore line: [ignoring nonexistent directory "/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include]
+  ignore line: [ /usr/local/include]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [Linking C executable cmTC_41047]
+  ignore line: [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_41047.dir/link.txt --verbose=1]
+  ignore line: [/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang  -v CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -o cmTC_41047 ]
+  ignore line: [clang version 14.0.6]
+  ignore line: [Target: x86_64-unknown-linux-gnu]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin]
+  ignore line: [Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Candidate multilib: 32]
+  ignore line: [@m32]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  link line: [ "/usr/bin/ld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_41047 /lib/../lib64/crt1.o /lib/../lib64/crti.o /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10 -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -L/usr/tce/packages/clang/clang-14.0.6/lib -L/usr/tce/packages/gcc/gcc-10.3.1/lib64 CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o -rpath /usr/tce/packages/clang/clang-14.0.6/lib:/usr/tce/packages/gcc/gcc-10.3.1/lib64 -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o /lib/../lib64/crtn.o]
+    arg [/usr/bin/ld] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_41047] ==> ignore
+    arg [/lib/../lib64/crt1.o] ==> obj [/lib/../lib64/crt1.o]
+    arg [/lib/../lib64/crti.o] ==> obj [/lib/../lib64/crti.o]
+    arg [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o] ==> obj [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o]
+    arg [-L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10] ==> dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+    arg [-L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64] ==> dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/lib] ==> dir [/lib]
+    arg [-L/usr/lib] ==> dir [/usr/lib]
+    arg [-L/usr/tce/packages/clang/clang-14.0.6/lib] ==> dir [/usr/tce/packages/clang/clang-14.0.6/lib]
+    arg [-L/usr/tce/packages/gcc/gcc-10.3.1/lib64] ==> dir [/usr/tce/packages/gcc/gcc-10.3.1/lib64]
+    arg [CMakeFiles/cmTC_41047.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-rpath] ==> ignore
+    arg [/usr/tce/packages/clang/clang-14.0.6/lib:/usr/tce/packages/gcc/gcc-10.3.1/lib64] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o] ==> obj [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o]
+    arg [/lib/../lib64/crtn.o] ==> obj [/lib/../lib64/crtn.o]
+  collapse obj [/lib/../lib64/crt1.o] ==> [/lib64/crt1.o]
+  collapse obj [/lib/../lib64/crti.o] ==> [/lib64/crti.o]
+  collapse obj [/lib/../lib64/crtn.o] ==> [/lib64/crtn.o]
+  collapse library dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10] ==> [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  collapse library dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64] ==> [/usr/tce/packages/gcc/gcc-10.3.1/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib] ==> [/lib]
+  collapse library dir [/usr/lib] ==> [/usr/lib]
+  collapse library dir [/usr/tce/packages/clang/clang-14.0.6/lib] ==> [/usr/tce/packages/clang/clang-14.0.6/lib]
+  collapse library dir [/usr/tce/packages/gcc/gcc-10.3.1/lib64] ==> [/usr/tce/packages/gcc/gcc-10.3.1/lib64]
+  implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+  implicit objs: [/lib64/crt1.o;/lib64/crti.o;/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o;/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o;/lib64/crtn.o]
+  implicit dirs: [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10;/usr/tce/packages/gcc/gcc-10.3.1/lib64;/lib64;/usr/lib64;/lib;/usr/lib;/usr/tce/packages/clang/clang-14.0.6/lib]
+  implicit fwks: []
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_94958/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_94958.dir/build.make CMakeFiles/cmTC_94958.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++   -v -MD -MT CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCXXCompilerABI.cpp
+clang version 14.0.6
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin
+Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Candidate multilib: .;@m64
+Candidate multilib: 32;@m32
+Selected multilib: .;@m64
+ (in-process)
+ "/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/bin/clang-14" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -resource-dir /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6 -dependency-file CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10 -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/x86_64-redhat-linux -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/backward -internal-isystem /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include -internal-isystem /usr/local/include -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -ferror-limit 19 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCXXCompilerABI.cpp
+clang -cc1 version 14.0.6 based upon LLVM 14.0.6 default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include"
+ignoring nonexistent directory "/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10
+ /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/x86_64-redhat-linux
+ /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/backward
+ /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include
+ /usr/local/include
+ /usr/include
+End of search list.
+Linking CXX executable cmTC_94958
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_94958.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -v CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_94958 
+clang version 14.0.6
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin
+Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10
+Candidate multilib: .;@m64
+Candidate multilib: 32;@m32
+Selected multilib: .;@m64
+ "/usr/bin/ld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_94958 /lib/../lib64/crt1.o /lib/../lib64/crti.o /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10 -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -L/usr/tce/packages/clang/clang-14.0.6/lib -L/usr/tce/packages/gcc/gcc-10.3.1/lib64 CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -rpath /usr/tce/packages/clang/clang-14.0.6/lib:/usr/tce/packages/gcc/gcc-10.3.1/lib64 -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o /lib/../lib64/crtn.o
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10]
+    add: [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/x86_64-redhat-linux]
+    add: [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/backward]
+    add: [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include]
+    add: [/usr/local/include]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10] ==> [/usr/tce/packages/gcc/gcc-10.3.1/include/c++/10]
+  collapse include dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/x86_64-redhat-linux] ==> [/usr/tce/packages/gcc/gcc-10.3.1/include/c++/10/x86_64-redhat-linux]
+  collapse include dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/backward] ==> [/usr/tce/packages/gcc/gcc-10.3.1/include/c++/10/backward]
+  collapse include dir [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include] ==> [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include]
+  collapse include dir [/usr/local/include] ==> [/usr/local/include]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/tce/packages/gcc/gcc-10.3.1/include/c++/10;/usr/tce/packages/gcc/gcc-10.3.1/include/c++/10/x86_64-redhat-linux;/usr/tce/packages/gcc/gcc-10.3.1/include/c++/10/backward;/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include;/usr/local/include;/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_94958/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_94958.dir/build.make CMakeFiles/cmTC_94958.dir/build]
+  ignore line: [gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++   -v -MD -MT CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang version 14.0.6]
+  ignore line: [Target: x86_64-unknown-linux-gnu]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin]
+  ignore line: [Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Candidate multilib: 32]
+  ignore line: [@m32]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  ignore line: [ (in-process)]
+  ignore line: [ "/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/bin/clang-14" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -resource-dir /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6 -dependency-file CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10 -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/x86_64-redhat-linux -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/backward -internal-isystem /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include -internal-isystem /usr/local/include -internal-isystem /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir=/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp -ferror-limit 19 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang -cc1 version 14.0.6 based upon LLVM 14.0.6 default target x86_64-unknown-linux-gnu]
+  ignore line: [ignoring nonexistent directory "/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../x86_64-redhat-linux/include"]
+  ignore line: [ignoring nonexistent directory "/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10]
+  ignore line: [ /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/x86_64-redhat-linux]
+  ignore line: [ /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../include/c++/10/backward]
+  ignore line: [ /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/llvm-14.0.6-7kxhoqepqg2ndopmgk7mg2v4txs4hmv2/lib/clang/14.0.6/include]
+  ignore line: [ /usr/local/include]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [Linking CXX executable cmTC_94958]
+  ignore line: [/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_94958.dir/link.txt --verbose=1]
+  ignore line: [/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -v CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_94958 ]
+  ignore line: [clang version 14.0.6]
+  ignore line: [Target: x86_64-unknown-linux-gnu]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /usr/tce/packages/clang/clang-14.0.6/bin]
+  ignore line: [Found candidate GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Selected GCC installation: /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Candidate multilib: 32]
+  ignore line: [@m32]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  link line: [ "/usr/bin/ld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_94958 /lib/../lib64/crt1.o /lib/../lib64/crti.o /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10 -L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -L/usr/tce/packages/clang/clang-14.0.6/lib -L/usr/tce/packages/gcc/gcc-10.3.1/lib64 CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o -rpath /usr/tce/packages/clang/clang-14.0.6/lib:/usr/tce/packages/gcc/gcc-10.3.1/lib64 -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o /lib/../lib64/crtn.o]
+    arg [/usr/bin/ld] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_94958] ==> ignore
+    arg [/lib/../lib64/crt1.o] ==> obj [/lib/../lib64/crt1.o]
+    arg [/lib/../lib64/crti.o] ==> obj [/lib/../lib64/crti.o]
+    arg [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o] ==> obj [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o]
+    arg [-L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10] ==> dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+    arg [-L/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64] ==> dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/lib] ==> dir [/lib]
+    arg [-L/usr/lib] ==> dir [/usr/lib]
+    arg [-L/usr/tce/packages/clang/clang-14.0.6/lib] ==> dir [/usr/tce/packages/clang/clang-14.0.6/lib]
+    arg [-L/usr/tce/packages/gcc/gcc-10.3.1/lib64] ==> dir [/usr/tce/packages/gcc/gcc-10.3.1/lib64]
+    arg [CMakeFiles/cmTC_94958.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-rpath] ==> ignore
+    arg [/usr/tce/packages/clang/clang-14.0.6/lib:/usr/tce/packages/gcc/gcc-10.3.1/lib64] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o] ==> obj [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o]
+    arg [/lib/../lib64/crtn.o] ==> obj [/lib/../lib64/crtn.o]
+  collapse obj [/lib/../lib64/crt1.o] ==> [/lib64/crt1.o]
+  collapse obj [/lib/../lib64/crti.o] ==> [/lib64/crti.o]
+  collapse obj [/lib/../lib64/crtn.o] ==> [/lib64/crtn.o]
+  collapse library dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10] ==> [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10]
+  collapse library dir [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/../../../../lib64] ==> [/usr/tce/packages/gcc/gcc-10.3.1/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib] ==> [/lib]
+  collapse library dir [/usr/lib] ==> [/usr/lib]
+  collapse library dir [/usr/tce/packages/clang/clang-14.0.6/lib] ==> [/usr/tce/packages/clang/clang-14.0.6/lib]
+  collapse library dir [/usr/tce/packages/gcc/gcc-10.3.1/lib64] ==> [/usr/tce/packages/gcc/gcc-10.3.1/lib64]
+  implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+  implicit objs: [/lib64/crt1.o;/lib64/crti.o;/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtbegin.o;/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10/crtend.o;/lib64/crtn.o]
+  implicit dirs: [/usr/tce/packages/gcc/gcc-10.3.1/lib/gcc/x86_64-redhat-linux/10;/usr/tce/packages/gcc/gcc-10.3.1/lib64;/lib64;/usr/lib64;/lib;/usr/lib;/usr/tce/packages/clang/clang-14.0.6/lib]
+  implicit fwks: []
+
+
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_15c16/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_15c16.dir/build.make CMakeFiles/cmTC_15c16.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_15c16.dir/CheckIncludeFile.c.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang -DcmTC_15c16_EXPORTS  -Wall -Wextra    -Werror   -fPIE -MD -MT CMakeFiles/cmTC_15c16.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_15c16.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_15c16.dir/CheckIncludeFile.c.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_15c16
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_15c16.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang  -Wall -Wextra    -Werror   -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_15c16.dir/CheckIncludeFile.c.o -o cmTC_15c16 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the function pthread_create exists in the pthread passed with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_9112a/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_9112a.dir/build.make CMakeFiles/cmTC_9112a.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9112a.dir/CheckFunctionExists.c.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang -DcmTC_9112a_EXPORTS  -Wall -Wextra    -Werror  -DCHECK_FUNCTION_EXISTS=pthread_create -fPIE -MD -MT CMakeFiles/cmTC_9112a.dir/CheckFunctionExists.c.o -MF CMakeFiles/cmTC_9112a.dir/CheckFunctionExists.c.o.d -o CMakeFiles/cmTC_9112a.dir/CheckFunctionExists.c.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CheckFunctionExists.c
+Linking C executable cmTC_9112a
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9112a.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang  -Wall -Wextra    -Werror  -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_9112a.dir/CheckFunctionExists.c.o -o cmTC_9112a  -lpthread 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_STD_CXX11 succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_12857/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_12857.dir/build.make CMakeFiles/cmTC_12857.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_12857.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_STD_CXX11 -DcmTC_12857_EXPORTS  -Wall -Wextra       -Werror   -std=c++11 -fPIE   -std=c++11 -MD -MT CMakeFiles/cmTC_12857.dir/src.cxx.o -MF CMakeFiles/cmTC_12857.dir/src.cxx.o.d -o CMakeFiles/cmTC_12857.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_12857
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_12857.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11 -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_12857.dir/src.cxx.o -o cmTC_12857 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WALL succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_5aa99/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_5aa99.dir/build.make CMakeFiles/cmTC_5aa99.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_5aa99.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WALL -DcmTC_5aa99_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall -fPIE   -Wall -MD -MT CMakeFiles/cmTC_5aa99.dir/src.cxx.o -MF CMakeFiles/cmTC_5aa99.dir/src.cxx.o.d -o CMakeFiles/cmTC_5aa99.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_5aa99
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5aa99.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_5aa99.dir/src.cxx.o -o cmTC_5aa99 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WEXTRA succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b06c7/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_b06c7.dir/build.make CMakeFiles/cmTC_b06c7.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_b06c7.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WEXTRA -DcmTC_b06c7_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra -fPIE   -Wextra -MD -MT CMakeFiles/cmTC_b06c7.dir/src.cxx.o -MF CMakeFiles/cmTC_b06c7.dir/src.cxx.o.d -o CMakeFiles/cmTC_b06c7.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_b06c7
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b06c7.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_b06c7.dir/src.cxx.o -o cmTC_b06c7 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WSHADOW succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_88244/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_88244.dir/build.make CMakeFiles/cmTC_88244.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_88244.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WSHADOW -DcmTC_88244_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow -fPIE   -Wshadow -MD -MT CMakeFiles/cmTC_88244.dir/src.cxx.o -MF CMakeFiles/cmTC_88244.dir/src.cxx.o.d -o CMakeFiles/cmTC_88244.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_88244
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_88244.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_88244.dir/src.cxx.o -o cmTC_88244 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_PEDANTIC succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_9ac39/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_9ac39.dir/build.make CMakeFiles/cmTC_9ac39.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_9ac39.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_PEDANTIC -DcmTC_9ac39_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic -fPIE   -pedantic -MD -MT CMakeFiles/cmTC_9ac39.dir/src.cxx.o -MF CMakeFiles/cmTC_9ac39.dir/src.cxx.o.d -o CMakeFiles/cmTC_9ac39.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_9ac39
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9ac39.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_9ac39.dir/src.cxx.o -o cmTC_9ac39 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_PEDANTIC_ERRORS succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a20c0/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a20c0.dir/build.make CMakeFiles/cmTC_a20c0.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a20c0.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_PEDANTIC_ERRORS -DcmTC_a20c0_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors -fPIE   -pedantic-errors -MD -MT CMakeFiles/cmTC_a20c0.dir/src.cxx.o -MF CMakeFiles/cmTC_a20c0.dir/src.cxx.o.d -o CMakeFiles/cmTC_a20c0.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a20c0
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a20c0.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_a20c0.dir/src.cxx.o -o cmTC_a20c0 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32 succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_57b86/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_57b86.dir/build.make CMakeFiles/cmTC_57b86.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_57b86.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WSHORTEN_64_TO_32 -DcmTC_57b86_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32 -fPIE   -Wshorten-64-to-32 -MD -MT CMakeFiles/cmTC_57b86.dir/src.cxx.o -MF CMakeFiles/cmTC_57b86.dir/src.cxx.o.d -o CMakeFiles/cmTC_57b86.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_57b86
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_57b86.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32 -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_57b86.dir/src.cxx.o -o cmTC_57b86 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_FSTRICT_ALIASING succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_8d90e/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_8d90e.dir/build.make CMakeFiles/cmTC_8d90e.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_8d90e.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_FSTRICT_ALIASING -DcmTC_8d90e_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing -fPIE   -fstrict-aliasing -MD -MT CMakeFiles/cmTC_8d90e.dir/src.cxx.o -MF CMakeFiles/cmTC_8d90e.dir/src.cxx.o.d -o CMakeFiles/cmTC_8d90e.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_8d90e
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8d90e.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_8d90e.dir/src.cxx.o -o cmTC_8d90e 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WNO_DEPRECATED_DECLARATIONS succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_184da/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_184da.dir/build.make CMakeFiles/cmTC_184da.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_184da.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WNO_DEPRECATED_DECLARATIONS -DcmTC_184da_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations -fPIE   -Wno-deprecated-declarations -MD -MT CMakeFiles/cmTC_184da.dir/src.cxx.o -MF CMakeFiles/cmTC_184da.dir/src.cxx.o.d -o CMakeFiles/cmTC_184da.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_184da
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_184da.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_184da.dir/src.cxx.o -o cmTC_184da 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WNO_DEPRECATED succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_59ed2/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_59ed2.dir/build.make CMakeFiles/cmTC_59ed2.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_59ed2.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WNO_DEPRECATED -DcmTC_59ed2_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wno-deprecated -fPIE   -Wno-deprecated -MD -MT CMakeFiles/cmTC_59ed2.dir/src.cxx.o -MF CMakeFiles/cmTC_59ed2.dir/src.cxx.o.d -o CMakeFiles/cmTC_59ed2.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_59ed2
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_59ed2.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wno-deprecated -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_59ed2.dir/src.cxx.o -o cmTC_59ed2 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WSTRICT_ALIASING succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_4fb80/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_4fb80.dir/build.make CMakeFiles/cmTC_4fb80.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_4fb80.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WSTRICT_ALIASING -DcmTC_4fb80_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -fPIE   -Wstrict-aliasing -MD -MT CMakeFiles/cmTC_4fb80.dir/src.cxx.o -MF CMakeFiles/cmTC_4fb80.dir/src.cxx.o.d -o CMakeFiles/cmTC_4fb80.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_4fb80
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4fb80.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_4fb80.dir/src.cxx.o -o cmTC_4fb80 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WTHREAD_SAFETY succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_4d963/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_4d963.dir/build.make CMakeFiles/cmTC_4d963.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_4d963.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_WTHREAD_SAFETY -DcmTC_4d963_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing  -Wthread-safety -fPIE   -Wthread-safety -MD -MT CMakeFiles/cmTC_4d963.dir/src.cxx.o -MF CMakeFiles/cmTC_4d963.dir/src.cxx.o.d -o CMakeFiles/cmTC_4d963.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_4d963
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4d963.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing  -Wthread-safety -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_4d963.dir/src.cxx.o -o cmTC_4d963 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_COVERAGE succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a8f4e/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a8f4e.dir/build.make CMakeFiles/cmTC_a8f4e.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a8f4e.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DHAVE_CXX_FLAG_COVERAGE -DcmTC_a8f4e_EXPORTS  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing  -Wthread-safety  --coverage -fPIE   --coverage -MD -MT CMakeFiles/cmTC_a8f4e.dir/src.cxx.o -MF CMakeFiles/cmTC_a8f4e.dir/src.cxx.o.d -o CMakeFiles/cmTC_a8f4e.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a8f4e
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a8f4e.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror   -std=c++11  -Wall  -Wextra  -Wshadow  -pedantic  -pedantic-errors  -Wshorten-64-to-32  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing  -Wthread-safety  --coverage -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_a8f4e.dir/src.cxx.o -o cmTC_a8f4e 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test CXX_UNUSED_BUT_SET_VAR succeeded with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_5a3ae/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_5a3ae.dir/build.make CMakeFiles/cmTC_5a3ae.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_5a3ae.dir/src.cxx.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++ -DCXX_UNUSED_BUT_SET_VAR -DcmTC_5a3ae_EXPORTS  -Wall -Wextra       -Werror  -Wpedantic -pedantic-errors -Wshadow -Wfloat-equal -Wno-cast-align -Wcast-qual   -fPIE   -Wunused-but-set-variable -MD -MT CMakeFiles/cmTC_5a3ae.dir/src.cxx.o -MF CMakeFiles/cmTC_5a3ae.dir/src.cxx.o.d -o CMakeFiles/cmTC_5a3ae.dir/src.cxx.o -c /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_5a3ae
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5a3ae.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++  -Wall -Wextra       -Werror  -Wpedantic -pedantic-errors -Wshadow -Wfloat-equal -Wno-cast-align -Wcast-qual   -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_5a3ae.dir/src.cxx.o -o cmTC_5a3ae 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Determining if the function sgemm_ exists passed with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_945d4/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_945d4.dir/build.make CMakeFiles/cmTC_945d4.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_945d4.dir/CheckFunctionExists.c.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang -DcmTC_945d4_EXPORTS  -Wall -Wextra    -Werror  -DCHECK_FUNCTION_EXISTS=sgemm_ -fPIE -MD -MT CMakeFiles/cmTC_945d4.dir/CheckFunctionExists.c.o -MF CMakeFiles/cmTC_945d4.dir/CheckFunctionExists.c.o.d -o CMakeFiles/cmTC_945d4.dir/CheckFunctionExists.c.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CheckFunctionExists.c
+Linking C executable cmTC_945d4
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_945d4.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang  -Wall -Wextra    -Werror  -DCHECK_FUNCTION_EXISTS=sgemm_ -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_945d4.dir/CheckFunctionExists.c.o -o cmTC_945d4  /usr/lib64/libopenblas.so 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the function cheev_ exists passed with the following output:
+Change Dir: /usr/workspace/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a33b2/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a33b2.dir/build.make CMakeFiles/cmTC_a33b2.dir/build
+gmake[1]: Entering directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a33b2.dir/CheckFunctionExists.c.o
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang -DcmTC_a33b2_EXPORTS  -Wall -Wextra    -Werror  -DCHECK_FUNCTION_EXISTS=cheev_ -fPIE -MD -MT CMakeFiles/cmTC_a33b2.dir/CheckFunctionExists.c.o -MF CMakeFiles/cmTC_a33b2.dir/CheckFunctionExists.c.o.d -o CMakeFiles/cmTC_a33b2.dir/CheckFunctionExists.c.o -c /usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/share/cmake-3.23/Modules/CheckFunctionExists.c
+Linking C executable cmTC_a33b2
+/usr/tce/backend/installations/linux-rhel8-x86_64/gcc-10.3.1/cmake-3.23.1-mdfqd2l7c33zg7xcvqizwz25vqmp7jfw/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a33b2.dir/link.txt --verbose=1
+/usr/tce/packages/clang/clang-14.0.6-magic/bin/clang  -Wall -Wextra    -Werror  -DCHECK_FUNCTION_EXISTS=cheev_ -Wl,--export-dynamic -rdynamic CMakeFiles/cmTC_a33b2.dir/CheckFunctionExists.c.o -o cmTC_a33b2  /usr/lib64/libopenblas.so -pthread -lm -ldl 
+gmake[1]: Leaving directory '/usr/WS1/appleton/DaneSpace/thirdPartyLibs/CMakeFiles/CMakeTmp'
+
+
+
