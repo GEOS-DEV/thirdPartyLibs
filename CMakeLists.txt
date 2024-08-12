@@ -219,7 +219,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.8.2.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.9.2.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -266,7 +266,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D BLT_CXX_STD:STRING=c++11
+                                -D BLT_CXX_STD:STRING=c++14
                                 )
 
 list(APPEND build_list conduit )
@@ -313,6 +313,7 @@ list(APPEND build_list silo )
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
 #set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2022.03.0.tar.gz")
 set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-feature-cmake-config-reorg.tar.gz")
+#set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.02.2.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -351,7 +352,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2022.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.02.2.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -395,7 +396,7 @@ list(APPEND build_list chai )
 ################################
 if (ENABLE_CALIPER)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
-    set(ADIAK_URL "${TPL_MIRROR_DIR}/Adiak-0.2.2.tar.gz")
+    set(ADIAK_URL "${TPL_MIRROR_DIR}/adiak-0.4.0.tar.gz")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
     ExternalProject_Add( adiak
@@ -424,7 +425,7 @@ if (ENABLE_CALIPER)
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
     # set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.8.0.tar.gz")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.10.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.11.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -515,7 +516,7 @@ endif()
 # PUGIXML
 ################################
 set(PUGIXML_DIR "${CMAKE_INSTALL_PREFIX}/pugixml")
-set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.8.0.tar.gz")
+set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.13.tar.gz")
 
 message(STATUS "Building PUGIXML found at ${PUGIXML_URL}")
 
@@ -542,7 +543,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/Trilinos-trilinos-release-13-4-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-15-1-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -744,7 +745,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-52802b646e371663095d9a15b70f51d30c353975.zip")
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.31.0-12-g06da35b1a.tar.gz")
   set( HYPRE_DEPENDS "" )
 
 
@@ -921,16 +922,15 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v6.0.9.tar.gz" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.3.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
-    message( STATUS " The value of ENABLE_MPI is ${ENABLE_MPI}. " )
 
     if( NOT ENABLE_MPI )
         message( FATAL_ERROR "Building Scotch without MPI is not supported." )
     endif()
 
-    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -fPIC -DINTSIZE64 -DIDXSIZE64 -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -Drestrict=__restrict" )
+    set( SCOTCH_C_FLAGS "${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}} -Wno-error=implicit-function-declaration -fPIC -DINTSIZE64 -DIDXSIZE64 -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_METIS_PREFIX -Drestrict=__restrict" )
     set( SCOTCH_LD_FLAGS "-lm" )
 
     # OSX does not have pthread barriers used by Scotch
@@ -954,19 +954,19 @@ CFLAGS    = ${SCOTCH_C_FLAGS}
 CLIBFLAGS =
 LDFLAGS   = ${SCOTCH_LD_FLAGS}
 CP        = cp
-LEX       = flex -Pscotchyy -olex.yy.c
+FLEX      = flex
 LN        = ln
 MKDIR     = mkdir -p
 MV        = mv
 RANLIB    = ranlib
-YACC      = bison -pscotchyy -y -b y
+BISON     = bison
 prefix    = ${SCOTCH_DIR}
 " )
 
-    file( WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
+    file(WRITE ${PROJECT_BINARY_DIR}/scotch_makefile.inc "${SCOTCH_CONFIG}")
     set( SCOTCH_BUILD_DIR "${PROJECT_BINARY_DIR}/scotch/src/scotch/src" )
     if ( NOT DEFINED SCOTCH_NUM_PROC )
-      set( SCOTCH_NUM_PROC ${NUM_PROC} )
+      set( SCOTCH_NUM_PROC 2 )
     endif()
     ExternalProject_Add( scotch
                          URL ${SCOTCH_URL}
@@ -974,7 +974,7 @@ prefix    = ${SCOTCH_DIR}
                          INSTALL_DIR ${SCOTCH_DIR}
                          BINARY_DIR ${SCOTCH_BUILD_DIR}
                          CONFIGURE_COMMAND cp ${PROJECT_BINARY_DIR}/scotch_makefile.inc ${SCOTCH_BUILD_DIR}/Makefile.inc
-                         BUILD_COMMAND make -j ${SCOTCH_NUM_PROC} ptscotch scotch ptesmumps esmumps
+                         BUILD_COMMAND make -j 2 ptscotch scotch ptesmumps esmumps
                          INSTALL_COMMAND make install
                        )
 
@@ -988,8 +988,7 @@ endif()
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-lite-3.13.0.tar.gz")
-    set(PT_SCOTCH_URL "${TPL_MIRROR_DIR}/petsc-pkg-scotch-v6.0.9.tar.gz")
+    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.19.4.tar.gz")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
@@ -1039,7 +1038,7 @@ if( ENABLE_PETSC )
     string(REPLACE ";" " " PETSC_BLAS_LIBS "${BLAS_LIBRARIES}")
     string(REPLACE ";" " " PETSC_LAPACK_LIBS "${LAPACK_LIBRARIES}")
 
-    file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geosx "\
+    file(WRITE ${PROJECT_BINARY_DIR}/config_petsc_for_geos "\
 ./configure \
 --prefix=${PETSC_INSTALL_DIR} \
 --CC=${PETSC_C_COMPILER} \
@@ -1066,7 +1065,7 @@ ${PETSC_DEP_FLAG}\n")
                          DEPENDS ${PETSC_DEPENDS}
                          BINARY_DIR ${PROJECT_BINARY_DIR}/petsc/src/petsc
                          INSTALL_DIR ${PETSC_INSTALL_DIR}
-                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_petsc_for_geosx && . ${PROJECT_BINARY_DIR}/config_petsc_for_geosx
+                         CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_petsc_for_geos && . ${PROJECT_BINARY_DIR}/config_petsc_for_geos
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND make install
                         )
@@ -1079,7 +1078,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.1.0.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.2.6.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1107,15 +1106,14 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-disable_traits.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-duplicate-points-fix.patch
-                               COMMAND patch -p0 < ${TPL_MIRROR_DIR}/VTK-9.1.0-cmake-fix.patch
+                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
@@ -1145,7 +1143,7 @@ endif( ENABLE_VTK )
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-8.0.1.tar.gz")
+set(FMT_URL "${TPL_MIRROR_DIR}/fmt-10.2.1.tar.gz")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
@@ -1173,100 +1171,100 @@ list(APPEND build_list fmt)
 # Fesapi
 ################################
 
-if( ENABLE_FESAPI )
-
-    #
-    # ENABLE Boost
-    #
-    set(BOOST_DIR "${CMAKE_INSTALL_PREFIX}/boost")
-    set(BOOST_URL "${TPL_MIRROR_DIR}/boost_1_67_0.tar.gz")
-    message(STATUS "Extract Boost found at ${BOOST_URL}")
-
-    set(BOOST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost/ CACHE STRING "Set the value of BOOST_ROOT to point to the root folder of your boost install." FORCE)
-
-    ExternalProject_Add( boost
-                        URL ${BOOST_URL}
-                        PREFIX ${PROJECT_BINARY_DIR}/boost
-                        INSTALL_DIR ${BOOST_DIR}
-                        CONFIGURE_COMMAND ""
-                        BUILD_COMMAND ""
-                        INSTALL_COMMAND ""
-                        BUILD_IN_SOURCE 1)
-
-    list(APPEND build_list boost)
-
-
-    #
-    # ENABLE Minizip
-    #
-    
-    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
-    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit 
-    # path thus it has to be fixed regardless of the platform
-    set( MINIZIP_CMAKE_INSTALL_LIBDIR "lib" )
-
-    set(MINIZIP_DIR "${CMAKE_INSTALL_PREFIX}/minizip")
-    set(MINIZIP_URL "${TPL_MIRROR_DIR}/Minizip-1.1_cmake0.1.tar.gz")
-    message(STATUS "Building Minizip found at ${MINIZIP_URL}")
-
-    ExternalProject_Add( minizip
-                        URL ${MINIZIP_URL}
-                        PREFIX ${PROJECT_BINARY_DIR}/minizip
-                        INSTALL_DIR ${MINIZIP_DIR}
-                        BUILD_COMMAND make -j ${NUM_PROC}
-                        INSTALL_COMMAND make install
-                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
-                                -DCMAKE_INSTALL_LIBDIR=${MINIZIP_CMAKE_INSTALL_LIBDIR}
-                                )
-
-    list(APPEND build_list minizip)
-
-    if( ENABLE_MPI )
-        set( FESAPI_C_COMPILER ${MPI_C_COMPILER} )
-        set( FESAPI_CXX_COMPILER ${MPI_CXX_COMPILER} )
-    else()
-        set( FESAPI_C_COMPILER ${CMAKE_C_COMPILER} )
-        set( FESAPI_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-    endif( ENABLE_MPI )
-
-    #
-    # Then Fesapi
-    #
-    set(FESAPI_DIR "${CMAKE_INSTALL_PREFIX}/fesapi")
-    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.4.0.0.tar.gz")
-    message(STATUS "Building Fesapi found at ${FESAPI_URL}")
-
-    ExternalProject_Add( fesapi
-                        URL ${FESAPI_URL}
-                        PREFIX ${PROJECT_BINARY_DIR}/fesapi
-                        INSTALL_DIR ${FESAPI_DIR}
-                        BUILD_COMMAND make -j ${NUM_PROC}
-                        INSTALL_COMMAND make install
-                        DEPENDS hdf5 minizip boost
-                        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                    -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
-                                    -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}                                    
-                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
-                                    -DHDF5_ROOT:PATH=${HDF5_DIR}
-                                    -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
-                                    -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
-                                    -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
-                                    -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
-                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost                                    
-                                    -DWITH_EXAMPLE:BOOL=OFF
-                                    -DWITH_DOTNET_WRAPPING:BOOL=OFF
-                                    -DWITH_JAVA_WRAPPING:BOOL=OFF
-                                    -DWITH_PYTHON_WRAPPING:BOOL=OFF
-                                    -DWITH_RESQML2_2:BOOL=OFF
-                                    -DWITH_TEST:BOOL=OFF)
-
-    list(APPEND build_list fesapi )
-
-endif()
+#if( ENABLE_FESAPI )
+#
+#    #
+#    # ENABLE Boost
+#    #
+#    set(BOOST_DIR "${CMAKE_INSTALL_PREFIX}/boost")
+#    set(BOOST_URL "${TPL_MIRROR_DIR}/boost_1_67_0.tar.gz")
+#    message(STATUS "Extract Boost found at ${BOOST_URL}")
+#
+#    set(BOOST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost/ CACHE STRING "Set the value of BOOST_ROOT to point to the root folder of your boost install." FORCE)
+#
+#    ExternalProject_Add( boost
+#                        URL ${BOOST_URL}
+#                        PREFIX ${PROJECT_BINARY_DIR}/boost
+#                        INSTALL_DIR ${BOOST_DIR}
+#                        CONFIGURE_COMMAND ""
+#                        BUILD_COMMAND ""
+#                        INSTALL_COMMAND ""
+#                        BUILD_IN_SOURCE 1)
+#
+#    list(APPEND build_list boost)
+#
+#
+#    #
+#    # ENABLE Minizip
+#    #
+#    
+#    # Depending on the platform, the install directory could be 'lib' or 'lib64'.
+#    # Fesapi doesn't use CMake Targets to import Minizip but needs an explicit 
+#    # path thus it has to be fixed regardless of the platform
+#    set( MINIZIP_CMAKE_INSTALL_LIBDIR "lib" )
+#
+#    set(MINIZIP_DIR "${CMAKE_INSTALL_PREFIX}/minizip")
+#    set(MINIZIP_URL "${TPL_MIRROR_DIR}/Minizip-1.1_cmake0.1.tar.gz")
+#    message(STATUS "Building Minizip found at ${MINIZIP_URL}")
+#
+#    ExternalProject_Add( minizip
+#                        URL ${MINIZIP_URL}
+#                        PREFIX ${PROJECT_BINARY_DIR}/minizip
+#                        INSTALL_DIR ${MINIZIP_DIR}
+#                        BUILD_COMMAND make -j ${NUM_PROC}
+#                        INSTALL_COMMAND make install
+#                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+#                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+#                                -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+#                                -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+#                                -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+#                                -DCMAKE_INSTALL_LIBDIR=${MINIZIP_CMAKE_INSTALL_LIBDIR}
+#                                )
+#
+#    list(APPEND build_list minizip)
+#
+#    if( ENABLE_MPI )
+#        set( FESAPI_C_COMPILER ${MPI_C_COMPILER} )
+#        set( FESAPI_CXX_COMPILER ${MPI_CXX_COMPILER} )
+#    else()
+#        set( FESAPI_C_COMPILER ${CMAKE_C_COMPILER} )
+#        set( FESAPI_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+#    endif( ENABLE_MPI )
+#
+#    #
+#    # Then Fesapi
+#    #
+#    set(FESAPI_DIR "${CMAKE_INSTALL_PREFIX}/fesapi")
+#    set(FESAPI_URL "${TPL_MIRROR_DIR}/fesapi-2.4.0.0.tar.gz")
+#    message(STATUS "Building Fesapi found at ${FESAPI_URL}")
+#
+#    ExternalProject_Add( fesapi
+#                        URL ${FESAPI_URL}
+#                        PREFIX ${PROJECT_BINARY_DIR}/fesapi
+#                        INSTALL_DIR ${FESAPI_DIR}
+#                        BUILD_COMMAND make -j ${NUM_PROC}
+#                        INSTALL_COMMAND make install
+#                        DEPENDS hdf5 minizip boost
+#                        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+#                                    -DCMAKE_C_COMPILER=${FESAPI_C_COMPILER}
+#                                   -DCMAKE_CXX_COMPILER=${FESAPI_CXX_COMPILER}                                    
+#                                    -DCMAKE_CXX_FLAGS=${TPL_CXX_STANDARD}
+#                                    -DHDF5_ROOT:PATH=${HDF5_DIR}
+#                                    -DMINIZIP_INCLUDE_DIR:PATH=${MINIZIP_DIR}/include
+#                                    -DMINIZIP_LIBRARY_RELEASE:PATH=${MINIZIP_DIR}/lib/libminizip.a
+#                                    -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
+#                                    -DBoost_NO_BOOST_CMAKE:BOOL=TRUE
+#                                    -DBoost_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/boost/src/boost                                    
+#                                    -DWITH_EXAMPLE:BOOL=OFF
+#                                    -DWITH_DOTNET_WRAPPING:BOOL=OFF
+#                                    -DWITH_JAVA_WRAPPING:BOOL=OFF
+#                                    -DWITH_PYTHON_WRAPPING:BOOL=OFF
+#                                    -DWITH_RESQML2_2:BOOL=OFF
+#                                    -DWITH_TEST:BOOL=OFF)
+#
+#    list(APPEND build_list fesapi )
+#
+#endif()
 
 ################################
 # Create target that builds all dependencies

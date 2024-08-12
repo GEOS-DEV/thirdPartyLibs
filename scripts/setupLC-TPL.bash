@@ -138,4 +138,5 @@ echo " " >> "$LOG_FILE"
 python3 scripts/config-build.py -hc $HOST_CONFIG -bt $BUILD_TYPE -ip $INSTALL_DIR | tee -a "$LOG_FILE" 2>&1 
 cd build-$MACHINE-$COMPILER-${BUILD_TYPE,,} 
 echo "changed to build-$MACHINE-$COMPILER-${BUILD_TYPE,,}  directory " | tee -a "$LOG_FILE" 2>&1
-srun -N1 -n1 make | tee -a "$LOG_FILE" 2>&1
+# srun -N1 -n1 make | tee -a "$LOG_FILE" 2>&1
+make | tee -a "$LOG_FILE" 2>&1
