@@ -194,6 +194,12 @@ spack:
       externals:
       - spec: flex@2.6.4
         prefix: /usr
+    findutils:
+      version: [4.7.0]
+      buildable: false
+      externals:
+      - spec: findutils@4.7.0
+        prefix: /usr
     m4:
       buildable: false
       externals:
@@ -273,4 +279,9 @@ spack:
       buildable: false
       externals:
       - spec: xz@5.2.5
+        prefix: /usr
+    zlib:
+      buildable: false
+      externals:
+      - spec: zlib@1.2.11
         prefix: /usr
