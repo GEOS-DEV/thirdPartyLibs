@@ -100,7 +100,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@${GCC_MAJOR_VERSION} +docs" \
+       --spec "%gcc@${GCC_MAJOR_VERSION} ~pygeosx +docs" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=${SRC_DIR}/.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -137,16 +137,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     libxml2-utils \
     git \
     ghostscript \
-    ninja-build \
-# Necessary dependencies for pygeosx unit tests
-    python3-dev \
-    python3-sphinx \
-    python3-mpi4py \
-    python3-scipy \
-    python3-virtualenv \
-    python3-matplotlib \
-    python3-venv \
-    python3-pytest
+    ninja-build
 
 # Install `sccache` binaries to speed up the build of `geos`
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
