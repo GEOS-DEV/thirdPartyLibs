@@ -1,0 +1,19 @@
+--- vtkXMLWriter.cxx	2023-02-14 20:03:53.000000000 -0800
++++ vtkXMLWriter-patch.cxx	2024-08-26 10:11:05.373719000 -0700
+@@ -64,6 +64,7 @@
+ #include <memory>
+ 
+ #include <cassert>
++#include <cmath>
+ #include <sstream>
+ #include <string>
+ 
+@@ -3052,7 +3053,7 @@
+   if (!this->AbortExecute)
+   {
+     // Round progress to nearest 100th.
+-    float rounded = static_cast<float>(static_cast<int>((progress * 100) + 0.5f)) / 100.f;
++    float const rounded = std::round(progress * 100) * 0.01;
+     if (this->GetProgress() != rounded)
+     {
+       this->UpdateProgress(rounded);
