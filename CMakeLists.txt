@@ -1133,7 +1133,7 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 -t < ${TPL_MIRROR_DIR}/vtkXML-fpe.patch
+                         PATCH_COMMAND patch -p0 -f < ${TPL_MIRROR_DIR}/vtkXML-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
