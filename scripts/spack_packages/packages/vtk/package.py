@@ -20,6 +20,7 @@ class Vtk(CMakePackage):
 
     maintainers = ['chuckatkins', 'danlipsa']
 
+    version("9.3.1", sha256="8354ec084ea0d2dc3d23dbe4243823c4bfc270382d0ce8d658939fd50061cab8")
     version("9.2.6", sha256="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12")
     version('9.1.0', sha256='8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96')
     version('9.0.3', sha256='bc3eb9625b2b8dbfecb6052a2ab091fc91405de4333b0ec68f3323815154ed8a')
@@ -37,8 +38,6 @@ class Vtk(CMakePackage):
 
     variant('python', default=False, description='Enable Python support')
     variant('mpi', default=True, description='Enable MPI support')
-
-    patch('vtkXMLReader-fpe.patch', when='@9.1.0:')
 
     extends('python', when='+python')
 
