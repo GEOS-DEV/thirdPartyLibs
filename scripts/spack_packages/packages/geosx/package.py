@@ -9,6 +9,8 @@ import warnings
 import socket
 import os
 
+import llnl.util.tty as tty
+
 from os import environ as env
 from os.path import join as pjoin
 
@@ -358,7 +360,7 @@ class Geosx(CMakePackage, CudaPackage):
                         mpiexec = os.path.join(spec["mpi"].prefix.bin, "mpiexec")
 
                 if not os.path.exists(mpiexec):
-                    msg = "Unable to determine MPIEXEC, %s tests may fail" % self.pkg.name
+                    msg = "Unable to determine MPIEXEC, geos tests may fail"
                     cfg.write("# {0}\n".format(msg))
                     tty.warn(msg)
                 else:
