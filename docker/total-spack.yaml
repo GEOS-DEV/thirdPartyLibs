@@ -64,21 +64,21 @@ spack:
     hypre:
       require: "@git.06da35b1a4b1066a093bc0c6c48aee12bee74cd4"
 
-    # v2024.0.2.2
+    # v2024.07.0
     chai:
-      require: "@git.5ba0944d862513f600432c34b009824875df27e5=develop"
+      require: "@git.df7741f1dbbdc5fff5f7d626151fdf1904e62b19=develop"
 
-    # v2024.02.1
+    # v2024.07.0
     umpire:
-      require: "@git.3058d562fc707650e904f9321b1ee9bcebad3ae2=develop"
+      require: "@git.abd729f40064175e999a83d11d6b073dac4c01d2=develop"
 
-    # v2024.02.2
+    # v2024.07.0
     raja:
-      require: "@git.593f756b14ac57ded33ee61d8d2292d4beb840e6=develop"
+      require: "@git.4d7fcba55ebc7cb972b7cc9f6778b48e43792ea1=develop"
 
-    # v2024.02.1
+    # v2024.07.0
     camp:
-      require: "@git.79c320fa09db987923b56884afdc9f82f4b70fc4=main"
+      require: "@git.0f07de4240c42e0b38a8d872a20440cb4b33d9f5=main"
 
     # v0.9.2
     conduit:
