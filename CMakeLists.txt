@@ -332,7 +332,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.02.2.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.07.0.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -370,7 +370,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.02.2.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.07.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -1105,7 +1105,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.2.6.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.3.1.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1133,7 +1133,6 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch -p0 < ${TPL_MIRROR_DIR}/vtkXMLReader-fpe.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
