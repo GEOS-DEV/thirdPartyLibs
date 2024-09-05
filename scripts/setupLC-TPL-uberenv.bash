@@ -47,7 +47,7 @@ echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR..."
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-10-cuda-11 "%clang@10.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@12.0.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-13-cuda-12 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@12.0.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 
 # Note: Estimated completion time is ~90 minutes.
 # Check log files for unreported completion of jobs.
