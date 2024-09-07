@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.23.1)
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction
+endif()
+
 ################################
 # GEOS_TPL
 ################################
