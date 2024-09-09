@@ -3,7 +3,6 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# The docker base image can be pecan or pangea.
 ARG DOCKER_ROOT_IMAGE
 FROM $DOCKER_ROOT_IMAGE as tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR

@@ -3,7 +3,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-FROM nvidia/cuda:12.5.0-devel-rockylinux8 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:12.6.1-devel-rockylinux9 AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
