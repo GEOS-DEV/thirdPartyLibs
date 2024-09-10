@@ -47,6 +47,7 @@ option( BUILD_SHARED_LIBS "" OFF )
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_HYPRE "" ON )
 option( ENABLE_TRILINOS "" ON )
+option( ENABLE_SUPERLU_DIST "" ON)
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
@@ -715,9 +716,9 @@ list(APPEND build_list metis )
 
 
 ################################
-# SUPERLU --
+# SUPERLU_DIST --
 ################################
-if( ENABLE_MPI )
+if( ENABLE_SUPERLU_DIST AND ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
@@ -782,12 +783,16 @@ if( ENABLE_HYPRE )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
-    if( ENABLE_OPENMP )
-      set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
+    if ( ENABLE_SUPERLU_DIST )
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
+      if( ENABLE_OPENMP )
+        set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
+      endif()
+      set( HYPRE_SUPERLU_FLAGS "--with-dsuperlu --with-dsuperlu-include=${SUPERLU_DIR}/include --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\"" )
+      list( APPEND HYPRE_DEPENDS superlu_dist )
+    else()
+      set( HYPRE_SUPERLU_LIBS "" )
     endif()
-    set( HYPRE_SUPERLU_FLAGS "--with-dsuperlu --with-dsuperlu-include=${SUPERLU_DIR}/include --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\"" )
-    list( APPEND HYPRE_DEPENDS superlu_dist )
   endif()
 
   if( ENABLE_OPENMP )
