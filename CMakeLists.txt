@@ -359,6 +359,7 @@ ExternalProject_Add( raja
                                 -D RAJA_ENABLE_EXAMPLES:BOOL=OFF
                                 -D RAJA_ENABLE_EXERCISES:BOOL=OFF
                                 -D RAJA_ENABLE_BENCHMARKS:BOOL=OFF
+                                -D RAJA_ENABLE_DOCUMENTATION:BOOL=OFF
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
@@ -388,24 +389,23 @@ ExternalProject_Add( chai
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
-                                -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                                -D ENABLE_TESTS=OFF
-                                -D ENABLE_BENCHMARKS=OFF
-                                -D ENABLE_EXAMPLES=OFF
-                                -D ENABLE_DOCS=OFF
-                                -D ENABLE_DOXYGEN=OFF
-                                -D ENABLE_SPHINX=OFF
+                                -D CHAI_ENABLE_OPENMP=${ENABLE_OPENMP}
+                                -D CHAI_ENABLE_TESTS=OFF
+                                -D CHAI_ENABLE_BENCHMARKS=OFF
+                                -D CHAI_ENABLE_EXAMPLES=OFF
+                                -D CHAI_ENABLE_DOCS=OFF
+                                -D CHAI_ENABLE_GMOCK=OFF
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
-                                -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
+                                -D raja_DIR=${RAJA_DIR}/lib/cmake/raja
+                                -D camp_DIR=${RAJA_DIR}/lib/cmake/camp
                                 -D UMPIRE_ENABLE_C=ON
                     )
 
