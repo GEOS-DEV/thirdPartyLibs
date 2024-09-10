@@ -11,8 +11,9 @@ ARG GCC_VERSION=10.1.0
 ARG OPENMPI_VERSION=4.1.2
 ARG OPENBLAS_VERSION=0.3.10
 ARG ZLIB_VERSION=1.2.11
-ARG CUDA_VERSION=11.7.1
-ARG CUDA_SUBVERSION=515.65.01
+ARG CUDA_VERSION=12.4.0
+ARG CUDA_SUBVERSION=550.54.14
+
 
 # Main software root installation directory in SHERLOCK
 ARG SHERLOCK_ROOT_INSTALL_DIR=/share/software/user/open
@@ -27,6 +28,11 @@ FROM centos:7.9.2009 AS shared_components
 
 RUN yum install -y \
         glibc-devel
+
+# I need these lines because centos 7.9 has reached EOL
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS-*.repo
+RUN sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS-*.repo
+RUN sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS-*.repo
 
 # We'll compile and deploy a version of `gcc` in this stage.
 FROM shared_components AS gcc_stage
