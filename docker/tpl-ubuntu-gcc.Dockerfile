@@ -70,6 +70,16 @@ RUN python3 -m pip install --upgrade pip && \
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
+ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
+    CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
+    MPICC=/usr/bin/mpicc \
+    MPICXX=/usr/bin/mpicxx \
+    MPIEXEC=/usr/bin/mpirun
+# The multi-line definition of arguments does not seem happy
+# when a variable uses the value of another variable previously defined on the same line.
+ENV OMPI_CC=$CC \
+    OMPI_CXX=$CXX
+
 # This stage is dedicated to TPLs uniquely.
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
