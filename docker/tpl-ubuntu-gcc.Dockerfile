@@ -3,7 +3,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# Defining the building toolchain that are common to both GEOSX and its TPLs.
+# Defining the building toolchain that are common to both GEOS and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
 ARG DOCKER_ROOT_IMAGE
 
@@ -21,7 +21,7 @@ ARG SRC_DIR
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
-# The same distribution and Dockerfile can be used for the 8, 9 and 10 version of the GNU compilers.
+# The same distribution and Dockerfile can be used for various versions of the GNU compilers.
 # The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
 # Note that docker seems to forget about the ARGs after each FROM statement.
 # This is why we repeat it below.
@@ -42,14 +42,14 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # Note the difference between runtime and development packages.
     ca-certificates \
     curl \
-    libtbb2 \
+    libtbb-dev \
     libblas-dev \
     liblapack-dev \
     zlib1g-dev \
     openmpi-bin \
     libopenmpi-dev \
 # Some of the TPL's make "extensive" use of python in their build.
-# And we want to test GEOSX's python configuration script.
+# And we want to test GEOS's python configuration script.
 # Unfortunately argparse (standard library's package used by GEOSX)
 # is not in the python-minimal package so we install the whole std lib.
     python3
@@ -67,7 +67,7 @@ ENV OMPI_CC=$CC \
     OMPI_CXX=$CXX
 
 # This stage is dedicated to TPLs uniquely.
-# A multi-stage build patern will allow to extract what we need for the GEOSX build.
+# A multi-stage build patern will allow to extract what we need for the GEOS build.
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
