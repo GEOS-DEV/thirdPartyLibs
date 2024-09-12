@@ -404,12 +404,15 @@ ExternalProject_Add( chai
                                 -D CHAI_ENABLE_BENCHMARKS=OFF
                                 -D CHAI_ENABLE_EXAMPLES=OFF
                                 -D CHAI_ENABLE_DOCS=OFF
-                                -D CHAI_ENABLE_GMOCK=OFF
+                                -D ENABLE_GMOCK=OFF
+                                -D ENABLE_GTEST=OFF
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D raja_DIR=${RAJA_DIR}/lib/cmake/raja
                                 -D camp_DIR=${RAJA_DIR}/lib/cmake/camp
                                 -D UMPIRE_ENABLE_C=ON
+                                -D UMPIRE_ENABLE_TESTS=OFF
+                                -D UMPIRE_ENABLE_BENCHMARKS=OFF
                     )
 
 list(APPEND build_list chai )
@@ -723,6 +726,7 @@ list(APPEND build_list metis )
 if( ENABLE_SUPERLU_DIST AND ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
+  #set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-9.0.0.tar.gz")
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
