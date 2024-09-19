@@ -504,7 +504,7 @@ else()
                          URL ${MATHPRESSO_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/mathpresso
                          INSTALL_DIR ${MATHPRESSO_DIR}
-                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && tar -xzvf ${ASMJIT_URL}
+                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && unzip ${ASMJIT_URL}
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
                                          mkdir -p <INSTALL_DIR>/lib &&
