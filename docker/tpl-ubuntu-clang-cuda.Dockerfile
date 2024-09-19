@@ -53,7 +53,8 @@ RUN apt-get install -y --no-install-recommends \
     file \
     bison \
     flex \
-    patch
+    patch \
+    unzip
 
 ARG HOST_CONFIG
 

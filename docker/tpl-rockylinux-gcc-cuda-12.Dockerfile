@@ -71,7 +71,8 @@ RUN dnf clean all && \
         file \
         bison \
         flex \
-        patch
+        patch \
+        unzip
 
 # Environment and toolkit setup for CUDA and other libraries
 ARG HOST_CONFIG

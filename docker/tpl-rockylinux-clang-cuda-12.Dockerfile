@@ -73,7 +73,8 @@ RUN dnf clean all && \
         file \
         bison \
         flex \
-        patch
+        patch \
+        unzip
 
 ARG HOST_CONFIG
 
