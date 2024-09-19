@@ -10,7 +10,6 @@ concurrency:
 jobs:
   build_images:
     name: ${{ matrix.name }}
-
     runs-on: ${{ matrix.RUNS_ON }}
 
     strategy:
@@ -22,46 +21,53 @@ jobs:
         include:
           - name: Ubuntu (20.04, gcc 9.4.0, open-mpi 4.0.3)
             DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc9
-            DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
             DOCKER_ROOT_IMAGE: ubuntu:20.04
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
             RUNS_ON: ubuntu-latest
           - name: Ubuntu (20.04, gcc 10.5.0, open-mpi 4.0.3) - github codespaces
             DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc10
-            DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
             DOCKER_ROOT_IMAGE: mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=10"
             RUNS_ON: ubuntu-latest
           - name: Ubuntu (22.04, gcc 11.4.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc11
-            DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=11"
             RUNS_ON: ubuntu-latest
           - name: Ubuntu (22.04, gcc 12.3.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc12
-            DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
             RUNS_ON: ubuntu-latest
           - name: Ubuntu (22.04, clang 15.0.7 + gcc 11.4.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-clang15
-            DOCKERFILE: docker/tpl-ubuntu-clang.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-ubuntu-clang.Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg CLANG_MAJOR_VERSION=15 --build-arg GCC_MAJOR_VERSION=11"
             RUNS_ON: ubuntu-latest
           - name: Ubuntu (20.04, clang 10.0.0 + gcc 9.4.0, open-mpi 4.0.3, cuda-11.8.89)
             DOCKER_REPOSITORY: geosx/ubuntu20.04-clang10.0.0-cuda11.8.89
-            DOCKERFILE: docker/tpl-ubuntu-clang-cuda.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-ubuntu-clang-cuda.Dockerfile
             RUNS_ON: ubuntu-latest
           - name: Rockylinux (8, gcc 8.5, cuda 12.5)
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc8-cuda12.5
-            DOCKERFILE: docker/tpl-rockylinux-gcc-cuda-12.Dockerfile    
+            TPL_DOCKERFILE: docker/tpl-rockylinux-gcc-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
           - name: Rockylinux (8, clang 17.0.6, cuda 12.5)
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.5
-            DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile  
+            TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
+          - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
+            DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
+            TPL_DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
+            HOST_CONFIG: host-configs/TOTAL/pangea3-gcc8.4.1-openmpi-4.1.2.cmake
+            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:4
+            HOST_ARCH: ppc64le
+            RUNS_ON: streak2
 
     steps:
     - name: Checkout
@@ -73,29 +79,43 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Setup QEMU for ${{ matrix.HOST_ARCH }} emulation
+      if: ${{ matrix.HOST_ARCH }}
+      uses: docker/setup-qemu-action@v3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        platforms: ${{ matrix.HOST_ARCH }}
 
     - name: Print environment
       run: printenv
 
-    - name: Run the docker build and push docker script
+    - name: Run the docker build docker script
       env:
-        DOCKERFILE: ${{ matrix.DOCKERFILE }}
+        TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
         INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
         HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
         SPEC: ${{ matrix.SPEC || 'undefined' }}
         DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
-        PULL_REQUEST_NUMBER: ${{ github.event.number }}
-        BUILD_NUMBER: ${{ github.run_number }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
-      run: bash -x ./scripts/docker-build-and-push.sh
+        DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+
+      run: bash -x ./scripts/docker-build.sh
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        logout: ${{ matrix.RUNS_ON != 'streak2' }}
+
+    - name: Push docker image
+      env:
+        DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+        DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+
+      run: docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
