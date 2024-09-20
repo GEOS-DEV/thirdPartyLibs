@@ -496,15 +496,15 @@ if (DEFINED ENABLE_MATHPRESSO AND NOT ENABLE_MATHPRESSO)
     message(STATUS "MATHPRESSO disabled")
 else()
     set(MATHPRESSO_DIR "${CMAKE_INSTALL_PREFIX}/mathpresso")
-    set(MATHPRESSO_URL "${TPL_MIRROR_DIR}/mathpresso-2015-12-15.tar.gz")
-    set(ASMJIT_URL "${TPL_MIRROR_DIR}/asmjit-2016-07-20.tar.gz")
+    set(MATHPRESSO_URL "${TPL_MIRROR_DIR}/mathpresso-24d60e5.zip")
+    set(ASMJIT_URL "${TPL_MIRROR_DIR}/asmjit-2e93826.zip")
     message(STATUS "Building MATHPRESSO found at ${MATHPRESSO_URL}")
 
     ExternalProject_Add( mathpresso
                          URL ${MATHPRESSO_URL}
                          PREFIX ${PROJECT_BINARY_DIR}/mathpresso
                          INSTALL_DIR ${MATHPRESSO_DIR}
-                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && tar -xzvf ${ASMJIT_URL}
+                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && unzip ${ASMJIT_URL}
                          BUILD_COMMAND make -j ${NUM_PROC}
                          INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
                                          mkdir -p <INSTALL_DIR>/lib &&

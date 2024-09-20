@@ -89,7 +89,8 @@ RUN apt-get install -y --no-install-recommends \
     file \
     bison \
     flex \
-    patch
+    patch \
+    unzip
 
 # Get host config file from docker build arguments
 ARG HOST_CONFIG
