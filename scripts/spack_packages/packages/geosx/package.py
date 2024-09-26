@@ -519,11 +519,11 @@ class Geosx(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_option('ENABLE_CALIPER_HYPRE', True))
 
             if 'lai=trilinos' in spec:
-                cfg.write(cmake_cache_entry('GEOSX_LA_INTERFACE', 'Trilinos'))
+                cfg.write(cmake_cache_entry('GEOS_LA_INTERFACE', 'Trilinos'))
             if 'lai=hypre' in spec:
-                cfg.write(cmake_cache_entry('GEOSX_LA_INTERFACE', 'Hypre'))
+                cfg.write(cmake_cache_entry('GEOS_LA_INTERFACE', 'Hypre'))
             if 'lai=petsc' in spec:
-                cfg.write(cmake_cache_entry('GEOSX_LA_INTERFACE', 'Petsc'))
+                cfg.write(cmake_cache_entry('GEOS_LA_INTERFACE', 'Petsc'))
 
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Python\n')
@@ -650,9 +650,9 @@ class Geosx(CMakePackage, CudaPackage):
 
             release_flags = "-O3 -DNDEBUG"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-            reldebinf_flags = "-O3 -g -DNDEBUG"
+            reldebinf_flags = "-O2 -g -DNDEBUG"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-            debug_flags = "-O0 -g"
+            debug_flags = "-g"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
             if "%clang arch=linux-rhel7-ppc64le" in spec:
