@@ -3,7 +3,6 @@ env
 
 # We save memory for the docker context
 echo .git > .dockerignore
-<<<<<<< HEAD:scripts/docker-build-and-push.sh
 
 # Get uberenv submodule
 git submodule update --init scripts/uberenv
