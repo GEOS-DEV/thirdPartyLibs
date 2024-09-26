@@ -13,22 +13,6 @@ spack:
   view: false
 
   compilers::
-  # Pangea 2 compiler
-  - compiler:
-      environment: {}
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: centos7
-      paths:
-        cc: /data_local/sw/gcc/RHEL7/8.3.0/bin/gcc
-        cxx: /data_local/sw/gcc/RHEL7/8.3.0/bin/g++
-        f77: /data_local/sw/gcc/RHEL7/8.3.0/bin/gfortran
-        fc: /data_local/sw/gcc/RHEL7/8.3.0/bin/gfortran
-      spec: gcc@8.3.0
-      target: x86_64
   # Pecan CPU/GPU compiler
   - compiler:
       environment: {}
@@ -130,9 +114,6 @@ spack:
     intel-mkl:
       buildable: False
       externals:
-        # Pangea 2
-        - spec: intel-mkl@2019.3.199%gcc@8.3.0 threads=openmp
-          prefix: /opt/intel/compilers_and_libraries_2019.3.199/linux/mkl/
         # Pecan CPU/GPU
         - spec: intel-mkl@2019.5.281%gcc@8.2.0 threads=openmp
           prefix: /opt/intel/compilers_and_libraries_2019.5.281/linux/mkl/
@@ -154,9 +135,6 @@ spack:
 
     openmpi:
       externals:
-      # Pangea2
-      - spec: openmpi@2.1.5%gcc@8.3.0
-        prefix: /data_local/sw/OpenMPI/RHEL7/2.1.5/gcc/8.3.0
       # Pecan CPU/GPU
       - spec: openmpi@4.0.1%gcc@8.2.0
         prefix: /hrtc/apps/mpi/openmpi/4.0.1/RDHPC/gcc/8.2.0
