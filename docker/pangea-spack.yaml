@@ -149,7 +149,7 @@ spack:
 
     openmpi:
       externals:
-      - spec: openmpi@4.1.2%gcc@9.4.0
+      - spec: openmpi@4.1.2%gcc@9.4.0 +cuda~cxx~cxx_exceptions~java+lustre~memchecker+pmi+static~wrapper-rpath schedulers=lsf
         prefix: /data_local/sw/openmpi/4.1.2/env/gcc-8.4.1
 
     ncurses:
