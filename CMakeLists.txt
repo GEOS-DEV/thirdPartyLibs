@@ -764,7 +764,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.31.0-12-g06da35b1a.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.31.0-32-gf6bb554b4.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -808,6 +808,7 @@ if( ENABLE_HYPRE )
 --enable-unified-memory \
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
+--with-umpire-host \
 --with-umpire-include=${CHAI_DIR}/include \
 --with-umpire-lib-dirs=${CHAI_DIR}/lib \
 --with-umpire-libs=umpire " )
