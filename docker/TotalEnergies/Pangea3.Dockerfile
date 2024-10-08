@@ -45,6 +45,13 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 # -k flag is to ignore SSL errors
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+# Create symlink to existing libraries sp spack can find
+     ln -s /usr/lib64/libhwloc.so.15 /usr/lib64/libhwloc.so && \
+     ln -s /usr/lib64/libibverbs.so.1.14.48.0 /usr/lib64/libibverbs.so && \
+     ln -s /usr/lib64/libnsl.so.2.0.0  /usr/lib64/libnsl.so && \
+     ln -s /usr/lib64/librdmacm.so.1.3.48.0  /usr/lib64/librdmacm.so && \
+     ln -s /usr/lib64/liblustreapi.so.1 /usr/lib64/liblustreapi.so && \
+# Run uberenv
      ./scripts/uberenv/uberenv.py \
        --spec "%gcc@9.4.0+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/pangea-spack.yaml \
@@ -76,5 +83,12 @@ COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
 # Extract the generated host-config
 COPY --from=tpl_toolchain /spack-generated-wave-solver-only.cmake /
+
+# Regenerate symlinks for existing libraries
+RUN  ln -s /usr/lib64/libhwloc.so.15 /usr/lib64/libhwloc.so && \
+     ln -s /usr/lib64/libibverbs.so.1.14.48.0 /usr/lib64/libibverbs.so && \
+     ln -s /usr/lib64/libnsl.so.2.0.0  /usr/lib64/libnsl.so && \
+     ln -s /usr/lib64/librdmacm.so.1.3.48.0  /usr/lib64/librdmacm.so && \
+     ln -s /usr/lib64/liblustreapi.so.1 /usr/lib64/liblustreapi.so
 
 ENV SCCACHE=/opt/sccache/bin/sccache

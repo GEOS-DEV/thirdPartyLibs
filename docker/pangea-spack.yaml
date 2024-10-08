@@ -24,22 +24,10 @@ spack:
       operating_system: almalinux8
       target: ppc64le
       modules: []
-      # environment: {}
       environment:
         prepend_path:
           LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
-          # LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib:/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/lib:/data_local/sw/cuda/11.5.0/lib64:/data_local/sw/cuda/11.5.0/extras/CUPTI/lib64:/data_local/sw/openmpi/4.1.2/env/gcc-8.4.1/lib:/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib:/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib64
       extra_rpaths: []
-      # extra_rpaths:
-      # - /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
-      # extra_rpaths:
-      # - /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
-      # - /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/lib
-      # - /data_local/sw/cuda/11.5.0/lib64
-      # - /data_local/sw/cuda/11.5.0/extras/CUPTI/lib64
-      # - /data_local/sw/openmpi/4.1.2/env/gcc-8.4.1/lib
-      # - /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib
-      # - /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib64
 
   packages:
     all:
@@ -165,11 +153,6 @@ spack:
       externals:
       - spec: openmpi@4.1.2%gcc@9.4.0 +cuda~cxx~cxx_exceptions~java+lustre~memchecker+pmi+static~wrapper-rpath schedulers=lsf
         prefix: /data_local/sw/openmpi/4.1.2/env/gcc-8.4.1
-        # extra_attributes:
-        #   environment:
-        #     prepend_path:
-        #       #LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib:/lib64:/usr/lib64
-        #       LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib:/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp/lib:/data_local/sw/cuda/11.5.0/lib64:/data_local/sw/cuda/11.5.0/extras/CUPTI/lib64:/data_local/sw/openmpi/4.1.2/env/gcc-8.4.1/lib:/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib:/data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/lib64
     ncurses:
       externals:
       - spec: ncurses@6.1
