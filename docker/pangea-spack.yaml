@@ -88,6 +88,11 @@ spack:
       - spec: bison@3.0.4
         prefix: /usr
       buildable: false
+    bzip2:
+      externals:
+      - spec: bzip2@1.0.6
+        prefix: /usr
+      buildable: false
     cmake:
       externals:
       - spec: cmake@3.26.4
@@ -103,11 +108,11 @@ spack:
       - spec: flex@2.6.1+lex
         prefix: /usr
       buildable: false
-    gettext:
-      externals:
-      - spec: gettext@0.19.8.1
-        prefix: /usr
-      buildable: false
+    # gettext:
+    #   externals:
+    #   - spec: gettext@0.19.8.1
+    #     prefix: /usr
+    #   buildable: false
     glibc:
       externals:
       - spec: glibc@2.28
