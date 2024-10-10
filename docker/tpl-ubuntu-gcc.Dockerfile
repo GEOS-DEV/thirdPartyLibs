@@ -37,6 +37,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # gfortran 8, 9 and 10 depend on libgfortran5.
     gcc-$GCC_MAJOR_VERSION \
     g++-$GCC_MAJOR_VERSION \
+    gfortran-$GCC_MAJOR_VERSION \
     libgfortran5 \
 # Several scientific (or close) libraries.
 # Note the difference between runtime and development packages.
@@ -52,7 +53,20 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
 # And we want to test GEOSX's python configuration script.
 # Unfortunately argparse (standard library's package used by GEOSX)
 # is not in the python-minimal package so we install the whole std lib.
-    python3
+    python3 \
+    python3-pip \
+    python3-sphinx \
+    doxygen \
+    pkg-config \
+    xz-utils \
+    unzip \
+    libmpfr-dev \
+    lbzip2 \
+    virtualenv
+
+# Install clingo for Spack
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install clingo
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
@@ -76,30 +90,38 @@ ARG BLD_DIR
 # It is repeated because docker forgets about the ARGs after FROM statements.
 ARG GCC_MAJOR_VERSION
 
-ENV FC=/usr/bin/gfortran-$GCC_MAJOR_VERSION \
-    MPIFC=/usr/bin/mpifort
-# Again, troublesome multi-line definition.
-ENV OMPI_FC=$FC
-
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
-    gfortran-$GCC_MAJOR_VERSION \
     make \
     bc \
     file \
     bison \
     flex \
+# GEOS patches some tpl. Remove when it's not the case anymore.
     patch \
-    unzip
+# `ca-certificates`  needed by `git` to download spack repo.
+    ca-certificates \
+    git
 
-# Get host config file from docker build arguments
-ARG HOST_CONFIG
 
-# We now configure the build...
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
-# ... before we compile the TPLs!
-WORKDIR $BLD_DIR
-RUN --mount=src=.,dst=$SRC_DIR make
+# Run uberenv
+# Have to create install directory first for uberenv
+# -k flag is to ignore SSL errors
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
+     mkdir -p ${GEOSX_TPL_DIR} && \
+     ./scripts/uberenv/uberenv.py \
+       --spec "%gcc@${GCC_MAJOR_VERSION} ~pygeosx +docs" \
+       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+       --project-json=${SRC_DIR}/.uberenv_config.json \
+       --prefix ${GEOSX_TPL_DIR} \
+       -k && \
+# Remove host-config generated for LvArray
+     rm lvarray* && \
+# Rename and copy spack-generated host-config to root directory
+     cp *.cmake /spack-generated.cmake && \
+# Remove extraneous spack files
+     cd ${GEOSX_TPL_DIR} && \
+     rm -rf bin/ build_stage/ misc_cache/ spack/ spack-env/ .spack-db/
 
 # Last step is setting everything for a complete slave that will build GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
@@ -108,9 +130,13 @@ ARG SRC_DIR
 # I extract the deployed TPLs from the TPL building stqge.
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
+# Extract the generated host-config
+COPY --from=tpl_toolchain /spack-generated.cmake /
+
 # Any tool specific to building GEOSX shall be installed in this stage.
-RUN apt-get install -y --no-install-recommends \
-    openssh-client \
+RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
+     apt-get install -y --no-install-recommends \
+     openssh-client \
 # `ca-certificates` is needed by `sccache` to download the cached compilations.
     ca-certificates \
     curl \
