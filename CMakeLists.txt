@@ -640,6 +640,7 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_AztecOO:BOOL=ON
                                     -D Trilinos_ENABLE_Ifpack:BOOL=ON
                                     -D Trilinos_ENABLE_Teuchos:BOOL=ON
+                                    -D Trilinos_ENABLE_Zoltan:BOOL=ON
                                     -D Trilinos_ENABLE_ML:BOOL=ON
                                     -D Trilinos_ENABLE_Thyra:BOOL=ON
                                     -D Trilinos_ENABLE_STK:BOOL=OFF
