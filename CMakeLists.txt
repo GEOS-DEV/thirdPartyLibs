@@ -808,7 +808,6 @@ if( ENABLE_HYPRE )
 --enable-unified-memory \
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
---with-umpire-host \
 --with-umpire-include=${CHAI_DIR}/include \
 --with-umpire-lib-dirs=${CHAI_DIR}/lib \
 --with-umpire-libs=umpire " )
