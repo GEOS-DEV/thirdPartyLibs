@@ -126,12 +126,12 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on('hdf5@1.12.1')
     depends_on('silo@4.11~fortran~shared')
 
-    depends_on('conduit~test~fortran~hdf5_compat')
+    depends_on('conduit~test~fortran~hdf5_compat~shared')
 
-    depends_on('adiak@0.4.0', when='+caliper')
+    depends_on('adiak@0.4.0 ~shared', when='+caliper')
     depends_on('caliper@2.11.0~gotcha~sampler~libunwind~libdw', when='+caliper')
 
-    depends_on('pugixml@1.13')
+    depends_on('pugixml@1.13 ~shared')
 
     depends_on('fmt@10.0.0 cxxstd=14')
     depends_on('vtk@9.3.1', when='+vtk')
@@ -139,13 +139,14 @@ class Geosx(CMakePackage, CudaPackage):
     #
     # Math
     #
-    depends_on('parmetis@4.0.3+int64')
+    depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
+    depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
 
-    depends_on('superlu-dist +int64')
+    depends_on("superlu-dist +int64 ")
     depends_on("superlu-dist~openmp", when="~openmp")
     depends_on("superlu-dist+openmp", when="+openmp")
 
-    depends_on('scotch@7.0.3 +mpi +int64', when='+scotch')
+    depends_on("scotch@7.0.3 ~compression +mpi +esmumps +int64 ~shared ~metis build_system=makefile cflags='-fPIC' cxxflags='-fPIC'", when='+scotch')
 
     depends_on('suite-sparse@5.10.1')
     depends_on("suite-sparse~openmp", when="~openmp")
@@ -156,9 +157,9 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("trilinos~openmp", when="~openmp")
     depends_on("trilinos+openmp", when="+openmp")
 
-    depends_on("hypre +superlu-dist+mixedint+mpi", when='+hypre~cuda')
+    depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='+hypre~cuda')
 
-    depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory cflags='-fPIC' cxxflags='-fPIC'", when='+hypre+cuda')
+    depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+hypre+cuda')
     depends_on("hypre~openmp", when="~openmp")
     depends_on("hypre+openmp", when="+openmp")
     with when('+cuda'):
@@ -304,10 +305,12 @@ class Geosx(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
 
             release_flags = "-O3 -DNDEBUG"
+            if "clang" in self.compiler.cxx:
+                release_flags += " -march=native -mtune=native"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-            reldebinf_flags = "-O3 -g -DNDEBUG"
+            reldebinf_flags = "-O2 -g -DNDEBUG"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-            debug_flags = "-O0 -g"
+            debug_flags = "-g"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
             if "%clang arch=linux-rhel7-ppc64le" in spec:
@@ -329,7 +332,8 @@ class Geosx(CMakePackage, CudaPackage):
 
             if sys_type in ('linux-rhel7-ppc64le', 'linux-rhel8-ppc64le', 'blueos_3_ppc64le_ib_p9'):
                 cfg.write(cmake_cache_option('ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC', True))
-                if socket.gethostname().rstrip('1234567890') == "lassen":
+                if (socket.gethostname().rstrip('1234567890') == "lassen" or
+                   socket.gethostname().rstrip('1234567890') == "rzansel"):
                     cfg.write(cmake_cache_entry('MPIEXEC', 'lrun'))
                     cfg.write(cmake_cache_entry('MPIEXEC_NUMPROC_FLAG', '-n'))
                 else:
@@ -470,18 +474,19 @@ class Geosx(CMakePackage, CudaPackage):
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# System Math Libraries\n')
             cfg.write('#{0}\n\n'.format('-' * 80))
-            if '+intel-oneapi-mkl' in spec:
+
+            if spec["blas"].name == "intel-oneapi-mkl":
                 cfg.write(cmake_cache_option('ENABLE_MKL', True))
                 cfg.write(cmake_cache_entry('MKL_INCLUDE_DIRS', spec['intel-oneapi-mkl'].prefix.include))
                 cfg.write(cmake_cache_list('MKL_LIBRARIES', spec['intel-oneapi-mkl'].libs))
-            elif '+mkl' in spec:
+            elif spec["blas"].name == "mkl":
                 cfg.write(cmake_cache_option('ENABLE_MKL', True))
                 cfg.write(cmake_cache_entry('MKL_INCLUDE_DIRS', spec['intel-mkl'].prefix.include))
                 cfg.write(cmake_cache_list('MKL_LIBRARIES', spec['intel-mkl'].libs))
-            elif '+essl' in spec:
+            elif spec["blas"].name == "essl":
                 cfg.write(cmake_cache_option('ENABLE_ESSL', True))
                 cfg.write(cmake_cache_entry('ESSL_INCLUDE_DIRS', spec['essl'].prefix.include))
-                cfg.write(cmake_cache_list('ESSL_LIBRARIES', spec['essl'].libs + spec['cuda'].libs))
+                cfg.write(cmake_cache_list('ESSL_LIBRARIES', spec['blas'].libs))
 
                 cfg.write(cmake_cache_option('FORTRAN_MANGLE_NO_UNDERSCORE', True))
             else:
@@ -519,11 +524,11 @@ class Geosx(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_option('ENABLE_CALIPER_HYPRE', True))
 
             if 'lai=trilinos' in spec:
-                cfg.write(cmake_cache_entry('GEOS_LA_INTERFACE', 'Trilinos'))
+                cfg.write(cmake_cache_string('GEOS_LA_INTERFACE', 'Trilinos'))
             if 'lai=hypre' in spec:
-                cfg.write(cmake_cache_entry('GEOS_LA_INTERFACE', 'Hypre'))
+                cfg.write(cmake_cache_string('GEOS_LA_INTERFACE', 'Hypre'))
             if 'lai=petsc' in spec:
-                cfg.write(cmake_cache_entry('GEOS_LA_INTERFACE', 'Petsc'))
+                cfg.write(cmake_cache_string('GEOS_LA_INTERFACE', 'Petsc'))
 
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Python\n')
@@ -578,9 +583,9 @@ class Geosx(CMakePackage, CudaPackage):
             # Lassen
             if sys_type in ('blueos_3_ppc64le_ib_p9'):
                 cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--ats jsrun_omp --ats jsrun_bind=packed'))
-            # Quartz
+            # Ruby
             if sys_type in ('toss_4_x86_64_ib'):
-                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm36'))
+                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm56'))
 
     def lvarray_hostconfig(self, spec, prefix, py_site_pkgs_dir=None):
         """

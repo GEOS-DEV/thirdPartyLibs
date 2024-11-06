@@ -24,12 +24,8 @@ class Essl(BundlePackage):
         prefix = self.prefix
 
         essl_root = prefix.lib64
-        essl_libs = ["libesslsmpcuda", "liblapackforessl", "liblapackforessl_"]
+        essl_libs = ["libessl", "liblapackforessl", "liblapackforessl_"]
         all_libs = find_libraries(essl_libs, root=essl_root, shared=True)
-
-        cuda_toolkit_root = "/usr/tce/packages/cuda/cuda-11.8.0/lib64"
-        cuda_libs = ["libcublas", "libcudart", "libcublasLt"]
-        all_libs += find_libraries(cuda_libs, root=cuda_toolkit_root, shared=True)
 
         return all_libs
 
@@ -39,11 +35,7 @@ class Essl(BundlePackage):
         prefix = self.prefix
 
         essl_root = prefix.lib64
-        essl_libs = ["libesslsmpcuda", "liblapackforessl", "liblapackforessl_"]
+        essl_libs = ["libessl", "liblapackforessl", "liblapackforessl_"]
         all_libs = find_libraries(essl_libs, root=essl_root, shared=True)
-
-        cuda_toolkit_root = "/usr/tce/packages/cuda/cuda-11.8.0/lib64"
-        cuda_libs = ["libcublas", "libcudart", "libcublasLt"]
-        all_libs += find_libraries(cuda_libs, root=cuda_toolkit_root, shared=True)
 
         return all_libs
