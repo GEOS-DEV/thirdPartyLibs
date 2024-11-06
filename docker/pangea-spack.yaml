@@ -25,6 +25,9 @@ spack:
       target: ppc64le
       modules: []
       environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
         prepend_path:
           LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
       extra_rpaths: []

@@ -15,7 +15,10 @@ spack:
   compilers::
   # Sherlock CPU/GPU Compiler
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread

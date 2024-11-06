@@ -15,7 +15,10 @@ spack:
   compilers::
   # Pecan CPU/GPU compiler
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread

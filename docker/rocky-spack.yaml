@@ -14,7 +14,10 @@ spack:
 
   compilers::
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -29,7 +32,10 @@ spack:
       spec: clang@17.0.6
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread

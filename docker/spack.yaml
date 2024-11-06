@@ -14,7 +14,10 @@ spack:
 
   compilers::
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags: {}
       modules: []
@@ -27,7 +30,10 @@ spack:
       spec: clang@15
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags: {}
       modules: []
@@ -40,7 +46,10 @@ spack:
       spec: clang@10
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -55,7 +64,10 @@ spack:
       spec: gcc@12
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -70,7 +82,10 @@ spack:
       spec: gcc@11
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -85,7 +100,10 @@ spack:
       spec: gcc@10
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -100,7 +118,10 @@ spack:
       spec: gcc@9
       target: x86_64
   - compiler:
-      environment: {}
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
