@@ -71,7 +71,8 @@ RUN yum install -y \
     file \
     bison \
     flex \
-    patch
+    patch \
+    unzip
 
 ARG HOST_CONFIG
 
