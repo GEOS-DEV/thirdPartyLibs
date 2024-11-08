@@ -62,7 +62,7 @@ class Vtk(CMakePackage):
             mpi_args = [
                 self.define('CMAKE_C_COMPILER', spec['mpi'].mpicc),
                 self.define('CMAKE_CXX_COMPILER', spec['mpi'].mpicxx),
-                self.define('CMAKE_CXX_FLAGS', self.spec.compiler_flags["cxxflags"]),
+                self.define('CMAKE_CXX_FLAGS', " ".join(self.spec.compiler_flags["cxxflags"])),
                 '-DVTK_USE_MPI=ON',
                 '-DVTK_MODULE_ENABLE_VTK_IOParallelXML=YES',
                 '-DVTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=YES'
@@ -71,7 +71,7 @@ class Vtk(CMakePackage):
             mpi_args = [
                 self.define('CMAKE_C_COMPILER', self.compiler.cc),
                 self.define('CMAKE_CXX_COMPILER', self.compiler.cxx),
-                self.define('CMAKE_CXX_FLAGS', self.spec.compiler_flags["cxxflags"]),
+                self.define('CMAKE_CXX_FLAGS', " ".join(self.spec.compiler_flags["cxxflags"])),
                 '-DVTK_USE_MPI=OFF',
                 '-DVTK_MODULE_ENABLE_VTK_IOParallelXML=NO',
                 '-DVTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=NO',

@@ -12,11 +12,16 @@
 
 # geosx@develop%clang@14.0.6
 # geosx@develop%gcc@12.1.1
+# geosx@develop%gcc@noAVX
 #
 # Uberenv command to build geos dependencies:
 # python3 ./scripts/uberenv/uberenv.py --spec="%clang@14.0.6 +docs"
 #
 # python3 ./scripts/uberenv/uberenv.py --spec="%gcc@12.1.1 +docs"
+#
+# No AVX instructions
+# python3 ./scripts/uberenv/uberenv.py --spec="%gcc@12noAVX +docs"
+
 
 spack:
   config:
@@ -55,7 +60,23 @@ spack:
         cxx: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/g++
         f77: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
         fc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
+      extra_rpaths: []
+  - compiler:
+      spec: gcc@12noAVX
+      paths:
+        cc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gcc
+        cxx: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/g++
+        f77: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
+        fc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
+      flags:
+        cxxflags: -march=x86-64-v2 -mno-avx512f
       operating_system: rhel8
       target: x86_64
       modules: []
@@ -113,6 +134,8 @@ spack:
       buildable: False
       externals:
         - spec: mvapich2@2.3%gcc@12.1.1 process_managers=slurm
+          prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
+        - spec: mvapich2@2.3%gcc@12noAVX process_managers=slurm
           prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
         - spec: mvapich2@2.3%clang@14.0.6 process_managers=slurm
           prefix:  /usr/tce/packages/mvapich2/mvapich2-2.3.7-clang-14.0.6-magic

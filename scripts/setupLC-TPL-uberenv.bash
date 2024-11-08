@@ -43,6 +43,7 @@ echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR..."
 
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR ruby clang-14 "%clang@14.0.6 +docs" "salloc -N 1 -n 1 -t 150 -A vortex" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR ruby gcc-12 "%gcc@12.1.1 +docs" "salloc -N 1 -n 1 -t 150 -A vortex" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR ruby gcc-12noAVX "%gcc@12noAVX +docs" "salloc -N 1 -n 1 -t 150 -A vortex" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12 "%gcc@12.1.1 +docs" "salloc -N 1 -n 1 -t 150 -A vortex" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
