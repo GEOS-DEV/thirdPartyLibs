@@ -74,6 +74,7 @@ jobs:
             DOCKER_ROOT_IMAGE: onetechssc/pangea4:gcc12.1-hpcxompi2.20.0-onemkl2023.2.0_v1.0
             HOST_CONFIG: host-configs/TotalEnergies/pangea4/pangea4-gcc12.1-hpcxompi2.20.0-onemkl2023.2.0.cmake
             INSTALL_DIR_ROOT: /workrd/SCR/NUM/GEOS_environment/p4/install/tpl
+            RUNS_ON: ubuntu-latest
 
     steps:
     - name: Checkout
