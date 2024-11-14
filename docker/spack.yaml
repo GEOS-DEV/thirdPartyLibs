@@ -150,9 +150,9 @@ spack:
     blt:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
-    # Develop - 7/31/24
+    # master - 10/18/24
     hypre:
-      require: "@git.06da35b1a4b1066a093bc0c6c48aee12bee74cd4"
+      require: "@git.c893886d15eb57e87dd36efec23693ece3ddc88e"
 
     # v2024.07.0
     chai:
