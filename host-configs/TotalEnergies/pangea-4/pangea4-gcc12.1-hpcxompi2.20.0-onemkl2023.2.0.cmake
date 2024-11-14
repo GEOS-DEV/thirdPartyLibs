@@ -20,7 +20,7 @@
 #   - cray-python          = 3.10.10
 #   - craype-x86-milan     = 1.0
 #     PrgEnv-gnu loads gcc 12 that does not support craype-x86-genoa
-#   - hpcx                 = 2.17.1
+#   - hpcx                 = 2.20.0
 #   - intel-oneapi-mkl     = 2023.2.0
 #
 # Load modules this way :
@@ -31,7 +31,7 @@
 #
 ########################################
 
-set( CONFIG_NAME "pangea4-gcc12.1-hpcxompi2.17.1-onemkl2023.2.0" CACHE PATH "" )
+set( CONFIG_NAME "pangea4-gcc12.1-hpcxompi2.20.0-onemkl2023.2.0" CACHE PATH "" )
 
 include(${CMAKE_CURRENT_LIST_DIR}/pangea4-base.cmake)
 
@@ -91,7 +91,11 @@ if( NOT DEFINED ENV{MKLROOT} )
     message( FATAL_ERROR "MKL is not loaded. Please load the intel-oneapi-mkl/2023.2.0 module." )
 endif()
 
+if ( NOT DEFINED ENV{GOMP_ROOT} )
+    set( GOMP_ROOT $ENV{GCC_PATH}/lib/gcc/x86_64-redhat-linux/12/libgomp.so )
+endif()
+
 set( MKL_INCLUDE_DIRS $ENV{MKLROOT}/include CACHE STRING "" )
 set( MKL_LIBRARIES    $ENV{MKLROOT}/lib/intel64/libmkl_rt.so
-                      $ENV{GCC_PATH}/lib/gcc/x86_64-redhat-linux/12/libgomp.so
+                      $ENV{GOMP_ROOT}/libgomp.so
                       CACHE STRING "" )

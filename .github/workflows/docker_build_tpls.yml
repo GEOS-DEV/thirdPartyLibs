@@ -63,16 +63,16 @@ jobs:
             RUNS_ON: Runner_4core_16GB
           - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
             DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
-            TPL_DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
-            HOST_CONFIG: host-configs/TOTAL/pangea3-gcc8.4.1-openmpi-4.1.2.cmake
+            TPL_DOCKERFILE: docker/TotalEnergies/pangea-3/pangea3-tpl.Dockerfile
+            HOST_CONFIG: host-configs/TotalEnergies/pangea-3/pangea3-gcc8.4.1-openmpi-4.1.2.cmake
             DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:4
             HOST_ARCH: ppc64le
             RUNS_ON: streak2
-          - name: Pangea 4 (redhat 8, gcc 12.1.0, hpcx 2.17.1, mkl 2023.2.0)
-            DOCKER_REPOSITORY: geosx/pangea4-gcc12.1-hpcxompi2.17.1-onemkl2023.2.0
-            DOCKERFILE: docker/TotalEnergies/tpl-pangea4.Dockerfile
-            DOCKER_ROOT_IMAGE: onetechssc/pangea4:gcc12.1-hpcxompi2.17.1-onemkl2023.2.0_v1.0
-            HOST_CONFIG: host-configs/TOTAL/pangea4-gcc12.1-hpcxompi2.17.1-onemkl2023.2.0.cmake
+          - name: Pangea 4 (redhat 8, gcc 12.1.0, hpcx 2.20.0, mkl 2023.2.0)
+            DOCKER_REPOSITORY: geosx/pangea4-gcc12.1-hpcxompi2.20.0-onemkl2023.2.0
+            DOCKERFILE: docker/TotalEnergies/pangea-4/pangea4-tpl.Dockerfile
+            DOCKER_ROOT_IMAGE: onetechssc/pangea4:gcc12.1-hpcxompi2.20.0-onemkl2023.2.0_v1.0
+            HOST_CONFIG: host-configs/TotalEnergies/pangea4/pangea4-gcc12.1-hpcxompi2.20.0-onemkl2023.2.0.cmake
             INSTALL_DIR_ROOT: /workrd/SCR/NUM/GEOS_environment/p4/install/tpl
 
     steps:

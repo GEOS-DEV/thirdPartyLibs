@@ -1,11 +1,11 @@
 #######################################
 #
-# Pangea4 - gcc - hpcxompi - openblas
+# Pangea4 - gcc - openmpi - onemkl
 #
 # Uses :
 #   - cray wrappers for gcc (cc, CC, ftn)
-#   - OpenBLAS      for BLAS and LAPACK
-#   - HPC-X OpenMPI for MPI
+#   - OpenMPI       for MPI
+#   - oneAPI MKL    for BLAS and LAPACK
 #
 #######################################
 #
@@ -20,18 +20,18 @@
 #   - cray-python          = 3.10.10
 #   - craype-x86-milan     = 1.0
 #     PrgEnv-gnu loads gcc 12 that does not support craype-x86-genoa
-#   - hpcx                 = 2.17.1
-#   - openblas             = 0.3.23
+#   - openmpi              = 4.1.6
+#   - intel-oneapi-mkl     = 2023.2.0
 #
 # Load modules this way :
 #   - module purge
 #   - module load PrgEnv-gnu/8.4.0 craype-x86-milan cmake/3.27.2 cray-python/3.10.10
 #   - module unload cray-libsci/23.09.1.1 cray-mpich/8.1.27
-#   - module load hpcx openblas/0.3.23
+#   - module load openmpi/4.1.6 intel-oneapi-mkl/2023.2.0
 #
 ########################################
 
-set( CONFIG_NAME "pangea4-gcc12.1-hpcxompi2.17.1-openblas0.3.23" CACHE PATH "" )
+set( CONFIG_NAME "pangea4-gcc12.1-openmpi4.1.6-onemkl2023.2.0" CACHE PATH "" )
 
 include(${CMAKE_CURRENT_LIST_DIR}/pangea4-base.cmake)
 
@@ -70,12 +70,12 @@ set( CMAKE_Fortran_FLAGS_DEBUG   ${DEBUG_FLAGS}   CACHE STRING "" )
 #######################################
 
 # use :
-# - HPC-X OpenMPI library
+# - OpenMPI library
 
 set( ENABLE_MPI ON CACHE BOOL "" )
 
-if( NOT DEFINED ENV{HPCX_MPI_DIR} )
-    message( FATAL_ERROR "HPC-X OpenMPI is not loaded. Please load the hpcx module." )
+if( NOT "$ENV{LMOD_MPI_NAME}" STREQUAL "openmpi" )
+    message(FATAL_ERROR "OpenMPI is not loaded. Please load the openmpi/4.1.6 module.")
 endif()
 
 #######################################                                                                                                                                           
@@ -83,10 +83,19 @@ endif()
 #######################################
 
 # use :
-# - OpenBLAS library
+# - intel oneAPI MKL library
 
-find_library(OPENBLAS_LIB openblas)
+set( ENABLE_MKL ON CACHE BOOL "" FORCE )
 
-if(NOT OPENBLAS_LIB)
-    message(FATAL_ERROR "OpenBLAS is not loaded. Please load the openblas/0.3.23 module.")
+if( NOT DEFINED ENV{MKLROOT} )
+    message( FATAL_ERROR "MKL is not loaded. Please load the intel-oneapi-mkl/2023.2.0 module." )
 endif()
+
+if ( NOT DEFINED ENV{GOMP_ROOT} )
+    set( GOMP_ROOT $ENV{GCC_PATH}/lib/gcc/x86_64-redhat-linux/12/libgomp.so )
+endif()
+
+set( MKL_INCLUDE_DIRS $ENV{MKLROOT}/include CACHE STRING "" )
+set( MKL_LIBRARIES    $ENV{MKLROOT}/lib/intel64/libmkl_rt.so
+                      $ENV{GOMP_ROOT}/libgomp.so
+                      CACHE STRING "" )
