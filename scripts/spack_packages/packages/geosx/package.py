@@ -142,7 +142,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
     depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
 
-    depends_on("superlu-dist +int64 ")
+    depends_on("superlu-dist +int64  fflags='-fPIC'")
     depends_on("superlu-dist~openmp", when="~openmp")
     depends_on("superlu-dist+openmp", when="+openmp")
 
@@ -154,7 +154,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("suite-sparse+openmp", when="+openmp")
 
     trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra'
-    depends_on("trilinos@15.1.1 cxxflags='-include cstdint'" + trilinos_packages, when='+trilinos')
+    depends_on("trilinos@15.1.1 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages, when='+trilinos')
     depends_on("trilinos~openmp", when="~openmp")
     depends_on("trilinos+openmp", when="+openmp")
 

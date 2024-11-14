@@ -11,10 +11,10 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
-    dnf -y update && \
+    dnf -y --exclude=clang update && \
     dnf -y install \
         which \ 
-        clang \ 
+        clang-17.0.6 \
         gcc-gfortran \
         python3 \
         zlib-devel \
@@ -31,7 +31,7 @@ RUN dnf clean all && \
         xz \
         python3-virtualenv
 
-RUN dnf config-manager --set-enabled  &      
+RUN dnf config-manager --set-enabled  &
 
 # Install clingo for Spack
 RUN python3 -m pip install --upgrade pip && \
@@ -46,7 +46,6 @@ ARG BLD_DIR
 
 # Install required packages using dnf
 RUN dnf clean all && \
-    dnf -y update && \
     dnf -y install \
         tbb-devel \
         bc \
@@ -70,8 +69,9 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Create symlinks to blas/lapack libraries
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
+# ldflags needed for std::filesystem for caliper
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi ldflags=-lstdc++fs" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -98,7 +98,6 @@ RUN dnf clean all && \
     rm -rf /var/cache/dnf && \
     dnf -y install dnf-plugins-core && \
     dnf config-manager --set-enabled devel && \
-    dnf -y update && \
     dnf -y install \
         openssh-clients \
         ca-certificates \
