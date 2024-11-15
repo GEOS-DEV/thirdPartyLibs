@@ -221,7 +221,7 @@ ExternalProject_Add( hdf5
                                 -D BUILD_STATIC_LIBS:BOOL=OFF
                                 -D BUILD_TESTING:BOOL=OFF
                                 -D HDF5_BUILD_EXAMPLES:BOOL=OFF
-                                -D HDF5_BUILD_TOOLS:BOOL=OFF
+                                -D HDF5_BUILD_TOOLS:BOOL=ON
                                 -D HDF5_BUILD_UTILS:BOOL=OFF
                                 )
 
