@@ -10,41 +10,41 @@ BUILD_TYPE="Release"
 COMPILER="sysCompiler"
 ORIGINAL_DIR=$(pwd)
 
-# # Parse command-line arguments
-# while [[ $# -gt 0 ]]; do
-#     case "$1" in
-#         -geosPath)
-#             shift
-#             GEOS_DIR="$1"
-#             ;;
-#         -bt)
-#             shift
-#             BUILD_TYPE="$1"
-#             ;;
-#         -comp)
-#             shift
-#             COMPILER="$1"
-#             ;;
-#         -h)
-#             echo -e "Usage: 
-#             \n    -geosPath \"PATH_TO_GEOS_ROOT\" :: default /usr/WS1/<username>/GEOS
-#             \n    -bt \"BUILD_TYPE\"              :: default to Release (Release/Debug/RelWithDebInfo)
-#             \n    -comp \"COMPILER\"              :: default SYS_COMPILER \n"
-#             exit 1  
-#             ;;
-#         *)
-#             echo "Unknown option: $1"
-#             exit 1
-#             ;;
-#     esac
-#     shift
-# done
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -geosPath)
+            shift
+            GEOS_DIR="$1"
+            ;;
+        -bt)
+            shift
+            BUILD_TYPE="$1"
+            ;;
+        -comp)
+            shift
+            COMPILER="$1"
+            ;;
+        -h)
+            echo -e "Usage: 
+            \n    -geosPath \"PATH_TO_GEOS_ROOT\" :: default /usr/WS1/<username>/GEOS
+            \n    -bt \"BUILD_TYPE\"              :: default to Release (Release/Debug/RelWithDebInfo)
+            \n    -comp \"COMPILER\"              :: default SYS_COMPILER \n"
+            exit 1  
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+    shift
+done
 
-# echo "USER_NAME: ${USER_NAME}"
-# echo "GEOS_DIR:  ${GEOS_DIR}"
-# echo "BUILD_TYPE:  ${BUILD_TYPE}"
-# echo "COMPILER:  ${COMPILER}"
-# echo "ORIGINAL_DIR:  ${ORIGINAL_DIR}"
+echo "USER_NAME: ${USER_NAME}"
+echo "GEOS_DIR:  ${GEOS_DIR}"
+echo "BUILD_TYPE:  ${BUILD_TYPE}"
+echo "COMPILER:  ${COMPILER}"
+echo "ORIGINAL_DIR:  ${ORIGINAL_DIR}"
 
 # # Get the machine name from uname -i and strip trailing integers
 # MACHINE=$(uname -n | sed 's/[0-9]*$//')
