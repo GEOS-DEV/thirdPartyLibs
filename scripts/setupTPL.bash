@@ -46,60 +46,60 @@ echo "BUILD_TYPE:  ${BUILD_TYPE}"
 echo "COMPILER:  ${COMPILER}"
 echo "ORIGINAL_DIR:  ${ORIGINAL_DIR}"
 
-# # Get the machine name from uname -i and strip trailing integers
-# MACHINE=$(uname -n | sed 's/[0-9]*$//')
-# # Get the Bash version
-# BASH_VERSION=$(bash --version | grep -oE "[0-9]+\.[0-9]+" | head -n1)
+# Get the machine name from uname -i and strip trailing integers
+MACHINE=$(uname -n | sed 's/[0-9]*$//')
+# Get the Bash version
+BASH_VERSION=$(bash --version | grep -oE "[0-9]+\.[0-9]+" | head -n1)
 
-# GIT_REPO=$(git remote -v | awk '/origin.*\(push\)/ {print $2}')
-# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-# GIT_COMMIT=$(git rev-parse --short HEAD)
+GIT_REPO=$(git remote -v | awk '/origin.*\(push\)/ {print $2}')
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_COMMIT=$(git rev-parse --short HEAD)
 
-# INSTALL_DIR="$GEOS_DIR/tplInstall-${MACHINE,,}-${COMPILER,,}-${BUILD_TYPE,,}"
-# HOST_CONFIG=$GEOS_DIR/host-configs/LLNL/$MACHINE-$COMPILER.cmake
+INSTALL_DIR="$GEOS_DIR/tplInstall-${MACHINE,,}-${COMPILER,,}-${BUILD_TYPE,,}"
+HOST_CONFIG=$GEOS_DIR/host-configs/LLNL/$MACHINE-$COMPILER.cmake
 
-# echo "INSTALL_DIR:  ${INSTALL_DIR}"
-# echo "HOST_CONFIG:  ${HOST_CONFIG}"
+echo "INSTALL_DIR:  ${INSTALL_DIR}"
+echo "HOST_CONFIG:  ${HOST_CONFIG}"
 
-# LOG_FILE="TPLBuild-$MACHINE-$COMPILER-${BUILD_TYPE,,}.log"
-# echo -e "\n---------------------------------------------------------------------------------------------------------------" > "$LOG_FILE"
-# echo -e "\nGit Info:\n    - Repository URL: $GIT_REPO\n    - Repository Branch: $GIT_BRANCH\n    - Commit: $GIT_COMMIT \n" >> "$LOG_FILE" 
-# echo -e "---------------------------------------------------------------------------------------------------------------\n" >> "$LOG_FILE"
-# echo "Script path and name: $(pwd)/${0#./}" >> "$LOG_FILE"
-# echo " " >> "$LOG_FILE"
-# echo "Bash:           $BASH_VERSION" >> "$LOG_FILE"
-# echo "User name:      $USER_NAME" >> "$LOG_FILE"
-# echo "GEOS_DIR:       $GEOS_DIR" >> "$LOG_FILE"
-# echo "Machine name:   $MACHINE" >> "$LOG_FILE"
-# echo "Compiler:       $COMPILER" >> "$LOG_FILE"
-# echo "Build type:     $BUILD_TYPE" >> "$LOG_FILE"
-# echo "Install path:   $INSTALL_DIR" >> "$LOG_FILE"
-# echo "host-config:    $HOST_CONFIG" >> "$LOG_FILE"
-# echo " " >> "$LOG_FILE"
+LOG_FILE="TPLBuild-$MACHINE-$COMPILER-${BUILD_TYPE,,}.log"
+echo -e "\n---------------------------------------------------------------------------------------------------------------" > "$LOG_FILE"
+echo -e "\nGit Info:\n    - Repository URL: $GIT_REPO\n    - Repository Branch: $GIT_BRANCH\n    - Commit: $GIT_COMMIT \n" >> "$LOG_FILE" 
+echo -e "---------------------------------------------------------------------------------------------------------------\n" >> "$LOG_FILE"
+echo "Script path and name: $(pwd)/${0#./}" >> "$LOG_FILE"
+echo " " >> "$LOG_FILE"
+echo "Bash:           $BASH_VERSION" >> "$LOG_FILE"
+echo "User name:      $USER_NAME" >> "$LOG_FILE"
+echo "GEOS_DIR:       $GEOS_DIR" >> "$LOG_FILE"
+echo "Machine name:   $MACHINE" >> "$LOG_FILE"
+echo "Compiler:       $COMPILER" >> "$LOG_FILE"
+echo "Build type:     $BUILD_TYPE" >> "$LOG_FILE"
+echo "Install path:   $INSTALL_DIR" >> "$LOG_FILE"
+echo "host-config:    $HOST_CONFIG" >> "$LOG_FILE"
+echo " " >> "$LOG_FILE"
 
-# # Compare the Bash version with 4
-# if (( $(echo "$BASH_VERSION < 4" | bc -l) )); then
-#     echo "Error: Required Bash >= 4, current bash version is ${BASH_VERSION}." >> "$LOG_FILE" 
-#     echo " " >> "$LOG_FILE"
-#     exit 1
-# fi
+# Compare the Bash version with 4
+if (( $(echo "$BASH_VERSION < 4" | bc -l) )); then
+    echo "Error: Required Bash >= 4, current bash version is ${BASH_VERSION}." >> "$LOG_FILE" 
+    echo " " >> "$LOG_FILE"
+    exit 1
+fi
 
-# if [ ! -f "$HOST_CONFIG" ]; then
-#     echo -e "Error: Host config file ${HOST_CONFIG} does not exist. \n    Please correct this and try again." # >> "$LOG_FILE" 
-#     echo " " #>> "$LOG_FILE"
-#     exit 1
-# fi
+if [ ! -f "$HOST_CONFIG" ]; then
+    echo -e "Error: Host config file ${HOST_CONFIG} does not exist. \n    Please correct this and try again." # >> "$LOG_FILE" 
+    echo " " #>> "$LOG_FILE"
+    exit 1
+fi
 
-# ## Trap the interupt signal and kill all children.
-# trap 'killall' INT
+## Trap the interupt signal and kill all children.
+trap 'killall' INT
 
-# killall() {
-#     trap '' INT TERM     # ignore INT and TERM while shutting down
-#     echo "**** Shutting down. Killing chid processes ****"     # added double quotes
-#     kill -TERM 0         # fixed order, send TERM not INT
-#     wait
-#     echo DONE
-# }
+killall() {
+    trap '' INT TERM     # ignore INT and TERM while shutting down
+    echo "**** Shutting down. Killing chid processes ****"     # added double quotes
+    kill -TERM 0         # fixed order, send TERM not INT
+    wait
+    echo DONE
+}
 
 # if [ -n "$(find . -maxdepth 1 -type d -name 'build-*' -print -quit)" ]; then
 #     echo "Existing build directories have been found, these are being deleted. " >> "$LOG_FILE"
