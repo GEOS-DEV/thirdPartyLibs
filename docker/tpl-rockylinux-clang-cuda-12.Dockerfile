@@ -14,7 +14,7 @@ RUN dnf clean all && \
     dnf -y update && \
     dnf -y install \
         which \ 
-        clang-17.0.6 \ 
+        clang-17.0.6 \
         gcc-gfortran \
         python3 \
         zlib-devel \
@@ -47,7 +47,8 @@ ENV CC=/usr/bin/clang \
     MPICXX=/usr/lib64/openmpi/bin/mpicxx \
     MPIEXEC=/usr/lib64/openmpi/bin/mpirun \
     BLAS_LIBRARIES="/usr/lib64/libblas.so.3.8.0" \
-    LAPACK_LIBRARIES="/usr/lib64/liblapack.so.3.8.0"
+    LAPACK_LIBRARIES="/usr/lib64/liblapack.so.3.8.0" \
+    LDFLAGS="-lstdc++fs"
 
 ENV OMPI_CC=$CC \
     OMPI_CXX=$CXX
