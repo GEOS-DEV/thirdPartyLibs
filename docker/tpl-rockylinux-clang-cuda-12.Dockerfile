@@ -66,7 +66,6 @@ ENV OMPI_FC=$FC
 
 # Install required packages using dnf
 RUN dnf clean all && \
-    dnf -y --exclude=clang update && \
     dnf -y install \
         tbb-devel \
         bc \
@@ -112,7 +111,6 @@ RUN dnf clean all && \
     rm -rf /var/cache/dnf && \
     dnf -y install dnf-plugins-core && \
     dnf config-manager --set-enabled devel && \
-    dnf -y --exclude=clang update && \
     dnf -y install \
         openssh-clients \
         ca-certificates \
