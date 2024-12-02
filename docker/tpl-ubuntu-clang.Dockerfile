@@ -73,7 +73,8 @@ ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
-RUN apt-get install -y --no-install-recommends \
+RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
+    apt-get install -y --no-install-recommends \
     openssh-client \
     ca-certificates \
     curl \
@@ -84,7 +85,14 @@ RUN apt-get install -y --no-install-recommends \
     libxml2-utils \
     git \
     ghostscript \
-    ninja-build
+    ninja-build \
+    python3-dev \
+    python3-mpi4py \
+    python3-scipy \
+    python3-virtualenv \
+    python3-matplotlib \
+    python3-venv \
+    python3-pytest
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
