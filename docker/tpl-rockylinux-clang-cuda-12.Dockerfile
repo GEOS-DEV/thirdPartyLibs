@@ -14,7 +14,7 @@ RUN dnf clean all && \
     dnf -y update && \
     dnf -y install \
         which \ 
-        clang \ 
+        clang-17.0.6 \ 
         gcc-gfortran \
         python3 \
         zlib-devel \
