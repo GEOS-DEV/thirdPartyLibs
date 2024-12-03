@@ -221,7 +221,7 @@ ExternalProject_Add( hdf5
                                 -D BUILD_STATIC_LIBS:BOOL=OFF
                                 -D BUILD_TESTING:BOOL=OFF
                                 -D HDF5_BUILD_EXAMPLES:BOOL=OFF
-                                -D HDF5_BUILD_TOOLS:BOOL=OFF
+                                -D HDF5_BUILD_TOOLS:BOOL=ON
                                 -D HDF5_BUILD_UTILS:BOOL=OFF
                                 )
 
@@ -444,7 +444,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.11.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.12.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -640,6 +640,7 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_AztecOO:BOOL=ON
                                     -D Trilinos_ENABLE_Ifpack:BOOL=ON
                                     -D Trilinos_ENABLE_Teuchos:BOOL=ON
+                                    -D Trilinos_ENABLE_Zoltan:BOOL=ON
                                     -D Trilinos_ENABLE_ML:BOOL=ON
                                     -D Trilinos_ENABLE_Thyra:BOOL=ON
                                     -D Trilinos_ENABLE_STK:BOOL=OFF
