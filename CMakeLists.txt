@@ -567,6 +567,7 @@ if (ENABLE_TRILINOS)
 
     set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
     set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+    set(TRILINOS_FORTRAN_FLAGS "-fPIC")
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -616,6 +617,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS:STRING=${TRILINOS_FORTRAN_FLAGS}
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
