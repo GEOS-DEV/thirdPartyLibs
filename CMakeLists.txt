@@ -64,6 +64,8 @@ message( "Running with NUM_PROC = ${NUM_PROC}")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
+set( CMAKE_POSITION_INDEPENDENT_CODE ON )
+
 # Set up C flags
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
 string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
@@ -561,13 +563,12 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-0-0.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-15-1-1.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
     set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
     set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
-    set(TRILINOS_FORTRAN_FLAGS "-fPIC")
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -617,7 +618,6 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
-                                    -D CMAKE_Fortran_FLAGS:STRING=${TRILINOS_FORTRAN_FLAGS}
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
