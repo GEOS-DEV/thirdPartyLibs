@@ -567,8 +567,8 @@ if (ENABLE_TRILINOS)
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
-    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+    set(TRILINOS_C_FLAGS " ${C_FLAGS_NO_WARNINGS}")
+    set(TRILINOS_CXX_FLAGS " ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
