@@ -648,6 +648,11 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_STK:BOOL=OFF
                                     -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
                                     -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON
+                                    -D Epetra_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D EpetraExt_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D ML_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D AztecOO_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D Ifpack_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
                                     ${TRILINOS_EXTRA_ARGS}
                         )
 
