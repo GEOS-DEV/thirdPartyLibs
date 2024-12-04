@@ -567,8 +567,9 @@ if (ENABLE_TRILINOS)
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
-    set(TRILINOS_C_FLAGS " ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS " ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+    set(TRILINOS_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -618,6 +619,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS:STRING=${TRILINOS_Fortran_FLAGS}
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -728,6 +730,10 @@ if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
+  set(SUPERLU_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+  set(SUPERLU_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
+  set(SUPERLU_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
 
@@ -752,11 +758,11 @@ if( ENABLE_MPI )
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                   -D CMAKE_C_STANDARD=99
-                                  -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_C_FLAGS=${SUPERLU_C_FLAGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-                                  -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_CXX_FLAGS=${SUPERLU_CXX_FLAGS}
                                   -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                  -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                  -D CMAKE_Fortran_FLAGS=${SUPERLU_Fortran_FLAGS}
                                   -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
