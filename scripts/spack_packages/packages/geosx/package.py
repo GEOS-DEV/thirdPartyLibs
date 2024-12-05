@@ -129,7 +129,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on('conduit~test~fortran~hdf5_compat~shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper@2.11.0~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
@@ -153,8 +153,8 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("suite-sparse~openmp", when="~openmp")
     depends_on("suite-sparse+openmp", when="+openmp")
 
-    trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra'
-    depends_on("trilinos@15.1.1 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages, when='+trilinos')
+    trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra+zoltan'
+    depends_on("trilinos@16.0.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages, when='+trilinos')
     depends_on("trilinos~openmp", when="~openmp")
     depends_on("trilinos+openmp", when="+openmp")
 

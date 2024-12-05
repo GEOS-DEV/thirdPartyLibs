@@ -3,7 +3,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-FROM nvidia/cuda:12.5.0-devel-rockylinux8 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:12.6.3-devel-rockylinux8 AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
@@ -11,7 +11,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Installing dependencies
 RUN dnf clean all && \
-    dnf -y --exclude=clang update && \
+    dnf -y update && \
     dnf -y install \
         which \ 
         clang-17.0.6 \
@@ -46,6 +46,7 @@ ARG BLD_DIR
 
 # Install required packages using dnf
 RUN dnf clean all && \
+    dnf -y update --exclude=clang*,compiler-rt,libomp*,llvm* && \
     dnf -y install \
         tbb-devel \
         bc \
@@ -69,9 +70,8 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Create symlinks to blas/lapack libraries
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
-# ldflags needed for std::filesystem for caliper
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi ldflags=-lstdc++fs" \
+       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.6.3+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -98,6 +98,7 @@ RUN dnf clean all && \
     rm -rf /var/cache/dnf && \
     dnf -y install dnf-plugins-core && \
     dnf config-manager --set-enabled devel && \
+    dnf -y update --exclude=clang*,compiler-rt,libomp*,llvm* && \
     dnf -y install \
         openssh-clients \
         ca-certificates \

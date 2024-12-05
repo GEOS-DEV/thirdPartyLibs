@@ -119,6 +119,10 @@ spack:
     camp:
       require: "@git.0f07de4240c42e0b38a8d872a20440cb4b33d9f5=main"
 
+    # v2.12.0
+    caliper:
+      require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
+
     # v0.9.2
     conduit:
       require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"

@@ -61,7 +61,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@10+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "%clang@10+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \

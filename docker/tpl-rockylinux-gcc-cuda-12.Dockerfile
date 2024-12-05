@@ -69,7 +69,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@8.5.0+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper@2.11.0~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "%gcc@8.5.0+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
