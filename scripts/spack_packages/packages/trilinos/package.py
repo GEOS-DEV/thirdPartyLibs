@@ -597,6 +597,15 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
             define_from_variant('Amesos2_ENABLE_LAPACK', 'amesos2'),
         ])
 
+        # GEOS Added - Disable deprecated warning failures
+        options.extend([
+            define('Epetra_SHOW_DEPRECATED_WARNINGS', False),
+            define('EpetraExt_SHOW_DEPRECATED_WARNINGS', False),
+            define('ML_SHOW_DEPRECATED_WARNINGS', False),
+            define('AztecOO_SHOW_DEPRECATED_WARNINGS', False),
+            define('Ifpack_SHOW_DEPRECATED_WARNINGS', False),
+        ])
+
         if '+dtk' in spec:
             options.extend([
                 define('Trilinos_EXTRA_REPOSITORIES', 'DataTransferKit'),
