@@ -3,6 +3,11 @@ env
 
 # We save memory for the docker context
 echo .git > .dockerignore
+
+# Get uberenv submodule
+git submodule update --init scripts/uberenv
+
+
 # This script will build an image from TPL_DOCKERFILE
 # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
 # This image will be tagged with the DOCKER_REPOSITORY:DOCKER_TAG tag
@@ -19,6 +24,7 @@ docker build --progress=plain ${DOCKER_COMPILER_BUILD_ARG} \
 --build-arg HOST_CONFIG=${HOST_CONFIG} \
 --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE} \
 --build-arg INSTALL_DIR=${INSTALL_DIR} \
+--build-arg SPEC="${SPEC}" \
 --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
 --file ${TPL_DOCKERFILE} \
 --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \

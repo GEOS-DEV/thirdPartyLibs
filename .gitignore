@@ -3,3 +3,5 @@ install-*/
 .cproject
 .project
 .pydevproject
+spack-*.txt
+__pycache__
