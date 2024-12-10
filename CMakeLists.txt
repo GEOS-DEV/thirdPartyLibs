@@ -353,6 +353,8 @@ ExternalProject_Add( raja
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D RAJA_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D RAJA_ENABLE_NV_TOOLS_EXT:BOOL=${ENABLE_CUDA_NVTOOLSEXT}
+                                -D RAJA_ENABLE_ROCTX:BOOL=${ENABLE_ROCTX}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
@@ -567,9 +569,17 @@ if (ENABLE_TRILINOS)
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
-    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
-    set(TRILINOS_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+    if ( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 16.0 )
+      set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+      set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+      set(TRILINOS_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+    else()
+      set(TRILINOS_C_FLAGS "${C_FLAGS_NO_WARNINGS}")
+      set(TRILINOS_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+      set(TRILINOS_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
+    endif()
+
+
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -730,9 +740,16 @@ if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
-  set(SUPERLU_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-  set(SUPERLU_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
-  set(SUPERLU_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+  if ( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 16.0 )
+    set(SUPERLU_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+  else()
+    set(SUPERLU_C_FLAGS "${C_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
+  endif()
+  
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
