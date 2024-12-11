@@ -64,6 +64,8 @@ message( "Running with NUM_PROC = ${NUM_PROC}")
 set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
+set( CMAKE_POSITION_INDEPENDENT_CODE ON )
+
 # Set up C flags
 string(REPLACE "-Wall" "" C_FLAGS_NO_WARNINGS ${CMAKE_C_FLAGS})
 string(REPLACE "-Wextra" "" C_FLAGS_NO_WARNINGS ${C_FLAGS_NO_WARNINGS})
@@ -221,7 +223,7 @@ ExternalProject_Add( hdf5
                                 -D BUILD_STATIC_LIBS:BOOL=OFF
                                 -D BUILD_TESTING:BOOL=OFF
                                 -D HDF5_BUILD_EXAMPLES:BOOL=OFF
-                                -D HDF5_BUILD_TOOLS:BOOL=OFF
+                                -D HDF5_BUILD_TOOLS:BOOL=ON
                                 -D HDF5_BUILD_UTILS:BOOL=OFF
                                 )
 
@@ -351,6 +353,8 @@ ExternalProject_Add( raja
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D RAJA_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
+                                -D RAJA_ENABLE_NV_TOOLS_EXT:BOOL=${ENABLE_CUDA_NVTOOLSEXT}
+                                -D RAJA_ENABLE_ROCTX:BOOL=${ENABLE_ROCTX}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
@@ -444,7 +448,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.11.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.12.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -561,12 +565,21 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-15-1-1.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-0-0.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
-    set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
-    set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+    if ( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 16.0 )
+      set(TRILINOS_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+      set(TRILINOS_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+      set(TRILINOS_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+    else()
+      set(TRILINOS_C_FLAGS "${C_FLAGS_NO_WARNINGS}")
+      set(TRILINOS_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS} -include cstdint")
+      set(TRILINOS_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
+    endif()
+
+
 
     if( ENABLE_MKL )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
@@ -616,6 +629,7 @@ if (ENABLE_TRILINOS)
                                     -D CMAKE_CXX_FLAGS:STRING=${TRILINOS_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_Fortran_COMPILER:PATH=${TRILINOS_Fortran_COMPILER}
+                                    -D CMAKE_Fortran_FLAGS:STRING=${TRILINOS_Fortran_FLAGS}
                                     -D CMAKE_Fortran_FLAGS_RELEASE:STRING=${CMAKE_Fortran_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -640,11 +654,17 @@ if (ENABLE_TRILINOS)
                                     -D Trilinos_ENABLE_AztecOO:BOOL=ON
                                     -D Trilinos_ENABLE_Ifpack:BOOL=ON
                                     -D Trilinos_ENABLE_Teuchos:BOOL=ON
+                                    -D Trilinos_ENABLE_Zoltan:BOOL=ON
                                     -D Trilinos_ENABLE_ML:BOOL=ON
                                     -D Trilinos_ENABLE_Thyra:BOOL=ON
                                     -D Trilinos_ENABLE_STK:BOOL=OFF
                                     -D Trilinos_ENABLE_TrilinosCouplings:BOOL=ON
                                     -D Trilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON
+                                    -D Epetra_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D EpetraExt_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D ML_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D AztecOO_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
+                                    -D Ifpack_SHOW_DEPRECATED_WARNINGS::BOOL=OFF
                                     ${TRILINOS_EXTRA_ARGS}
                         )
 
@@ -720,6 +740,17 @@ if( ENABLE_MPI )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
+  if ( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 16.0 )
+    set(SUPERLU_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_Fortran_FLAGS "-fPIC ${CMAKE_Fortran_FLAGS}")
+  else()
+    set(SUPERLU_C_FLAGS "${C_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
+    set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
+  endif()
+  
+
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
 
@@ -744,11 +775,11 @@ if( ENABLE_MPI )
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                   -D CMAKE_C_STANDARD=99
-                                  -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_C_FLAGS=${SUPERLU_C_FLAGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-                                  -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                  -D CMAKE_CXX_FLAGS=${SUPERLU_CXX_FLAGS}
                                   -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-                                  -D CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+                                  -D CMAKE_Fortran_FLAGS=${SUPERLU_Fortran_FLAGS}
                                   -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
