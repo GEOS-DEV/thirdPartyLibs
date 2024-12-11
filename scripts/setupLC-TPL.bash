@@ -26,10 +26,10 @@ rm -rf toBeDeleted &
 
 echo "Building all LC TPLs from $GEOS_DIR to be installed at $INSTALL_DIR"
 
-# ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby clang-14           "srun -N 1 -t 90 -n 1 -A vortex" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby gcc-12             "srun -N 1 -t 90 -n 1 -A vortex" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR dane gcc-12             "srun -N 1 -t 90 -n 1 -A vortex" $@ &
-# ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen gcc-8-cuda-11    "lalloc 1 -qpdebug"  $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby clang-14           "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR ruby gcc-12             "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR dane gcc-12             "srun -N 1 -t 90 -n 1 -A vortex" $@ &
+./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen gcc-8-cuda-11    "lalloc 1 -qpdebug"  $@ &
 ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-11 "lalloc 1 -qpdebug"  $@ &
 ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-10-cuda-11 "lalloc 1 -qpdebug"  $@ &
 ./scripts/setupLC-TPL-helper.bash $GEOS_DIR $INSTALL_DIR lassen clang-13-cuda-12 "lalloc 1 -qpdebug"  $@ &
