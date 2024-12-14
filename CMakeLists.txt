@@ -365,6 +365,11 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D ENABLE_HIP=${ENABLE_HIP}
+                                -D RAJA_ENABLE_HIP=${ENABLE_HIP}
+                                -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
+                                -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
+                                -D CMAKE_HIP_ARCHITECTURES=${HIP_ARCH}
                     )
 
 list(APPEND build_list raja )
@@ -410,6 +415,11 @@ ExternalProject_Add( chai
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
                                 -D UMPIRE_ENABLE_C=ON
+                                -D ENABLE_HIP=${ENABLE_HIP}
+                                -D CHAI_ENABLE_HIP=${ENABLE_HIP}
+                                -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
+                                -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
+                                -D CMAKE_HIP_ARCHITECTURES=${HIP_ARCH}
                     )
 
 list(APPEND build_list chai )
@@ -844,7 +854,20 @@ if( ENABLE_HYPRE )
 --with-umpire-libs=umpire " )
     endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
-    message( FATAL_ERROR "hip tpls build only supported through spack" )
+    list( APPEND HYPRE_DEPENDS chai )
+    set( HYPRE_HIP_FLAGS "\
+ROCM_PATH=${HIP_ROOT_DIR} \
+--enable-shared \
+--with-hip \
+--enable-rocblas \
+--enable-rocsparse \
+--with-gpu-arch=${HIP_ARCH} \
+--with-umpire \
+--with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib=\"${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-libs=umpire \
+--enable-gpu-aware-mpi \
+--with-MPI-include=${MPI_INCLUDE_DIR}" )
   endif()
 
   if( CMAKE_HOST_APPLE )
@@ -879,6 +902,7 @@ if( ENABLE_HYPRE )
   ${HYPRE_SUPERLU_FLAGS} \
   ${HYPRE_OPENMP_FLAG} \
   ${HYPRE_CUDA_FLAGS} \
+  ${HYPRE_HIP_FLAGS} \
   ${HYPRE_CALIPER_FLAGS}\n")
 
   ExternalProject_Add( hypre
