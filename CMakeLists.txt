@@ -828,7 +828,12 @@ if( ENABLE_HYPRE )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
+    if( BUILD_SHARED_LIBS )
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.so" )
+    else()
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.a" )
+    endif()
+    set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
     if( ENABLE_OPENMP )
       set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
     endif()
@@ -870,7 +875,7 @@ ROCM_PATH=${ROCM_PATH} \
 --with-gpu-arch=${HIP_ARCH} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib=\"${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
 --with-umpire-libs=umpire \
 --enable-gpu-aware-mpi \
 --with-MPI-include=${MPI_INCLUDE_DIR}" )
