@@ -500,6 +500,7 @@ if (ENABLE_CALIPER)
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
                                     -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
+                                    -D WITH_ROCM=${ENABLE_HIP}
                        )
 
     list(APPEND build_list caliper adiak)
