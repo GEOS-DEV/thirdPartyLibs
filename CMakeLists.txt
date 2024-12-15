@@ -764,7 +764,7 @@ if( ENABLE_MPI )
     set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
     set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
   endif()
-  
+
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -861,7 +861,7 @@ if( ENABLE_HYPRE )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     list( APPEND HYPRE_DEPENDS chai )
     set( HYPRE_HIP_FLAGS "\
-ROCM_PATH=${HIP_ROOT_DIR} \
+ROCM_PATH=${ROCM_PATH} \
 --enable-shared \
 --with-hip \
 --enable-rocblas \
