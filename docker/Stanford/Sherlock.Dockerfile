@@ -1,6 +1,5 @@
 # This Dockerfile aims at reproducing (some part of) the SHERLOCK environment.
-# Please see TotalEnergies/Pangea2.Dockerfile for fully commented version
-
+#
 # While loading module ompi4.1.2 on Sherlock, the following are aut-loaded:
 #         UCX/1.12.1
 # 		  LIBFABRIC/1.14.0
