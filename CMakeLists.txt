@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.23.1)
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction
+endif()
+
 ################################
 # GEOS_TPL
 ################################
@@ -365,6 +370,11 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D ENABLE_HIP=${ENABLE_HIP}
+                                -D RAJA_ENABLE_HIP=${ENABLE_HIP}
+                                -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
+                                -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
+                                -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list raja )
@@ -410,6 +420,11 @@ ExternalProject_Add( chai
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
                                 -D UMPIRE_ENABLE_C=ON
+                                -D ENABLE_HIP=${ENABLE_HIP}
+                                -D CHAI_ENABLE_HIP=${ENABLE_HIP}
+                                -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
+                                -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
+                                -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list chai )
@@ -485,6 +500,7 @@ if (ENABLE_CALIPER)
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
                                     -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
+                                    -D WITH_ROCM=${ENABLE_HIP}
                        )
 
     list(APPEND build_list caliper adiak)
@@ -749,7 +765,7 @@ if( ENABLE_MPI )
     set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
     set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
   endif()
-  
+
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -795,7 +811,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.32.0-4-gc893886d1.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.32.0-11-g677e01950.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -812,7 +828,12 @@ if( ENABLE_HYPRE )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
+    if( BUILD_SHARED_LIBS )
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.so" )
+    else()
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.a" )
+    endif()
+    set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
     if( ENABLE_OPENMP )
       set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
     endif()
@@ -844,7 +865,20 @@ if( ENABLE_HYPRE )
 --with-umpire-libs=umpire " )
     endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
-    message( FATAL_ERROR "hip tpls build only supported through spack" )
+    list( APPEND HYPRE_DEPENDS chai )
+    set( HYPRE_HIP_FLAGS "\
+ROCM_PATH=${ROCM_PATH} \
+--enable-shared \
+--with-hip \
+--enable-rocblas \
+--enable-rocsparse \
+--with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
+--with-umpire \
+--with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-libs=umpire \
+--enable-gpu-aware-mpi \
+--with-MPI-include=${MPI_INCLUDE_DIR}" )
   endif()
 
   if( CMAKE_HOST_APPLE )
@@ -879,6 +913,7 @@ if( ENABLE_HYPRE )
   ${HYPRE_SUPERLU_FLAGS} \
   ${HYPRE_OPENMP_FLAG} \
   ${HYPRE_CUDA_FLAGS} \
+  ${HYPRE_HIP_FLAGS} \
   ${HYPRE_CALIPER_FLAGS}\n")
 
   ExternalProject_Add( hypre
