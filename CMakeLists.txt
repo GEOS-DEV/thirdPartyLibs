@@ -374,7 +374,7 @@ ExternalProject_Add( raja
                                 -D RAJA_ENABLE_HIP=${ENABLE_HIP}
                                 -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
                                 -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
-                                -D CMAKE_HIP_ARCHITECTURES=${HIP_ARCH}
+                                -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list raja )
@@ -424,7 +424,7 @@ ExternalProject_Add( chai
                                 -D CHAI_ENABLE_HIP=${ENABLE_HIP}
                                 -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
                                 -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
-                                -D CMAKE_HIP_ARCHITECTURES=${HIP_ARCH}
+                                -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list chai )
@@ -872,7 +872,7 @@ ROCM_PATH=${ROCM_PATH} \
 --with-hip \
 --enable-rocblas \
 --enable-rocsparse \
---with-gpu-arch=${HIP_ARCH} \
+--with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
 --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
