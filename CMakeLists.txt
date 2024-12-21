@@ -420,6 +420,7 @@ ExternalProject_Add( chai
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
                                 -D UMPIRE_ENABLE_C=ON
+                                -D UMPIRE_ENABLE_TOOLS=ON
                                 -D ENABLE_HIP=${ENABLE_HIP}
                                 -D CHAI_ENABLE_HIP=${ENABLE_HIP}
                                 -D CMAKE_HIP_COMPILER=${HIP_HIPCC_EXECUTABLE}
