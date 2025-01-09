@@ -1,7 +1,7 @@
 # hostconfig for pangea3
 #
 #
-set(CONFIG_NAME "pangea3-gcc8.4.1-ompi-4.1.2" CACHE PATH "") 
+set(CONFIG_NAME "pangea3-gcc11.4.0-ompi-4.1.6" CACHE PATH "") 
 
 # C options
 set(CMAKE_C_COMPILER gcc CACHE PATH "")
@@ -36,7 +36,7 @@ if (DEFINED ENV{MPI_ROOT})
   set(MPIEXEC                $ENV{MPI_ROOT}/bin/mpirun  CACHE STRING "")
   set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "")
 else()
-  message(FATAL_ERROR "You must have MPI_ROOT variable set, we advise loading module openmpi/p3/4.1.2")
+  message(FATAL_ERROR "You must have MPI_ROOT variable set, we advise loading module ompi/4.1.6")
 endif()
 
 # Cuda options
@@ -56,7 +56,7 @@ if (DEFINED ENV{CUDA_ROOT})
   # Uncomment this line to make nvcc output register usage for each kernel.
   # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --resource-usage" CACHE STRING "" FORCE)
 else()
-  message(FATAL_ERROR "You must have CUDA_ROOT environment variable set, we advise loading module cuda/11.0.3")
+  message(FATAL_ERROR "You must have CUDA_ROOT environment variable set, we advise loading module cuda/11.8.0")
 endif()
 
 # GTEST options
@@ -90,7 +90,7 @@ if (DEFINED ENV{OPENBLAS_ROOT})
   set(BLAS_LIBRARIES $ENV{OPENBLAS_ROOT}/lib/libopenblas.a)
   set(LAPACK_LIBRARIES $ENV{OPENBLAS_ROOT}/lib/libopenblas.a)
 else()
-  message(FATAL_ERROR "You must have OPENBLAS_ROOT environment variable set, we advise loading module openblas/0.3.18")
+  message(FATAL_ERROR "You must have OPENBLAS_ROOT environment variable set, we advise loading module openblas/0.3.18+openmp")
 endif()
 
 set(ENABLE_DOXYGEN OFF CACHE PATH "")
