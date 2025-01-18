@@ -15,7 +15,8 @@ RUN yum install -y \
     ca-certificates \
     curl \
     python3 \
-    zlib-devel
+    zlib-devel \
+    unzip
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
