@@ -64,8 +64,8 @@ jobs:
           - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
             DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
             TPL_DOCKERFILE: docker/TotalEnergies/pangea-3/pangea3-tpl.Dockerfile
-            HOST_CONFIG: host-configs/TotalEnergies/pangea-3/pangea3-gcc8.4.1-openmpi-4.1.2.cmake
-            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:4
+            DOCKER_ROOT_IMAGE: onetechssc/pangea3:pangea-almalinux8-gcc11.4.0-openmpi4.1.6-cuda11.8.0-openblas0.3.18_v2
+            HOST_CONFIG: host-configs/TotalEnergies/pangea-3/pangea3-gcc11.4.0-openmpi-4.1.6.cmake
             HOST_ARCH: ppc64le
             RUNS_ON: streak2
           - name: Pangea 4 (redhat 8, gcc 12.1.0, hpcx 2.20.0, mkl 2023.2.0)

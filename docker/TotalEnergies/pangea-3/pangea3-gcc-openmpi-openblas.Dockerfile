@@ -27,11 +27,10 @@ RUN dnf install -y \
 
 ## Temporary local variables needed buy several modules
 ARG MODULE_PATH="/data_local/sw"
-
-ARG SPACK_PATH="spack/0.17.0/opt/spack/linux-rhel8-power9le"
+ARG SPACK_PATH="spack/0.22.1/opt/spack/linux-rhel8-power9le"
 
 ARG COMPILER="gcc"
-ARG DEFAULT_COMPILER_VER="11.4.0"
+ARG DEFAULT_COMPILER_VER="8.4.1"
 ARG SPACK_COMPILER_VER=$DEFAULT_COMPILER_VER
 ARG MODULE_COMPILER_VER="11.4.0"
 
@@ -51,7 +50,7 @@ ADD ./tarball/gcc-*.tgz /
 
 ### Temporary local variables
 ARG GCC_VER=$COMPILER-$MODULE_COMPILER_VER
-ARG GCC_DIR="$GCC_VER-xe5cqnyajaqz75up3gflln5zlj2rue5v"
+ARG GCC_DIR="$GCC_VER-bbeypfg5smd3pgbsdswprcja7cxdxyqn"
 
 ### Environment variables to export
 ENV CPATH="$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$GCC_DIR/include:${CPATH}" \
