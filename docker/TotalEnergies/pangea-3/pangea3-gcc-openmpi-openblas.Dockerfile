@@ -1,10 +1,48 @@
-# This Dockerfile is used to build a docker image reproducing the Pangea installation over a ppc64le architecture:
-# It is not directly callable by the TPL ci but the built image is.
-
 # syntax=docker/dockerfile:1
-FROM ppc64le/almalinux:8
 
-# Install other needed packages
+#######################################
+# Pangea 3 image : gcc - openmpi - openblas
+#######################################
+#
+# Installs :
+#   - gcc      = 11.4.0
+#   - cmake    = 3.27.9
+#   - openmpi  = 4.1.6
+#   - openblas = 0.3.18
+#   - cuda     = 11.8.0
+#
+#######################################
+#
+# Description :
+#   - this Dockerfile is used to build a docker image reproducing the Pangea-3 installation over a ppc64le architecture:
+#   - it is not directly callable by the TPL ci but the built image is.
+#   - the image is based on ppc64le/almalinux:8
+#   - this image is deployed as onetechssc/pangea3:almalinux8-gcc11.4.0-openmpi4.1.6-cuda11.8.0-openblas0.3.18_v2.0
+#   - gcc, cmake, openmpi, openblas and cuda are copied from the tarball directory of Pangea 3
+#
+# Usage :
+#   build the image:
+#   - copy the tarball directory from the Pangea 3 repository to the current directory
+#   - podman build -f pangea3-gcc-openmpi-openblas.Dockerfile -t onetechssc/pangea3:almalinux8-gcc11.4.0-openmpi4.1.6-cuda11.8.0-openblas0.3.18_v2.0 -v /etc/pki/ca-trust/extracted/pem/:/etc/pki/ca-trust/extracted/pem/
+#   run the image:
+#   - podman run -it --detach --privileged --name pangea3_gcc_ompi_oblas -v /etc/pki/ca-trust/extracted/pem/:/etc/pki/ca-trust/extracted/pem localhost/onetechssc/pangea3:almalinux8-gcc11.4.0-openmpi4.1.6-cuda11.8.0-openblas0.3.18_v2.0
+#   - podman exec -it pangea3_gcc_ompi_oblas /bin/bash
+#   push the image (requires to be part of the onetechssc docker organization):
+#   - podman login docker.io
+#   - podman push pangea3:almalinux8-gcc11.4.0-openmpi4.1.6-cuda11.8.0-openblas0.3.18_v2.0 docker://docker.io/onetechssc/pangea3:almalinux8-gcc11.4.0-openmpi4.1.6-cuda11.8.0-openblas0.3.18_v2.0
+#
+#######################################
+
+FROM ppc64le/almalinux:8 AS pangea3
+
+# ------
+# LABELS
+LABEL description="Pangea 3 image : gcc - cmake - openmpi - openblas - cuda"
+LABEL version="2.0"
+LABEL maintainer="TotalEnergies HPC Team"
+
+# ------
+# INSTALL BASE PACKAGES
 RUN dnf install -y \
     # gcc deps \
     libmpc-devel.ppc64le glibc-devel \
@@ -39,13 +77,15 @@ ARG SPACK_COMPILER=$COMPILER-$SPACK_COMPILER_VER
 ## liblustre
 COPY ./tarball/liblustreapi.so.1 /lib64/
 
-## CMake
+# ------
+# CMAKE
 ADD ./tarball/cmake-*.tgz /
 
 ### Environment variables to export
-ENV PATH="/data_local/appli_local/MTS/GEOSX/cmake/3.26.4/bin:${PATH}"
+ENV PATH="$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/cmake-3.27.9-yfuovjb3tx73ymsxuw5hoxv3eqdchned/bin:${PATH}"
 
-## gcc
+# ------
+# GCC
 ADD ./tarball/gcc-*.tgz /
 
 ### Temporary local variables
@@ -67,7 +107,8 @@ $MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$GCC_DIR/lib64:${LD_RUN_PATH}" \
     FC=gfortran \
     GCC_ROOT=$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$GCC_DIR
 
-## ompi
+# ------
+# OMPI
 ADD ./tarball/ompi-*.tgz /
 
 ### Temporary local variables
@@ -91,7 +132,8 @@ ENV CPATH="$MODULE_PATH/$MPI_DIR/env/$SPACK_COMPILER/include:${CPATH}" \
     OMPI_MCA_btl_openib_allow_ib="true" \
     OMPI_MCA_btl_openib_warn_default_gid_prefix="0"
 
-## Cuda
+# ------
+# CUDA
 ADD ./tarball/cuda-*.tgz /
 
 ### Temporary local variables
@@ -127,7 +169,8 @@ $MODULE_PATH/$CUDA_DIR/samples/bin/ppc64le/linux/release:${PATH}" \
     CUDA_VERSION="$CUDA_VER_MAJ.$CUDA_VER_MIN" \
     NVHPC_CUDA_HOME="$MODULE_PATH/$CUDA_DIR"
 
-## Openblas
+# ------
+# OPENBLAS
 ADD ./tarball/openblas-*.tgz /
 
 ### Temporary local variables
@@ -138,7 +181,7 @@ ARG BLAS_VER_MIN="3"
 ARG BLAS_VER_PATCH="18"
 ARG BLAS_DISTRIB="openblas"
 ARG BLAS_VER="$BLAS_VER_MAJ.$BLAS_VER_MIN.$BLAS_VER_PATCH"
-ARG BLAS_DIR="$BLAS_DISTRIB-$BLAS_VER-vk36pzksytuhylqesg4cca7667np5sjp"
+ARG BLAS_DIR="$BLAS_DISTRIB-$BLAS_VER-cing5yuan7hsn23qmeemon4zwih3k2hd"
 
 ### Environment variables to export
 ENV LD_LIBRARY_PATH="$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$BLAS_DIR/lib:${LD_LIBRARY_PATH}" \
@@ -146,7 +189,8 @@ ENV LD_LIBRARY_PATH="$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$BLAS_DIR/lib:${LD
     PATH="$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$BLAS_DIR/bin:${PATH}" \
     OPENBLAS_ROOT="$MODULE_PATH/$SPACK_PATH/$SPACK_COMPILER/$BLAS_DIR"
 
-## lsf
+# ------
+# LSF
 ADD ./tarball/lsf-*.tgz /
 
 ### Temporary local variables
@@ -173,7 +217,8 @@ ENV LD_LIBRARY_PATH="$MODULE_PATH/$LSF_DIR/lib:${LD_LIBRARY_PATH}" \
 #    make -C build-pangea3-gcc8.4.1-openmpi-4.1.2-release -j && \
 #    cd .. && rm -rf thirdPartyLibs
 
-# Install tools needed by geos ci
+# ------
+# CI TOOLS
 RUN dnf -y --enablerepo=powertools install \
     ninja-build \
     openssh-clients \
@@ -182,7 +227,7 @@ RUN dnf -y --enablerepo=powertools install \
     libxml2
 
 # build sccache from source as prebuilt binary is not available for current archi / OS couple
-RUN dnf makecache --refresh && dnf -y install cargo openssl-devel
+RUN dnf clean all && dnf makecache --refresh && dnf -y install cargo openssl-devel
 RUN cargo install sccache --locked && mkdir -p /opt/sccache/ && cp -r /root/.cargo/bin /opt/sccache/
 RUN dnf remove -y cargo openssl-devel
 
