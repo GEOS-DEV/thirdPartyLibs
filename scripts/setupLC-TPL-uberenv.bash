@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Builds the TPLs on all LC systems. Must be run from the top level TPL directory.
-## Usage ./setupLC-TPL.bash pathToInstallDirectory
+## Usage ./setupLC-TPL-uberenv.bash pathToInstallDirectory
 INSTALL_DIR=$1
 
 ## Eat up the command line arguments so the rest can be forwarded to setupLC-TPL-helper.
