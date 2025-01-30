@@ -24,7 +24,7 @@ RUN yum install -y \
     bzip2 \
     && pip3 install virtualenv
 
-# Set locale
+# Set locale to bypass ascii codec decode error
 ENV LANG='en_US.utf8' \
     LANGUAGE='en_US.utf8' \
     LC_ALL='en_US.utf8'
