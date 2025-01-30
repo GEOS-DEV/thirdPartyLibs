@@ -108,8 +108,8 @@ spack:
     cuda:
       buildable: False
       externals:
-      - spec: cuda@11.7.1 +allow-unsupported-compilers
-        prefix: /share/software/user/open/cuda/11.7.1/
+      - spec: cuda@12.4.0 +allow-unsupported-compilers
+        prefix: /share/software/user/open/cuda/12.4.0/
     flex:
       version: [2.6.4]
       buildable: false
