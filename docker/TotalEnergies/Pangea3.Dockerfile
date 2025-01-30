@@ -35,12 +35,6 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 
-# We now configure the build...
-#RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
-# ... before we compile the TPLs!
-#WORKDIR $BLD_DIR
-#RUN --mount=src=.,dst=$SRC_DIR make
-
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
