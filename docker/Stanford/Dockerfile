@@ -29,8 +29,6 @@ ENV LANG='en_US.utf8' \
     LANGUAGE='en_US.utf8' \
     LC_ALL='en_US.utf8'
 
-RUN printenv
-
 # Install clingo for Spack
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo
