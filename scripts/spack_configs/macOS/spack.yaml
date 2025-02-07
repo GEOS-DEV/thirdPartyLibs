@@ -163,10 +163,4 @@ spack:
       buildable: False
       externals:
         - spec: addr2line@2.43.1
-          prefix: /opt/homebrew/opt/binutils      
-
-    # hdf5:
-    #   buildable: False
-    #   externals:
-    #     - spec: hdf5@1.14.5
-    #       prefix: /opt/homebrew/opt/hdf5
+          prefix: /opt/homebrew/opt/binutils     
