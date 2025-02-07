@@ -159,6 +159,12 @@ spack:
         - spec: flex@2.6.4
           prefix: /opt/homebrew/opt/flex
 
+    addr2line:
+      buildable: False
+      externals:
+        - spec: addr2line@2.43.1
+          prefix: /opt/homebrew/opt/binutils      
+
     # hdf5:
     #   buildable: False
     #   externals:
