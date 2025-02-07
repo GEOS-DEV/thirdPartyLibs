@@ -153,16 +153,18 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("suite-sparse~openmp", when="~openmp")
     depends_on("suite-sparse+openmp", when="+openmp")
 
-    trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra+zoltan'
-    depends_on("trilinos@16.0.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages, when='+trilinos')
-    depends_on("trilinos~openmp", when="~openmp")
-    depends_on("trilinos+openmp", when="+openmp")
+    with when("+trilinos"):
+        trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra+zoltan'
+        depends_on("trilinos@16.0.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages)
+        depends_on("trilinos~openmp", when="~openmp")
+        depends_on("trilinos+openmp", when="+openmp")
 
-    depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='+hypre~cuda')
+    with when("+hypre"):
+        depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
+        depends_on("hypre~openmp", when="~openmp")
+        depends_on("hypre+openmp", when="+openmp")
 
-    depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+hypre+cuda')
-    depends_on("hypre~openmp", when="~openmp")
-    depends_on("hypre+openmp", when="+openmp")
     with when('+cuda'):
         for sm_ in CudaPackage.cuda_arch_values:
             depends_on('hypre+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
