@@ -24,28 +24,26 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         openmpi-bin \
         libopenmpi-dev \
         python3 \
-        clang
+        clang \
+# Additional spack dependencies
+        python3-pip \
+        pkg-config \
+        xz-utils \
+        unzip \
+        libmpfr-dev \
+        lbzip2 \
+        virtualenv
+
+# Install clingo for Spack
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install clingo
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
-
-ENV CC=/usr/bin/clang \
-    CXX=/usr/bin/clang++ \
-    MPICC=/usr/bin/mpicc \
-    MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
-ENV OMPI_CC=$CC \
-    OMPI_CXX=$CXX 
-ENV ENABLE_CUDA=ON \
-    CMAKE_CUDA_FLAGS="-restrict -arch sm_70 --expt-extended-lambda -Werror cross-execution-space-call,reorder,deprecated-declarations"
 
 # Installing TPL's
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
-
-ENV FC=/usr/bin/gfortran \
-    MPIFC=/usr/bin/mpifort
-ENV OMPI_FC=$FC
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
@@ -54,33 +52,37 @@ RUN apt-get install -y --no-install-recommends \
     bison \
     flex \
     patch \
-    unzip
+    ca-certificates \
+    git
 
-ARG HOST_CONFIG
+# Run uberenv
+# Have to create install directory first for uberenv
+# -k flag is to ignore SSL errors
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
+     mkdir -p ${GEOSX_TPL_DIR} && \
+     ./scripts/uberenv/uberenv.py \
+       --spec "%clang@10+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+       --project-json=.uberenv_config.json \
+       --prefix ${GEOSX_TPL_DIR} \
+       -k && \
+# Remove host-config generated for LvArray
+     rm lvarray* && \
+# Rename and copy spack-generated host-config to root directory
+     cp *.cmake /spack-generated.cmake && \
+# Remove extraneous spack files
+     cd ${GEOSX_TPL_DIR} && \
+     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
 
-ARG CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
-ARG CUDA_ARCH=sm_70
-ARG CMAKE_CUDA_COMPILER=$CUDA_TOOLKIT_ROOT_DIR/bin/nvcc
-ARG CMAKE_CUDA_ARCHITECTURES=70
-
-ENV HYPRE_CUDA_SM=70
-ENV CUDA_HOME=$CUDA_TOOLKIT_ROOT_DIR
-
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh \
-    -DENABLE_CUDA=$ENABLE_CUDA \
-    -DENABLE_HYPRE_DEVICE="CUDA" \
-    -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR \
-    -DCUDA_ARCH=$CUDA_ARCH \
-    -DCMAKE_CUDA_ARCHITECTURES=$CMAKE_CUDA_ARCHITECTURES \
-    -DCMAKE_CUDA_COMPILER=$CMAKE_CUDA_COMPILER
-WORKDIR $BLD_DIR
-RUN --mount=src=.,dst=$SRC_DIR make
 
 # Extract only TPL's from previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
+
+# Extract the generated host-config
+COPY --from=tpl_toolchain /spack-generated.cmake /
 
 RUN apt-get install -y --no-install-recommends \
     openssh-client \

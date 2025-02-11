@@ -22,7 +22,7 @@ echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DI
 
 ssh $MACHINE -t "
 . /etc/profile  &&
-cd $PWD/tempGEOS &&
+cd $PWD &&
 $GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix ${INSTALL_DIR}/${CONFIG}_tpls --spack-env-name ${CONFIG}_env &&
 exit" > $LOG_FILE 2>&1
 

@@ -16,7 +16,22 @@ RUN yum install -y \
     curl \
     python3 \
     zlib-devel \
-    unzip
+# Additional spack dependencies
+    python3-pip \
+    pkgconfig \
+    # xz \
+    unzip \
+    bzip2 \
+    && pip3 install virtualenv
+
+# Set locale to bypass ascii codec decode error
+ENV LANG='en_US.utf8' \
+    LANGUAGE='en_US.utf8' \
+    LC_ALL='en_US.utf8'
+
+# Install clingo for Spack
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install clingo
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
@@ -30,20 +45,43 @@ RUN yum install -y \
     file \
     bison \
     flex \
-    patch
+    patch \
+    ca-certificates \
+    autoconf \
+    automake \
+    git
 
-ARG HOST_CONFIG
+ARG SPEC
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/configure-tpl.sh
-WORKDIR $BLD_DIR
-RUN --mount=src=.,dst=$SRC_DIR make
+# Run uberenv
+# Have to create install directory first for uberenv
+# -k flag is to ignore SSL errors
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
+     mkdir -p ${GEOSX_TPL_DIR} && \
+     ./scripts/uberenv/uberenv.py \
+       # spack spec defined per image
+       --spec "${SPEC}" \
+       --spack-env-file=${SRC_DIR}/docker/stanford-spack.yaml \
+       --project-json=.uberenv_config.json \
+       --prefix ${GEOSX_TPL_DIR} \
+       -k && \
+# Remove host-config generated for LvArray
+     rm lvarray* && \
+# Rename and copy spack-generated host-config to root directory
+     cp *.cmake /spack-generated.cmake && \
+# Remove extraneous spack files
+     cd ${GEOSX_TPL_DIR} && \
+     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
-RUN yum -y install \
+# Extract the generated host-config
+COPY --from=tpl_toolchain /spack-generated.cmake /
+
+RUN yum install -y \
     openssh-clients \
     ca-certificates \
     curl \
