@@ -292,7 +292,7 @@ list(APPEND build_list conduit )
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
-set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11-bsd.tgz")
+set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11.1-bsd.tar.xz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
 string(REPLACE ";" " " HDF5_C_FLAGS_STR "${HDF5_C_FLAGS}")
@@ -319,7 +319,7 @@ ExternalProject_Add( silo
                      URL ${SILO_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
-                     PATCH_COMMAND patch src/hdf5_drv/H5FDsilo.c < ${TPL_MIRROR_DIR}/silo-4.11.patch
+#                     PATCH_COMMAND patch src/hdf5_drv/H5FDsilo.c < ${TPL_MIRROR_DIR}/silo-4.11.patch
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_silo_for_geos && . ${PROJECT_BINARY_DIR}/config_silo_for_geos
                      BUILD_COMMAND make -j ${NUM_PROC}
