@@ -108,10 +108,7 @@ spack:
     # spec of spack packages to reuse
 
     # TODO check with admin team
-    #   - all installs (and modules) point to gcc 12.1 and cray-pe gcc is 12.2.1
-    #   - python module does not point to spack python built with gcc 12.1 instead of gcc 8.5.0
-    #   - some specs are zen4 and others x86_64 for the same versions and compilers
-    #   - should specs be zen4 since -mcpu=native -mtune=native
+    #   - should specs be zen4 since -mcpu=native -mtune=native --> zen3
 
     hpcx-mpi:
       externals:
@@ -158,6 +155,16 @@ spack:
     # spec of system packages to reuse
 
     # bin
+    autoconf:
+      externals:
+      - spec: autoconf@2.69
+        prefix: /usr
+      buildable: false
+    automake:
+      externals:
+      - spec: automake@1.16.1
+        prefix: /usr/bin
+      buildable: false
     bison:
       externals:
       - spec: bison@3.0.4
@@ -166,6 +173,11 @@ spack:
     flex:
       externals:
       - spec: flex@2.6.1+lex
+        prefix: /usr/bin
+      buildable: false
+    gettext:
+      externals:
+      - spec: gettext@0.19.8.1
         prefix: /usr/bin
       buildable: false
     git:
@@ -178,22 +190,32 @@ spack:
       - spec: gmake@4.2.1
         prefix: /usr/bin
       buildable: false
-    # libs
-    gmp:
-      externals:
-      - spec: gmp@10.3.2
-        prefix: /usr/lib64
-      buildable: false
     m4:
       externals:
       - spec: m4@1.4.18
-        prefix: /usr/lib64
+        prefix: /usr
       buildable: false
-    mpfr:
-      buildable: false
+    # libs
+    gcc-runtime:
       externals:
-      - spec: mpfr@4.1.6
+      - spec: gcc-runtime@12.2.1%gcc@12.2.1
+        prefix: /opt/rh/gcc-toolset-12/root/usr
+      buildable: false
+    glibc:
+      externals:
+      - spec: glibc@2.28
         prefix: /usr/lib64
+      buildable: false
+    libtool:
+      externals:
+      - spec: libtool@2.4.6
+        prefix: /usr/lib64
+      buildable: false
+    ncurses:
+      externals:
+      - spec: ncurses@6.1.20180224+termlib abi=6
+        prefix: /usr/lib64
+      buildable: false
     pkgconf:
       externals:
       - spec: pkgconf@1.4.2
@@ -207,17 +229,5 @@ spack:
     zlib:
       externals:
       - spec: zlib@1.2.11
-        prefix: /usr/lib64
-      buildable: false
-
-    # TODO check with HPE
-    gcc-runtime:
-      externals:
-      - spec: gcc-runtime@12.2.1%gcc@12.2.1
-        prefix: /opt/rh/gcc-toolset-12/root/usr
-      buildable: false
-    glibc:
-      externals:
-      - spec: glibc@2.28
         prefix: /usr/lib64
       buildable: false
