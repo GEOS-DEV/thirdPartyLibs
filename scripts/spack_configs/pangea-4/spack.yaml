@@ -53,7 +53,7 @@ spack:
 
   packages:
     all:
-      target: [x86_64]
+      target: [znver3]
       compiler: [gcc]
       providers:
         blas: [intel-oneapi-mkl]
@@ -107,9 +107,6 @@ spack:
     ####
     # spec of spack packages to reuse
 
-    # TODO check with admin team
-    #   - should specs be zen4 since -mcpu=native -mtune=native --> zen3
-
     hpcx-mpi:
       externals:
       - spec: hpcx-mpi@2.20.0
@@ -150,21 +147,21 @@ spack:
       - spec: libiconv@1.17
         prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/libiconv-1.17-2vpp7pm
       buildable: false
+    mpfr:
+      externals:
+      - spec: mpfr@4.2.0
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/mpfr-4.2.0-utwz5tl
+      buildable: false
+    gmp:
+      externals:
+      - spec: gmp@6.2.1
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/gmp-6.2.1-pwaztmh
+      buildable: false
 
     ####
     # spec of system packages to reuse
 
     # bin
-    autoconf:
-      externals:
-      - spec: autoconf@2.69
-        prefix: /usr
-      buildable: false
-    automake:
-      externals:
-      - spec: automake@1.16.1
-        prefix: /usr/bin
-      buildable: false
     bison:
       externals:
       - spec: bison@3.0.4
@@ -173,11 +170,6 @@ spack:
     flex:
       externals:
       - spec: flex@2.6.1+lex
-        prefix: /usr/bin
-      buildable: false
-    gettext:
-      externals:
-      - spec: gettext@0.19.8.1
         prefix: /usr/bin
       buildable: false
     git:
@@ -204,16 +196,6 @@ spack:
     glibc:
       externals:
       - spec: glibc@2.28
-        prefix: /usr/lib64
-      buildable: false
-    libtool:
-      externals:
-      - spec: libtool@2.4.6
-        prefix: /usr/lib64
-      buildable: false
-    ncurses:
-      externals:
-      - spec: ncurses@6.1.20180224+termlib abi=6
         prefix: /usr/lib64
       buildable: false
     pkgconf:
