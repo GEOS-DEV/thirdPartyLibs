@@ -157,30 +157,30 @@ spack:
       - spec: gmp@6.2.1
         prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/gmp-6.2.1-pwaztmh
       buildable: false
+    bison:
+      externals:
+      - spec: bison@3.8.2
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/bison-3.8.2-2ym7ugj
+      buildable: false
 
     ####
     # spec of system packages to reuse
 
     # bin
-    bison:
-      externals:
-      - spec: bison@3.0.4
-        prefix: /usr/bin
-      buildable: false
     flex:
       externals:
       - spec: flex@2.6.1+lex
-        prefix: /usr/bin
+        prefix: /usr
       buildable: false
     git:
       externals:
       - spec: git@2.39.3~tcltk
-        prefix: /usr/bin
+        prefix: /usr
       buildable: false
     gmake:
       externals:
       - spec: gmake@4.2.1
-        prefix: /usr/bin
+        prefix: /usr
       buildable: false
     m4:
       externals:
@@ -190,26 +190,26 @@ spack:
     # libs
     gcc-runtime:
       externals:
-      - spec: gcc-runtime@12.2.1%gcc@12.2.1
+      - spec: gcc-runtime@12.2.1
         prefix: /opt/rh/gcc-toolset-12/root/usr
       buildable: false
     glibc:
       externals:
       - spec: glibc@2.28
-        prefix: /usr/lib64
+        prefix: /usr
       buildable: false
     pkgconf:
       externals:
       - spec: pkgconf@1.4.2
-        prefix: /usr/lib64
+        prefix: /usr
       buildable: false
     readline:
       buildable: false
       externals:
       - spec: readline@7.0
-        prefix: /usr/lib64
+        prefix: /usr
     zlib:
       externals:
       - spec: zlib@1.2.11
-        prefix: /usr/lib64
+        prefix: /usr
       buildable: false
