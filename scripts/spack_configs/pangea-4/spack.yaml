@@ -107,11 +107,6 @@ spack:
     ####
     # spec of spack packages to reuse
 
-    hpcx-mpi:
-      externals:
-      - spec: hpcx-mpi@2.20.0
-        prefix: /lustre/p4scratch/data_local/sw/RHEL8/hpcx/2.20.0/ompi
-      buildable: false
     intel-oneapi-mkl:
       externals:
         - spec: intel-oneapi-mkl@2023.2.0 threads=openmp
@@ -197,6 +192,11 @@ spack:
       externals:
       - spec: glibc@2.28
         prefix: /usr
+      buildable: false
+    hpcx-mpi:
+      externals:
+      - spec: hpcx-mpi@2.20.0
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/hpcx/2.20.0/ompi
       buildable: false
     pkgconf:
       externals:
