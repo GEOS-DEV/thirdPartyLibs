@@ -36,8 +36,8 @@ spack:
         f77: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
         fc: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
       flags:
-        cflags: -mcpu=native -mtune=native
-        cxxflags: -mcpu=native -mtune=native
+        cflags: -march=native -mtune=native
+        cxxflags: -march=native -mtune=native
       operating_system: rhel8
       target: x86_64
       modules: []
