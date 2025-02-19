@@ -87,6 +87,8 @@ ARG SRC_DIR=$TMP_DIR/src
 # INSTALL
 #   - copy TPLs install directory
 COPY --from=pangea4_tpl_builder $GEOS_TPL_DIR $GEOS_TPL_DIR
+#   - copy the generated host-config
+COPY --from=pangea4_tpl_builder /spack-generated.cmake /
 #   - install ninja for geos build
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-ninja.sh
 #   - install `sccache` binaries to speed up the build of `geos`
