@@ -49,7 +49,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Run uberenv
      ./scripts/uberenv/uberenv.py \
        --spec "%gcc@9.4.0+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
-       --spack-env-file=${SRC_DIR}/docker/pangea-spack.yaml \
+       --spack-env-file=${SRC_DIR}/docker/pangea3-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \
