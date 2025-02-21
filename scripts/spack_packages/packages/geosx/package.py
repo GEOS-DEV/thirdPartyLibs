@@ -82,6 +82,7 @@ class Geosx(CMakePackage, CudaPackage):
     variant('docs', default=False, description='Build docs')
     variant('addr2line', default=True,
             description='Add support for addr2line.')
+    variant('mathpresso', default=True, description='Build mathpresso.')
 
     # SPHINX_BEGIN_DEPENDS
 
@@ -188,6 +189,11 @@ class Geosx(CMakePackage, CudaPackage):
     #
     depends_on('doxygen@1.8.20', when='+docs', type='build')
     depends_on('py-sphinx@1.6.3:', when='+docs', type='build')
+
+    #
+    # Other
+    #
+    depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
 
     # SPHINX_END_DEPENDS
 
@@ -579,8 +585,14 @@ class Geosx(CMakePackage, CudaPackage):
             cfg.write('# Other\n')
             cfg.write('#{0}\n\n'.format('-' * 80))
 
-            cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', False))
-            cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', False))
+            if '+mathpresso' in spec:
+                cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', True))
+                cfg.write(cmake_cache_entry('MATHPRESSO_DIR', spec['mathpresso'].prefix))
+                cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', True))
+            else:
+                cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', False))
+                cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', False))
+
 
             # ATS
             # Lassen
