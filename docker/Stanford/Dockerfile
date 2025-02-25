@@ -62,6 +62,7 @@ ARG SPEC
 # -k flag is to ignore SSL errors
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+     source /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv/geosxEnv/bin/activate && \
      ./scripts/uberenv/uberenv.py \
        # spack spec defined per image
        --spec "${SPEC}" \

@@ -84,8 +84,8 @@ spack:
     autoconf:
       buildable: false
       externals:
-        - spec: autoconf@2.69
-          prefix: /usr
+      - spec: autoconf@2.69
+        prefix: /usr
 
     automake:
       buildable: false
@@ -133,13 +133,13 @@ spack:
     libtool:
       buildable: false
       externals:
-        - spec: libtool@2.4.2
-          prefix: /usr
+      - spec: libtool@2.4.2
+        prefix: /usr
 
     openblas:
       buildable: false
       externals:
-      - spec: openblas@0.3.10 
+      - spec: openblas@0.3.10
         prefix: /share/software/user/open/openblas/0.3.10
 
     blas:
@@ -151,8 +151,8 @@ spack:
     m4:
       buildable: false
       externals:
-        - spec: m4@1.4.16
-          prefix: /usr
+      - spec: m4@1.4.16
+        prefix: /usr
 
     # Spack may grab for mpi & we don't want to use them
     mpi:
