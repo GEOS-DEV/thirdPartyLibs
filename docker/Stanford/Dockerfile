@@ -3,7 +3,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# The docker base image can be pecan or pangea.
+# The docker base image 
 ARG DOCKER_ROOT_IMAGE
 FROM $DOCKER_ROOT_IMAGE as tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -30,10 +30,14 @@ ENV LANG='en_US.utf8' \
     LC_ALL='en_US.utf8'
 
 # Install clingo for Spack
-RUN python3 -m pip install --upgrade pip && \
+RUN mkdir -p /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv
+RUN cd /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv && \
+    python3 -m venv geosxEnv && \
+    source geosxEnv/bin/activate && \
+    python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
+#RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR

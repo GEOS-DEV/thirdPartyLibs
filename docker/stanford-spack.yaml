@@ -7,7 +7,7 @@ spack:
         all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
-    build_stage:
+    build_stage::
     - $spack/../build_stage
 
   # Regular TPLs do not need views
@@ -82,16 +82,16 @@ spack:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
 
     autoconf:
-      buildable: False
+      buildable: false
       externals:
         - spec: autoconf@2.69
           prefix: /usr
 
     automake:
-      buildable: False
+      buildable: false
       externals:
-        - spec: automake@1.13.4
-          prefix: /usr
+      - spec: automake@1.13.4
+        prefix: /usr
 
     bison:
       version: [3.0.4]
@@ -103,44 +103,44 @@ spack:
     cmake:
       buildable: false
       externals:
-        - spec: cmake@3.31.4
-          prefix: /share/software/user/open/cmake/3.31.4
+      - spec: cmake@3.31.4
+        prefix: /share/software/user/open/cmake/3.31.4
 
     cuda:
-      buildable: False
+      buildable: false
       externals:
       - spec: cuda@12.4.0 +allow-unsupported-compilers
         prefix: /share/software/user/open/cuda/12.4.0/
 
     diffutils:
-      buildable: False
+      buildable: false
       externals:
-        - spec: diffutils@3.3
-          prefix: /usr
+      - spec: diffutils@3.3
+        prefix: /usr
 
     flex:
-      buildable: False
+      buildable: false
       externals:
-        - spec: flex@2.5.37
-          prefix: /usr
+      - spec: flex@2.5.37
+        prefix: /usr
 
     gettext:
-      buildable: False
+      buildable: false
       externals:
-        - spec: gettext@0.19.8.1
-          prefix: /usr
+      - spec: gettext@0.19.8.1
+        prefix: /usr
 
     libtool:
-      buildable: False
+      buildable: false
       externals:
         - spec: libtool@2.4.2
           prefix: /usr
 
     openblas:
-      buildable: False
+      buildable: false
       externals:
-        - spec: openblas@0.3.10 
-          prefix: /share/software/user/open/openblas/0.3.10
+      - spec: openblas@0.3.10 
+        prefix: /share/software/user/open/openblas/0.3.10
 
     blas:
       buildable: false
@@ -149,7 +149,7 @@ spack:
       buildable: false
 
     m4:
-      buildable: False
+      buildable: false
       externals:
         - spec: m4@1.4.16
           prefix: /usr
@@ -159,10 +159,10 @@ spack:
       buildable: false
 
     openmpi:
-      buildable: False
+      buildable: false
       externals:
-        - spec: openmpi@4.1.2
-          prefix: /share/software/user/open/openmpi/4.1.2
+      - spec: openmpi@4.1.2
+        prefix: /share/software/user/open/openmpi/4.1.2
 
     perl:
       buildable: false
@@ -177,7 +177,7 @@ spack:
         prefix: /usr
 
     python:
-      buildable: False
+      buildable: false
       externals:
       - spec: python@3.6.8
         prefix: /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv/geosxEnv
