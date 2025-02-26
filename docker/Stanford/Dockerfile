@@ -51,7 +51,7 @@ RUN yum install -y \
     flex \
     patch \
     ca-certificates \
-    autoconf \
+    autoconf-2.69 \
     automake \
     git
 
