@@ -38,6 +38,7 @@ RUN cd /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv && \
     python3 -m pip install clingo
 
 # CMake is built by the base image instead of using install-cmake.sh
+ENV PATH=/share/software/user/open/cmake/3.31.4/bin:${PATH}
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
