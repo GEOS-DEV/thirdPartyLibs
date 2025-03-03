@@ -37,7 +37,7 @@ RUN cd /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo
 
-#RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
+# CMake is built by the base image instead of using install-cmake.sh
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
