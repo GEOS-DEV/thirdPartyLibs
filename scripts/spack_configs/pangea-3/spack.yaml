@@ -156,7 +156,7 @@ spack:
     python:
       externals:
       - spec: python@3.11.7+bz2+crypt+ctypes+dbm+lzma~nis+pyexpat+pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
-        prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/python-3.11.7-zlycl5mrmjfthylyreu3mnfptip6n5ao
+        prefix: /data_local/sw/python/python_for_geos/python_for_geos
       buildable: false
 
     ####
