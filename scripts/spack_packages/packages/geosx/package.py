@@ -333,10 +333,12 @@ class Geosx(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_entry('MPI_C_COMPILER', spec['mpi'].mpicc))
             cfg.write(cmake_cache_entry('MPI_CXX_COMPILER', spec['mpi'].mpicxx))
 
-            if sys_type in ('linux-rhel7-ppc64le', 'linux-rhel8-ppc64le', 'blueos_3_ppc64le_ib_p9'):
+            hostname = socket.gethostname().rstrip('1234567890')
+
+            if sys_type in ('linux-rhel7-ppc64le', 'linux-rhel8-ppc64le', 'blueos_3_ppc64le_ib_p9') \
+               and hostname != 'p3dev':
                 cfg.write(cmake_cache_option('ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC', True))
-                if (socket.gethostname().rstrip('1234567890') == "lassen" or
-                   socket.gethostname().rstrip('1234567890') == "rzansel"):
+                if hostname in ('lassen', 'rzansel'):
                     cfg.write(cmake_cache_entry('MPIEXEC', 'lrun'))
                     cfg.write(cmake_cache_entry('MPIEXEC_NUMPROC_FLAG', '-n'))
                 else:
@@ -345,6 +347,9 @@ class Geosx(CMakePackage, CudaPackage):
             else:
                 # Taken from cached_cmake class:
                 # https://github.com/spack/spack/blob/develop/lib/spack/spack/build_systems/cached_cmake.py#L180-234
+
+                if hostname == 'p3dev':
+                    cfg.write(cmake_cache_option('ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC', True))
 
                 # Check for slurm
                 using_slurm = False
