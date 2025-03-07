@@ -99,7 +99,6 @@ spack:
     blt:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
-    # master - 10/18/24
     hypre:
       require: "@git.afb4727ad4a5e31f2e42159c605cf117f973f125"
 
