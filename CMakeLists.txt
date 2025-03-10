@@ -749,7 +749,7 @@ if( ENABLE_MPI )
     set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
     set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
   endif()
-  
+
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -795,7 +795,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.32.0-4-gc893886d1.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.32.0-27-g19ecc9788.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
