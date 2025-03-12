@@ -104,7 +104,7 @@ spack:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
     hypre:
-      require: "@git.afb4727ad4a5e31f2e42159c605cf117f973f125"
+      require: "@git.0bef125a9e0c2cd95c9c4b793c783ce2bbc753aa"
 
     # v2024.07.0
     chai:
