@@ -61,10 +61,11 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.5
             TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
-          - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
-            DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
-            TPL_DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
-            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:4
+          - name: Pangea 3 (AlmaLinux 8.8, gcc 11.4.0, open-mpi 4.1.6, cuda 11.8.0, openblas 0.3.18)
+            DOCKER_REPOSITORY: geosx/pangea3-gcc11.4.0-openmpi4.1.6-openblas0.3.18-cuda11.8.0
+            TPL_DOCKERFILE: docker/TotalEnergies/pangea-3/pangea3-tpl.Dockerfile
+            DOCKER_ROOT_IMAGE: onetechssc/pangea3:gcc11.4.0-openmpi4.1.6-openblas0.3.18-cuda11.8.0_v1.0
+            INSTALL_DIR_ROOT: /workrd/SCR/NUM/GEOS_environment/p3/install/tpl
             HOST_ARCH: ppc64le
             RUNS_ON: streak2
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
