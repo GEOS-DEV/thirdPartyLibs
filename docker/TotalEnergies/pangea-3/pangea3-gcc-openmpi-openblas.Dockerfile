@@ -63,6 +63,8 @@ RUN dnf makecache --refresh && dnf -y install cargo openssl-devel  &&\
     dnf remove -y cargo openssl-devel && dnf clean all
 # flex
 RUN spack install flex %gcc@$GCC_VERSION
+# zlib
+RUN spack install zlib %gcc@$GCC_VERSION
 # ------
 # ENV
 # sccache
@@ -73,6 +75,6 @@ RUN <<EOF cat > /root/.setup_env.sh
 spack load gcc@$GCC_VERSION python@$PYTHON_VERSION cmake@$CMAKE_VERSION \
            openblas@$OPENBLAS_VERSION openmpi@$OPENMPI_VERSION cuda@$CUDA_VERSION \
            py-numpy py-virtualenv \
-           flex
+           flex zlib
 EOF
 RUN chmod +x /root/.setup_env.sh
