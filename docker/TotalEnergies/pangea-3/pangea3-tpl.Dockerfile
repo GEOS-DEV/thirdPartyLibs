@@ -63,7 +63,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOS_TPL_DIR} && \
 # - run uberenv
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@11.4.0 +cuda+pygeosx+docs cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" \
+       --spec "%gcc@11.4.0 +cuda+pygeosx cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" \
        --spack-env-file=${SRC_DIR}/docker/TotalEnergies/pangea-3/pangea3-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOS_TPL_DIR} \
