@@ -1,0 +1,220 @@
+# This is a Spack Environment file for Pangea-3 docker image.
+# - replicate Pangea-3 environement as close as possible
+#   while targeting ppc64le for ci/cd.
+# - used with onetechssc/pangea3:gcc11.4.0-openmpi4.1.6-openblas0.3.18-cuda11.8.0_v1.0
+#   docker image
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+#
+# Run command from the top-level of the repository:
+# ./scripts/uberenv/uberenv.py                                  \
+#    --spec "%gcc@11.4.0 +cuda+pygeosx+docs                     \
+#    cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers"     \
+#    --spack-env-file=scripts/spack_configs/pangea-3/spack.yaml \
+#    --project-json=.uberenv_config.json                        \
+#    --prefix ${GEOS_TPL_DIR}
+spack:
+  config:
+    # make sure you survive our wonderfull proxy when testing on prem
+    connect_timeout: 120
+    url_fetch_method: curl
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage::
+    - $spack/../build_stage
+
+  # Regular TPLs do not need views
+  view: false
+
+  #############
+  # COMPILERS #
+  #############
+
+  compilers:
+  - compiler:
+      spec: gcc@=11.4.0
+      paths:
+        cc: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/gcc-11.4.0-e2xjn3x3bppfveg6qawy43js2j2pyo7x/bin/gcc
+        cxx: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/gcc-11.4.0-e2xjn3x3bppfveg6qawy43js2j2pyo7x/bin/g++
+        f77: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/gcc-11.4.0-e2xjn3x3bppfveg6qawy43js2j2pyo7x/bin/gfortran
+        fc: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/gcc-11.4.0-e2xjn3x3bppfveg6qawy43js2j2pyo7x/bin/gfortran
+      flags:
+        cflags: -mcpu=power9 -mtune=power9
+        cxxflags: -mcpu=power9 -mtune=power9
+      operating_system: almalinux8
+      target: ppc64le
+      modules: []
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
+      extra_rpaths: []
+
+  #############
+  # PACKAGES  #
+  #############
+
+  packages:
+    all:
+      target: [ppc64le]
+      compiler: [gcc]
+      providers:
+        blas: [openblas]
+        lapack: [openblas]
+        mpi: [openmpi]
+
+    ####
+    # make sure spack doesn't rebuild mpi, blas and lapack libs
+    # without this it will try to build mpich and openblas
+    mpi:
+      buildable: false
+    blas:
+      buildable: false
+    lapack:
+      buildable: false
+
+    ####
+    # spec of packages to build for
+
+    # v0.6.2
+    blt:
+      require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
+    # master - 10/18/24
+    hypre:
+      require: "@git.c893886d15eb57e87dd36efec23693ece3ddc88e"
+    # v2024.07.0
+    chai:
+      require: "@git.df7741f1dbbdc5fff5f7d626151fdf1904e62b19=develop"
+    # v2024.07.0
+    umpire:
+      require: "@git.abd729f40064175e999a83d11d6b073dac4c01d2=develop"
+    # v2024.07.0
+    raja:
+      require: "@git.4d7fcba55ebc7cb972b7cc9f6778b48e43792ea1=develop"
+    # v2024.07.0
+    camp:
+      require: "@git.0f07de4240c42e0b38a8d872a20440cb4b33d9f5=main"
+    # v2.12.0
+    caliper:
+      require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
+    # v0.9.2
+    conduit:
+      require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
+    # master - 04/12/20
+    uncrustify:
+      require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
+    # master - 04/26/20
+    superlu-dist:
+      require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+
+    ####
+    # spec of spack packages to reuse
+    berkeley-db:
+      externals:
+      - spec: berkeley-db@18.1.40
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/berkeley-db-18.1.40-tx2xdea6z7gfdixr2rf6ux2s5kx46h4h
+      buildable: false
+    bison:
+      externals:
+      - spec: bison@3.8.2
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/bison-3.8.2-f6gtrzvi6642zjjjyc5nf5bwridswoos
+      buildable: false
+    cmake:
+      externals:
+      - spec: cmake@3.27.9
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/cmake-3.27.9-bznyrfsdyeybk44omm73ngz4i7hounaw
+      buildable: false
+    cuda:
+      externals:
+      - spec: cuda@11.8.0
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/cuda-11.8.0-tgu7vemuuuoajzsme3ychblz2dh43kmn
+      buildable: false
+    flex:
+      externals:
+      - spec: flex@2.6.3
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/flex-2.6.3-224ispwu2mu25zs4da2kkohy6zv4q65e
+      buildable: false
+    gcc-runtime:
+      externals:
+      - spec: gcc-runtime@11.4.0
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/gcc-runtime-11.4.0-dsxnezmi7bkgqao5dzxswvuouqknvobc
+      buildable: false
+    git:
+      externals:
+      - spec: git@2.45.1
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/git-2.45.1-7ft725l4mxetptri357qstumq7tcnejl
+      buildable: false
+    gmake:
+      externals:
+      - spec: gmake@4.4.1
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/gmake-4.4.1-4ggqhci25tf33hjuoexjdvfumfkblame
+      buildable: false
+    gmp:
+      externals:
+      - spec: gmp@6.2.1
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/gmp-6.2.1-ug5lnjc3nggwzvlng4uivobi445ar4rz
+      buildable: false
+    mpfr:
+      externals:
+      - spec: mpfr@4.2.1
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/mpfr-4.2.1-d7qo5yi7c6li4sd7c6cpeyi6mp5ecff2
+    m4:
+      externals:
+      - spec: m4@1.4.19
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/m4-1.4.19-bai5hhnbhyjx5c3hz6zkcyhugt7pucqw
+      buildable: false
+    openblas:
+      externals:
+      - spec: openblas@0.3.18
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/openblas-0.3.18-kh32dndiocjx2tbzqbzvwmxqj6h4xguz
+      buildable: false
+    openmpi:
+      externals:
+      - spec: openmpi@4.1.6
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/openmpi-4.1.6-hwhj3mmb3casoch5syfrgjfvfbwnnvb6
+      buildable: false
+    perl:
+      externals:
+      - spec: perl@5.38.0
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/perl-5.38.0-thuwpjf45wfwqhgsh7ulpprrw7ln57nh
+      buildable: false
+    pkgconf:
+      externals:
+      - spec: pkgconf@2.2.0
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/pkgconf-2.2.0-pcnjsu5fbkx342z24qzkqjweyqokk7aa
+      buildable: false
+    pugixml:
+      externals:
+      - spec: pugixml@1.13
+        prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/pugixml-1.13-bttq4jv5qibmdf6w2n2yjx645dlsqqf7
+      buildable: false
+    python:
+      externals:
+      - spec: python@3.11.7
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/python-3.11.7-pfzktkmgta3ofr6pucgmhvucrn3izuzc
+      buildable: false
+    readline:
+      externals:
+      - spec: readline@8.2
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-8.5.0/readline-8.2-ebrc2f2ym2ughkwgfoawyiwsb3v5axq5
+      buildable: false
+
+    ####
+    # spec of system packages to reuse
+
+    # libs
+    glibc:
+      externals:
+      - spec: glibc@2.28
+        prefix: /usr
+      buildable: false
+    zlib:
+      externals:
+      - spec: zlib@1.2.11
+        prefix: /usr
+      buildable: false
