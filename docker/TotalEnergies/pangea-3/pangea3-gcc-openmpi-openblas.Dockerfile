@@ -65,6 +65,8 @@ RUN dnf makecache --refresh && dnf -y install cargo openssl-devel  &&\
 RUN spack install flex %gcc@$GCC_VERSION
 # zlib
 RUN spack install zlib %gcc@$GCC_VERSION
+# pugixml
+RUN spack install pugixml %gcc@$GCC_VERSION
 # ------
 # ENV
 # sccache

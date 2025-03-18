@@ -191,7 +191,7 @@ spack:
     pugixml:
       externals:
       - spec: pugixml@1.13
-        prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/pugixml-1.13-bttq4jv5qibmdf6w2n2yjx645dlsqqf7
+        prefix: /opt/spack/opt/spack/linux-almalinux8-power9le/gcc-11.4.0/pugixml-1.13-nrhgzg4inoooc3e5q75ixvthhcxsvygt
       buildable: false
     python:
       externals:
