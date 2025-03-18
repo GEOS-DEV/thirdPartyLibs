@@ -26,8 +26,9 @@
 #    -v .:/tmp/geos \
 #    localhost/onetechssc/geos:tpl_gcc11.4.0-openmpi4.1.6-openblas0.3.18-cuda11.8.0_v1.0 \
 #    /tmp/geos/scripts/ci_build_and_test_in_container.sh \
-#    --host-config /spack-generated-wave-solver-only.cmake \
-#    --repository /tmp/geos --cmake-build-type Release --install-dir /tmp/install --build-exe-only
+#    --host-config /spack-generated-wave-solver-only.cmake --nproc=16 \
+#    --repository /tmp/geos --cmake-build-type Release --install-dir /tmp/install \
+#    --enable-hypre-device CUDA --build-exe-only
 #######################################
 
 # -------------------------------------
