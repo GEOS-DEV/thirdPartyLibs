@@ -592,7 +592,11 @@ class Geosx(CMakePackage, CudaPackage):
             else:
                 cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', False))
                 cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', False))
-
+            
+            if '+shared' in spec:
+                cfg.write(cmake_cache_option('GEOS_BUILD_SHARED_LIBS', True))
+            else:
+                cfg.write(cmake_cache_option('GEOS_BUILD_SHARED_LIBS', False))
 
             # ATS
             # Lassen
