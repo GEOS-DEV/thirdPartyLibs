@@ -37,8 +37,17 @@ if [ $? -eq 0 ]; then
     rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/spack
     rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/build_stage
 
-    chmod g+rx -R $INSTALL_DIR
-    chgrp GEOS -R $INSTALL_DIR
+    echo "Updating file permissions at ${INSTALL_DIR}/${CONFIG}_tpls/ ."
+    # Install directory root
+    chmod g+rx $INSTALL_DIR
+    chgrp GEOS $INSTALL_DIR
+
+    # Update only executable and library directories to avoid NFS errors
+    chmod g+rx -R $INSTALL_DIR/${CONFIG}_tpls/bin
+    chgrp GEOS -R $INSTALL_DIR/${CONFIG}_tpls/bin
+    chmod g+rx -R $INSTALL_DIR/${CONFIG}_tpls/${COMPILER%%-*}*
+    chgrp GEOS -R $INSTALL_DIR/${CONFIG}_tpls/${COMPILER%%-*}*
+
     echo "Build of ${CONFIG} completed successfully."
     exit 0
 else
