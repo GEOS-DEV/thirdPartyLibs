@@ -235,6 +235,7 @@ class Geosx(CMakePackage, CudaPackage):
         var = ''
         if '+cuda' in spec:
             var = '-'.join([var, 'cuda'])
+            var += "@" + spec['cuda'].version
 
         hostname = socket.gethostname().rstrip('1234567890')
 
