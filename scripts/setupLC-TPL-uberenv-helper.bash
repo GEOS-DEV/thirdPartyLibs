@@ -30,6 +30,13 @@ exit" > $LOG_FILE 2>&1
 ## A successful install should show up on one of the final lines.
 tail -10 $LOG_FILE | grep -E "Successfully installed geos" > /dev/null
 if [ $? -eq 0 ]; then
+    echo "Cleanup extra build files at ${INSTALL_DIR}/${CONFIG}_tpls/ ."
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/${CONFIG}_env
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/.spack-db
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/misc_cache
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/spack
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/build_stage
+
     chmod g+rx -R $INSTALL_DIR
     chgrp GEOS -R $INSTALL_DIR
     echo "Build of ${CONFIG} completed successfully."
