@@ -24,7 +24,7 @@ spack:
           cflags:
           cxxflags:
           fflags:
-        operating_system: sonoma
+        operating_system: sequoia
         target: aarch64
         modules: []
         environment:
