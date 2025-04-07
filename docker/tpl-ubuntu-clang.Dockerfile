@@ -29,6 +29,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     openmpi-bin \
     libopenmpi-dev \
     python3 \
+    python3-dev \
     python3-pip \
     python3-sphinx \
     doxygen \

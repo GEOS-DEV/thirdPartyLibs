@@ -56,6 +56,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     python3 \
     python3-pip \
     python3-sphinx \
+    python3-dev \
     doxygen \
     pkg-config \
     xz-utils \
