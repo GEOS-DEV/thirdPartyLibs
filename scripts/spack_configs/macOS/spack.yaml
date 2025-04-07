@@ -120,19 +120,7 @@ spack:
       externals:
         - spec: diffutils@3.11
           prefix: /opt/homebrew/opt/diffutils
-    # This needs to be the prefix to the pygeosx LC installation
-    # or system install with pygeosx dependencies
-    python:
-      buildable: False
-      externals:
-      - spec: python@3.10.8
-        prefix: /Users/cusini1/pythonVenv/geosxEnv/
-
-    # py-sphinx:
-    #   buildable: False
-    #   externals:
-    #   - spec: sphinx
-    #     prefix: /Users/cusini1/pythonVenv/geosxEnv/
+          
     autoconf:
       buildable: False
       externals:
