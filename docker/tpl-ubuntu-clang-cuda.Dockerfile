@@ -24,6 +24,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         openmpi-bin \
         libopenmpi-dev \
         python3 \
+        python3-dev \
         clang \
 # Additional spack dependencies
         python3-pip \
