@@ -88,7 +88,7 @@ class Geosx(CMakePackage, CudaPackage):
 
     depends_on('cmake@3.24:', type='build')
 
-    depends_on('blt')
+    depends_on('blt@0.6.2')
 
     #
     # Virtual packages
@@ -100,26 +100,24 @@ class Geosx(CMakePackage, CudaPackage):
     #
     # Performance portability
     #
-    depends_on('raja ~examples~exercises~shared')
+    depends_on('raja@2024.07.0 ~examples~exercises~shared')
     depends_on("raja~openmp", when="~openmp")
     depends_on("raja+openmp", when="+openmp")
 
-    depends_on('umpire +c~examples+fortran~device_alloc~shared')
+    depends_on('umpire@2024.07.0 +c~examples+fortran~device_alloc~shared')
     depends_on("umpire~openmp", when="~openmp")
     depends_on("umpire+openmp", when="+openmp")
 
-    depends_on('chai +raja~examples~shared')
+    depends_on('chai@2024.07.0 +raja~examples~shared')
     depends_on("chai~openmp", when="~openmp")
     depends_on("chai+openmp", when="+openmp")
-
-    depends_on('camp')
 
     with when('+cuda'):
         for sm_ in CudaPackage.cuda_arch_values:
             depends_on('raja+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('umpire+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('chai+cuda~separable_compilation cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
-            depends_on('camp+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
+            depends_on('camp@v2024.07.0+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
 
     #
     # IO
@@ -127,10 +125,10 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on('hdf5@1.12.1')
     depends_on('silo@4.11.1-bsd~fortran~shared')
 
-    depends_on('conduit~test~fortran~hdf5_compat~shared')
+    depends_on('conduit@0.9.2~test~fortran~hdf5_compat~shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper@v2.12.0~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
@@ -182,7 +180,7 @@ class Geosx(CMakePackage, CudaPackage):
     #
     # Dev tools
     #
-    depends_on('uncrustify', when='+uncrustify')
+    depends_on('uncrustify@0.80.1', when='+uncrustify')
 
     #
     # Documentation
