@@ -117,7 +117,7 @@ class Geosx(CMakePackage, CudaPackage):
             depends_on('raja+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('umpire+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('chai+cuda~separable_compilation cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
-            depends_on('camp@v2024.07.0+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
+            depends_on('camp@2024.07.0+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
 
     #
     # IO
@@ -128,7 +128,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on('conduit@0.9.2~test~fortran~hdf5_compat~shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper@v2.12.0~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper@2.12.0~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
