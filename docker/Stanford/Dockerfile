@@ -15,6 +15,7 @@ RUN yum install -y \
     ca-certificates \
     curl \
     python3 \
+    python3-devel \
     zlib-devel \
 # Additional spack dependencies
     python3-pip \
