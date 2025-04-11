@@ -55,7 +55,7 @@ spack:
       target: [x86_64]
       compiler: [gcc, clang]
       providers:
-        blas: [netlib-blas]
+        blas: [netlib-lapack]
         lapack: [netlib-lapack]
         mpi: [openmpi]
 
