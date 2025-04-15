@@ -30,8 +30,24 @@ exit" > $LOG_FILE 2>&1
 ## A successful install should show up on one of the final lines.
 tail -10 $LOG_FILE | grep -E "Successfully installed geos" > /dev/null
 if [ $? -eq 0 ]; then
-    chmod g+rx -R $INSTALL_DIR
-    chgrp GEOS -R $INSTALL_DIR
+    echo "Cleanup extra build files at ${INSTALL_DIR}/${CONFIG}_tpls/ ."
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/${CONFIG}_env
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/.spack-db
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/misc_cache
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/spack
+    rm -rf ${INSTALL_DIR}/${CONFIG}_tpls/build_stage
+
+    echo "Updating file permissions at ${INSTALL_DIR}/${CONFIG}_tpls/ ."
+    # Install directory root
+    chmod g+rx $INSTALL_DIR
+    chgrp GEOS $INSTALL_DIR
+
+    # Update only executable and library directories to avoid NFS errors
+    chmod g+rx -R $INSTALL_DIR/${CONFIG}_tpls/bin
+    chgrp GEOS -R $INSTALL_DIR/${CONFIG}_tpls/bin
+    chmod g+rx -R $INSTALL_DIR/${CONFIG}_tpls/${COMPILER%%-*}*
+    chgrp GEOS -R $INSTALL_DIR/${CONFIG}_tpls/${COMPILER%%-*}*
+
     echo "Build of ${CONFIG} completed successfully."
     exit 0
 else
