@@ -15,14 +15,14 @@ class Vtk(CMakePackage):
     processing and visualization. """
 
     homepage = "http://www.vtk.org"
-    url = "https://www.vtk.org/files/release/9.0/VTK-9.0.0.tar.gz"
+    url = "https://www.vtk.org/files/release/9.4/VTK-9.4.2.tar.gz"
     list_url = "http://www.vtk.org/download/"
 
     maintainers = ['chuckatkins', 'danlipsa']
     
     version(
-        "9.4.1",
-        sha256="c253b0c8d002aaf98871c6d0cb76afc4936c301b72358a08d5f3f72ef8bc4529",
+        "9.4.2",
+        sha256="36c98e0da96bb12a30fe53708097aa9492e7b66d5c3b366e1c8dc251e2856a02",
         preferred=True,
     )
     version("9.3.1", sha256="8354ec084ea0d2dc3d23dbe4243823c4bfc270382d0ce8d658939fd50061cab8")
