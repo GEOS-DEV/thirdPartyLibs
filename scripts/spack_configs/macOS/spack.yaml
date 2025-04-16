@@ -32,6 +32,26 @@ spack:
             BISON: bison
             FLEX: flex
         extra_rpaths: []
+    - compiler:
+        spec: apple-clang@15.0.0
+        paths:
+          cc: /usr/bin/clang
+          cxx: /usr/bin/clang++
+          f77: /opt/homebrew/bin/gfortran
+          fc: /opt/homebrew/bin/gfortran 
+        flags:
+          cflags:
+          cxxflags:
+          fflags:
+        operating_system: sonoma
+        target: aarch64
+        modules: []
+        environment:
+          set: # Needed for scotch
+            BISON: bison
+            FLEX: flex
+        extra_rpaths: []
+    
 
   packages:
     all:
