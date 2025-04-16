@@ -19,7 +19,12 @@ class Vtk(CMakePackage):
     list_url = "http://www.vtk.org/download/"
 
     maintainers = ['chuckatkins', 'danlipsa']
-
+    
+    version(
+        "9.4.1",
+        sha256="c253b0c8d002aaf98871c6d0cb76afc4936c301b72358a08d5f3f72ef8bc4529",
+        preferred=True,
+    )
     version("9.3.1", sha256="8354ec084ea0d2dc3d23dbe4243823c4bfc270382d0ce8d658939fd50061cab8")
     version("9.2.6", sha256="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12")
     version('9.1.0', sha256='8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96')
