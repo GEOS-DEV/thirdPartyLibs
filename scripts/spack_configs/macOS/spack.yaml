@@ -171,3 +171,15 @@ spack:
       externals:
         - spec: addr2line@2.43.1
           prefix: /opt/homebrew/opt/binutils     
+
+    zlib:
+      buildable: False
+      externals:
+        - spec: zlib@1.3.1
+          prefix: /opt/homebrew/opt/zlib 
+
+    python:
+      buildable: false
+      externals:
+        - spec: python@3.13.2
+          prefix: /opt/homebrew/opt/python@3.13
