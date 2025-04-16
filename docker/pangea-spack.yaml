@@ -45,6 +45,17 @@ spack:
     hypre:
       require: "@git.21e5953ddc6daaa24699236108866afa597a415c"
 
+    # # v2025.0.3.0
+    # chai:
+    #   require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
+
+    # # v2025.0.3.0
+    # umpire:
+    #   require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
+
+    # # v2025.0.3.0
+    # raja:
+    #   require: "@git.1d70abf171474d331f1409908bdf1b1c3fe19222=develop"
     superlu-dist:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
 
