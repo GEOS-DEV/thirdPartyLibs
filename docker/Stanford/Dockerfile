@@ -3,7 +3,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# The docker base image can be pecan or pangea.
+# The docker base image 
 ARG DOCKER_ROOT_IMAGE
 FROM $DOCKER_ROOT_IMAGE as tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -15,6 +15,7 @@ RUN yum install -y \
     ca-certificates \
     curl \
     python3 \
+    python3-devel \
     zlib-devel \
 # Additional spack dependencies
     python3-pip \
@@ -30,10 +31,15 @@ ENV LANG='en_US.utf8' \
     LC_ALL='en_US.utf8'
 
 # Install clingo for Spack
-RUN python3 -m pip install --upgrade pip && \
+RUN mkdir -p /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv
+RUN cd /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv && \
+    python3 -m venv geosxEnv && \
+    source geosxEnv/bin/activate && \
+    python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo
 
-RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
+# CMake is built by the base image instead of using install-cmake.sh
+ENV PATH=/share/software/user/open/cmake/3.31.4/bin:${PATH}
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
@@ -47,7 +53,7 @@ RUN yum install -y \
     flex \
     patch \
     ca-certificates \
-    autoconf \
+    autoconf-2.69 \
     automake \
     git
 
@@ -58,6 +64,7 @@ ARG SPEC
 # -k flag is to ignore SSL errors
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+     source /oak/stanford/groups/tchelepi/geos-sherlock/pythonVenv/geosxEnv/bin/activate && \
      ./scripts/uberenv/uberenv.py \
        # spack spec defined per image
        --spec "${SPEC}" \
