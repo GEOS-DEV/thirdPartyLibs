@@ -97,17 +97,17 @@ spack:
         cxx: /usr/tce/packages/gcc/gcc-12.2.1/bin/g++
         f77: /usr/tce/packages/gcc/gcc-12.2.1/bin/gfortran
         fc: /usr/tce/packages/gcc/gcc-12.2.1/bin/gfortran
-        flags:
-          # Fix for "undefined reference to `_gfortran_transfer_integer_write'"
-          ldlibs: -lgfortran
-        operating_system: rhel7
-        target: ppc64le
-        modules: []
-        environment:
-          set: # Needed for scotch
-            BISON: bison
-            FLEX: flex
-        extra_rpaths: []
+      flags:
+        # Fix for "undefined reference to `_gfortran_transfer_integer_write'"
+        ldlibs: -lgfortran
+      operating_system: rhel7
+      target: ppc64le
+      modules: []
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
+      extra_rpaths: []
 
   packages:
     all:
