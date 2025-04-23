@@ -400,6 +400,7 @@ list(APPEND build_list raja )
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
 set(CHAI_URL "${TPL_MIRROR_DIR}/chai-0755757.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
+set(CHAI_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include limits")
 
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
@@ -411,7 +412,7 @@ ExternalProject_Add( chai
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_CXX_FLAGS=${CHAI_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=RELEASE
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
@@ -1052,6 +1053,7 @@ endif()
 if(ENABLE_VTK)
     set(VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk")
     set(VTK_URL "${TPL_MIRROR_DIR}/VTK-v9.0.0.rc3.tar.gz")
+    set(VTK_CXX_FLAGS "-include limits")
 
     message(STATUS "Building VTK found at ${VTK_URL}")
 
@@ -1067,6 +1069,7 @@ if(ENABLE_VTK)
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D CMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/lib
                                     -D CMAKE_BUILD_TYPE:STRING=RELEASE
+                                    -D CMAKE_CXX_FLAGS=${VTK_CXX_FLAGS}
                                     -D VTK_GROUP_ENABLE_Imaging=NO
                                     -D VTK_GROUP_ENABLE_MPI=NO
                                     -D VTK_GROUP_ENABLE_Qt=NO
