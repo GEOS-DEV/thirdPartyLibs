@@ -32,6 +32,26 @@ spack:
             BISON: bison
             FLEX: flex
         extra_rpaths: []
+    - compiler:
+        spec: apple-clang@15.0.0
+        paths:
+          cc: /usr/bin/clang
+          cxx: /usr/bin/clang++
+          f77: /opt/homebrew/bin/gfortran
+          fc: /opt/homebrew/bin/gfortran 
+        flags:
+          cflags:
+          cxxflags:
+          fflags:
+        operating_system: sonoma
+        target: aarch64
+        modules: []
+        environment:
+          set: # Needed for scotch
+            BISON: bison
+            FLEX: flex
+        extra_rpaths: []
+    
 
   packages:
     all:
@@ -42,40 +62,10 @@ spack:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
 
-    # v0.6.2
-    blt:
-      require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
     # master - 10/18/24
     hypre:
       require: "@git.c893886d15eb57e87dd36efec23693ece3ddc88e"
-
-    # v2024.07.0
-    chai:
-      require: "@git.df7741f1dbbdc5fff5f7d626151fdf1904e62b19=develop"
-
-    # v2024.07.0
-    umpire:
-      require: "@git.abd729f40064175e999a83d11d6b073dac4c01d2=develop"
-
-    # v2024.07.0
-    raja:
-      require: "@git.4d7fcba55ebc7cb972b7cc9f6778b48e43792ea1=develop"
-
-    # v2024.07.0
-    camp:
-      require: "@git.0f07de4240c42e0b38a8d872a20440cb4b33d9f5=main"
-
-    # v2.12.0
-    caliper:
-      require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
-
-    # v0.9.2
-    conduit:
-      require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
-
-    uncrustify:
-      require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
 
     superlu-dist:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
@@ -120,7 +110,7 @@ spack:
       externals:
         - spec: diffutils@3.11
           prefix: /opt/homebrew/opt/diffutils
-          
+
     autoconf:
       buildable: False
       externals:
@@ -151,4 +141,16 @@ spack:
       buildable: False
       externals:
         - spec: addr2line@2.43.1
-          prefix: /opt/homebrew/opt/binutils     
+          prefix: /opt/homebrew/opt/binutils
+    
+    zlib:
+      buildable: False
+      externals:
+        - spec: zlib@1.3.1
+          prefix: /opt/homebrew/opt/zlib 
+
+    python:
+      buildable: false
+      externals:
+        - spec: python@3.13.2
+          prefix: /opt/homebrew/opt/python@3.13                    
