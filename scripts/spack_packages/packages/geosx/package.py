@@ -462,6 +462,7 @@ class Geosx(CMakePackage, CudaPackage):
 
             # yapf: disable
             io_tpls = (
+                ('zlib', 'ZLIB', True),
                 ('hdf5', 'HDF5', True),
                 ('conduit', 'CONDUIT', True),
                 ('silo', 'SILO', True),
