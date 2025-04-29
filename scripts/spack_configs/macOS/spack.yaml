@@ -24,6 +24,29 @@ spack:
           cflags:
           cxxflags:
           fflags:
+          cppflags: -I/opt/homebrew/opt/openblas/include
+          ldflags: -L/opt/homebrew/opt/openblas/lib
+        operating_system: sequoia
+        target: aarch64
+        modules: []
+        environment:
+          set: # Needed for scotch
+            BISON: bison
+            FLEX: flex
+        extra_rpaths: []
+    - compiler:
+        spec: apple-clang@17.0.0
+        paths:
+          cc: /usr/bin/clang
+          cxx: /usr/bin/clang++
+          f77: /opt/homebrew/bin/gfortran 
+          fc: /opt/homebrew/bin/gfortran  
+        flags:
+          cppflags: -I/opt/homebrew/opt/openblas/include
+          ldflags: -L/opt/homebrew/opt/openblas/lib
+          cflags:
+          cxxflags:
+          fflags:
         operating_system: sequoia
         target: aarch64
         modules: []
@@ -39,8 +62,14 @@ spack:
       compiler: [apple-clang]
       providers:
         mpi: [openmpi]
-        blas: [netlib-lapack]
-        lapack: [netlib-lapack]
+        blas: [openblas]
+        lapack: [openblas]
+
+    openblas:
+      buildable: False
+      externals:
+        - spec: openblas@0.3.29
+          prefix: /opt/homebrew/opt/openblas
 
     # v0.6.2
     blt:
@@ -152,3 +181,15 @@ spack:
       externals:
         - spec: addr2line@2.43.1
           prefix: /opt/homebrew/opt/binutils     
+
+    zlib:
+      buildable: False
+      externals:
+        - spec: zlib@1.3.1
+          prefix: /opt/homebrew/opt/zlib 
+
+    python:
+      buildable: false
+      externals:
+        - spec: python@3.13.2
+          prefix: /opt/homebrew/opt/python@3.13

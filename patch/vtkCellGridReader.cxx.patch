@@ -1,0 +1,14 @@
+--- IO/CellGrid/vtkCellGridReader.cxx	2025-03-27 23:59:55
++++ IO/CellGrid/vtkCellGridReader.cxx.modified	2025-04-15 13:17:03
+@@ -409,7 +409,10 @@
+       // The final "false" below allows the data to not be fully consumed,
+       // which may happen if sizeof(istream::char_type) > 1. In the future,
+       // it may also happen that a file contains multiple JSON streams.
+-      jj = nlohmann::json::from_msgpack(data.begin(), data.end(), false);
++
++      char const * const begin = reinterpret_cast<const char*>(data.data());
++      char const * const end = begin + data.size();
++      jj = nlohmann::json::from_msgpack(begin, end, false);
+     }
+     catch (...)
+     {

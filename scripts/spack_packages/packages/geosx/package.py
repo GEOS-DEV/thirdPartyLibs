@@ -125,7 +125,7 @@ class Geosx(CMakePackage, CudaPackage):
     # IO
     #
     depends_on('hdf5@1.12.1')
-    depends_on('silo@4.11.1-bsd~fortran~shared')
+    depends_on('silo@4.11.1-bsd~fortran~shared~python')
 
     depends_on('conduit~test~fortran~hdf5_compat~shared')
 
@@ -135,7 +135,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on('pugixml@1.13 ~shared')
 
     depends_on('fmt@10.0.0 cxxstd=14')
-    depends_on('vtk@9.3.1', when='+vtk')
+    depends_on('vtk@9.4.2', when='+vtk')
 
     #
     # Math
@@ -156,7 +156,7 @@ class Geosx(CMakePackage, CudaPackage):
 
     with when("+trilinos"):
         trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra+zoltan'
-        depends_on("trilinos@16.0.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages)
+        depends_on("trilinos@16.1.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages)
         depends_on("trilinos~openmp", when="~openmp")
         depends_on("trilinos+openmp", when="+openmp")
 
@@ -462,6 +462,7 @@ class Geosx(CMakePackage, CudaPackage):
 
             # yapf: disable
             io_tpls = (
+                ('zlib', 'ZLIB', True),
                 ('hdf5', 'HDF5', True),
                 ('conduit', 'CONDUIT', True),
                 ('silo', 'SILO', True),

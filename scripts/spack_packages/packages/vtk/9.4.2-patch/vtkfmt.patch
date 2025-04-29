@@ -1,0 +1,18 @@
+--- a/ThirdParty/diy2/vtkdiy2/include/vtkdiy2/fmt/format.h	2025-04-15 14:30:09
++++ b/ThirdParty/diy2/vtkdiy2/include/vtkdiy2/fmt/format.h	2025-04-15 14:29:55
+@@ -481,12 +481,12 @@
+ }  // namespace internal
+ 
+ // A UTF-8 string view.
+-class u8string_view : public basic_string_view<char8_t> {
++class u8string_view : public basic_string_view<char> {
+  public:
+   u8string_view(const char* s)
+-      : basic_string_view<char8_t>(reinterpret_cast<const char8_t*>(s)) {}
++      : basic_string_view<char>( s ) {}
+   u8string_view(const char* s, size_t count) FMT_NOEXCEPT
+-      : basic_string_view<char8_t>(reinterpret_cast<const char8_t*>(s), count) {
++      : basic_string_view<char>( s, count) {
+   }
+ };
+ 
