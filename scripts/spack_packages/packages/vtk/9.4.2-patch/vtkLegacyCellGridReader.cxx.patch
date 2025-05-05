@@ -1,0 +1,14 @@
+--- a/IO/Legacy/vtkLegacyCellGridReader.cxx	2025-03-27 23:59:55
++++ b/IO/Legacy/vtkLegacyCellGridReader.cxx	2025-04-15 13:28:24
+@@ -115,7 +115,10 @@
+       // The final argument (false) indicates that the decoder should allow
+       // partial consumption of raw.data() (meaning the trailing newline will
+       // not cause an exception):
+-      jdata = nlohmann::json::from_msgpack(raw.data(), raw.data() + contentLength, false);
++
++      char const * const begin = reinterpret_cast<const char*>(raw.data());
++      char const * const end = begin + contentLength;
++      jdata = nlohmann::json::from_msgpack(begin, end, false);
+     }
+     catch (nlohmann::json::exception& e)
+     {

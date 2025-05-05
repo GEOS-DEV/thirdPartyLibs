@@ -334,7 +334,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.07.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2025.03.0.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -374,7 +374,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.07.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2025.03.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -565,7 +565,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-0-0.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-1-0.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -1136,7 +1136,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.3.1.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.4.2.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1164,6 +1164,9 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
+                         PATCH_COMMAND patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch &&
+                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch &&
+                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkformat.h.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}

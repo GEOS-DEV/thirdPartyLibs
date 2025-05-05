@@ -47,6 +47,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     version('master', branch='master')
     version('develop', branch='develop')
     # GEOS Added
+    version("16.1.0", sha256="e9651c88f581049457036cfc01b527a9d3903c257338eeeab942befd7452f23a")
     version("16.0.0", sha256="46bfc40419ed2aa2db38c144fb8e61d4aa8170eaa654a88d833ba6b92903f309")
 
     version("13.4.1", sha256="5465cbff3de7ef4ac7d40eeff9d99342c00d9d20eee0a5f64f0a523093f5f1b3")
