@@ -11,8 +11,9 @@ ARG GCC_VERSION=10.1.0
 ARG OPENMPI_VERSION=4.1.2
 ARG OPENBLAS_VERSION=0.3.10
 ARG ZLIB_VERSION=1.2.11
-ARG CUDA_VERSION=11.7.1
-ARG CUDA_SUBVERSION=515.65.01
+ARG CUDA_VERSION=12.4.0
+ARG CUDA_SUBVERSION=550.54.14
+ARG CMAKE_VERSION=3.31.4
 
 # Main software root installation directory in SHERLOCK
 ARG SHERLOCK_ROOT_INSTALL_DIR=/share/software/user/open
@@ -22,11 +23,16 @@ ARG SHERLOCK_OPENMPI_INSTALL_DIR=${SHERLOCK_ROOT_INSTALL_DIR}/openmpi/${OPENMPI_
 ARG SHERLOCK_OPENBLAS_INSTALL_DIR=${SHERLOCK_ROOT_INSTALL_DIR}/openblas/${OPENBLAS_VERSION}
 ARG SHERLOCK_ZLIB_INSTALL_DIR=${SHERLOCK_ROOT_INSTALL_DIR}/zlib/${ZLIB_VERSION}
 ARG SHERLOCK_CUDA_INSTALL_DIR=${SHERLOCK_ROOT_INSTALL_DIR}/cuda/${CUDA_VERSION}
+ARG SHERLOCK_CMAKE_INSTALL_DIR=${SHERLOCK_ROOT_INSTALL_DIR}/cmake/${CMAKE_VERSION}
 
 FROM centos:7.9.2009 AS shared_components
 
-RUN yum install -y \
-        glibc-devel
+# I need these lines because centos 7.9 has reached EOL
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS-*.repo
+RUN sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS-*.repo
+RUN sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS-*.repo
+
+RUN yum install -y glibc-devel
 
 # We'll compile and deploy a version of `gcc` in this stage.
 FROM shared_components AS gcc_stage
@@ -159,6 +165,17 @@ RUN ./configure --prefix=${SHERLOCK_ZLIB_INSTALL_DIR}  && \
     make -j $(nproc) && \
     make install
 
+# Installing latest `CMake` version available
+FROM shared_components AS cmake_stage
+
+ARG CMAKE_VERSION
+ARG SHERLOCK_CMAKE_INSTALL_DIR
+
+WORKDIR /tmp/src
+RUN mkdir -p ${SHERLOCK_CMAKE_INSTALL_DIR}
+RUN curl -S https://cmake.org/files/v${CMAKE_VERSION%.[0-9]*}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz | tar --directory=${SHERLOCK_CMAKE_INSTALL_DIR} --strip-components=1 -xzf -
+
+
 FROM shared_components AS final_stage
 
 ARG SHERLOCK_GCC_INSTALL_DIR
@@ -166,12 +183,14 @@ ARG SHERLOCK_OPENMPI_INSTALL_DIR
 ARG SHERLOCK_OPENBLAS_INSTALL_DIR
 ARG SHERLOCK_ZLIB_INSTALL_DIR
 ARG SHERLOCK_CUDA_INSTALL_DIR
+ARG SHERLOCK_CMAKE_INSTALL_DIR
 
 COPY --from=gcc_stage ${SHERLOCK_GCC_INSTALL_DIR} ${SHERLOCK_GCC_INSTALL_DIR}
 COPY --from=cuda_openmpi_stage ${SHERLOCK_OPENMPI_INSTALL_DIR} ${SHERLOCK_OPENMPI_INSTALL_DIR}
 COPY --from=blas_stage ${SHERLOCK_OPENBLAS_INSTALL_DIR} ${SHERLOCK_OPENBLAS_INSTALL_DIR}
 COPY --from=zlib_stage ${SHERLOCK_ZLIB_INSTALL_DIR} ${SHERLOCK_ZLIB_INSTALL_DIR}
 COPY --from=cuda_openmpi_stage ${SHERLOCK_CUDA_INSTALL_DIR} ${SHERLOCK_CUDA_INSTALL_DIR}
+COPY --from=cmake_stage ${SHERLOCK_CMAKE_INSTALL_DIR} ${SHERLOCK_CMAKE_INSTALL_DIR}
 
 # GEOSX does not need fortran compilers; we expose it anyway (see comments above).
 ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
@@ -182,6 +201,6 @@ ENV CC=${SHERLOCK_GCC_INSTALL_DIR}/bin/gcc \
     MPIFC=${SHERLOCK_OPENMPI_INSTALL_DIR}/bin/mpifort \
     MPIEXEC=${SHERLOCK_OPENMPI_INSTALL_DIR}/bin/mpiexec \
 # An additional `LD_LIBRARY_PATH` action is needed for the tools to work.
-    LD_LIBRARY_PATH=${SHERLOCK_OPENMPI_INSTALL_DIR}/lib:${SHERLOCK_GCC_INSTALL_DIR}/lib64:${SHERLOCK_OPENBLAS_INSTALL_DIR}/lib:${SHERLOCK_CUDA_INSTALL_DIR}/lib64:${SHERLOCK_ZLIB_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${SHERLOCK_OPENMPI_INSTALL_DIR}/lib:${SHERLOCK_GCC_INSTALL_DIR}/lib64:${SHERLOCK_OPENBLAS_INSTALL_DIR}/lib:${SHERLOCK_CUDA_INSTALL_DIR}/lib64:${SHERLOCK_ZLIB_INSTALL_DIR}/lib:${SHERLOCK_CMAKE_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}
 
 

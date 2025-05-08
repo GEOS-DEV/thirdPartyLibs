@@ -25,6 +25,7 @@ HYPRE_DEVELOP_STRING=$(git -C ${HYPRE_SRC_DIR} describe --match 'v*' --long --ab
 HYPRE_DEVELOP_LASTAG=$(git -C ${HYPRE_SRC_DIR} describe --match 'v*' --abbrev=0)
 HYPRE_DEVELOP_NUMBER=$(git -C ${HYPRE_SRC_DIR} rev-list --count $HYPRE_DEVELOP_LASTAG..HEAD)
 HYPRE_DEVELOP_BRANCH=$(git -C ${HYPRE_SRC_DIR} rev-parse --abbrev-ref HEAD)
+HYPRE_GIT_HASH=$(git -C ${HYPRE_SRC_DIR} rev-parse HEAD)
 
 # Replace placeholders in the "configure" file
 sed -i "s/\$develop_string/$HYPRE_DEVELOP_STRING/g"  ${HYPRE_SRC_DIR}/configure
@@ -63,6 +64,13 @@ rm -rf ${HYPRE_DIR}
 echo -e "Updating CMakeLists..."
 sed -i "s|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-.*\.tar\.gz\" )|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-${HYPRE_DEVELOP_STRING}.tar.gz\" )|" CMakeLists.txt
 
+# Update YAML files with new hypre git hash
+find scripts docker -name "*.yaml" -type f | while read -r file; do
+    sed -i -E "/hypre:/,/require:/s/@git\.[a-f0-9]{40}/@git.${HYPRE_GIT_HASH}/" "$file"
+done
+echo -e "Updated YAML files with new hypre git hash: ${HYPRE_GIT_HASH}"
+
 # Stage changes
 git add ${GEOSTPL_DIR}/CMakeLists.txt
 git add ${TPL_MIRROR_DIR}/hypre*.tar.gz
+git add -u scripts docker

@@ -297,7 +297,7 @@ list(APPEND build_list conduit )
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
-set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11-bsd.tgz")
+set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11.1-bsd.tar.xz")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
 string(REPLACE ";" " " HDF5_C_FLAGS_STR "${HDF5_C_FLAGS}")
@@ -324,7 +324,7 @@ ExternalProject_Add( silo
                      URL ${SILO_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
-                     PATCH_COMMAND patch src/hdf5_drv/H5FDsilo.c < ${TPL_MIRROR_DIR}/silo-4.11.patch
+#                     PATCH_COMMAND patch src/hdf5_drv/H5FDsilo.c < ${TPL_MIRROR_DIR}/silo-4.11.patch
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_silo_for_geos && . ${PROJECT_BINARY_DIR}/config_silo_for_geos
                      BUILD_COMMAND make -j ${NUM_PROC}
@@ -339,7 +339,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2024.07.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2025.03.0.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -384,7 +384,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2024.07.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2025.03.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -582,7 +582,7 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-0-0.tar.gz")
+    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-1-0.tar.gz")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -812,7 +812,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.32.0-11-g677e01950.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-12-gbe52325a3.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -873,6 +873,7 @@ ROCM_PATH=${ROCM_PATH} \
 --with-hip \
 --enable-rocblas \
 --enable-rocsparse \
+--enable-rocsolver \
 --with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
@@ -1172,7 +1173,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.3.1.tar.gz" )
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.4.2.tar.gz" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1200,6 +1201,9 @@ endif( ENABLE_MPI )
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          INSTALL_DIR ${VTK_DIR}
+                         PATCH_COMMAND patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch &&
+                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch &&
+                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkformat.h.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
