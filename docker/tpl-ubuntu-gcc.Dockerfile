@@ -156,9 +156,11 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     python3-venv \
     python3-pytest
 
-# Install newer scipy/numpy through pip
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install scipy
+# Remove older scipy/numpy and re-install newer scipy/numpy through pip
+# (matplotlib needs to be reinstalled as well)
+RUN apt remove -y python3-numpy python3-scipy && \
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install scipy matplotlib
 
 # Install `sccache` binaries to speed up the build of `geos`
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
