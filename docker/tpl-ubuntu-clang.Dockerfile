@@ -113,11 +113,14 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     python3-dev \
     python3-sphinx \
     python3-mpi4py \
-    python3-scipy \
     python3-virtualenv \
     python3-matplotlib \
     python3-venv \
     python3-pytest
+
+# Install newer scipy/numpy through pip
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install scipy
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
