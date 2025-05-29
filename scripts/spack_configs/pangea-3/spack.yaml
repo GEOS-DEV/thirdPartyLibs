@@ -26,8 +26,8 @@ spack:
 
   # Include shared variants and versions
   include:
-  - ../scripts/spack_configs/defaults.yaml
-  - ../scripts/spack_configs/versions.yaml
+  - ../defaults.yaml
+  - ../versions.yaml
 
   #############
   # COMPILERS #

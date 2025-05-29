@@ -15,8 +15,8 @@ spack:
 
   # Include shared variants and versions
   include:
-  - ../scripts/spack_configs/defaults.yaml
-  - ../scripts/spack_configs/versions.yaml
+  - ../defaults.yaml
+  - ../versions.yaml
 
   compilers::
   # Sherlock CPU/GPU Compiler (centos7 x86_64)

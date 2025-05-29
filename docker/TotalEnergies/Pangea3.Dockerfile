@@ -18,6 +18,7 @@ RUN dnf clean all && \
         automake \
         libtool \
         bzip2 \
+        gnupg2 \
         unzip
 
 # All the environment variables defined in this Dockerfile

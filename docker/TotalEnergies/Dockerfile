@@ -22,6 +22,7 @@ RUN yum install --disablerepo=intel-mkl-repo -y \
     # xz \
     unzip \
     bzip2 \
+    gnupg2 \
     && pip3 install virtualenv
 
 # Install clingo for Spack
