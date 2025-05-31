@@ -855,13 +855,13 @@ if( ENABLE_HYPRE )
       string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
       set( HYPRE_CUDA_FLAGS "\
 --with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
+--enable-shared \
 --enable-cusparse \
 --enable-cusolver \
---enable-unified-memory \
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib-dirs=${CHAI_DIR}/lib \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
 --with-umpire-libs=umpire " )
     endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
