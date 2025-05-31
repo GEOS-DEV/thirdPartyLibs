@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.23.1)
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
   cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction
 endif()
+cmake_policy(SET CMP0144 NEW) # find_package uses upper-case <PACKAGENAME>_ROOT variables.
 
 ################################
 # GEOS_TPL
@@ -128,8 +129,27 @@ else( TRUE )
     message( FATAL_ERROR "GEOSX_GLOBALINDEX_TYPE_FLAG not set for ${GEOSX_GLOBALINDEX_TYPE}" )
 endif()
 
+if (ENABLE_HIP AND NOT DEFINED ROCM_PATH)
+  set(ROCM_PATH ${HIP_ROOT})
+endif()
 
+if (ENABLE_HIP AND ENABLE_MPI AND NOT DEFINED MPI_INCLUDE_DIR)
+  if(DEFINED ENV{MPI_ROOT})
+    set(MPI_INCLUDE_DIR ${BLT_MPI_INCLUDE_DIRS})
+  elseif(DEFINED ENV{MPI_ROOT})
+    message(STATUS "MPI_ROOT = $ENV{MPI_ROOT} ")
+    set(MPI_INCLUDE_DIR "$ENV{MPI_ROOT}/include" CACHE PATH "")
+  elseif(DEFINED ENV{MPICH_INSTALL})
+    message(STATUS "MPICH_INSTALL = $ENV{MPICH_INSTALL} ")
+    set(MPI_INCLUDE_DIR "$ENV{MPICH_INSTALL}/include" CACHE PATH "")
+  else()
+    message(FATAL_ERROR "MPI_INCLUDE_DIR not set and MPI_ROOT/MPICH_INSTALL env var not found.")
+  endif()
+endif()
 
+if (ENABLE_HIP AND NOT DEFINED MPI_INCLUDE_DIR)
+  message(FATAL_ERROR "Specify MPI_INCLUDE_DIR")
+endif()
 
 ################################
 # UNCRUSTIFY
@@ -373,7 +393,8 @@ ExternalProject_Add( raja
                                 -D ENABLE_HIP=${ENABLE_HIP}
                                 -D RAJA_ENABLE_HIP=${ENABLE_HIP}
                                 -D RAJA_ENABLE_VECTORIZATION=OFF
-                                -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
+                                -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
+                                -D RAJA_ENABLE_EXTERNAL_ROCPRIM=OFF
                                 -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
@@ -423,7 +444,7 @@ ExternalProject_Add( chai
                                 -D UMPIRE_ENABLE_TOOLS=ON
                                 -D ENABLE_HIP=${ENABLE_HIP}
                                 -D CHAI_ENABLE_HIP=${ENABLE_HIP}
-                                -D HIP_ROOT_DIR=${HIP_ROOT_DIR}
+                                -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
                                 -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
@@ -752,7 +773,7 @@ list(APPEND build_list metis )
 ################################
 # SUPERLU --
 ################################
-if( ENABLE_MPI )
+if( ENABLE_MPI AND ENABLE_SUPERLU_DIST)
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
@@ -811,7 +832,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-12-gbe52325a3.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-32-gfdf494f3c.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -828,6 +849,9 @@ if( ENABLE_HYPRE )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+  endif()
+
+  if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
     if( BUILD_SHARED_LIBS )
       set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.so" )
     else()
@@ -861,8 +885,19 @@ if( ENABLE_HYPRE )
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
---with-umpire-libs=umpire " )
+--with-umpire-libs=umpire")
+    endif()
+
+    # Add umpire lib dir
+    if (EXISTS "${CHAI_DIR}/lib64")
+      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \"")
+    elseif (EXISTS "${CHAI_DIR}/lib")
+      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \"")
+    endif()
+
+    # Add GPU-aware MPI flag conditionally
+    if (ENABLE_HYPRE_GPU_AWARE_MPI)
+      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-aware-mpi")
     endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     list( APPEND HYPRE_DEPENDS chai )
@@ -876,10 +911,20 @@ ROCM_PATH=${ROCM_PATH} \
 --with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
 --with-umpire-device \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \" \
 --with-umpire-libs=umpire \
---enable-gpu-aware-mpi \
 --with-MPI-include=${MPI_INCLUDE_DIR}" )
+
+    # Add umpire lib dir
+    if (EXISTS "${CHAI_DIR}/lib64")
+      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \"")
+    elseif (EXISTS "${CHAI_DIR}/lib")
+      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \"")
+    endif()
+
+    # Add GPU-aware MPI flag conditionally
+    if (ENABLE_HYPRE_GPU_AWARE_MPI)
+      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-aware-mpi")
+    endif()
   endif()
 
   if( CMAKE_HOST_APPLE )
