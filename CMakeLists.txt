@@ -168,7 +168,7 @@ ExternalProject_Add( uncrustify
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                -DCMAKE_CXX_STANDARD=11
+                                -DCMAKE_CXX_STANDARD=17
                                 -DNoGitVersionString:BOOL=ON
                                  )
 
@@ -239,6 +239,7 @@ ExternalProject_Add( hdf5
                                 -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                 -D CMAKE_BUILD_TYPE:STRING=${HDF5_CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
@@ -299,6 +300,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_CXX_COMPILER=${CONDUIT_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
 #                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 #                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 #                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
@@ -307,7 +309,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D BLT_CXX_STD:STRING=c++14
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 )
 
 list(APPEND build_list conduit )
@@ -374,6 +376,8 @@ ExternalProject_Add( raja
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
@@ -394,13 +398,13 @@ ExternalProject_Add( raja
                                 -D RAJA_ENABLE_HIP=${ENABLE_HIP}
                                 -D RAJA_ENABLE_VECTORIZATION=OFF
                                 -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
-                                -D RAJA_ENABLE_EXTERNAL_ROCPRIM=OFF
+                                -D ROCPRIM_DIR=${HIP_ROOT}
                                 -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list raja )
 
-
+#                                -D RAJA_ENABLE_EXTERNAL_ROCPRIM=OFF
 ################################
 # CHAI
 ################################
@@ -421,6 +425,8 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
@@ -472,6 +478,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
@@ -480,6 +487,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                    -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                        )
 
 
@@ -507,6 +515,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
@@ -562,7 +571,7 @@ else()
                                     -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D CMAKE_CXX_STANDARD=11
+                                    -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
@@ -893,6 +902,8 @@ if( ENABLE_HYPRE )
       set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \"")
     elseif (EXISTS "${CHAI_DIR}/lib")
       set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \"")
+    else()
+      message(FATAL_ERROR "Building Hypre+CUDA without umpire is not supported.")
     endif()
 
     # Add GPU-aware MPI flag conditionally
@@ -919,6 +930,8 @@ ROCM_PATH=${ROCM_PATH} \
       set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \"")
     elseif (EXISTS "${CHAI_DIR}/lib")
       set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \"")
+    else()
+      message(FATAL_ERROR "Building Hypre+HIP without umpire is not supported.")
     endif()
 
     # Add GPU-aware MPI flag conditionally
@@ -1301,7 +1314,7 @@ ExternalProject_Add( fmt
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_CXX_STANDARD=14
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                 -D CMAKE_CXX_VISIBILITY_PRESET:STRING=default
                                 -D CMAKE_VISIBILITY_INLINES_HIDDEN:BOOL=OFF
                                 -D FMT_TEST:BOOL=OFF )
