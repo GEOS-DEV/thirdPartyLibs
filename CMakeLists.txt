@@ -428,6 +428,7 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                 -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D CMAKE_INSTALL_LIBDIR=lib
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
@@ -894,16 +895,8 @@ if( ENABLE_HYPRE )
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \" \
 --with-umpire-libs=umpire")
-    endif()
-
-    # Add umpire lib dir
-    if (EXISTS "${CHAI_DIR}/lib64")
-      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \"")
-    elseif (EXISTS "${CHAI_DIR}/lib")
-      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \"")
-    else()
-      message(FATAL_ERROR "Building Hypre+CUDA without umpire is not supported.")
     endif()
 
     # Add GPU-aware MPI flag conditionally
@@ -922,17 +915,9 @@ ROCM_PATH=${ROCM_PATH} \
 --with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
 --with-umpire-device \
 --with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \" \
 --with-umpire-libs=umpire \
 --with-MPI-include=${MPI_INCLUDE_DIR}" )
-
-    # Add umpire lib dir
-    if (EXISTS "${CHAI_DIR}/lib64")
-      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib64 -Wl,-rpath,${CHAI_DIR}/lib64 ${CHAI_DIR}/lib/libcamp.a \"")
-    elseif (EXISTS "${CHAI_DIR}/lib")
-      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \"")
-    else()
-      message(FATAL_ERROR "Building Hypre+HIP without umpire is not supported.")
-    endif()
 
     # Add GPU-aware MPI flag conditionally
     if (ENABLE_HYPRE_GPU_AWARE_MPI)
