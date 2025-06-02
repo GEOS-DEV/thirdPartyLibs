@@ -428,7 +428,7 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                 -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
-                                -D CMAKE_INSTALL_LIBDIR=lib
+                                -D CMAKE_INSTALL_LIBDIR:PATH=${CHAI_DIR}/lib
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
