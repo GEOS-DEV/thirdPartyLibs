@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.23.1)
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
   cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction
 endif()
-cmake_policy(SET CMP0144 NEW) # find_package uses upper-case <PACKAGENAME>_ROOT variables.
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.27")
+  cmake_policy(SET CMP0144 NEW) # find_package uses upper-case <PACKAGENAME>_ROOT variables.
+endif()
 
 ################################
 # GEOS_TPL
