@@ -409,7 +409,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2025.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-develop-060425-with-submodules.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
