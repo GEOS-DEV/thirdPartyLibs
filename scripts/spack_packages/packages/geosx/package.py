@@ -148,7 +148,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("superlu-dist+openmp", when="+openmp")
 
     # -Wno-error=implicit-function-declaration needed for 'METIS_PartMeshDual' error
-    depends_on("scotch@7.0.3 ~compression +mpi +esmumps +int64 ~shared ~metis build_system=makefile cflags='-fPIC -Wno-error=implicit-function-declaration' cxxflags='-fPIC'", when='+scotch')
+    depends_on("scotch@7.0.7 ~compression +mpi +esmumps +int64 ~shared ~metis build_system=cmake cflags='-fPIC' cxxflags='-fPIC'", when='+scotch')
 
     depends_on('suite-sparse@5.10.1')
     depends_on("suite-sparse~openmp", when="~openmp")
@@ -170,7 +170,7 @@ class Geosx(CMakePackage, CudaPackage):
         for sm_ in CudaPackage.cuda_arch_values:
             depends_on('hypre+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
 
-    depends_on('petsc@3.13.0~hdf5~hypre+int64', when='+petsc')
+    depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
 
     #
@@ -479,7 +479,7 @@ class Geosx(CMakePackage, CudaPackage):
             if '+caliper' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CALIPER', True))
                 cfg.write(cmake_cache_entry('CALIPER_DIR', spec['caliper'].prefix))
-                cfg.write(cmake_cache_entry('adiak_DIR', spec['adiak'].prefix + '/lib/cmake/adiak'))
+                cfg.write(cmake_cache_entry('ADIAK_DIR', spec['adiak'].prefix))
 
             for tpl, cmake_name, enable in io_tpls:
                 if enable:

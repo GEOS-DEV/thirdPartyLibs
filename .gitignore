@@ -1,7 +1,8 @@
-build-*/
-install-*/
+/build*
+/install*
 .cproject
 .project
 .pydevproject
+.vscode/
 spack-*.txt
 __pycache__
