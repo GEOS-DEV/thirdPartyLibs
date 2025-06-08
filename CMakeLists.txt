@@ -1,4 +1,12 @@
 cmake_minimum_required(VERSION 3.23.1)
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction
+endif()
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.27")
+  cmake_policy(SET CMP0144 NEW) # find_package uses upper-case <PACKAGENAME>_ROOT variables.
+endif()
+
 ################################
 # GEOS_TPL
 ################################
@@ -123,8 +131,27 @@ else( TRUE )
     message( FATAL_ERROR "GEOSX_GLOBALINDEX_TYPE_FLAG not set for ${GEOSX_GLOBALINDEX_TYPE}" )
 endif()
 
+if (ENABLE_HIP AND NOT DEFINED ROCM_PATH)
+  set(ROCM_PATH ${HIP_ROOT})
+endif()
 
+if (ENABLE_HIP AND ENABLE_MPI AND NOT DEFINED MPI_INCLUDE_DIR)
+  if(DEFINED ENV{MPI_ROOT})
+    set(MPI_INCLUDE_DIR ${BLT_MPI_INCLUDE_DIRS})
+  elseif(DEFINED ENV{MPI_ROOT})
+    message(STATUS "MPI_ROOT = $ENV{MPI_ROOT} ")
+    set(MPI_INCLUDE_DIR "$ENV{MPI_ROOT}/include" CACHE PATH "")
+  elseif(DEFINED ENV{MPICH_INSTALL})
+    message(STATUS "MPICH_INSTALL = $ENV{MPICH_INSTALL} ")
+    set(MPI_INCLUDE_DIR "$ENV{MPICH_INSTALL}/include" CACHE PATH "")
+  else()
+    message(FATAL_ERROR "MPI_INCLUDE_DIR not set and MPI_ROOT/MPICH_INSTALL env var not found.")
+  endif()
+endif()
 
+if (ENABLE_HIP AND NOT DEFINED MPI_INCLUDE_DIR)
+  message(FATAL_ERROR "Specify MPI_INCLUDE_DIR")
+endif()
 
 ################################
 # UNCRUSTIFY
@@ -143,7 +170,7 @@ ExternalProject_Add( uncrustify
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-                                -DCMAKE_CXX_STANDARD=11
+                                -DCMAKE_CXX_STANDARD=17
                                 -DNoGitVersionString:BOOL=ON
                                  )
 
@@ -214,6 +241,7 @@ ExternalProject_Add( hdf5
                                 -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
                                 -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                 -D CMAKE_BUILD_TYPE:STRING=${HDF5_CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
@@ -274,6 +302,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_CXX_COMPILER=${CONDUIT_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
 #                                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 #                                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 #                                    -DMPI_C_COMPILER=${MPI_C_COMPILER}
@@ -282,7 +311,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D BLT_CXX_STD:STRING=c++14
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 )
 
 list(APPEND build_list conduit )
@@ -349,6 +378,8 @@ ExternalProject_Add( raja
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
@@ -365,16 +396,22 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D ENABLE_HIP=${ENABLE_HIP}
+                                -D RAJA_ENABLE_HIP=${ENABLE_HIP}
+                                -D RAJA_ENABLE_VECTORIZATION=OFF
+                                -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
+                                -D ROCPRIM_DIR=${HIP_ROOT}
+                                -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list raja )
 
-
+#                                -D RAJA_ENABLE_EXTERNAL_ROCPRIM=OFF
 ################################
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2025.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-develop-060425-with-submodules.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -390,7 +427,10 @@ ExternalProject_Add( chai
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                -D CMAKE_INSTALL_LIBDIR:PATH=${CHAI_DIR}/lib
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
@@ -410,6 +450,11 @@ ExternalProject_Add( chai
                                 -D CHAI_ENABLE_RAJA_PLUGIN=ON
                                 -D RAJA_DIR=${RAJA_DIR}/lib/cmake/raja
                                 -D UMPIRE_ENABLE_C=ON
+                                -D UMPIRE_ENABLE_TOOLS=ON
+                                -D ENABLE_HIP=${ENABLE_HIP}
+                                -D CHAI_ENABLE_HIP=${ENABLE_HIP}
+                                -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
+                                -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
 list(APPEND build_list chai )
@@ -436,6 +481,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
@@ -444,6 +490,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                    -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                        )
 
 
@@ -471,6 +518,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
@@ -485,6 +533,7 @@ if (ENABLE_CALIPER)
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
                                     -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
+                                    -D WITH_ROCM=${ENABLE_HIP}
                        )
 
     list(APPEND build_list caliper adiak)
@@ -525,7 +574,7 @@ else()
                                     -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                    -D CMAKE_CXX_STANDARD=11
+                                    -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                         )
@@ -736,7 +785,7 @@ list(APPEND build_list metis )
 ################################
 # SUPERLU --
 ################################
-if( ENABLE_MPI )
+if( ENABLE_MPI AND ENABLE_SUPERLU_DIST)
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
@@ -749,7 +798,7 @@ if( ENABLE_MPI )
     set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
     set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
   endif()
-  
+
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -795,7 +844,7 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-12-gbe52325a3.tar.gz" )
+  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-32-gfdf494f3c.tar.gz" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -812,7 +861,15 @@ if( ENABLE_HYPRE )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
-    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
+  endif()
+
+  if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
+    if( BUILD_SHARED_LIBS )
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.so" )
+    else()
+      set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib64/libsuperlu_dist.a" )
+    endif()
+    set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
     if( ENABLE_OPENMP )
       set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
     endif()
@@ -834,17 +891,40 @@ if( ENABLE_HYPRE )
       string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
       set( HYPRE_CUDA_FLAGS "\
 --with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
+--enable-shared \
 --enable-cusparse \
 --enable-cusolver \
---enable-unified-memory \
 --with-gpu-arch=${HYPRE_CUDA_SM} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib-dirs=${CHAI_DIR}/lib \
---with-umpire-libs=umpire " )
+--with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-libs=umpire")
+    endif()
+
+    # Add GPU-aware MPI flag conditionally
+    if (ENABLE_HYPRE_GPU_AWARE_MPI)
+      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-aware-mpi")
     endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
-    message( FATAL_ERROR "hip tpls build only supported through spack" )
+    list( APPEND HYPRE_DEPENDS chai )
+    set( HYPRE_HIP_FLAGS "\
+ROCM_PATH=${ROCM_PATH} \
+--enable-shared \
+--with-hip \
+--enable-rocblas \
+--enable-rocsparse \
+--enable-rocsolver \
+--with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
+--with-umpire-device \
+--with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-libs=umpire \
+--with-MPI-include=${MPI_INCLUDE_DIR}" )
+
+    # Add GPU-aware MPI flag conditionally
+    if (ENABLE_HYPRE_GPU_AWARE_MPI)
+      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-aware-mpi")
+    endif()
   endif()
 
   if( CMAKE_HOST_APPLE )
@@ -879,6 +959,7 @@ if( ENABLE_HYPRE )
   ${HYPRE_SUPERLU_FLAGS} \
   ${HYPRE_OPENMP_FLAG} \
   ${HYPRE_CUDA_FLAGS} \
+  ${HYPRE_HIP_FLAGS} \
   ${HYPRE_CALIPER_FLAGS}\n")
 
   ExternalProject_Add( hypre
@@ -886,6 +967,7 @@ if( ENABLE_HYPRE )
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
+                       PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patch/mgr-colsum+restrict.patch
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                        CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geos && . ${PROJECT_BINARY_DIR}/config_hypre_for_geos
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
@@ -1220,7 +1302,7 @@ ExternalProject_Add( fmt
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_CXX_STANDARD=14
+                                -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                 -D CMAKE_CXX_VISIBILITY_PRESET:STRING=default
                                 -D CMAKE_VISIBILITY_INLINES_HIDDEN:BOOL=OFF
                                 -D FMT_TEST:BOOL=OFF )
