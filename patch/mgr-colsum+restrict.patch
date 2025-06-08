@@ -1,0 +1,592 @@
+diff --git a/src/parcsr_ls/_hypre_parcsr_ls.h b/src/parcsr_ls/_hypre_parcsr_ls.h
+index 3c62f514f..ae8a0c591 100644
+--- a/src/parcsr_ls/_hypre_parcsr_ls.h
++++ b/src/parcsr_ls/_hypre_parcsr_ls.h
+@@ -3789,6 +3789,8 @@ HYPRE_Int hypre_ParCSRMatrixBlockDiagMatrixDevice( hypre_ParCSRMatrix *A, HYPRE_
+                                                    HYPRE_Int point_type, HYPRE_Int *CF_marker,
+                                                    HYPRE_Int diag_type,
+                                                    hypre_ParCSRMatrix **B_ptr );
++HYPRE_Int hypre_MGRBuildRFromWrDevice(hypre_IntArray *C_map, hypre_IntArray *F_map,
++                                      hypre_ParCSRMatrix *Wr, hypre_ParCSRMatrix *R);
+ 
+ /* par_mgr_stats.c */
+ HYPRE_Int hypre_MGRSetupStats( void *mgr_vdata );
+diff --git a/src/parcsr_ls/par_mgr_device.c b/src/parcsr_ls/par_mgr_device.c
+index 8c18b6255..150672030 100644
+--- a/src/parcsr_ls/par_mgr_device.c
++++ b/src/parcsr_ls/par_mgr_device.c
+@@ -1004,4 +1004,111 @@ hypre_ParCSRMatrixBlockDiagMatrixDevice( hypre_ParCSRMatrix  *A,
+    return hypre_error_flag;
+ }
+ 
++/*--------------------------------------------------------------------------
++ * Constructs a classical restriction operator as R = [Wr I] on GPU.
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_MGRBuildRFromWrDevice(hypre_IntArray      *C_map,
++                            hypre_IntArray      *F_map,
++                            hypre_ParCSRMatrix  *Wr,
++                            hypre_ParCSRMatrix  *R)
++{
++   /* Input matrix variables */
++   hypre_CSRMatrix       *Wr_diag          = hypre_ParCSRMatrixDiag(Wr);
++   HYPRE_Int             *Wr_diag_i        = hypre_CSRMatrixI(Wr_diag);
++   HYPRE_Int             *Wr_diag_j        = hypre_CSRMatrixJ(Wr_diag);
++   HYPRE_Complex         *Wr_diag_a        = hypre_CSRMatrixData(Wr_diag);
++   HYPRE_Int              Wr_diag_num_rows = hypre_CSRMatrixNumRows(Wr_diag);
++   HYPRE_Int             *C_map_data       = hypre_IntArrayData(C_map);
++   HYPRE_Int             *F_map_data       = hypre_IntArrayData(F_map);
++
++   /* Output matrix */
++   hypre_CSRMatrix       *R_diag           = hypre_ParCSRMatrixDiag(R);
++   HYPRE_Int             *R_diag_i         = hypre_CSRMatrixI(R_diag);
++   HYPRE_Int             *R_diag_j         = hypre_CSRMatrixJ(R_diag);
++   HYPRE_Complex         *R_diag_a         = hypre_CSRMatrixData(R_diag);
++
++   HYPRE_Int              nrows            = Wr_diag_num_rows;
++
++   // 1. Compute row lengths: 1 (for I) + nnz in Wr row
++   HYPRE_Int *row_lengths = hypre_TAlloc(HYPRE_Int, nrows, HYPRE_MEMORY_DEVICE);
++
++#if defined(HYPRE_USING_SYCL)
++   oneapi::dpl::counting_iterator<HYPRE_Int> row_begin(0);
++   HYPRE_ONEDPL_CALL(std::transform,
++                     row_begin, row_begin + nrows,
++                     row_lengths,
++                     [=](HYPRE_Int i) {
++                        return (1 + Wr_diag_i[i + 1] - Wr_diag_i[i]);
++                     });
++#else
++   HYPRE_THRUST_CALL(transform,
++                     thrust::make_counting_iterator<HYPRE_Int>(0),
++                     thrust::make_counting_iterator<HYPRE_Int>(nrows),
++                     row_lengths,
++                     [=] __device__ (HYPRE_Int i) {
++                        return (1 + Wr_diag_i[i + 1] - Wr_diag_i[i]);
++                     });
++#endif
++
++   // 2. Inclusive scan to get R_diag_i
++   HYPRE_Int zero = 0;
++   hypre_TMemcpy(R_diag_i, &zero, HYPRE_Int, 1, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
++
++#if defined(HYPRE_USING_SYCL)
++   HYPRE_ONEDPL_CALL(std::inclusive_scan,
++                     row_lengths, row_lengths + nrows,
++                     R_diag_i + 1);
++#else
++   HYPRE_THRUST_CALL(inclusive_scan,
++                     row_lengths, row_lengths + nrows,
++                     R_diag_i + 1);
++#endif
++
++   // 3. Fill R_diag_j and R_diag_a in parallel, one row per thread
++#if defined(HYPRE_USING_SYCL)
++   HYPRE_ONEDPL_CALL(std::for_each,
++                     row_begin, row_begin + nrows,
++                     [=](HYPRE_Int i)
++   {
++      HYPRE_Int row_start = R_diag_i[i];
++      // I part
++      R_diag_j[row_start] = C_map_data[i];
++      R_diag_a[row_start] = 1.0;
++      // Wr part
++      for (HYPRE_Int jj = Wr_diag_i[i], k = 0; jj < Wr_diag_i[i+1]; jj++, k++)
++      {
++         R_diag_j[row_start + 1 + k] = F_map_data[Wr_diag_j[jj]];
++         R_diag_a[row_start + 1 + k] = Wr_diag_a[jj];
++      }
++   });
++#else
++   HYPRE_THRUST_CALL(for_each,
++                     thrust::make_counting_iterator<HYPRE_Int>(0),
++                     thrust::make_counting_iterator<HYPRE_Int>(nrows),
++                     [=] __device__ (HYPRE_Int i)
++   {
++      HYPRE_Int row_start = R_diag_i[i];
++      // I part
++      R_diag_j[row_start] = C_map_data[i];
++      R_diag_a[row_start] = 1.0;
++      // Wr part
++      for (HYPRE_Int jj = Wr_diag_i[i], k = 0; jj < Wr_diag_i[i+1]; jj++, k++)
++      {
++         R_diag_j[row_start + 1 + k] = F_map_data[Wr_diag_j[jj]];
++         R_diag_a[row_start + 1 + k] = Wr_diag_a[jj];
++      }
++   });
++#endif
++
++   // 4. Free row_lengths
++   hypre_TFree(row_lengths, HYPRE_MEMORY_DEVICE);
++
++   // 5. Sync compute stream so that R_diag is ready for use
++   hypre_SyncComputeStream();
++
++   return hypre_error_flag;
++}
++
+ #endif
+diff --git a/src/parcsr_ls/par_mgr_interp.c b/src/parcsr_ls/par_mgr_interp.c
+index a1e2019a5..e2135b66e 100644
+--- a/src/parcsr_ls/par_mgr_interp.c
++++ b/src/parcsr_ls/par_mgr_interp.c
+@@ -786,10 +786,10 @@ hypre_MGRBuildPHost( hypre_ParCSRMatrix   *A,
+          // L1-Jacobi-type interpolation
+          diag_FF = hypre_CTAlloc(HYPRE_Complex, num_rows_AFF, memory_location_P);
+          hypre_CSRMatrixExtractDiagonalHost(hypre_ParCSRMatrixDiag(A_FF), diag, 0);
+-         hypre_CSRMatrixComputeRowSumHost(A_FF_diag, NULL, NULL, diag_FF, 1, 1.0, "set");
+-         hypre_CSRMatrixComputeRowSumHost(A_FC_diag, NULL, NULL, diag_FF, 1, 1.0, "add");
+-         hypre_CSRMatrixComputeRowSumHost(A_FF_offd, NULL, NULL, diag_FF, 1, 1.0, "add");
+-         hypre_CSRMatrixComputeRowSumHost(A_FC_offd, NULL, NULL, diag_FF, 1, 1.0, "add");
++         hypre_CSRMatrixComputeRowSum(A_FF_diag, NULL, NULL, diag_FF, 1, 1.0, "set");
++         hypre_CSRMatrixComputeRowSum(A_FC_diag, NULL, NULL, diag_FF, 1, 1.0, "add");
++         hypre_CSRMatrixComputeRowSum(A_FF_offd, NULL, NULL, diag_FF, 1, 1.0, "add");
++         hypre_CSRMatrixComputeRowSum(A_FC_offd, NULL, NULL, diag_FF, 1, 1.0, "add");
+ 
+          for (i = 0; i < num_rows_AFF; i++)
+          {
+@@ -2405,14 +2405,7 @@ hypre_MGRBuildRFromWr(hypre_IntArray       *C_map,
+ 
+    if (exec == HYPRE_EXEC_DEVICE)
+    {
+-      /* TODO (VPM): Implement hypre_MGRBuildRFromWrDevice */
+-      hypre_ParCSRMatrixMigrate(Wr, HYPRE_MEMORY_HOST);
+-      hypre_ParCSRMatrixMigrate(R, HYPRE_MEMORY_HOST);
+-      hypre_IntArrayMigrate(C_map, HYPRE_MEMORY_HOST);
+-      hypre_IntArrayMigrate(F_map, HYPRE_MEMORY_HOST);
+-      hypre_MGRBuildRFromWrHost(C_map, F_map, Wr, R);
+-      hypre_ParCSRMatrixMigrate(Wr, HYPRE_MEMORY_DEVICE);
+-      hypre_ParCSRMatrixMigrate(R, HYPRE_MEMORY_DEVICE);
++      hypre_MGRBuildRFromWrDevice(C_map, F_map, Wr, R);
+    }
+    else
+ #endif
+diff --git a/src/parcsr_ls/protos.h b/src/parcsr_ls/protos.h
+index d9bfde521..b8621b197 100644
+--- a/src/parcsr_ls/protos.h
++++ b/src/parcsr_ls/protos.h
+@@ -2334,6 +2334,8 @@ HYPRE_Int hypre_ParCSRMatrixBlockDiagMatrixDevice( hypre_ParCSRMatrix *A, HYPRE_
+                                                    HYPRE_Int point_type, HYPRE_Int *CF_marker,
+                                                    HYPRE_Int diag_type,
+                                                    hypre_ParCSRMatrix **B_ptr );
++HYPRE_Int hypre_MGRBuildRFromWrDevice(hypre_IntArray *C_map, hypre_IntArray *F_map,
++                                      hypre_ParCSRMatrix *Wr, hypre_ParCSRMatrix *R);
+ 
+ /* par_mgr_stats.c */
+ HYPRE_Int hypre_MGRSetupStats( void *mgr_vdata );
+diff --git a/src/parcsr_mv/_hypre_parcsr_mv.h b/src/parcsr_mv/_hypre_parcsr_mv.h
+index a83178afc..4896a6e1c 100644
+--- a/src/parcsr_mv/_hypre_parcsr_mv.h
++++ b/src/parcsr_mv/_hypre_parcsr_mv.h
+@@ -1037,6 +1037,7 @@ HYPRE_Int hypre_ParCSRDiagScaleVectorHost( hypre_ParCSRMatrix *par_A, hypre_ParV
+                                            hypre_ParVector *par_x );
+ HYPRE_Int hypre_ParCSRDiagScaleVectorDevice( hypre_ParCSRMatrix *par_A, hypre_ParVector *par_y,
+                                              hypre_ParVector *par_x );
++HYPRE_Int hypre_ParCSRMatrixColSumDevice( hypre_ParCSRMatrix *A, hypre_ParVector *b );
+ HYPRE_Int hypre_ParCSRMatrixDropSmallEntries( hypre_ParCSRMatrix *A, HYPRE_Real tol,
+                                               HYPRE_Int type);
+ HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
+diff --git a/src/parcsr_mv/par_csr_matop.c b/src/parcsr_mv/par_csr_matop.c
+index 8ce40413b..971779f41 100644
+--- a/src/parcsr_mv/par_csr_matop.c
++++ b/src/parcsr_mv/par_csr_matop.c
+@@ -7033,12 +7033,7 @@ hypre_ParCSRMatrixColSum( hypre_ParCSRMatrix   *A,
+ 
+    if (exec == HYPRE_EXEC_DEVICE)
+    {
+-      /* TODO (VPM): hypre_ParCSRMatrixColSumDevice */
+-      hypre_ParCSRMatrixMigrate(A, HYPRE_MEMORY_HOST);
+-      hypre_ParVectorMigrate(b, HYPRE_MEMORY_HOST);
+-      hypre_ParCSRMatrixColSumHost(A, b);
+-      hypre_ParCSRMatrixMigrate(A, HYPRE_MEMORY_DEVICE);
+-      hypre_ParVectorMigrate(b, HYPRE_MEMORY_DEVICE);
++      hypre_ParCSRMatrixColSumDevice(A, b);
+    }
+    else
+ #endif
+diff --git a/src/parcsr_mv/par_csr_matop_device.c b/src/parcsr_mv/par_csr_matop_device.c
+index 77fdd6503..46062101e 100644
+--- a/src/parcsr_mv/par_csr_matop_device.c
++++ b/src/parcsr_mv/par_csr_matop_device.c
+@@ -2025,4 +2025,18 @@ hypre_ParCSRDiagScaleVectorDevice( hypre_ParCSRMatrix *par_A,
+    return hypre_error_flag;
+ }
+ 
++/*--------------------------------------------------------------------------
++ * TODO: implement distributed column sum. For now, we are just using diag portion
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_ParCSRMatrixColSumDevice( hypre_ParCSRMatrix *A,
++                                hypre_ParVector    *b )
++{
++   hypre_CSRMatrixComputeColSum(hypre_ParCSRMatrixDiag(A),
++                                hypre_ParVectorLocalData(b), 0, 1.0);
++
++   return hypre_error_flag;
++}
++
+ #endif // #if defined(HYPRE_USING_GPU) || defined(HYPRE_USING_DEVICE_OPENMP)
+diff --git a/src/parcsr_mv/protos.h b/src/parcsr_mv/protos.h
+index 02479f140..bf8bf95d9 100644
+--- a/src/parcsr_mv/protos.h
++++ b/src/parcsr_mv/protos.h
+@@ -373,6 +373,7 @@ HYPRE_Int hypre_ParCSRDiagScaleVectorHost( hypre_ParCSRMatrix *par_A, hypre_ParV
+                                            hypre_ParVector *par_x );
+ HYPRE_Int hypre_ParCSRDiagScaleVectorDevice( hypre_ParCSRMatrix *par_A, hypre_ParVector *par_y,
+                                              hypre_ParVector *par_x );
++HYPRE_Int hypre_ParCSRMatrixColSumDevice( hypre_ParCSRMatrix *A, hypre_ParVector *b );
+ HYPRE_Int hypre_ParCSRMatrixDropSmallEntries( hypre_ParCSRMatrix *A, HYPRE_Real tol,
+                                               HYPRE_Int type);
+ HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
+diff --git a/src/seq_mv/csr_matop.c b/src/seq_mv/csr_matop.c
+index 5d614cdcb..60f770c89 100644
+--- a/src/seq_mv/csr_matop.c
++++ b/src/seq_mv/csr_matop.c
+@@ -1832,7 +1832,7 @@ hypre_CSRMatrixFnorm( hypre_CSRMatrix *A )
+  *         2, square sum
+  *--------------------------------------------------------------------------*/
+ 
+-void
++HYPRE_Int
+ hypre_CSRMatrixComputeRowSumHost( hypre_CSRMatrix *A,
+                                   HYPRE_Int       *CF_i,
+                                   HYPRE_Int       *CF_j,
+@@ -1875,13 +1875,15 @@ hypre_CSRMatrixComputeRowSumHost( hypre_CSRMatrix *A,
+ 
+       row_sum[i] = row_sum_i;
+    }
++
++   return hypre_error_flag;
+ }
+ 
+ /*--------------------------------------------------------------------------
+  * hypre_CSRMatrixComputeRowSum
+  *--------------------------------------------------------------------------*/
+ 
+-void
++HYPRE_Int
+ hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A,
+                               HYPRE_Int       *CF_i,
+                               HYPRE_Int       *CF_j,
+@@ -1904,6 +1906,146 @@ hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A,
+    {
+       hypre_CSRMatrixComputeRowSumHost(A, CF_i, CF_j, row_sum, type, scal, set_or_add);
+    }
++
++   return hypre_error_flag;
++}
++
++/*--------------------------------------------------------------------------
++ * Computes the column sums of a matrix.
++ * Assumes the input vector col_sum has size num_cols and equal to zeroes.
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_CSRMatrixComputeColSumHost( hypre_CSRMatrix *A,
++                                  HYPRE_Complex   *col_sum,
++                                  HYPRE_Int        type,
++                                  HYPRE_Complex    scal)
++{
++   HYPRE_Int      num_rows = hypre_CSRMatrixNumRows(A);
++   HYPRE_Int      num_cols = hypre_CSRMatrixNumCols(A);
++   HYPRE_Int     *rownnz   = hypre_CSRMatrixRownnz(A);
++   HYPRE_Complex *A_data   = hypre_CSRMatrixData(A);
++   HYPRE_Int     *A_i      = hypre_CSRMatrixI(A);
++   HYPRE_Int     *A_j      = hypre_CSRMatrixJ(A);
++
++#ifdef HYPRE_USING_OPENMP
++   #pragma omp parallel
++#endif
++   {
++      HYPRE_Int      tid = hypre_GetThreadNum();
++      HYPRE_Int      num_threads = hypre_NumActiveThreads();
++      HYPRE_Int      i, ii, j, col, ns, ne;
++      HYPRE_Complex *work;
++
++      /* Compute rows partitioning */
++      hypre_partition1D(num_rows, num_threads, tid, &ns, &ne);
++
++      /* Allocate work data */
++      work = (num_threads == 1) ?
++             col_sum : hypre_CTAlloc(HYPRE_Complex, num_cols, HYPRE_MEMORY_HOST);
++
++      switch (type)
++      {
++         case 0:
++         {
++            for (i = ns; i < ne; i++)
++            {
++               ii = rownnz ? rownnz[i] : i;
++
++               for (j = A_i[ii]; j < A_i[ii + 1]; j++)
++               {
++                  hypre_assert(A_j[j] < num_cols);
++                  col = A_j[j];
++
++                  work[col] += scal * A_data[j];
++               }
++            }
++            break;
++         }
++
++         case 1:
++         {
++            for (i = ns; i < ne; i++)
++            {
++               ii = rownnz ? rownnz[i] : i;
++
++               for (j = A_i[ii]; j < A_i[ii + 1]; j++)
++               {
++                  hypre_assert(A_j[j] < num_cols);
++                  col = A_j[j];
++
++                  work[col] += scal * hypre_cabs(A_data[j]);
++               }
++            }
++            break;
++         }
++
++         case 2:
++         {
++            for (i = ns; i < ne; i++)
++            {
++               ii = rownnz ? rownnz[i] : i;
++
++               for (j = A_i[ii]; j < A_i[ii + 1]; j++)
++               {
++                  hypre_assert(A_j[j] < num_cols);
++                  col = A_j[j];
++
++                  work[col] += scal * A_data[j] * A_data[j];
++               }
++            }
++            break;
++         }
++      }
++
++      /* Reduce results */
++      if (num_threads > 1)
++      {
++         for (i = 0; i < num_threads; i++)
++         {
++            if (i == tid)
++            {
++               for (j = 0; j < num_cols; j++)
++               {
++                  col_sum[j] = work[j];
++               }
++            }
++#ifdef HYPRE_USING_OPENMP
++            #pragma omp barrier
++#endif
++         }
++
++         hypre_TFree(work, HYPRE_MEMORY_HOST);
++      }
++   }
++
++   return hypre_error_flag;
++}
++
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_CSRMatrixComputeColSum( hypre_CSRMatrix *A,
++                              HYPRE_Complex   *col_sum,
++                              HYPRE_Int        type,
++                              HYPRE_Complex    scal)
++
++{
++#if defined(HYPRE_USING_GPU)
++   HYPRE_ExecutionPolicy exec = hypre_GetExecPolicy1( hypre_CSRMatrixMemoryLocation(A) );
++
++   if (exec == HYPRE_EXEC_DEVICE)
++   {
++      hypre_CSRMatrixComputeColSumDevice(A, col_sum, type, scal);
++   }
++   else
++#endif
++   {
++      hypre_CSRMatrixComputeColSumHost(A, col_sum, type, scal);
++   }
++
++   return hypre_error_flag;
+ }
+ 
+ /*--------------------------------------------------------------------------
+diff --git a/src/seq_mv/csr_matop_device.c b/src/seq_mv/csr_matop_device.c
+index c5ad8ece1..bb4f58d94 100644
+--- a/src/seq_mv/csr_matop_device.c
++++ b/src/seq_mv/csr_matop_device.c
+@@ -1327,6 +1327,110 @@ hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A,
+    return hypre_error_flag;
+ }
+ 
++/*--------------------------------------------------------------------------
++ * Computes the column sums of a CSR matrix.
++ * Each warp processes one row and accumulates into shared memory.
++ * For matrices with many columns, we process columns in chunks to stay
++ * within shared memory limits.
++ *--------------------------------------------------------------------------*/
++
++template <HYPRE_Int type>
++__global__ void
++hypreGPUKernel_CSRMatrixComputeColSum(hypre_DeviceItem    &item,
++                                      HYPRE_Int            nrows,
++                                      HYPRE_Int            ncols,
++                                      const HYPRE_Int     *ia,
++                                      const HYPRE_Int     *ja,
++                                      const HYPRE_Complex *aa,
++                                      const HYPRE_Complex  scal,
++                                      HYPRE_Complex       *col_sum)
++{
++    /* Get warp and lane IDs */
++    const HYPRE_Int warp_id = hypre_gpu_get_warp_id<1>(item);
++    const HYPRE_Int lane_id = hypre_gpu_get_lane_id<1>(item);
++    const HYPRE_Int num_warps = blockDim.x / HYPRE_WARP_SIZE;
++    const HYPRE_Int warp_in_block = warp_id % num_warps;
++    const HYPRE_Int row = blockIdx.x * num_warps + warp_in_block;
++
++    if (row < nrows)
++    {
++        /* Load row bounds using warp shuffle */
++        HYPRE_Int p = 0, q = 0;
++        if (lane_id < 2)
++        {
++            p = read_only_load(ia + row + lane_id);
++        }
++        q = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 1);
++        p = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 0);
++
++        /* Process row elements using warp-level parallelism */
++        for (HYPRE_Int j = p + lane_id; j < q; j += HYPRE_WARP_SIZE)
++        {
++            HYPRE_Int     col = read_only_load(ja + j);
++            HYPRE_Complex val = read_only_load(aa + j);
++            HYPRE_Complex colsum = 0.0;
++
++            if (type == 0)
++            {
++                colsum = scal * val;
++            }
++            else if (type == 1)
++            {
++                colsum = scal * hypre_abs(val);
++            }
++            else if (type == 2)
++            {
++                colsum = scal * val * val;
++            }
++
++            /* Atomic add is required to prevent race conditions, as multiple warps
++              (processing different rows) may update the same column sum simultaneously. */
++            atomicAdd(&col_sum[col], colsum);
++        }
++    }
++}
++
++/*--------------------------------------------------------------------------
++ * hypre_CSRMatrixComputeColSumDevice
++ *--------------------------------------------------------------------------*/
++HYPRE_Int
++hypre_CSRMatrixComputeColSumDevice(hypre_CSRMatrix  *A,
++                                   HYPRE_Complex    *col_sum,
++                                   HYPRE_Int         type,
++                                   HYPRE_Complex     scal)
++{
++    HYPRE_Int       nrows = hypre_CSRMatrixNumRows(A);
++    HYPRE_Int       ncols = hypre_CSRMatrixNumCols(A);
++    HYPRE_Int      *A_i   = hypre_CSRMatrixI(A);
++    HYPRE_Int      *A_j   = hypre_CSRMatrixJ(A);
++    HYPRE_Complex  *A_a   = hypre_CSRMatrixData(A);
++
++    /* Use standard HYPRE block dimensions */
++    dim3 bDim = hypre_GetDefaultDeviceBlockDimension();
++    dim3 gDim = hypre_GetDefaultDeviceGridDimension(nrows, "warp", bDim);
++
++    /* Launch kernel based on type */
++    if (type == 0)
++    {
++        HYPRE_GPU_LAUNCH(hypreGPUKernel_CSRMatrixComputeColSum<0>, gDim, bDim,
++                         nrows, ncols, A_i, A_j, A_a, scal, col_sum);
++    }
++    else if (type == 1)
++    {
++        HYPRE_GPU_LAUNCH(hypreGPUKernel_CSRMatrixComputeColSum<1>, gDim, bDim,
++                         nrows, ncols, A_i, A_j, A_a, scal, col_sum);
++    }
++    else if (type == 2)
++    {
++        HYPRE_GPU_LAUNCH(hypreGPUKernel_CSRMatrixComputeColSum<2>, gDim, bDim,
++                         nrows, ncols, A_i, A_j, A_a, scal, col_sum);
++    }
++
++    hypre_SyncComputeStream();
++
++    return hypre_error_flag;
++}
++
+ /*--------------------------------------------------------------------------
+  * hypreGPUKernel_CSRMatrixIntersectPattern
+  *
+diff --git a/src/seq_mv/protos.h b/src/seq_mv/protos.h
+index 42ec225a3..10337d6d9 100644
+--- a/src/seq_mv/protos.h
++++ b/src/seq_mv/protos.h
+@@ -40,10 +40,11 @@ HYPRE_Int hypre_CSRMatrixSplit(hypre_CSRMatrix *Bs_ext, HYPRE_BigInt first_col_d
+                                hypre_CSRMatrix **Bext_offd_ptr);
+ hypre_CSRMatrix * hypre_CSRMatrixAddPartial( hypre_CSRMatrix *A, hypre_CSRMatrix *B,
+                                              HYPRE_Int *row_nums);
+-void hypre_CSRMatrixComputeRowSumHost( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
+-                                       HYPRE_Complex *row_sum, HYPRE_Int type, HYPRE_Complex scal, const char *set_or_add);
+-void hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
+-                                   HYPRE_Complex *row_sum, HYPRE_Int type, HYPRE_Complex scal, const char *set_or_add);
++HYPRE_Int hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
++                                        HYPRE_Complex *row_sum, HYPRE_Int type, HYPRE_Complex scal,
++                                        const char *set_or_add );
++HYPRE_Int hypre_CSRMatrixComputeColSum( hypre_CSRMatrix *A, HYPRE_Complex *col_sum,
++                                        HYPRE_Int type, HYPRE_Complex scal );
+ HYPRE_Int hypre_CSRMatrixExtractDiagonal( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
+ HYPRE_Int hypre_CSRMatrixExtractDiagonalHost( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
+ HYPRE_Int hypre_CSRMatrixScale(hypre_CSRMatrix *A, HYPRE_Complex scalar);
+@@ -86,6 +87,8 @@ HYPRE_Int hypre_CSRMatrixReplaceDiagDevice( hypre_CSRMatrix *A, HYPRE_Complex *n
+ HYPRE_Int hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
+                                               HYPRE_Complex *row_sum, HYPRE_Int type,
+                                               HYPRE_Complex scal, const char *set_or_add );
++HYPRE_Int hypre_CSRMatrixComputeColSumDevice( hypre_CSRMatrix *A,  HYPRE_Complex *col_sum,
++                                              HYPRE_Int type, HYPRE_Complex scal );
+ HYPRE_Int hypre_CSRMatrixExtractDiagonalDevice( hypre_CSRMatrix *A, HYPRE_Complex *d,
+                                                 HYPRE_Int type );
+ hypre_CSRMatrix* hypre_CSRMatrixStack2Device(hypre_CSRMatrix *A, hypre_CSRMatrix *B);
+diff --git a/src/seq_mv/seq_mv.h b/src/seq_mv/seq_mv.h
+index c262e0ab0..845d29fe7 100644
+--- a/src/seq_mv/seq_mv.h
++++ b/src/seq_mv/seq_mv.h
+@@ -324,10 +324,11 @@ HYPRE_Int hypre_CSRMatrixSplit(hypre_CSRMatrix *Bs_ext, HYPRE_BigInt first_col_d
+                                hypre_CSRMatrix **Bext_offd_ptr);
+ hypre_CSRMatrix * hypre_CSRMatrixAddPartial( hypre_CSRMatrix *A, hypre_CSRMatrix *B,
+                                              HYPRE_Int *row_nums);
+-void hypre_CSRMatrixComputeRowSumHost( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
+-                                       HYPRE_Complex *row_sum, HYPRE_Int type, HYPRE_Complex scal, const char *set_or_add);
+-void hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
+-                                   HYPRE_Complex *row_sum, HYPRE_Int type, HYPRE_Complex scal, const char *set_or_add);
++HYPRE_Int hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
++                                        HYPRE_Complex *row_sum, HYPRE_Int type, HYPRE_Complex scal,
++                                        const char *set_or_add );
++HYPRE_Int hypre_CSRMatrixComputeColSum( hypre_CSRMatrix *A, HYPRE_Complex *col_sum,
++                                        HYPRE_Int type, HYPRE_Complex scal );
+ HYPRE_Int hypre_CSRMatrixExtractDiagonal( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
+ HYPRE_Int hypre_CSRMatrixExtractDiagonalHost( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
+ HYPRE_Int hypre_CSRMatrixScale(hypre_CSRMatrix *A, HYPRE_Complex scalar);
+@@ -370,6 +371,8 @@ HYPRE_Int hypre_CSRMatrixReplaceDiagDevice( hypre_CSRMatrix *A, HYPRE_Complex *n
+ HYPRE_Int hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
+                                               HYPRE_Complex *row_sum, HYPRE_Int type,
+                                               HYPRE_Complex scal, const char *set_or_add );
++HYPRE_Int hypre_CSRMatrixComputeColSumDevice( hypre_CSRMatrix *A,  HYPRE_Complex *col_sum,
++                                              HYPRE_Int type, HYPRE_Complex scal );
+ HYPRE_Int hypre_CSRMatrixExtractDiagonalDevice( hypre_CSRMatrix *A, HYPRE_Complex *d,
+                                                 HYPRE_Int type );
+ hypre_CSRMatrix* hypre_CSRMatrixStack2Device(hypre_CSRMatrix *A, hypre_CSRMatrix *B);
