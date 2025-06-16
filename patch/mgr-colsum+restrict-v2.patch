@@ -12,10 +12,10 @@ index 3c62f514f..ae8a0c591 100644
  /* par_mgr_stats.c */
  HYPRE_Int hypre_MGRSetupStats( void *mgr_vdata );
 diff --git a/src/parcsr_ls/par_mgr_device.c b/src/parcsr_ls/par_mgr_device.c
-index 8c18b6255..150672030 100644
+index 8c18b6255..9eafd7273 100644
 --- a/src/parcsr_ls/par_mgr_device.c
 +++ b/src/parcsr_ls/par_mgr_device.c
-@@ -1004,4 +1004,111 @@ hypre_ParCSRMatrixBlockDiagMatrixDevice( hypre_ParCSRMatrix  *A,
+@@ -1004,4 +1004,119 @@ hypre_ParCSRMatrixBlockDiagMatrixDevice( hypre_ParCSRMatrix  *A,
     return hypre_error_flag;
  }
  
@@ -46,7 +46,7 @@ index 8c18b6255..150672030 100644
 +
 +   HYPRE_Int              nrows            = Wr_diag_num_rows;
 +
-+   // 1. Compute row lengths: 1 (for I) + nnz in Wr row
++   /* 1. Compute row lengths: 1 (for I) + nnz in Wr row */
 +   HYPRE_Int *row_lengths = hypre_TAlloc(HYPRE_Int, nrows, HYPRE_MEMORY_DEVICE);
 +
 +#if defined(HYPRE_USING_SYCL)
@@ -67,7 +67,7 @@ index 8c18b6255..150672030 100644
 +                     });
 +#endif
 +
-+   // 2. Inclusive scan to get R_diag_i
++   /* 2. Inclusive scan to get R_diag_i */
 +   HYPRE_Int zero = 0;
 +   hypre_TMemcpy(R_diag_i, &zero, HYPRE_Int, 1, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
 +
@@ -87,15 +87,19 @@ index 8c18b6255..150672030 100644
 +                     row_begin, row_begin + nrows,
 +                     [=](HYPRE_Int i)
 +   {
-+      HYPRE_Int row_start = R_diag_i[i];
-+      // I part
-+      R_diag_j[row_start] = C_map_data[i];
-+      R_diag_a[row_start] = 1.0;
-+      // Wr part
-+      for (HYPRE_Int jj = Wr_diag_i[i], k = 0; jj < Wr_diag_i[i+1]; jj++, k++)
++      HYPRE_Int r_offset = R_diag_i[i];
++
++      /* I part */
++      R_diag_j[r_offset] = C_map_data[i];
++      R_diag_a[r_offset] = 1.0;
++      r_offset++;
++
++      /* Wr part */
++      for (HYPRE_Int jj = Wr_diag_i[i]; jj < Wr_diag_i[i+1]; jj++)
 +      {
-+         R_diag_j[row_start + 1 + k] = F_map_data[Wr_diag_j[jj]];
-+         R_diag_a[row_start + 1 + k] = Wr_diag_a[jj];
++         R_diag_j[r_offset] = F_map_data[Wr_diag_j[jj]];
++         R_diag_a[r_offset] = Wr_diag_a[jj];
++         r_offset++;
 +      }
 +   });
 +#else
@@ -104,23 +108,27 @@ index 8c18b6255..150672030 100644
 +                     thrust::make_counting_iterator<HYPRE_Int>(nrows),
 +                     [=] __device__ (HYPRE_Int i)
 +   {
-+      HYPRE_Int row_start = R_diag_i[i];
-+      // I part
-+      R_diag_j[row_start] = C_map_data[i];
-+      R_diag_a[row_start] = 1.0;
-+      // Wr part
-+      for (HYPRE_Int jj = Wr_diag_i[i], k = 0; jj < Wr_diag_i[i+1]; jj++, k++)
++      HYPRE_Int r_offset = R_diag_i[i];
++
++      /* I part */
++      R_diag_j[r_offset] = C_map_data[i];
++      R_diag_a[r_offset] = 1.0;
++      r_offset++;
++
++      /* Wr part */
++      for (HYPRE_Int jj = Wr_diag_i[i]; jj < Wr_diag_i[i+1]; jj++)
 +      {
-+         R_diag_j[row_start + 1 + k] = F_map_data[Wr_diag_j[jj]];
-+         R_diag_a[row_start + 1 + k] = Wr_diag_a[jj];
++         R_diag_j[r_offset] = F_map_data[Wr_diag_j[jj]];
++         R_diag_a[r_offset] = Wr_diag_a[jj];
++         r_offset++;
 +      }
 +   });
 +#endif
 +
-+   // 4. Free row_lengths
++   /* 4. Free row_lengths */
 +   hypre_TFree(row_lengths, HYPRE_MEMORY_DEVICE);
 +
-+   // 5. Sync compute stream so that R_diag is ready for use
++   /* 5. Sync compute stream so that R_diag is ready for use */
 +   hypre_SyncComputeStream();
 +
 +   return hypre_error_flag;
@@ -206,23 +214,93 @@ index 8ce40413b..971779f41 100644
     else
  #endif
 diff --git a/src/parcsr_mv/par_csr_matop_device.c b/src/parcsr_mv/par_csr_matop_device.c
-index 77fdd6503..46062101e 100644
+index 77fdd6503..94ecdd16a 100644
 --- a/src/parcsr_mv/par_csr_matop_device.c
 +++ b/src/parcsr_mv/par_csr_matop_device.c
-@@ -2025,4 +2025,18 @@ hypre_ParCSRDiagScaleVectorDevice( hypre_ParCSRMatrix *par_A,
+@@ -2025,4 +2025,88 @@ hypre_ParCSRDiagScaleVectorDevice( hypre_ParCSRMatrix *par_A,
     return hypre_error_flag;
  }
  
 +/*--------------------------------------------------------------------------
-+ * TODO: implement distributed column sum. For now, we are just using diag portion
 + *--------------------------------------------------------------------------*/
 +
 +HYPRE_Int
 +hypre_ParCSRMatrixColSumDevice( hypre_ParCSRMatrix *A,
 +                                hypre_ParVector    *b )
 +{
-+   hypre_CSRMatrixComputeColSum(hypre_ParCSRMatrixDiag(A),
-+                                hypre_ParVectorLocalData(b), 0, 1.0);
++   hypre_ParCSRCommPkg    *comm_pkg       = hypre_ParCSRMatrixCommPkg(A);
++   hypre_CSRMatrix        *A_diag         = hypre_ParCSRMatrixDiag(A);
++   hypre_CSRMatrix        *A_offd         = hypre_ParCSRMatrixOffd(A);
++   HYPRE_Int               num_cols_diag  = hypre_CSRMatrixNumCols(A_diag);
++   HYPRE_Int               num_cols_offd  = hypre_CSRMatrixNumCols(A_offd);
++   HYPRE_Complex          *b_data         = hypre_ParVectorLocalData(b);
++   HYPRE_Int               num_sends      = hypre_ParCSRCommPkgNumSends(comm_pkg);
++   HYPRE_Int               send_map_num_elmts = hypre_ParCSRCommPkgSendMapStart(comm_pkg, num_sends);
++
++   hypre_ParCSRCommHandle *comm_handle;
++   HYPRE_Complex          *d_send_buf;
++   HYPRE_Complex          *d_recv_buf;
++
++   /*---------------------------------------------------------------------
++    * Allocate/reuse data buffers
++    *--------------------------------------------------------------------*/
++
++   if (!hypre_ParCSRCommPkgTmpData(comm_pkg))
++   {
++      hypre_ParCSRCommPkgTmpData(comm_pkg) = hypre_TAlloc(HYPRE_Complex,
++                                                          num_cols_offd,
++                                                          HYPRE_MEMORY_DEVICE);
++   }
++   d_send_buf = hypre_ParCSRCommPkgTmpData(comm_pkg);
++   hypreDevice_ComplexFilln(d_send_buf, num_cols_offd, 0.0);
++
++   /* send_map_elmts on device */
++   hypre_ParCSRCommPkgCopySendMapElmtsToDevice(comm_pkg);
++
++   /* Allocate receive data buffer */
++   if (!hypre_ParCSRCommPkgBufData(comm_pkg))
++   {
++      hypre_ParCSRCommPkgBufData(comm_pkg) = hypre_TAlloc(HYPRE_Complex,
++                                                          send_map_num_elmts,
++                                                          HYPRE_MEMORY_DEVICE);
++   }
++   d_recv_buf = hypre_ParCSRCommPkgBufData(comm_pkg);
++
++   /*---------------------------------------------------------------------
++    * Overlap communication and computation
++    *--------------------------------------------------------------------*/
++
++   /* Compute off-diagonal contribution to be sent to neighboring ranks */
++   hypre_CSRMatrixComputeColSum(A_offd, d_send_buf, 0, 1.0);
++
++   /* Make sure d_send_buf is ready before communicating it */
++   if (hypre_GetGpuAwareMPI())
++   {
++      hypre_ForceSyncComputeStream();
++   }
++
++   /* Non-blocking communication starts */
++   comm_handle = hypre_ParCSRCommHandleCreate_v2(2, comm_pkg,
++                                                 HYPRE_MEMORY_DEVICE, d_send_buf,
++                                                 HYPRE_MEMORY_DEVICE, d_recv_buf );
++
++   /* Compute diagonal contribution */
++   hypre_CSRMatrixComputeColSum(A_diag, b_data, 0, 1.0);
++
++   /* Non-blocking communication ends */
++   hypre_ParCSRCommHandleDestroy(comm_handle);
++
++   /* Make sure b_data is ready before updating it below */
++   if (hypre_GetGpuAwareMPI())
++   {
++      hypre_ForceSyncComputeStream();
++   }
++
++   /* Compute off-diagonal contribution by unpacking data via SpMV */
++   hypre_ParCSRMatrixMatvecT_unpack(comm_pkg, num_cols_diag, d_recv_buf, b_data);
++
++   /* Final sync to ensure all updates are complete before returning */
++   hypre_SyncComputeStream();
 +
 +   return hypre_error_flag;
 +}
@@ -241,7 +319,7 @@ index 02479f140..bf8bf95d9 100644
                                                HYPRE_Int type);
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
 diff --git a/src/seq_mv/csr_matop.c b/src/seq_mv/csr_matop.c
-index 5d614cdcb..60f770c89 100644
+index 5d614cdcb..dacccf52d 100644
 --- a/src/seq_mv/csr_matop.c
 +++ b/src/seq_mv/csr_matop.c
 @@ -1832,7 +1832,7 @@ hypre_CSRMatrixFnorm( hypre_CSRMatrix *A )
@@ -270,7 +348,7 @@ index 5d614cdcb..60f770c89 100644
  hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A,
                                HYPRE_Int       *CF_i,
                                HYPRE_Int       *CF_j,
-@@ -1904,6 +1906,146 @@ hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A,
+@@ -1904,6 +1906,152 @@ hypre_CSRMatrixComputeRowSum( hypre_CSRMatrix *A,
     {
        hypre_CSRMatrixComputeRowSumHost(A, CF_i, CF_j, row_sum, type, scal, set_or_add);
     }
@@ -400,6 +478,12 @@ index 5d614cdcb..60f770c89 100644
 +                              HYPRE_Complex    scal)
 +
 +{
++   /* Trivial case */
++   if (!hypre_CSRMatrixNumCols(A))
++   {
++      return hypre_error_flag;
++   }
++
 +#if defined(HYPRE_USING_GPU)
 +   HYPRE_ExecutionPolicy exec = hypre_GetExecPolicy1( hypre_CSRMatrixMemoryLocation(A) );
 +
