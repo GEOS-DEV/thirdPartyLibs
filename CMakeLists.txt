@@ -490,6 +490,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                    -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
                                     -D MPI_C_COMPILER:STRING=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
@@ -528,6 +529,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
+                                    -D BUILD_SHARED_LIBS:BOOL=ON
                                     -D WITH_MPI:BOOL=${ENABLE_MPI}
                                     -D MPI_C_COMPILER:STRING=${MPI_C_COMPILER}
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
@@ -544,12 +546,7 @@ if (ENABLE_CALIPER)
                                     -D WITH_ROCM=${ENABLE_HIP}
                        )
 
-    if( BUILD_SHARED_LIBS )
-      set( CALIPER_LIB "libcaliper.so" )
-    else()
-      set( CALIPER_LIB "libcaliper.a" )
-    endif()
-
+    set( CALIPER_LIB "libcaliper.so" )
     list(APPEND build_list caliper adiak)
 else()
     set( ENABLE_CALIPER_HYPRE OFF CACHE BOOL "" FORCE )
