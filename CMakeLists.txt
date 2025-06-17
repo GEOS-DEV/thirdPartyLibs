@@ -457,6 +457,12 @@ ExternalProject_Add( chai
                                 -D CMAKE_HIP_ARCHITECTURES=${CMAKE_HIP_ARCHITECTURES}
                     )
 
+if( BUILD_SHARED_LIBS )
+  set( CAMP_LIB "libcamp.so" )
+else()
+  set( CAMP_LIB "libcamp.a" )
+endif()
+
 list(APPEND build_list chai )
 
 
@@ -489,6 +495,7 @@ if (ENABLE_CALIPER)
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_LIBDIR:PATH=<INSTALL_DIR>/lib
                                     -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                                     -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                        )
@@ -527,6 +534,7 @@ if (ENABLE_CALIPER)
                                     -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_LIBDIR:PATH=<INSTALL_DIR>/lib
                                     -D WITH_PAPI:BOOL=${ENABLE_PAPI}
                                     -D PAPI_PREFIX:STRING=${PAPI_PREFIX}
                                     -D WITH_ADIAK:BOOL=ON
@@ -535,6 +543,12 @@ if (ENABLE_CALIPER)
                                     -D WITH_NVPROF=${ENABLE_CUDA}
                                     -D WITH_ROCM=${ENABLE_HIP}
                        )
+
+    if( BUILD_SHARED_LIBS )
+      set( CALIPER_LIB "libcaliper.so" )
+    else()
+      set( CALIPER_LIB "libcaliper.a" )
+    endif()
 
     list(APPEND build_list caliper adiak)
 else()
@@ -888,16 +902,15 @@ if( ENABLE_HYPRE )
       message( FATAL_ERROR "Non-compatible options: HYPRE device cannot be set to CUDA when ENABLE_CUDA is OFF" )
     else()
       list( APPEND HYPRE_DEPENDS chai )
-      string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
       set( HYPRE_CUDA_FLAGS "\
 --with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
 --enable-shared \
 --enable-cusparse \
 --enable-cusolver \
---with-gpu-arch=${HYPRE_CUDA_SM} \
+--with-gpu-arch=${CMAKE_CUDA_ARCHITECTURES} \
 --with-umpire \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/${CAMP_LIB} \" \
 --with-umpire-libs=umpire")
     endif()
 
@@ -917,7 +930,7 @@ ROCM_PATH=${ROCM_PATH} \
 --with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
 --with-umpire-device \
 --with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/libcamp.a \" \
+--with-umpire-lib=\"-L${CHAI_DIR}/lib -Wl,-rpath,${CHAI_DIR}/lib ${CHAI_DIR}/lib/${CAMP_LIB} \" \
 --with-umpire-libs=umpire \
 --with-MPI-include=${MPI_INCLUDE_DIR}" )
 
@@ -934,7 +947,7 @@ ROCM_PATH=${ROCM_PATH} \
   endif()
 
   if( ENABLE_CALIPER_HYPRE )
-    set( HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}/include\" --with-caliper-lib=\"${CALIPER_DIR}/libs/caliper.a\"" )
+    set( HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}/include\" --with-caliper-lib=\"${CALIPER_DIR}/lib/${CALIPER_LIB}\"" )
     list( APPEND HYPRE_DEPENDS caliper )
   endif()
 
