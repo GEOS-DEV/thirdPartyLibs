@@ -749,7 +749,7 @@ if( ENABLE_MPI )
     set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
     set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
   endif()
-  
+
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -886,6 +886,7 @@ if( ENABLE_HYPRE )
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
+                       PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patch/hypre-next.patch
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                        CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geos && . ${PROJECT_BINARY_DIR}/config_hypre_for_geos
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
