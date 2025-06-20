@@ -915,6 +915,11 @@ if( ENABLE_HYPRE )
     if (ENABLE_HYPRE_GPU_AWARE_MPI)
       set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-aware-mpi")
     endif()
+
+    # Add GPU profiling flag conditionally
+    if (ENABLE_CUDA_NVTOOLSEXT)
+      set(HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-profiling")
+    endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     list( APPEND HYPRE_DEPENDS chai )
     set( HYPRE_HIP_FLAGS "\
@@ -934,6 +939,11 @@ ROCM_PATH=${ROCM_PATH} \
     # Add GPU-aware MPI flag conditionally
     if (ENABLE_HYPRE_GPU_AWARE_MPI)
       set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-aware-mpi")
+    endif()
+
+    # Add GPU profiling flag conditionally
+    if (ENABLE_ROCTX)
+      set(HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-profiling")
     endif()
   endif()
 
@@ -977,7 +987,7 @@ ROCM_PATH=${ROCM_PATH} \
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
-                       PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patch/mgr-colsum+restrict-v2.patch
+                       PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patch/mgr-colsum+restrict-v3.patch
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                        CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geos && . ${PROJECT_BINARY_DIR}/config_hypre_for_geos
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1

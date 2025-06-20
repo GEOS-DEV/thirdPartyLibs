@@ -196,7 +196,7 @@ index a83178afc..4896a6e1c 100644
                                                HYPRE_Int type);
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
 diff --git a/src/parcsr_mv/par_csr_matop.c b/src/parcsr_mv/par_csr_matop.c
-index 8ce40413b..971779f41 100644
+index 8ce40413b..f03752330 100644
 --- a/src/parcsr_mv/par_csr_matop.c
 +++ b/src/parcsr_mv/par_csr_matop.c
 @@ -7033,12 +7033,7 @@ hypre_ParCSRMatrixColSum( hypre_ParCSRMatrix   *A,
@@ -213,6 +213,42 @@ index 8ce40413b..971779f41 100644
     }
     else
  #endif
+@@ -7104,6 +7099,7 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+    HYPRE_Real              *tnorms          = NULL;
+    HYPRE_Real              *weights         = NULL;
+    HYPRE_Real              *g_weights       = NULL;
++   HYPRE_Real               tnorm;
+    HYPRE_Int                i;
+ 
+    /* Sanity check - Return an empty scaling if tags is a null pointer or type = 0 */
+@@ -7138,7 +7134,8 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+       weights = hypre_TAlloc(HYPRE_Real, num_tags, HYPRE_MEMORY_HOST);
+       for (i = 0; i < num_tags; i++)
+       {
+-         weights[i] = hypre_squared(tnorms[i * num_tags + i]);
++         tnorm = tnorms[i * num_tags + i];
++         weights[i] = (tnorm > 0.0) ? hypre_squared(tnorm) : 1.0;
+       }
+ 
+       /* Compute global scaling weights */
+@@ -7149,6 +7146,17 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+          g_weights[i] = pow(10.0, round(log10(hypre_sqrt(1.0 / g_weights[i]))));
+       }
+ 
++#if 0
++      /* Debug weights */
++      hypre_ParPrintf(comm, "%s - Scaling weights: [ ", __func__);
++      for (i = 0; i < num_tags; i++)
++      {
++         hypre_ParPrintf(comm, "%.0e ", g_weights[i]);
++      }
++      hypre_ParPrintf(comm, "]\n");
++      hypre_MPI_Barrier(comm);
++#endif
++
+       /* Setup scaling vector */
+       for (i = 0; i < num_rows; i++)
+       {
 diff --git a/src/parcsr_mv/par_csr_matop_device.c b/src/parcsr_mv/par_csr_matop_device.c
 index 77fdd6503..94ecdd16a 100644
 --- a/src/parcsr_mv/par_csr_matop_device.c
@@ -319,7 +355,7 @@ index 02479f140..bf8bf95d9 100644
                                                HYPRE_Int type);
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
 diff --git a/src/seq_mv/csr_matop.c b/src/seq_mv/csr_matop.c
-index 5d614cdcb..dacccf52d 100644
+index 5d614cdcb..ffc5e97a0 100644
 --- a/src/seq_mv/csr_matop.c
 +++ b/src/seq_mv/csr_matop.c
 @@ -1832,7 +1832,7 @@ hypre_CSRMatrixFnorm( hypre_CSRMatrix *A )
@@ -501,19 +537,139 @@ index 5d614cdcb..dacccf52d 100644
  }
  
  /*--------------------------------------------------------------------------
+@@ -2214,6 +2362,7 @@ hypre_CSRMatrixSetConstantValues( hypre_CSRMatrix *A,
+ 
+ /*--------------------------------------------------------------------------
+  * Computes the Frobenius norm for each tag in a CSR matrix.
++ *
+  * Each row is assigned a tag (block identifier) via the tags array (local rows only).
+  * The result is stored in the output pointer tnorms_ptr (length num_tags * num_tags).
+  *--------------------------------------------------------------------------*/
+@@ -2222,7 +2371,7 @@ HYPRE_Int
+ hypre_CSRMatrixTaggedFnormHost(hypre_CSRMatrix  *A,
+                                HYPRE_Int         num_tags,
+                                HYPRE_Int        *tags,
+-                               HYPRE_Real      **tnorms_ptr)
++                               HYPRE_Real       *tnorms)
+ {
+    HYPRE_Int       *A_i         = hypre_CSRMatrixI(A);
+    HYPRE_Int       *A_j         = hypre_CSRMatrixJ(A);
+@@ -2232,27 +2381,6 @@ hypre_CSRMatrixTaggedFnormHost(hypre_CSRMatrix  *A,
+    HYPRE_Int        tnorms_size = num_tags * num_tags;
+    HYPRE_Int        i, j, itag, jtag;
+ 
+-   /* Create tnorms array */
+-   if (!*tnorms_ptr)
+-   {
+-      *tnorms_ptr = hypre_CTAlloc(HYPRE_Real, tnorms_size, HYPRE_MEMORY_HOST);
+-   }
+-   else
+-   {
+-      /* Initialize tnorms array */
+-      for (i = 0; i < tnorms_size; i++)
+-      {
+-         (*tnorms_ptr)[i] = 0.0;
+-      }
+-   }
+-
+-   /* Call regular Frobenius norm if no tags or only one tag */
+-   if (num_tags <= 1 || !tags)
+-   {
+-      (*tnorms_ptr)[0] = hypre_CSRMatrixFnorm(A);
+-      return hypre_error_flag;
+-   }
+-
+    /* Accumulate sums */
+    for (i = 0; i < num_rows; i++)
+    {
+@@ -2263,43 +2391,64 @@ hypre_CSRMatrixTaggedFnormHost(hypre_CSRMatrix  *A,
+       {
+          jtag = tags[A_j[j]];
+          hypre_assert(jtag >= 0 && jtag < num_tags);
+-         (*tnorms_ptr)[itag * num_tags + jtag] += hypre_squared(A_a[j]);
++         tnorms[itag * num_tags + jtag] += hypre_squared(A_a[j]);
+       }
+    }
+ 
+    /* Take square root for each block */
+    for (i = 0; i < tnorms_size; i++)
+    {
+-      (*tnorms_ptr)[i] = hypre_sqrt((*tnorms_ptr)[i]);
++      tnorms[i] = hypre_sqrt(tnorms[i]);
+    }
+ 
+    return hypre_error_flag;
+ }
+ 
+ /*--------------------------------------------------------------------------
+- * hypre_CSRMatrixTaggedFnorm
++ * Compute tagged Frobenius norms of an input matrix
+  *--------------------------------------------------------------------------*/
+ 
+ HYPRE_Int
+-hypre_CSRMatrixTaggedFnorm(hypre_CSRMatrix *A,
+-                           HYPRE_Int        num_tags,
+-                           HYPRE_Int       *tags,
++hypre_CSRMatrixTaggedFnorm(hypre_CSRMatrix  *A,
++                           HYPRE_Int         num_tags,
++                           HYPRE_Int        *tags,
+                            HYPRE_Real      **tnorms_ptr)
+ {
++   HYPRE_Int     tnorms_size = num_tags * num_tags;
++   HYPRE_Int     i;
++
++   /* Create tnorms array */
++   if (!*tnorms_ptr)
++   {
++      *tnorms_ptr = hypre_CTAlloc(HYPRE_Real, tnorms_size, HYPRE_MEMORY_HOST);
++   }
++   else
++   {
++      /* Initialize tnorms array */
++      for (i = 0; i < tnorms_size; i++)
++      {
++         (*tnorms_ptr)[i] = 0.0;
++      }
++   }
++
++   /* Call regular Frobenius norm if no tags or only one tag */
++   if (num_tags <= 1 || !tags)
++   {
++      (*tnorms_ptr)[0] = hypre_CSRMatrixFnorm(A);
++      return hypre_error_flag;
++   }
++
+ #if defined(HYPRE_USING_GPU)
+    HYPRE_MemoryLocation memory_location = hypre_CSRMatrixMemoryLocation(A);
+ 
+    if (hypre_GetExecPolicy1(memory_location) == HYPRE_EXEC_DEVICE)
+    {
+-      /* TODO (VPM): hypre_ParCSRMatrixTaggedFnormDevice */
+-      hypre_CSRMatrixMigrate(A, HYPRE_MEMORY_HOST);
+-      hypre_CSRMatrixTaggedFnormHost(A, num_tags, tags, tnorms_ptr);
+-      hypre_CSRMatrixMigrate(A, HYPRE_MEMORY_DEVICE);
++      hypre_CSRMatrixTaggedFnormDevice(A, num_tags, tags, *tnorms_ptr);
+    }
+    else
+ #endif
+    {
+-      hypre_CSRMatrixTaggedFnormHost(A, num_tags, tags, tnorms_ptr);
++      hypre_CSRMatrixTaggedFnormHost(A, num_tags, tags, *tnorms_ptr);
+    }
+ 
+    return hypre_error_flag;
 diff --git a/src/seq_mv/csr_matop_device.c b/src/seq_mv/csr_matop_device.c
-index c5ad8ece1..bb4f58d94 100644
+index c5ad8ece1..890338719 100644
 --- a/src/seq_mv/csr_matop_device.c
 +++ b/src/seq_mv/csr_matop_device.c
-@@ -1327,6 +1327,110 @@ hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A,
+@@ -1327,6 +1327,220 @@ hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A,
     return hypre_error_flag;
  }
  
 +/*--------------------------------------------------------------------------
-+ * Computes the column sums of a CSR matrix.
++ * GPU kernel for computing the column sums of a CSR matrix.
++ *
 + * Each warp processes one row and accumulates into shared memory.
-+ * For matrices with many columns, we process columns in chunks to stay
-+ * within shared memory limits.
 + *--------------------------------------------------------------------------*/
 +
 +template <HYPRE_Int type>
@@ -527,54 +683,67 @@ index c5ad8ece1..bb4f58d94 100644
 +                                      const HYPRE_Complex  scal,
 +                                      HYPRE_Complex       *col_sum)
 +{
-+    /* Get warp and lane IDs */
-+    const HYPRE_Int warp_id = hypre_gpu_get_warp_id<1>(item);
-+    const HYPRE_Int lane_id = hypre_gpu_get_lane_id<1>(item);
-+    const HYPRE_Int num_warps = blockDim.x / HYPRE_WARP_SIZE;
-+    const HYPRE_Int warp_in_block = warp_id % num_warps;
-+    const HYPRE_Int row = blockIdx.x * num_warps + warp_in_block;
++   /* Get warp and lane IDs */
++#if defined (HYPRE_USING_SYCL)
++   const HYPRE_Int num_warps = item.get_group(2) / HYPRE_WARP_SIZE;
++#else
++   const HYPRE_Int num_warps = blockDim.x / HYPRE_WARP_SIZE;
++#endif
++   const HYPRE_Int warp_id = hypre_gpu_get_warp_id<1>(item);
++   const HYPRE_Int lane_id = hypre_gpu_get_lane_id<1>(item);
++   const HYPRE_Int warp_in_block = warp_id % num_warps;
++#if defined (HYPRE_USING_SYCL)
++   const HYPRE_Int row = item.get_group(2) * num_warps + warp_in_block;
++#else
++   const HYPRE_Int row = blockIdx.x * num_warps + warp_in_block;
++#endif
 +
-+    if (row < nrows)
-+    {
-+        /* Load row bounds using warp shuffle */
-+        HYPRE_Int p = 0, q = 0;
-+        if (lane_id < 2)
-+        {
-+            p = read_only_load(ia + row + lane_id);
-+        }
-+        q = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 1);
-+        p = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 0);
++   if (row < nrows)
++   {
++      /* Load row bounds using warp shuffle */
++      HYPRE_Int p = 0, q = 0;
++      if (lane_id < 2)
++      {
++         p = read_only_load(ia + row + lane_id);
++      }
++      q = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 1);
++      p = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 0);
 +
-+        /* Process row elements using warp-level parallelism */
-+        for (HYPRE_Int j = p + lane_id; j < q; j += HYPRE_WARP_SIZE)
-+        {
-+            HYPRE_Int     col = read_only_load(ja + j);
-+            HYPRE_Complex val = read_only_load(aa + j);
-+            HYPRE_Complex colsum = 0.0;
++      /* Process row elements using warp-level parallelism */
++      for (HYPRE_Int j = p + lane_id; j < q; j += HYPRE_WARP_SIZE)
++      {
++         HYPRE_Int     col = read_only_load(ja + j);
++         HYPRE_Complex val = read_only_load(aa + j);
++         HYPRE_Complex colsum = 0.0;
 +
-+            if (type == 0)
-+            {
-+                colsum = scal * val;
-+            }
-+            else if (type == 1)
-+            {
-+                colsum = scal * hypre_abs(val);
-+            }
-+            else if (type == 2)
-+            {
-+                colsum = scal * val * val;
-+            }
++         if (type == 0)
++         {
++            colsum = scal * val;
++         }
++         else if (type == 1)
++         {
++            colsum = scal * hypre_abs(val);
++         }
++         else if (type == 2)
++         {
++            colsum = scal * val * val;
++         }
 +
-+            /* Atomic add is required to prevent race conditions, as multiple warps
-+              (processing different rows) may update the same column sum simultaneously. */
-+            atomicAdd(&col_sum[col], colsum);
-+        }
-+    }
++         /* Atomic add is required to prevent race conditions, as multiple warps
++           (processing different rows) may update the same column sum simultaneously. */
++         hypre_gpu_atomicAdd(col, col_sum, colsum);
++      }
++   }
 +}
 +
 +/*--------------------------------------------------------------------------
-+ * hypre_CSRMatrixComputeColSumDevice
++ * Computes column-wise sum of a CSR matrix on the device.
++ *
++ * type == 0, sum
++ *         1, abs sum (L1-norm)
++ *         2, square sum (L2-norm squared)
 + *--------------------------------------------------------------------------*/
++
 +HYPRE_Int
 +hypre_CSRMatrixComputeColSumDevice(hypre_CSRMatrix  *A,
 +                                   HYPRE_Complex    *col_sum,
@@ -587,7 +756,7 @@ index c5ad8ece1..bb4f58d94 100644
 +    HYPRE_Int      *A_j   = hypre_CSRMatrixJ(A);
 +    HYPRE_Complex  *A_a   = hypre_CSRMatrixData(A);
 +
-+    /* Use standard HYPRE block dimensions */
++    /* Use standard block dimensions */
 +    dim3 bDim = hypre_GetDefaultDeviceBlockDimension();
 +    dim3 gDim = hypre_GetDefaultDeviceGridDimension(nrows, "warp", bDim);
 +
@@ -613,11 +782,109 @@ index c5ad8ece1..bb4f58d94 100644
 +    return hypre_error_flag;
 +}
 +
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++__global__ void
++hypreGPUKernel_CSRMatrixTaggedFnormAccum(hypre_DeviceItem    &item,
++                                         const HYPRE_Int      nrows,
++                                         const HYPRE_Int      num_tags,
++                                         const HYPRE_Int     *tags,
++                                         const HYPRE_Int     *ia,
++                                         const HYPRE_Int     *ja,
++                                         const HYPRE_Complex *aa,
++                                         HYPRE_Real          *tnorms)
++{
++   /* Get warp and lane IDs */
++#if defined (HYPRE_USING_SYCL)
++   const HYPRE_Int num_warps     = item.get_group(2) / HYPRE_WARP_SIZE;
++#else
++   const HYPRE_Int num_warps     = blockDim.x / HYPRE_WARP_SIZE;
++#endif
++   const HYPRE_Int warp_id       = hypre_gpu_get_warp_id<1>(item);
++   const HYPRE_Int lane_id       = hypre_gpu_get_lane_id<1>(item);
++   const HYPRE_Int warp_in_block = warp_id % num_warps;
++#if defined (HYPRE_USING_SYCL)
++   const HYPRE_Int row  = item.get_group(2) * num_warps + warp_in_block;
++#else
++   const HYPRE_Int row  = blockIdx.x * num_warps + warp_in_block;
++#endif
++   const HYPRE_Int itag = tags[row];
++
++   if (row < nrows)
++   {
++      /* Load row bounds using warp shuffle */
++      HYPRE_Int p = 0, q = 0;
++      if (lane_id < 2)
++      {
++         p = read_only_load(ia + row + lane_id);
++      }
++      q = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 1);
++      p = warp_shuffle_sync(item, HYPRE_WARP_FULL_MASK, p, 0);
++
++      /* Process row elements using warp-level parallelism */
++      for (HYPRE_Int j = p + lane_id; j < q; j += HYPRE_WARP_SIZE)
++      {
++         HYPRE_Int     col  = read_only_load(ja + j);
++         HYPRE_Int     jtag = tags[col];
++         HYPRE_Complex val  = read_only_load(aa + j);
++
++         hypre_gpu_atomicAdd(itag * num_tags + jtag, tnorms, hypre_squared(val));
++      }
++   }
++}
++
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_CSRMatrixTaggedFnormDevice(hypre_CSRMatrix  *A,
++                                 HYPRE_Int         num_tags,
++                                 HYPRE_Int        *tags,
++                                 HYPRE_Real       *tnorms)
++{
++   HYPRE_Int       num_rows    = hypre_CSRMatrixNumRows(A);
++   HYPRE_Int      *A_i         = hypre_CSRMatrixI(A);
++   HYPRE_Int      *A_j         = hypre_CSRMatrixJ(A);
++   HYPRE_Complex  *A_a         = hypre_CSRMatrixData(A);
++
++   HYPRE_Int       tnorms_size = num_tags * num_tags;
++   HYPRE_Int       i;
++   HYPRE_Int      *d_tags;
++   HYPRE_Real     *d_tnorms;
++
++   /* Allocate device buffers */
++   d_tnorms = hypre_CTAlloc(HYPRE_Real, tnorms_size, HYPRE_MEMORY_DEVICE);
++   d_tags   = hypre_CTAlloc(HYPRE_Int, num_rows, HYPRE_MEMORY_DEVICE);
++   hypre_TMemcpy(d_tags, tags, HYPRE_Int, num_rows,
++                 HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
++
++   /* Launch accumulation kernel */
++   dim3 bDim = hypre_GetDefaultDeviceBlockDimension();
++   dim3 gDim = hypre_GetDefaultDeviceGridDimension(num_rows, "wap", bDim);
++   HYPRE_GPU_LAUNCH(hypreGPUKernel_CSRMatrixTaggedFnormAccum, gDim, bDim,
++                    num_rows, num_tags, d_tags, A_i, A_j, A_a, d_tnorms);
++
++   /* Copy back to host and free device buffer */
++   hypre_TMemcpy(tnorms, d_tnorms, HYPRE_Real, tnorms_size,
++                 HYPRE_MEMORY_HOST, HYPRE_MEMORY_DEVICE);
++   hypre_TFree(d_tnorms, HYPRE_MEMORY_DEVICE);
++   hypre_TFree(d_tags, HYPRE_MEMORY_DEVICE);
++
++   /* Take square root for each block */
++   for (i = 0; i < tnorms_size; i++)
++   {
++      tnorms[i] = hypre_sqrt(tnorms[i]);
++   }
++
++   return hypre_error_flag;
++}
++
  /*--------------------------------------------------------------------------
   * hypreGPUKernel_CSRMatrixIntersectPattern
   *
 diff --git a/src/seq_mv/protos.h b/src/seq_mv/protos.h
-index 42ec225a3..10337d6d9 100644
+index 42ec225a3..016677820 100644
 --- a/src/seq_mv/protos.h
 +++ b/src/seq_mv/protos.h
 @@ -40,10 +40,11 @@ HYPRE_Int hypre_CSRMatrixSplit(hypre_CSRMatrix *Bs_ext, HYPRE_BigInt first_col_d
@@ -636,17 +903,19 @@ index 42ec225a3..10337d6d9 100644
  HYPRE_Int hypre_CSRMatrixExtractDiagonal( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
  HYPRE_Int hypre_CSRMatrixExtractDiagonalHost( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
  HYPRE_Int hypre_CSRMatrixScale(hypre_CSRMatrix *A, HYPRE_Complex scalar);
-@@ -86,6 +87,8 @@ HYPRE_Int hypre_CSRMatrixReplaceDiagDevice( hypre_CSRMatrix *A, HYPRE_Complex *n
+@@ -86,6 +87,10 @@ HYPRE_Int hypre_CSRMatrixReplaceDiagDevice( hypre_CSRMatrix *A, HYPRE_Complex *n
  HYPRE_Int hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
                                                HYPRE_Complex *row_sum, HYPRE_Int type,
                                                HYPRE_Complex scal, const char *set_or_add );
 +HYPRE_Int hypre_CSRMatrixComputeColSumDevice( hypre_CSRMatrix *A,  HYPRE_Complex *col_sum,
 +                                              HYPRE_Int type, HYPRE_Complex scal );
++HYPRE_Int hypre_CSRMatrixTaggedFnormDevice(hypre_CSRMatrix *A, HYPRE_Int num_tags,
++                                           HYPRE_Int *tags, HYPRE_Real *tnorms);
  HYPRE_Int hypre_CSRMatrixExtractDiagonalDevice( hypre_CSRMatrix *A, HYPRE_Complex *d,
                                                  HYPRE_Int type );
  hypre_CSRMatrix* hypre_CSRMatrixStack2Device(hypre_CSRMatrix *A, hypre_CSRMatrix *B);
 diff --git a/src/seq_mv/seq_mv.h b/src/seq_mv/seq_mv.h
-index c262e0ab0..845d29fe7 100644
+index c262e0ab0..362e39c64 100644
 --- a/src/seq_mv/seq_mv.h
 +++ b/src/seq_mv/seq_mv.h
 @@ -324,10 +324,11 @@ HYPRE_Int hypre_CSRMatrixSplit(hypre_CSRMatrix *Bs_ext, HYPRE_BigInt first_col_d
@@ -665,12 +934,92 @@ index c262e0ab0..845d29fe7 100644
  HYPRE_Int hypre_CSRMatrixExtractDiagonal( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
  HYPRE_Int hypre_CSRMatrixExtractDiagonalHost( hypre_CSRMatrix *A, HYPRE_Complex *d, HYPRE_Int type);
  HYPRE_Int hypre_CSRMatrixScale(hypre_CSRMatrix *A, HYPRE_Complex scalar);
-@@ -370,6 +371,8 @@ HYPRE_Int hypre_CSRMatrixReplaceDiagDevice( hypre_CSRMatrix *A, HYPRE_Complex *n
+@@ -370,6 +371,10 @@ HYPRE_Int hypre_CSRMatrixReplaceDiagDevice( hypre_CSRMatrix *A, HYPRE_Complex *n
  HYPRE_Int hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A, HYPRE_Int *CF_i, HYPRE_Int *CF_j,
                                                HYPRE_Complex *row_sum, HYPRE_Int type,
                                                HYPRE_Complex scal, const char *set_or_add );
 +HYPRE_Int hypre_CSRMatrixComputeColSumDevice( hypre_CSRMatrix *A,  HYPRE_Complex *col_sum,
 +                                              HYPRE_Int type, HYPRE_Complex scal );
++HYPRE_Int hypre_CSRMatrixTaggedFnormDevice(hypre_CSRMatrix *A, HYPRE_Int num_tags,
++                                           HYPRE_Int *tags, HYPRE_Real *tnorms);
  HYPRE_Int hypre_CSRMatrixExtractDiagonalDevice( hypre_CSRMatrix *A, HYPRE_Complex *d,
                                                  HYPRE_Int type );
  hypre_CSRMatrix* hypre_CSRMatrixStack2Device(hypre_CSRMatrix *A, hypre_CSRMatrix *B);
+diff --git a/src/utilities/_hypre_utilities.hpp b/src/utilities/_hypre_utilities.hpp
+index 9fc8d5acf..f71c99918 100644
+--- a/src/utilities/_hypre_utilities.hpp
++++ b/src/utilities/_hypre_utilities.hpp
+@@ -1305,6 +1305,14 @@ hypre_double atomicAdd(hypre_double* address, hypre_double val)
+ }
+ #endif
+ 
++/* Perform atomic add operation */
++template <typename T>
++static __device__ __forceinline__
++void hypre_gpu_atomicAdd(hypre_int pos, T* address, T val)
++{
++   atomicAdd((T*)(address + pos), val);
++}
++
+ // There are no *_sync functions in HIP
+ #if defined(HYPRE_USING_HIP) || (CUDA_VERSION < 9000)
+ 
+@@ -1845,6 +1853,19 @@ hypre_int hypre_gpu_get_grid_warp_id(hypre_DeviceItem &item)
+           hypre_gpu_get_warp_id<bdim>(item);
+ }
+ 
++/* Perform atomic add operation */
++template <typename T>
++static __device__ __forceinline__
++void hypre_gpu_atomicAdd(hypre_int pos, T* address, T val)
++{
++   auto atomic_val = sycl::atomic_ref<T,
++                                      sycl::memory_order::relaxed,
++                                      sycl::memory_scope::device,
++                                      sycl::access::address_space::local_space > (address[pos]);
++   auto curr = atomic_val.load(sycl::memory_order::relaxed);
++   while (!atomic_val.compare_exchange_strong(curr, curr + val, sycl::memory_order::relaxed)) {}
++}
++
+ /* sync the thread block */
+ static __device__ __forceinline__
+ void block_sync(hypre_DeviceItem &item)
+diff --git a/src/utilities/device_utils.h b/src/utilities/device_utils.h
+index b4a494767..4886f7d0e 100644
+--- a/src/utilities/device_utils.h
++++ b/src/utilities/device_utils.h
+@@ -1109,6 +1109,14 @@ hypre_double atomicAdd(hypre_double* address, hypre_double val)
+ }
+ #endif
+ 
++/* Perform atomic add operation */
++template <typename T>
++static __device__ __forceinline__
++void hypre_gpu_atomicAdd(hypre_int pos, T* address, T val)
++{
++   atomicAdd((T*)(address + pos), val);
++}
++
+ // There are no *_sync functions in HIP
+ #if defined(HYPRE_USING_HIP) || (CUDA_VERSION < 9000)
+ 
+@@ -1649,6 +1657,19 @@ hypre_int hypre_gpu_get_grid_warp_id(hypre_DeviceItem &item)
+           hypre_gpu_get_warp_id<bdim>(item);
+ }
+ 
++/* Perform atomic add operation */
++template <typename T>
++static __device__ __forceinline__
++void hypre_gpu_atomicAdd(hypre_int pos, T* address, T val)
++{
++   auto atomic_val = sycl::atomic_ref<T,
++                                      sycl::memory_order::relaxed,
++                                      sycl::memory_scope::device,
++                                      sycl::access::address_space::local_space > (address[pos]);
++   auto curr = atomic_val.load(sycl::memory_order::relaxed);
++   while (!atomic_val.compare_exchange_strong(curr, curr + val, sycl::memory_order::relaxed)) {}
++}
++
+ /* sync the thread block */
+ static __device__ __forceinline__
+ void block_sync(hypre_DeviceItem &item)
