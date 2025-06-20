@@ -48,21 +48,21 @@ rm -rf ${HYPRE_DIR}/src/test/TEST_*
 rm -rf ${HYPRE_DIR}/.git
 
 # Remove old hypre dir
-git rm ${TPL_MIRROR_DIR}/hypre*.tar.gz
+#git rm ${TPL_MIRROR_DIR}/hypre*.tar.gz
 
 # Create tarball and move it to tplMirror
-HYPRE_DIR=${GEOSTPL_DIR}/hypre-${HYPRE_DEVELOP_STRING}
+#HYPRE_DIR=${GEOSTPL_DIR}/hypre-${HYPRE_DEVELOP_STRING}
 cd ${GEOSTPL_DIR}
-mv hypre-${VERSION} ${HYPRE_DIR}
-tar czvf hypre-${HYPRE_DEVELOP_STRING}.tar.gz hypre-${HYPRE_DEVELOP_STRING}
-mv hypre-${HYPRE_DEVELOP_STRING}.tar.gz ${TPL_MIRROR_DIR}
+#mv hypre-${VERSION} ${HYPRE_DIR}
+#tar czvf hypre-${HYPRE_DEVELOP_STRING}.tar.gz hypre-${HYPRE_DEVELOP_STRING}
+#mv hypre-${HYPRE_DEVELOP_STRING}.tar.gz ${TPL_MIRROR_DIR}
 
 # Remove temporary directory
 rm -rf ${HYPRE_DIR}
 
 # Update CMakeLists
-echo -e "Updating CMakeLists..."
-sed -i "s|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-.*\.tar\.gz\" )|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-${HYPRE_DEVELOP_STRING}.tar.gz\" )|" CMakeLists.txt
+#echo -e "Updating CMakeLists..."
+#sed -i "s|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-.*\.tar\.gz\" )|set( HYPRE_URL \"\${TPL_MIRROR_DIR}/hypre-${HYPRE_DEVELOP_STRING}.tar.gz\" )|" CMakeLists.txt
 
 # Update YAML files with new hypre git hash
 find scripts docker -name "*.yaml" -type f | while read -r file; do
@@ -71,6 +71,6 @@ done
 echo -e "Updated YAML files with new hypre git hash: ${HYPRE_GIT_HASH}"
 
 # Stage changes
-git add ${GEOSTPL_DIR}/CMakeLists.txt
-git add ${TPL_MIRROR_DIR}/hypre*.tar.gz
+#git add ${GEOSTPL_DIR}/CMakeLists.txt
+#git add ${TPL_MIRROR_DIR}/hypre*.tar.gz
 git add -u scripts docker
