@@ -1,3 +1,72 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index e20557db7..765c490e9 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -149,6 +149,7 @@ set_hypre_option(BASE HYPRE_ENABLE_LTO                  "Use Link-Time Optimizat
+ set_hypre_option(BASE HYPRE_ENABLE_PRINT_ERRORS         "Print HYPRE errors" OFF)
+ set_hypre_option(SKIP HYPRE_ENABLE_TIMING               "Use HYPRE timing routines" OFF)
+ set_hypre_option(SKIP HYPRE_ENABLE_STRICT_CHECKING      "Use strict error checking (Sequential only)" OFF)
++set_hypre_option(SKIP HYPRE_ENABLE_MEMORY_TRACKER       "Use internal memory tracker (Debug only)" OFF)
+ set_hypre_option(BASE HYPRE_ENABLE_TEST_USING_HOST      "Execute tests on host (CPU)" OFF)
+ set_hypre_option(BASE HYPRE_ENABLE_HOST_MEMORY          "Use host memory" ON)
+ set_hypre_option(BASE HYPRE_BUILD_EXAMPLES              "Build examples" OFF)
+@@ -232,6 +233,7 @@ set_internal_hypre_option("" TEST_USING_HOST)
+ set_internal_hypre_option("" PRINT_ERRORS)
+ set_internal_hypre_option(USING HYPRE_BLAS)
+ set_internal_hypre_option(USING HYPRE_LAPACK)
++set_internal_hypre_option(USING MEMORY_TRACKER)
+ set_internal_hypre_option(USING HOPSCOTCH)
+ set_internal_hypre_option(USING GPU_AWARE_MPI)
+ set_internal_hypre_option(USING GPU_STREAMS)
+diff --git a/src/config/HYPRE_config.h.cmake.in b/src/config/HYPRE_config.h.cmake.in
+index af8ac492c..1cec66669 100644
+--- a/src/config/HYPRE_config.h.cmake.in
++++ b/src/config/HYPRE_config.h.cmake.in
+@@ -65,6 +65,9 @@
+ /* Use internal LAPACK library */
+ #cmakedefine HYPRE_USING_HYPRE_LAPACK 1
+ 
++/* Use internal memory tracker */
++#cmakedefine HYPRE_USING_MEMORY_TRACKER 1
++
+ /* Print HYPRE errors */
+ #cmakedefine HYPRE_PRINT_ERRORS 1
+ 
+diff --git a/src/config/cmake/HYPRE_SetupHIPToolkit.cmake b/src/config/cmake/HYPRE_SetupHIPToolkit.cmake
+index 6d8848642..656b5c8f5 100644
+--- a/src/config/cmake/HYPRE_SetupHIPToolkit.cmake
++++ b/src/config/cmake/HYPRE_SetupHIPToolkit.cmake
+@@ -144,16 +144,27 @@ find_and_add_rocm_library(rocrand)
+ find_and_add_rocm_library(rocsolver)
+ 
+ if(HYPRE_ENABLE_GPU_PROFILING)
+-  set(HYPRE_USING_ROCTRACER ON CACHE BOOL "" FORCE)
++  set(HYPRE_USING_ROCTX ON CACHE BOOL "" FORCE)
+   find_library(ROCTRACER_LIBRARY
+      NAMES libroctracer64.so
+      PATHS ${HIP_PATH}/lib ${HIP_PATH}/lib64
+      NO_DEFAULT_PATH)
+   if(ROCTRACER_LIBRARY)
+-    message(STATUS "ROCm tracer library found in ${ROCTRACER_LIBRARY}")
++    message(STATUS "ROCTracer library found in ${ROCTRACER_LIBRARY}")
+     list(APPEND ROCM_LIBS ${ROCTRACER_LIBRARY})
+   else()
+-    message(WARNING "ROCm tracer library not found. GPU profiling may not work correctly.")
++    message(WARNING "ROCTracer library not found. GPU profiling may not work correctly.")
++  endif()
++
++  find_library(ROCTX_LIBRARY
++     NAMES libroctx64.so
++     PATHS ${HIP_PATH}/lib ${HIP_PATH}/lib64
++     NO_DEFAULT_PATH)
++  if(ROCTX_LIBRARY)
++    message(STATUS "ROC-TX library found in ${ROCTX_LIBRARY}")
++    list(APPEND ROCM_LIBS ${ROCTX_LIBRARY})
++  else()
++    message(WARNING "ROC-TX library not found. GPU profiling may not work correctly.")
+   endif()
+ endif()
+ 
 diff --git a/src/parcsr_ls/_hypre_parcsr_ls.h b/src/parcsr_ls/_hypre_parcsr_ls.h
 index 3c62f514f..ae8a0c591 100644
 --- a/src/parcsr_ls/_hypre_parcsr_ls.h
@@ -184,7 +253,7 @@ index d9bfde521..b8621b197 100644
  /* par_mgr_stats.c */
  HYPRE_Int hypre_MGRSetupStats( void *mgr_vdata );
 diff --git a/src/parcsr_mv/_hypre_parcsr_mv.h b/src/parcsr_mv/_hypre_parcsr_mv.h
-index a83178afc..4896a6e1c 100644
+index a83178afc..249026188 100644
 --- a/src/parcsr_mv/_hypre_parcsr_mv.h
 +++ b/src/parcsr_mv/_hypre_parcsr_mv.h
 @@ -1037,6 +1037,7 @@ HYPRE_Int hypre_ParCSRDiagScaleVectorHost( hypre_ParCSRMatrix *par_A, hypre_ParV
@@ -195,8 +264,16 @@ index a83178afc..4896a6e1c 100644
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntries( hypre_ParCSRMatrix *A, HYPRE_Real tol,
                                                HYPRE_Int type);
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
+@@ -1282,6 +1283,7 @@ HYPRE_Int hypre_ParVectorSetNumTags( hypre_ParVector *vector, HYPRE_Int num_tags
+ HYPRE_Int hypre_ParVectorSetTags( hypre_ParVector *vector,
+                                   HYPRE_MemoryLocation memory_location,
+                                   HYPRE_Int *tags );
++HYPRE_Int hypre_ParVectorSetValuesTagged(hypre_ParVector *vector, HYPRE_Complex *values);
+ HYPRE_Int hypre_ParVectorInitialize ( hypre_ParVector *vector );
+ HYPRE_Int hypre_ParVectorInitialize_v2( hypre_ParVector *vector,
+                                         HYPRE_MemoryLocation memory_location );
 diff --git a/src/parcsr_mv/par_csr_matop.c b/src/parcsr_mv/par_csr_matop.c
-index 8ce40413b..f03752330 100644
+index 8ce40413b..1d5b095af 100644
 --- a/src/parcsr_mv/par_csr_matop.c
 +++ b/src/parcsr_mv/par_csr_matop.c
 @@ -7033,12 +7033,7 @@ hypre_ParCSRMatrixColSum( hypre_ParCSRMatrix   *A,
@@ -213,42 +290,131 @@ index 8ce40413b..f03752330 100644
     }
     else
  #endif
-@@ -7104,6 +7099,7 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+@@ -7102,8 +7097,10 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+ 
+    hypre_CSRMatrix         *A_diag          = hypre_ParCSRMatrixDiag(A);
     HYPRE_Real              *tnorms          = NULL;
-    HYPRE_Real              *weights         = NULL;
+-   HYPRE_Real              *weights         = NULL;
++   HYPRE_Real              *local_weights   = NULL;
     HYPRE_Real              *g_weights       = NULL;
++   HYPRE_Real              *weights         = NULL;
 +   HYPRE_Real               tnorm;
     HYPRE_Int                i;
  
     /* Sanity check - Return an empty scaling if tags is a null pointer or type = 0 */
-@@ -7138,7 +7134,8 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
-       weights = hypre_TAlloc(HYPRE_Real, num_tags, HYPRE_MEMORY_HOST);
+@@ -7114,6 +7111,8 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+       return hypre_error_flag;
+    }
+ 
++   HYPRE_ANNOTATE_FUNC_BEGIN;
++
+    /* Create and initialize scaling vector if it does not exist yet */
+    if (!*scaling_ptr)
+    {
+@@ -7126,49 +7125,88 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
+       hypre_ParVectorResize(*scaling_ptr, num_rows, 1);
+    }
+ 
+-   if (type == 1)
++   /* Set tags array if needed */
++   if (!hypre_ParVectorTags(*scaling_ptr) ||
++       num_tags != hypre_ParVectorNumTags(*scaling_ptr))
+    {
+-      /* Move scaling vector to host memory if needed */
+-      hypre_ParVectorMigrate(*scaling_ptr, HYPRE_MEMORY_HOST);
++      hypre_ParVectorSetOwnsTags(*scaling_ptr, 1);
++      hypre_ParVectorSetNumTags(*scaling_ptr, num_tags);
++      hypre_ParVectorSetTags(*scaling_ptr, HYPRE_MEMORY_HOST, tags);
++   }
+ 
++   if (type == 1)
++   {
+       /* Compute Frobenius norms */
+-      hypre_CSRMatrixTaggedFnorm(A_diag, num_tags, tags, &tnorms);
++      hypre_CSRMatrixTaggedFnorm(A_diag, num_tags, hypre_ParVectorTags(*scaling_ptr), &tnorms);
+ 
+       /* Compute local scaling weights */
+-      weights = hypre_TAlloc(HYPRE_Real, num_tags, HYPRE_MEMORY_HOST);
++      local_weights = hypre_TAlloc(HYPRE_Real, num_tags, HYPRE_MEMORY_HOST);
        for (i = 0; i < num_tags; i++)
        {
 -         weights[i] = hypre_squared(tnorms[i * num_tags + i]);
 +         tnorm = tnorms[i * num_tags + i];
-+         weights[i] = (tnorm > 0.0) ? hypre_squared(tnorm) : 1.0;
++         local_weights[i] = (tnorm > 0.0) ? hypre_squared(tnorm) : 1.0;
        }
  
        /* Compute global scaling weights */
-@@ -7149,6 +7146,17 @@ hypre_ParCSRMatrixCompScalingTagged(hypre_ParCSRMatrix  *A,
-          g_weights[i] = pow(10.0, round(log10(hypre_sqrt(1.0 / g_weights[i]))));
+       g_weights = hypre_TAlloc(HYPRE_Real, num_tags, HYPRE_MEMORY_HOST);
+-      hypre_MPI_Allreduce(weights, g_weights, num_tags, MPI_DOUBLE, MPI_SUM, comm);
++#if defined(HYPRE_USING_GPU)
++      HYPRE_ExecutionPolicy exec = hypre_GetExecPolicy1(memory_location);
++
++      if (exec == HYPRE_EXEC_DEVICE)
++      {
++         weights = hypre_TAlloc(HYPRE_Real, num_tags, HYPRE_MEMORY_DEVICE);
++      }
++      else
++#endif
++      {
++         weights = g_weights;
++      }
++
++      hypre_MPI_Allreduce(local_weights, g_weights, num_tags, MPI_DOUBLE, MPI_SUM, comm);
+       for (i = 0; i < num_tags; i++)
+       {
+-         g_weights[i] = pow(10.0, round(log10(hypre_sqrt(1.0 / g_weights[i]))));
++         g_weights[i] = hypre_sqrt(pow(10.0,
++                                       2 * round( log10(hypre_sqrt(1.0 / g_weights[i])) / 2.0 )));
        }
  
+-      /* Setup scaling vector */
+-      for (i = 0; i < num_rows; i++)
++      if (weights != g_weights)
++      {
++         hypre_TMemcpy(weights, g_weights, HYPRE_Real, num_tags,
++                       HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
++      }
++
 +#if 0
 +      /* Debug weights */
 +      hypre_ParPrintf(comm, "%s - Scaling weights: [ ", __func__);
 +      for (i = 0; i < num_tags; i++)
-+      {
+       {
+-         hypre_ParVectorEntryI(*scaling_ptr, i) = hypre_sqrt(g_weights[tags[i]]);
 +         hypre_ParPrintf(comm, "%.0e ", g_weights[i]);
-+      }
+       }
 +      hypre_ParPrintf(comm, "]\n");
 +      hypre_MPI_Barrier(comm);
 +#endif
+ 
+-      /* Migrate scaling vector to destination memory location */
+-      hypre_ParVectorMigrate(*scaling_ptr, memory_location);
++      /* Setup scaling vector */
++      hypre_ParVectorSetValuesTagged(*scaling_ptr, weights);
+ 
+       /* Free memory */
+       hypre_TFree(tnorms, HYPRE_MEMORY_HOST);
+-      hypre_TFree(weights, HYPRE_MEMORY_HOST);
++      hypre_TFree(local_weights, HYPRE_MEMORY_HOST);
+       hypre_TFree(g_weights, HYPRE_MEMORY_HOST);
++      if (weights != g_weights)
++      {
++         hypre_TFree(weights, HYPRE_MEMORY_DEVICE);
++      }
+    }
+    else
+    {
+-      *scaling_ptr = NULL;
+       hypre_error_w_msg(HYPRE_ERROR_GENERIC, "Invalid scaling type");
++      HYPRE_ANNOTATE_FUNC_END;
 +
-       /* Setup scaling vector */
-       for (i = 0; i < num_rows; i++)
-       {
+       return hypre_error_flag;
+    }
+ 
++   HYPRE_ANNOTATE_FUNC_END;
++
+    return hypre_error_flag;
+ }
 diff --git a/src/parcsr_mv/par_csr_matop_device.c b/src/parcsr_mv/par_csr_matop_device.c
 index 77fdd6503..94ecdd16a 100644
 --- a/src/parcsr_mv/par_csr_matop_device.c
@@ -342,8 +508,31 @@ index 77fdd6503..94ecdd16a 100644
 +}
 +
  #endif // #if defined(HYPRE_USING_GPU) || defined(HYPRE_USING_DEVICE_OPENMP)
+diff --git a/src/parcsr_mv/par_vector.c b/src/parcsr_mv/par_vector.c
+index bf228d13c..36e74fed1 100644
+--- a/src/parcsr_mv/par_vector.c
++++ b/src/parcsr_mv/par_vector.c
+@@ -188,6 +188,18 @@ hypre_ParVectorSetTags(hypre_ParVector      *vector,
+    return hypre_error_flag;
+ }
+ 
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_ParVectorSetValuesTagged(hypre_ParVector  *vector,
++                               HYPRE_Complex    *values)
++{
++   hypre_SeqVectorSetValuesTagged(hypre_ParVectorLocalVector(vector), values);
++
++   return hypre_error_flag;
++}
++
+ /*--------------------------------------------------------------------------
+  * hypre_ParVectorInitialize_v2
+  *
 diff --git a/src/parcsr_mv/protos.h b/src/parcsr_mv/protos.h
-index 02479f140..bf8bf95d9 100644
+index 02479f140..de9106b90 100644
 --- a/src/parcsr_mv/protos.h
 +++ b/src/parcsr_mv/protos.h
 @@ -373,6 +373,7 @@ HYPRE_Int hypre_ParCSRDiagScaleVectorHost( hypre_ParCSRMatrix *par_A, hypre_ParV
@@ -354,6 +543,14 @@ index 02479f140..bf8bf95d9 100644
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntries( hypre_ParCSRMatrix *A, HYPRE_Real tol,
                                                HYPRE_Int type);
  HYPRE_Int hypre_ParCSRMatrixDropSmallEntriesHost( hypre_ParCSRMatrix *A, HYPRE_Real tol,
+@@ -618,6 +619,7 @@ HYPRE_Int hypre_ParVectorSetNumTags( hypre_ParVector *vector, HYPRE_Int num_tags
+ HYPRE_Int hypre_ParVectorSetTags( hypre_ParVector *vector,
+                                   HYPRE_MemoryLocation memory_location,
+                                   HYPRE_Int *tags );
++HYPRE_Int hypre_ParVectorSetValuesTagged(hypre_ParVector *vector, HYPRE_Complex *values);
+ HYPRE_Int hypre_ParVectorInitialize ( hypre_ParVector *vector );
+ HYPRE_Int hypre_ParVectorInitialize_v2( hypre_ParVector *vector,
+                                         HYPRE_MemoryLocation memory_location );
 diff --git a/src/seq_mv/csr_matop.c b/src/seq_mv/csr_matop.c
 index 5d614cdcb..ffc5e97a0 100644
 --- a/src/seq_mv/csr_matop.c
@@ -659,10 +856,10 @@ index 5d614cdcb..ffc5e97a0 100644
  
     return hypre_error_flag;
 diff --git a/src/seq_mv/csr_matop_device.c b/src/seq_mv/csr_matop_device.c
-index c5ad8ece1..890338719 100644
+index c5ad8ece1..10e44c122 100644
 --- a/src/seq_mv/csr_matop_device.c
 +++ b/src/seq_mv/csr_matop_device.c
-@@ -1327,6 +1327,220 @@ hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A,
+@@ -1327,6 +1327,255 @@ hypre_CSRMatrixComputeRowSumDevice( hypre_CSRMatrix *A,
     return hypre_error_flag;
  }
  
@@ -787,6 +984,9 @@ index c5ad8ece1..890338719 100644
 +
 +__global__ void
 +hypreGPUKernel_CSRMatrixTaggedFnormAccum(hypre_DeviceItem    &item,
++#if defined (HYPRE_USING_SYCL)
++                                         char                *shmem_ptr,
++#endif
 +                                         const HYPRE_Int      nrows,
 +                                         const HYPRE_Int      num_tags,
 +                                         const HYPRE_Int     *tags,
@@ -796,20 +996,29 @@ index c5ad8ece1..890338719 100644
 +                                         HYPRE_Real          *tnorms)
 +{
 +   /* Get warp and lane IDs */
++   const HYPRE_Int  num_warps     = hypre_gpu_get_blockDim<0>(item) / HYPRE_WARP_SIZE;
++   const HYPRE_Int  warp_id       = hypre_gpu_get_warp_id<1>(item);
++   const HYPRE_Int  lane_id       = hypre_gpu_get_lane_id<1>(item);
++   const HYPRE_Int  warp_in_block = warp_id % num_warps;
++   const HYPRE_Int  row           = hypre_gpu_get_blockDim<0>(item) * num_warps + warp_in_block;
++   const HYPRE_Int  itag          = tags[row];
++
++   /* Shared memory */
 +#if defined (HYPRE_USING_SYCL)
-+   const HYPRE_Int num_warps     = item.get_group(2) / HYPRE_WARP_SIZE;
++   HYPRE_Real      *sdata         = (HYPRE_Real*) & (shmem_ptr[0]);
 +#else
-+   const HYPRE_Int num_warps     = blockDim.x / HYPRE_WARP_SIZE;
++   extern __shared__ HYPRE_Real shmem[];
++   HYPRE_Real      *sdata         = shmem;
 +#endif
-+   const HYPRE_Int warp_id       = hypre_gpu_get_warp_id<1>(item);
-+   const HYPRE_Int lane_id       = hypre_gpu_get_lane_id<1>(item);
-+   const HYPRE_Int warp_in_block = warp_id % num_warps;
-+#if defined (HYPRE_USING_SYCL)
-+   const HYPRE_Int row  = item.get_group(2) * num_warps + warp_in_block;
-+#else
-+   const HYPRE_Int row  = blockIdx.x * num_warps + warp_in_block;
-+#endif
-+   const HYPRE_Int itag = tags[row];
++
++   /* Initialize shared memory */
++   for (HYPRE_Int i = hypre_gpu_get_threadIdx<0>(item);
++        i < num_tags * num_tags;
++        i += hypre_gpu_get_blockDim<0>(item))
++   {
++      sdata[i] = 0.0;
++   }
++   block_sync(item);
 +
 +   if (row < nrows)
 +   {
@@ -825,11 +1034,24 @@ index c5ad8ece1..890338719 100644
 +      /* Process row elements using warp-level parallelism */
 +      for (HYPRE_Int j = p + lane_id; j < q; j += HYPRE_WARP_SIZE)
 +      {
-+         HYPRE_Int     col  = read_only_load(ja + j);
-+         HYPRE_Int     jtag = tags[col];
-+         HYPRE_Complex val  = read_only_load(aa + j);
++         HYPRE_Int       col  = read_only_load(ja + j);
++         HYPRE_Int       jtag = tags[col];
++         HYPRE_Complex   val  = read_only_load(aa + j);
++         const HYPRE_Int idx  = itag * num_tags + jtag;
 +
-+         hypre_gpu_atomicAdd(itag * num_tags + jtag, tnorms, hypre_squared(val));
++         /* Two threads in the same warp might add to the same position,
++            therefore we need to use atomic add */
++         hypre_gpu_atomicAdd(idx, sdata, hypre_squared(val));
++      }
++   }
++   block_sync(item);
++
++   /* Final reduction from shared memory to global memory */
++   if (hypre_gpu_get_threadIdx<0>(item) == 0)
++   {
++      for (HYPRE_Int i = 0; i < num_tags * num_tags; i++)
++      {
++         hypre_gpu_atomicAdd(i, tnorms, sdata[i]);
 +      }
 +   }
 +}
@@ -850,32 +1072,42 @@ index c5ad8ece1..890338719 100644
 +
 +   HYPRE_Int       tnorms_size = num_tags * num_tags;
 +   HYPRE_Int       i;
-+   HYPRE_Int      *d_tags;
 +   HYPRE_Real     *d_tnorms;
++
++   /* Sanity check */
++   if (num_tags > 64)
++   {
++      hypre_error_w_msg(HYPRE_ERROR_GENERIC, "Too many tags for shared memory kernel (max is 64)");
++      return hypre_error_flag;
++   }
++
++   HYPRE_ANNOTATE_FUNC_BEGIN;
++   hypre_GpuProfilingPushRange("CSRMatrixTaggedFnorm");
 +
 +   /* Allocate device buffers */
 +   d_tnorms = hypre_CTAlloc(HYPRE_Real, tnorms_size, HYPRE_MEMORY_DEVICE);
-+   d_tags   = hypre_CTAlloc(HYPRE_Int, num_rows, HYPRE_MEMORY_DEVICE);
-+   hypre_TMemcpy(d_tags, tags, HYPRE_Int, num_rows,
-+                 HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
 +
 +   /* Launch accumulation kernel */
 +   dim3 bDim = hypre_GetDefaultDeviceBlockDimension();
-+   dim3 gDim = hypre_GetDefaultDeviceGridDimension(num_rows, "wap", bDim);
-+   HYPRE_GPU_LAUNCH(hypreGPUKernel_CSRMatrixTaggedFnormAccum, gDim, bDim,
-+                    num_rows, num_tags, d_tags, A_i, A_j, A_a, d_tnorms);
++   dim3 gDim = hypre_GetDefaultDeviceGridDimension(num_rows, "warp", bDim);
++   const size_t shmem_bytes = tnorms_size * sizeof(HYPRE_Complex);
++
++   HYPRE_GPU_LAUNCH2(hypreGPUKernel_CSRMatrixTaggedFnormAccum, gDim, bDim, shmem_bytes,
++                     num_rows, num_tags, tags, A_i, A_j, A_a, d_tnorms);
 +
 +   /* Copy back to host and free device buffer */
 +   hypre_TMemcpy(tnorms, d_tnorms, HYPRE_Real, tnorms_size,
 +                 HYPRE_MEMORY_HOST, HYPRE_MEMORY_DEVICE);
 +   hypre_TFree(d_tnorms, HYPRE_MEMORY_DEVICE);
-+   hypre_TFree(d_tags, HYPRE_MEMORY_DEVICE);
 +
 +   /* Take square root for each block */
 +   for (i = 0; i < tnorms_size; i++)
 +   {
 +      tnorms[i] = hypre_sqrt(tnorms[i]);
 +   }
++
++   hypre_GpuProfilingPopRange();
++   HYPRE_ANNOTATE_FUNC_END;
 +
 +   return hypre_error_flag;
 +}
@@ -884,7 +1116,7 @@ index c5ad8ece1..890338719 100644
   * hypreGPUKernel_CSRMatrixIntersectPattern
   *
 diff --git a/src/seq_mv/protos.h b/src/seq_mv/protos.h
-index 42ec225a3..016677820 100644
+index 42ec225a3..09eb9de56 100644
 --- a/src/seq_mv/protos.h
 +++ b/src/seq_mv/protos.h
 @@ -40,10 +40,11 @@ HYPRE_Int hypre_CSRMatrixSplit(hypre_CSRMatrix *Bs_ext, HYPRE_BigInt first_col_d
@@ -914,8 +1146,24 @@ index 42ec225a3..016677820 100644
  HYPRE_Int hypre_CSRMatrixExtractDiagonalDevice( hypre_CSRMatrix *A, HYPRE_Complex *d,
                                                  HYPRE_Int type );
  hypre_CSRMatrix* hypre_CSRMatrixStack2Device(hypre_CSRMatrix *A, hypre_CSRMatrix *B);
+@@ -269,6 +274,7 @@ HYPRE_Int hypre_SeqVectorSetNumTags( hypre_Vector *vector, HYPRE_Int num_tags );
+ HYPRE_Int hypre_SeqVectorSetTags( hypre_Vector *vector,
+                                   HYPRE_MemoryLocation memory_location,
+                                   HYPRE_Int *tags );
++HYPRE_Int hypre_SeqVectorSetValuesTagged( hypre_Vector *vector, HYPRE_Complex *values );
+ HYPRE_Int hypre_SeqVectorInitialize_v2( hypre_Vector *vector,
+                                         HYPRE_MemoryLocation memory_location );
+ HYPRE_Int hypre_SeqVectorInitialize ( hypre_Vector *vector );
+@@ -385,6 +391,7 @@ HYPRE_Int hypre_CSRMatrixSpMVAnalysisDevice(hypre_CSRMatrix *matrix);
+ 
+ /* vector_device.c */
+ HYPRE_Int hypre_SeqVectorSetConstantValuesDevice ( hypre_Vector *v, HYPRE_Complex value );
++HYPRE_Int hypre_SeqVectorSetValuesTaggedDevice( hypre_Vector *vector, HYPRE_Complex *values );
+ HYPRE_Int hypre_SeqVectorScaleDevice( HYPRE_Complex alpha, hypre_Vector *y );
+ HYPRE_Int hypre_SeqVectorAxpyDevice ( HYPRE_Complex alpha, hypre_Vector *x, hypre_Vector *y );
+ HYPRE_Int hypre_SeqVectorAxpyzDevice ( HYPRE_Complex alpha, hypre_Vector *x,
 diff --git a/src/seq_mv/seq_mv.h b/src/seq_mv/seq_mv.h
-index c262e0ab0..362e39c64 100644
+index c262e0ab0..7b4c59c1b 100644
 --- a/src/seq_mv/seq_mv.h
 +++ b/src/seq_mv/seq_mv.h
 @@ -324,10 +324,11 @@ HYPRE_Int hypre_CSRMatrixSplit(hypre_CSRMatrix *Bs_ext, HYPRE_BigInt first_col_d
@@ -945,11 +1193,177 @@ index c262e0ab0..362e39c64 100644
  HYPRE_Int hypre_CSRMatrixExtractDiagonalDevice( hypre_CSRMatrix *A, HYPRE_Complex *d,
                                                  HYPRE_Int type );
  hypre_CSRMatrix* hypre_CSRMatrixStack2Device(hypre_CSRMatrix *A, hypre_CSRMatrix *B);
+@@ -553,6 +558,7 @@ HYPRE_Int hypre_SeqVectorSetNumTags( hypre_Vector *vector, HYPRE_Int num_tags );
+ HYPRE_Int hypre_SeqVectorSetTags( hypre_Vector *vector,
+                                   HYPRE_MemoryLocation memory_location,
+                                   HYPRE_Int *tags );
++HYPRE_Int hypre_SeqVectorSetValuesTagged( hypre_Vector *vector, HYPRE_Complex *values );
+ HYPRE_Int hypre_SeqVectorInitialize_v2( hypre_Vector *vector,
+                                         HYPRE_MemoryLocation memory_location );
+ HYPRE_Int hypre_SeqVectorInitialize ( hypre_Vector *vector );
+@@ -669,6 +675,7 @@ HYPRE_Int hypre_CSRMatrixSpMVAnalysisDevice(hypre_CSRMatrix *matrix);
+ 
+ /* vector_device.c */
+ HYPRE_Int hypre_SeqVectorSetConstantValuesDevice ( hypre_Vector *v, HYPRE_Complex value );
++HYPRE_Int hypre_SeqVectorSetValuesTaggedDevice( hypre_Vector *vector, HYPRE_Complex *values );
+ HYPRE_Int hypre_SeqVectorScaleDevice( HYPRE_Complex alpha, hypre_Vector *y );
+ HYPRE_Int hypre_SeqVectorAxpyDevice ( HYPRE_Complex alpha, hypre_Vector *x, hypre_Vector *y );
+ HYPRE_Int hypre_SeqVectorAxpyzDevice ( HYPRE_Complex alpha, hypre_Vector *x,
+diff --git a/src/seq_mv/vector.c b/src/seq_mv/vector.c
+index cf3a07147..a9accaa90 100644
+--- a/src/seq_mv/vector.c
++++ b/src/seq_mv/vector.c
+@@ -219,6 +219,65 @@ hypre_SeqVectorSetTags( hypre_Vector          *vector,
+    return hypre_error_flag;
+ }
+ 
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_SeqVectorSetValuesTaggedHost( hypre_Vector  *vector,
++                                    HYPRE_Complex *values )
++{
++   HYPRE_Int   size = hypre_VectorSize(vector);
++   HYPRE_Int  *tags = hypre_VectorTags(vector);
++   HYPRE_Int   i;
++
++   /* Setup scaling vector */
++#if defined(HYPRE_USING_OPENMP)
++   #pragma omp parallel for private(i) HYPRE_SMP_SCHEDULE
++#endif
++   for (i = 0; i < size; i++)
++   {
++      hypre_VectorEntryI(vector, i) = values[tags[i]];
++   }
++
++   return hypre_error_flag;
++}
++
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_SeqVectorSetValuesTagged( hypre_Vector  *vector,
++                                HYPRE_Complex *values )
++{
++   /* Sanity checks */
++   if (hypre_VectorNumVectors(vector) > 1)
++   {
++      hypre_error_w_msg(HYPRE_ERROR_GENERIC, "num_vectors > 1 not implemented!");
++      return hypre_error_flag;
++   }
++
++   if (!hypre_VectorTags(vector) || hypre_VectorNumTags(vector) < 2)
++   {
++      hypre_error_w_msg(HYPRE_ERROR_GENERIC, "This function is valid only for multi-tagged vectors");
++      return hypre_error_flag;
++   }
++
++#if defined(HYPRE_USING_GPU) || defined(HYPRE_USING_DEVICE_OPENMP)
++   HYPRE_ExecutionPolicy exec = hypre_GetExecPolicy1(hypre_VectorMemoryLocation(vector));
++
++   if (exec == HYPRE_EXEC_DEVICE)
++   {
++      hypre_SeqVectorSetValuesTaggedDevice(vector, values);
++   }
++   else
++#endif
++   {
++      hypre_SeqVectorSetValuesTaggedHost(vector, values);
++   }
++
++   return hypre_error_flag;
++}
++
+ /*--------------------------------------------------------------------------
+  * hypre_SeqVectorInitialize_v2
+  *
+diff --git a/src/seq_mv/vector_device.c b/src/seq_mv/vector_device.c
+index 09e47d8d7..d78f6b2ca 100644
+--- a/src/seq_mv/vector_device.c
++++ b/src/seq_mv/vector_device.c
+@@ -51,6 +51,32 @@ hypre_SeqVectorSetConstantValuesDevice( hypre_Vector *v,
+    return hypre_error_flag;
+ }
+ 
++/*--------------------------------------------------------------------------
++ *--------------------------------------------------------------------------*/
++
++HYPRE_Int
++hypre_SeqVectorSetValuesTaggedDevice( hypre_Vector  *vector,
++                                      HYPRE_Complex *values )
++{
++   HYPRE_Int      size = hypre_VectorSize(vector);
++   HYPRE_Int     *tags = hypre_VectorTags(vector);
++   HYPRE_Complex *data = hypre_VectorData(vector);
++
++#if defined(HYPRE_USING_CUDA) || defined(HYPRE_USING_HIP)
++   HYPRE_THRUST_CALL(gather, tags, tags + size, values, data);
++
++#elif defined(HYPRE_USING_SYCL)
++   hypreSycl_gather(tags, tags + size, values, data);
++
++#elif defined(HYPRE_USING_DEVICE_OPENMP)
++   hypre_error_w_msg(HYPRE_ERROR_GENERIC, "Device OpenMP not implemented!");
++#endif
++
++   hypre_SyncComputeStream();
++
++   return hypre_error_flag;
++}
++
+ /*--------------------------------------------------------------------------
+  * hypre_SeqVectorScaleDevice
+  *--------------------------------------------------------------------------*/
 diff --git a/src/utilities/_hypre_utilities.hpp b/src/utilities/_hypre_utilities.hpp
-index 9fc8d5acf..f71c99918 100644
+index 9fc8d5acf..234efdc43 100644
 --- a/src/utilities/_hypre_utilities.hpp
 +++ b/src/utilities/_hypre_utilities.hpp
-@@ -1305,6 +1305,14 @@ hypre_double atomicAdd(hypre_double* address, hypre_double val)
+@@ -1151,6 +1151,42 @@ hypre_mask hypre_mask_flip_at(hypre_mask bitmask, hypre_int n)
+ 
+ #if defined(HYPRE_USING_CUDA) || defined(HYPRE_USING_HIP)
+ 
++/* return the thread identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_threadIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return threadIdx.x;
++   if constexpr (dim == 1) return threadIdx.y;
++   if constexpr (dim == 2) return threadIdx.z;
++
++   return -1;
++}
++
++/* return the block identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return blockIdx.x;
++   if constexpr (dim == 1) return blockIdx.y;
++   if constexpr (dim == 2) return blockIdx.z;
++
++   return -1;
++}
++
++/* return the block dimension in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockDim(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return blockDim.x;
++   if constexpr (dim == 1) return blockDim.y;
++   if constexpr (dim == 2) return blockDim.z;
++
++   return -1;
++}
++
+ /* return the number of threads in block */
+ template <hypre_int dim>
+ static __device__ __forceinline__
+@@ -1305,6 +1341,14 @@ hypre_double atomicAdd(hypre_double* address, hypre_double val)
  }
  #endif
  
@@ -964,7 +1378,50 @@ index 9fc8d5acf..f71c99918 100644
  // There are no *_sync functions in HIP
  #if defined(HYPRE_USING_HIP) || (CUDA_VERSION < 9000)
  
-@@ -1845,6 +1853,19 @@ hypre_int hypre_gpu_get_grid_warp_id(hypre_DeviceItem &item)
+@@ -1755,6 +1799,42 @@ struct print_functor
+ 
+ #if defined(HYPRE_USING_SYCL)
+ 
++/* return the thread identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_threadIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return item.get_local_id(2);
++   if constexpr (dim == 1) return item.get_local_id(1);
++   if constexpr (dim == 2) return item.get_local_id(0);
++
++   return -1;
++}
++
++/* return the block identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return item.get_group(2);
++   if constexpr (dim == 1) return item.get_group(1);
++   if constexpr (dim == 2) return item.get_group(0);
++
++   return -1;
++}
++
++/* return the block dimension in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockDim(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return item.get_local_range(2);
++   if constexpr (dim == 1) return item.get_local_range(1);
++   if constexpr (dim == 2) return item.get_local_range(0);
++
++   return -1;
++}
++
+ /* return the number of threads in block */
+ template <hypre_int dim>
+ static __device__ __forceinline__
+@@ -1845,6 +1925,19 @@ hypre_int hypre_gpu_get_grid_warp_id(hypre_DeviceItem &item)
            hypre_gpu_get_warp_id<bdim>(item);
  }
  
@@ -985,10 +1442,53 @@ index 9fc8d5acf..f71c99918 100644
  static __device__ __forceinline__
  void block_sync(hypre_DeviceItem &item)
 diff --git a/src/utilities/device_utils.h b/src/utilities/device_utils.h
-index b4a494767..4886f7d0e 100644
+index b4a494767..91c26adca 100644
 --- a/src/utilities/device_utils.h
 +++ b/src/utilities/device_utils.h
-@@ -1109,6 +1109,14 @@ hypre_double atomicAdd(hypre_double* address, hypre_double val)
+@@ -955,6 +955,42 @@ hypre_mask hypre_mask_flip_at(hypre_mask bitmask, hypre_int n)
+ 
+ #if defined(HYPRE_USING_CUDA) || defined(HYPRE_USING_HIP)
+ 
++/* return the thread identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_threadIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return threadIdx.x;
++   if constexpr (dim == 1) return threadIdx.y;
++   if constexpr (dim == 2) return threadIdx.z;
++
++   return -1;
++}
++
++/* return the block identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return blockIdx.x;
++   if constexpr (dim == 1) return blockIdx.y;
++   if constexpr (dim == 2) return blockIdx.z;
++
++   return -1;
++}
++
++/* return the block dimension in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockDim(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return blockDim.x;
++   if constexpr (dim == 1) return blockDim.y;
++   if constexpr (dim == 2) return blockDim.z;
++
++   return -1;
++}
++
+ /* return the number of threads in block */
+ template <hypre_int dim>
+ static __device__ __forceinline__
+@@ -1109,6 +1145,14 @@ hypre_double atomicAdd(hypre_double* address, hypre_double val)
  }
  #endif
  
@@ -1003,7 +1503,50 @@ index b4a494767..4886f7d0e 100644
  // There are no *_sync functions in HIP
  #if defined(HYPRE_USING_HIP) || (CUDA_VERSION < 9000)
  
-@@ -1649,6 +1657,19 @@ hypre_int hypre_gpu_get_grid_warp_id(hypre_DeviceItem &item)
+@@ -1559,6 +1603,42 @@ struct print_functor
+ 
+ #if defined(HYPRE_USING_SYCL)
+ 
++/* return the thread identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_threadIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return item.get_local_id(2);
++   if constexpr (dim == 1) return item.get_local_id(1);
++   if constexpr (dim == 2) return item.get_local_id(0);
++
++   return -1;
++}
++
++/* return the block identifier in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockIdx(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return item.get_group(2);
++   if constexpr (dim == 1) return item.get_group(1);
++   if constexpr (dim == 2) return item.get_group(0);
++
++   return -1;
++}
++
++/* return the block dimension in direction dim */
++template <hypre_int dim>
++static __device__ __forceinline__
++hypre_int hypre_gpu_get_blockDim(hypre_DeviceItem &item)
++{
++   if constexpr (dim == 0) return item.get_local_range(2);
++   if constexpr (dim == 1) return item.get_local_range(1);
++   if constexpr (dim == 2) return item.get_local_range(0);
++
++   return -1;
++}
++
+ /* return the number of threads in block */
+ template <hypre_int dim>
+ static __device__ __forceinline__
+@@ -1649,6 +1729,19 @@ hypre_int hypre_gpu_get_grid_warp_id(hypre_DeviceItem &item)
            hypre_gpu_get_warp_id<bdim>(item);
  }
  
@@ -1023,3 +1566,97 @@ index b4a494767..4886f7d0e 100644
  /* sync the thread block */
  static __device__ __forceinline__
  void block_sync(hypre_DeviceItem &item)
+diff --git a/src/utilities/memory_tracker.c b/src/utilities/memory_tracker.c
+index 895611e3d..c3f9385ea 100644
+--- a/src/utilities/memory_tracker.c
++++ b/src/utilities/memory_tracker.c
+@@ -110,7 +110,7 @@ hypre_MemoryTrackerQueueCompSearch(const void *e1,
+ hypre_MemoryTrackerEvent
+ hypre_MemoryTrackerGetNext(hypre_MemoryTracker *tracker)
+ {
+-   hypre_MemoryTrackerEvent i, k = HYPRE_MEMORY_NUM_EVENTS;
++   HYPRE_Int                 i, k = HYPRE_MEMORY_NUM_EVENTS;
+    hypre_MemoryTrackerQueue *q = tracker->queue;
+ 
+    for (i = HYPRE_MEMORY_EVENT_ALLOC; i < HYPRE_MEMORY_NUM_EVENTS; i++)
+@@ -126,7 +126,7 @@ hypre_MemoryTrackerGetNext(hypre_MemoryTracker *tracker)
+       }
+    }
+ 
+-   return k;
++   return (hypre_MemoryTrackerEvent) k;
+ }
+ 
+ HYPRE_Int
+@@ -330,7 +330,7 @@ hypre_PrintMemoryTracker( size_t     *totl_bytes_o,
+    size_t curr_bytes[hypre_NUM_MEMORY_LOCATION] = {0};
+    size_t copy_bytes[hypre_MEMCPY_NUM_TYPES] = {0};
+    size_t j;
+-   hypre_MemoryTrackerEvent i;
++   HYPRE_Int i;
+    //HYPRE_Real t0 = hypre_MPI_Wtime();
+ 
+    HYPRE_Int leakcheck = 1;
+@@ -404,11 +404,12 @@ hypre_PrintMemoryTracker( size_t     *totl_bytes_o,
+             hypre_MemoryTrackerEntry key = { .ptr = entry->ptr };
+             hypre_MemoryTrackerEntry *key_ptr = &key;
+ 
+-            hypre_MemoryTrackerEntry **result = bsearch(&key_ptr,
+-                                                        qf->sorted_data_compressed,
+-                                                        qf->sorted_data_compressed_len,
+-                                                        sizeof(hypre_MemoryTrackerEntry *),
+-                                                        hypre_MemoryTrackerQueueCompSearch);
++            hypre_MemoryTrackerEntry **result = (hypre_MemoryTrackerEntry **)
++                                                   bsearch(&key_ptr,
++                                                           qf->sorted_data_compressed,
++                                                           qf->sorted_data_compressed_len,
++                                                           sizeof(hypre_MemoryTrackerEntry *),
++                                                           hypre_MemoryTrackerQueueCompSearch);
+             if (result)
+             {
+                j = result - qf->sorted_data_compressed;
+@@ -608,14 +609,14 @@ hypre_PrintMemoryTracker( size_t     *totl_bytes_o,
+ 
+    if (leakcheck)
+    {
+-      hypre_MemoryLocation t;
++      HYPRE_Int t;
+ 
+       for (t = hypre_MEMORY_HOST; t <= hypre_MEMORY_UNIFIED; t++)
+       {
+          if (curr_bytes[t])
+          {
+             char memory_location[256];
+-            hypre_GetMemoryLocationName(t, memory_location);
++            hypre_GetMemoryLocationName((hypre_MemoryLocation) t, memory_location);
+             fprintf(stderr, "%zu bytes of %s memory may not be freed\n", curr_bytes[t], memory_location);
+          }
+ 
+diff --git a/src/utilities/nvtx.c b/src/utilities/nvtx.c
+index 0b06f9669..7bae7a4e0 100644
+--- a/src/utilities/nvtx.c
++++ b/src/utilities/nvtx.c
+@@ -6,6 +6,7 @@
+  ******************************************************************************/
+ 
+ #include "_hypre_utilities.h"
++#include "_hypre_utilities.hpp"
+ 
+ #if defined(HYPRE_USING_ROCTX)
+ #include "hip/hip_runtime_api.h"
+@@ -118,13 +119,13 @@ void hypre_GpuProfilingPopRange(void)
+ {
+ #if defined (HYPRE_USING_NVTX)
+    hypre_GpuProfilingPushRangeColor("StreamSync0", Red);
+-   cudaStreamSynchronize(0);
++   HYPRE_CUDA_CALL( cudaStreamSynchronize(0) );
+    nvtxRangePop();
+    nvtxRangePop();
+ 
+ #elif defined (HYPRE_USING_ROCTX)
+    roctxRangePush("StreamSync0");
+-   hipStreamSynchronize(0);
++   HYPRE_HIP_CALL( hipStreamSynchronize(0) );
+    roctxRangePop();
+    roctxRangePop();
+ #endif
