@@ -795,7 +795,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-12-gbe52325a3.tar.gz" )
+  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/81c886a8d9094aafd32e7aa3c27cc6dfe4c73c66.tar.gz" )
+  set( HYPRE_URL_HASH "94b0420cad8f85946aca972e4bbd88280c9b8bdcbb4050c2dfbbd77ec9d242c9" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -883,10 +884,11 @@ if( ENABLE_HYPRE )
 
   ExternalProject_Add( hypre
                        URL ${HYPRE_URL}
+                       URL_HASH SHA256=${HYPRE_URL_HASH}
+                       UPDATE_COMMAND ""  # Skip git pull/update since this is a snapshot
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
-                       PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patch/hypre-next.patch
                        BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
                        CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geos && . ${PROJECT_BINARY_DIR}/config_hypre_for_geos
                        BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
