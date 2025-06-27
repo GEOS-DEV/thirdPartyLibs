@@ -29,4 +29,5 @@ done
 echo -e "Updated YAML files with new hypre git hash: ${HYPRE_GIT_HASH}"
 
 # Stage changes
-git add -u scripts docker
+git add -u scripts docker CMakeLists.txt
+git commit -m "Update hypre to ${HYPRE_GIT_HASH}"
