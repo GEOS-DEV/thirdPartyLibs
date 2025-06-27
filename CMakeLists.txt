@@ -795,8 +795,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/81c886a8d9094aafd32e7aa3c27cc6dfe4c73c66.tar.gz" )
-  set( HYPRE_URL_HASH "94b0420cad8f85946aca972e4bbd88280c9b8bdcbb4050c2dfbbd77ec9d242c9" )
+  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/1402f9eacc73932cb2209f79de5acbafadd1b38c.tar.gz" )
+  set( HYPRE_URL_HASH "39804ed1944d041cf9125f827fe0462123debf8b4fa051843a0c5bb128dbde9a" )
   set( HYPRE_DEPENDS "" )
 
 
