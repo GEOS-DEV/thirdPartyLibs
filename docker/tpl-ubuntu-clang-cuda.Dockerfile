@@ -33,6 +33,8 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         unzip \
         libmpfr-dev \
         lbzip2 \
+        bzip2 \
+        gnupg \
         virtualenv
 
 # Install clingo for Spack
