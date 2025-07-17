@@ -15,12 +15,12 @@
 # geosx@develop%gcc@noAVX
 #
 # Uberenv command to build geos dependencies:
-# python3 ./scripts/uberenv/uberenv.py --spec="%clang@14.0.6 +docs"
+# python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang@14.0.6"
 #
 # python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc@12.1.1"
 #
 # No AVX instructions
-# python3 ./scripts/uberenv/uberenv.py --spec="%gcc@12noAVX +docs"
+# python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc@12noAVX"
 
 
 spack:
