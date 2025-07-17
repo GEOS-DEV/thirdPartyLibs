@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import *
 
 class Pygeosx(BundlePackage):
     """This is a set of libraries necessary for the pygeosx ATS environment.

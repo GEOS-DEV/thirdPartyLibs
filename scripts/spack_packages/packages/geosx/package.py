@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import *
 import warnings
 
 import socket
@@ -85,6 +85,8 @@ class Geosx(CMakePackage, CudaPackage):
     variant('mathpresso', default=True, description='Build mathpresso.')
 
     # SPHINX_BEGIN_DEPENDS
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
 
     depends_on('cmake@3.24:', type='build')
 
