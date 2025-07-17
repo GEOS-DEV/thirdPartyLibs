@@ -9,10 +9,11 @@ import warnings
 import socket
 import os
 
-import llnl.util.tty as tty
-
 from os import environ as env
 from os.path import join as pjoin
+
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
 
 # Tested specs are located at scripts/spack_configs/<$SYS_TYPE>/spack.yaml (e.g. %clang@10.0.1)
 

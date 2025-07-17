@@ -10,17 +10,17 @@
 # See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS files for details.
 #------------------------------------------------------------------------------------------------------------
 
-# geosx@develop%clang@14.0.6
-# geosx@develop%gcc@12.1.1
-# geosx@develop%gcc@noAVX
+# geosx@develop %clang-14
+# geosx@develop %gcc-12
+# geosx@develop %gcc-noAVX
 #
 # Uberenv command to build geos dependencies:
-# python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang@14.0.6"
+# python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang-14"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc@12.1.1"
+# python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc-12"
 #
 # No AVX instructions
-# python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc@12noAVX"
+# python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc-noAVX"
 
 
 spack:
@@ -42,93 +42,51 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers::
-  - compiler:
-      spec: clang@14.0.6
-      paths:
-        cc: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang
-        cxx: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++
-        f77: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-      operating_system: rhel8
-      target: x86_64
-      modules: []
-      extra_rpaths: []
-  - compiler:
-      spec: gcc@12.1.1
-      paths:
-        cc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-      operating_system: rhel8
-      target: x86_64
-      modules: []
-      extra_rpaths: []
-  - compiler:
-      spec: gcc@12noAVX
-      paths:
-        cc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-      flags:
-        cxxflags: -march=x86-64-v2 -mno-avx512f
-      operating_system: rhel8
-      target: x86_64
-      modules: []
-      extra_rpaths: []
-  - compiler:
-      spec: gcc@13.3.1
-      paths:
-        cc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
-      operating_system: rhel8
-      target: x86_64
-      modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
-      extra_rpaths: []
-  - compiler:
-      spec: gcc@13noAVX
-      paths:
-        cc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
-      flags:
-        cxxflags: -march=x86-64-v2 -mno-avx512f
-      operating_system: rhel8
-      target: x86_64
-      modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
-      extra_rpaths: []
-
   packages:
     all:
       target: [ivybridge]
-      compiler: [gcc, clang]
       providers:
         mpi: [mvapich2]
         blas: [intel-oneapi-mkl]
         lapack: [intel-oneapi-mkl]
 
-   # Lock down which MPI we are using
+    # Compilers
+    llvm:
+      externals:
+      - spec: llvm@14.0.6+clang~flang~lld~lldb
+        prefix: /usr/tce/packages/clang/clang-14.0.6-magic
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang
+            cxx: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++
+            fortran: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
+          extra_rpaths: []
+    gcc:
+      externals:
+      - spec: gcc@12.1.1 languages:='c,c++,fortran'
+        prefix: /usr/tce/packages/gcc/gcc-12.1.1-magic
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/g++
+            fortran: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
+          extra_rpaths: []
+
+    # Lock down which MPI we are using
     mvapich2:
       buildable: False
       externals:
-        - spec: mvapich2@2.3%gcc@12.1.1 process_managers=slurm
+        - spec: mvapich2@2.3 process_managers=slurm %gcc@12.1.1
           prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
-        - spec: mvapich2@2.3%gcc@12noAVX process_managers=slurm
-          prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
-        - spec: mvapich2@2.3%clang@14.0.6 process_managers=slurm
+        - spec: mvapich2@2.3 process_managers=slurm %clang@14.0.6
           prefix:  /usr/tce/packages/mvapich2/mvapich2-2.3.7-clang-14.0.6-magic
 
     intel-oneapi-mkl:
@@ -209,3 +167,33 @@ spack:
       externals:
         - spec: gettext@0.19.8.1
           prefix: /usr/bin/
+
+    flex:
+      buildable: False
+      externals:
+        - spec: flex@2.6.1
+          prefix: /usr
+
+toolchains:
+  clang-14:
+  - spec: '%[virtuals=c]llvm@14.0.6+clang~flang~lld~lldb'
+    when: '%c'
+  - spec: '%[virtuals=cxx]llvm@14.0.6+clang~flang~lld~lldb'
+    when: '%cxx'
+  - spec: '%[virtuals=fortran]gcc@12.1.1'
+    when: '%fortran'
+  gcc-12:
+  - spec: '%[virtuals=c]gcc@12.1.1'
+    when: '%c'
+  - spec: '%[virtuals=cxx]gcc@12.1.1'
+    when: '%cxx'
+  - spec: '%[virtuals=fortran]gcc@12.1.1'
+    when: '%fortran'
+    # gcc-noAVX:
+    #   - spec: cxxflags='-march=x86-64-v2 -mno-avx512f'
+    #   - spec: '%[virtuals=c]gcc@12.1.1'
+    #     when: '%c'
+    #   - spec: '%[virtuals=cxx]gcc@12.1.1'
+    #     when: '%cxx'
+    #   - spec: '%[virtuals=fortran]gcc@12.1.1'
+    #     when: '%fortran'

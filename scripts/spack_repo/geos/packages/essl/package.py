@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 from spack.package import *
-
+from spack_repo.builtin.build_systems.bundle import BundlePackage
 
 # Recipe for pre-built essl library on blueos machines.
 # Defines additonal flags for blueos:
