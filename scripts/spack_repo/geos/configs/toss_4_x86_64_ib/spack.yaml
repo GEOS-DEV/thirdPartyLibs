@@ -84,9 +84,9 @@ spack:
     mvapich2:
       buildable: False
       externals:
-        - spec: mvapich2@2.3 process_managers=slurm %gcc@12.1.1
+        - spec: mvapich2@2.3 process_managers=auto %gcc@12.1.1
           prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
-        - spec: mvapich2@2.3 process_managers=slurm %clang@14.0.6
+        - spec: mvapich2@2.3 process_managers=auto %clang@14.0.6
           prefix:  /usr/tce/packages/mvapich2/mvapich2-2.3.7-clang-14.0.6-magic
 
     intel-oneapi-mkl:
