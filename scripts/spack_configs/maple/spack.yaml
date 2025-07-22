@@ -5,7 +5,7 @@
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%llvm@17.0.4 ~openmp~pygeosx~docs"                  \
+#    --spec "%clang@17.0.4 +cuda+pygeosx+docs cuda_arch=90 ^cuda@12.4.131+allow-unsupported-compilers"                  \
 #    --spack-env-file=scripts/spack_configs/maple/spack.yaml     \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
@@ -27,7 +27,7 @@ spack:
   #############
   compilers:
   - compiler:
-      spec: llvm@17.0.4
+      spec: clang@17.0.4
       paths:
         cc: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang
         cxx: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang++
@@ -37,7 +37,7 @@ spack:
         cflags:
         cxxflags:
       operating_system: rocky9
-      target: x86_64
+      target: aarch64
       modules: []
       environment:
         set: # Needed for scotch
@@ -51,11 +51,17 @@ spack:
   packages:
     all:
       target: [neoverse_n1]
-      compiler: [llvm]
+      compiler: [clang]
       providers:
         blas: [openblas]
         lapack: [openblas]
         mpi: [openmpi]
+
+    openblas:
+      buildable: False
+      externals:
+        - spec: openblas@0.3.29
+          prefix: /usr
 
     ####
     # make sure spack doesn't rebuild mpi, blas and lapack libs
