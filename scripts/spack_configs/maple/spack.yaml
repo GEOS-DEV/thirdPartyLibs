@@ -5,7 +5,7 @@
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%clang@17.0.4 +cuda+pygeosx+docs cuda_arch=90 ^cuda@12.4.131+allow-unsupported-compilers"                  \
+#    --spec "%clang@17.0.4 +cuda~pygeosx~docs cuda_arch=90 ^cuda@12.4.131+allow-unsupported-compilers"                  \
 #    --spack-env-file=scripts/spack_configs/maple/spack.yaml     \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
@@ -60,7 +60,7 @@ spack:
     openblas:
       buildable: False
       externals:
-        - spec: openblas@system
+        - spec: openblas@0.3.23
           prefix: /usr
 
     ####
