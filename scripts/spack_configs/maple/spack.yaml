@@ -60,7 +60,7 @@ spack:
     openblas:
       buildable: False
       externals:
-        - spec: openblas@0.3.29
+        - spec: openblas@system
           prefix: /usr
 
     ####
@@ -176,7 +176,7 @@ spack:
     cuda:
       externals:
       - spec: cuda@12.4.131
-        prefix: /hrtc/apps/cuda/12.4.131/
+        prefix: /hrtc/apps/cuda/12.4.131/aarch64/rocky9/
       buildable: false
     openmpi:
       externals:
