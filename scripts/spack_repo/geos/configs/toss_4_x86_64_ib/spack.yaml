@@ -42,6 +42,36 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
+  toolchains:
+    clang-14:
+      - spec: '%c=llvm@14.0.6+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%cxx=llvm@14.0.6+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%fortran=gcc@12.1.1'
+        when: '%fortran'
+      - spec: '%mvapich2@2.3.7.clang'
+        when: '%mpi'
+    gcc-12:
+      - spec: '%c=gcc@12.1.1'
+        when: '%c'
+      - spec: '%cxx=gcc@12.1.1'
+        when: '%cxx'
+      - spec: '%fortran=gcc@12.1.1'
+        when: '%fortran'
+      - spec: '%mvapich2@2.3.7.gcc'
+        when: '%mpi'
+    gcc-noAVX:
+      - spec: cxxflags='-march=x86-64-v2 -mno-avx512f'
+      - spec: '%c=gcc@12.1.1'
+        when: '%c'
+      - spec: '%cxx=gcc@12.1.1'
+        when: '%cxx'
+      - spec: '%fortran=gcc@12.1.1'
+        when: '%fortran'
+      - spec: '%mvapich2@2.3.7.gcc'
+        when: '%mpi'
+
   packages:
     all:
       target: [ivybridge]
@@ -54,7 +84,7 @@ spack:
     llvm:
       externals:
       - spec: llvm@14.0.6+clang~flang~lld~lldb
-        prefix: /usr/tce/packages/clang/clang-14.0.6-magic
+        prefix: /usr/tce/packages/clang/clang-14.0.6-magic/
         extra_attributes:
           compilers:
             c: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang
@@ -67,8 +97,8 @@ spack:
           extra_rpaths: []
     gcc:
       externals:
-      - spec: gcc@12.1.1 languages:='c,c++,fortran'
-        prefix: /usr/tce/packages/gcc/gcc-12.1.1-magic
+      - spec: gcc@12.1.1 languages:=c,c++,fortran
+        prefix: /usr/tce/packages/gcc/gcc-12.1.1-magic/
         extra_attributes:
           compilers:
             c: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gcc
@@ -84,9 +114,9 @@ spack:
     mvapich2:
       buildable: False
       externals:
-        - spec: mvapich2@2.3 process_managers=auto %gcc@12.1.1
+        - spec: mvapich2@2.3.7.gcc process_managers=auto %gcc@12.1.1
           prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
-        - spec: mvapich2@2.3 process_managers=auto %clang@14.0.6
+        - spec: mvapich2@2.3.7.clang process_managers=auto %clang@14.0.6
           prefix:  /usr/tce/packages/mvapich2/mvapich2-2.3.7-clang-14.0.6-magic
 
     intel-oneapi-mkl:
@@ -173,27 +203,3 @@ spack:
       externals:
         - spec: flex@2.6.1
           prefix: /usr
-
-  toolchains:
-    clang-14:
-      - spec: '%[virtuals=c]llvm@14.0.6+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@14.0.6+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@12.1.1'
-        when: '%fortran'
-    gcc-12:
-      - spec: '%[virtuals=c]gcc@12.1.1'
-        when: '%c'
-      - spec: '%[virtuals=cxx]gcc@12.1.1'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@12.1.1'
-        when: '%fortran'
-    # gcc-noAVX:
-    #   - spec: cxxflags='-march=x86-64-v2 -mno-avx512f'
-    #   - spec: '%[virtuals=c]gcc@12.1.1'
-    #     when: '%c'
-    #   - spec: '%[virtuals=cxx]gcc@12.1.1'
-    #     when: '%cxx'
-    #   - spec: '%[virtuals=fortran]gcc@12.1.1'
-    #     when: '%fortran'
