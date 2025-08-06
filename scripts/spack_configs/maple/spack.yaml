@@ -57,19 +57,9 @@ spack:
         lapack: [openblas]
         mpi: [openmpi]
 
-    openblas:
-      buildable: False
-      externals:
-        - spec: openblas@0.3.23
-          prefix: /usr
-
     ####
     # make sure spack doesn't rebuild mpi, blas and lapack libs
     mpi:
-      buildable: false
-    blas:
-      buildable: false
-    lapack:
       buildable: false
 
     ####
