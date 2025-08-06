@@ -31,8 +31,8 @@ spack:
       paths:
         cc: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang
         cxx: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang++
-        f77: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/flang-new
-        fc: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/flang-new
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
       flags:
         cflags:
         cxxflags:
