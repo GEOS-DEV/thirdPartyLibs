@@ -249,7 +249,7 @@ class Geosx(CMakePackage, CudaPackage):
         if lvarray:
             hostname = "lvarray-" + hostname
 
-        host_config_path = "%s-%s-%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler)).replace('=',''), var)
+        host_config_path = "%s-%s-%s@%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler.name)), str(spec.compiler.version),var)
 
         dest_dir = self.stage.source_path
         host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
