@@ -58,8 +58,11 @@ spack:
         mpi: [openmpi]
 
     ####
-    # make sure spack doesn't rebuild mpi, blas and lapack libs
+    # make sure spack doesn't rebuild mpi and mathpresso libs
     mpi:
+      buildable: false
+
+    mathpresso:
       buildable: false
 
     ####
