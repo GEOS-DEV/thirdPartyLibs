@@ -77,7 +77,7 @@ spack:
 
     # master - 10/18/24
     hypre:
-      require: "@git.c893886d15eb57e87dd36efec23693ece3ddc88e"
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
 
     # v2024.07.0
     chai:
