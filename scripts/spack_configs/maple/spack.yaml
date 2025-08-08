@@ -1,0 +1,190 @@
+# This is a Spack Environment file for Maple.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+#
+# Run command from the top-level of the repository:
+# ./scripts/uberenv/uberenv.py                                  \
+#    --spec "%clang@17.0.4 +cuda~pygeosx~docs cuda_arch=90 ^cuda@12.4.131+allow-unsupported-compilers"                  \
+#    --spack-env-file=scripts/spack_configs/maple/spack.yaml     \
+#    --project-json=.uberenv_config.json                        \
+#    --prefix ${GEOS_TPL_DIR}
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage:
+      - $spack/../build_stage
+  # Regular TPLs do not need views
+  view: false
+
+  #############
+  # COMPILERS #
+  #############
+  compilers:
+  - compiler:
+      spec: clang@17.0.4
+      paths:
+        cc: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang
+        cxx: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      flags:
+        cflags:
+        cxxflags:
+      operating_system: rocky9
+      target: aarch64
+      modules: []
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
+      extra_rpaths: []
+
+  #############
+  # PACKAGES  #
+  #############
+  packages:
+    all:
+      target: [neoverse_n1]
+      compiler: [clang]
+      providers:
+        blas: [openblas]
+        lapack: [openblas]
+        mpi: [openmpi]
+
+    ####
+    # make sure spack doesn't rebuild mpi and mathpresso libs
+    mpi:
+      buildable: false
+
+    mathpresso:
+      buildable: false
+
+    ####
+    # spec of packages to build for
+
+    # v0.6.2
+    blt:
+      require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
+    # v2.32.0-33
+    hypre:
+      require: "@git.21e5953ddc6daaa24699236108866afa597a415c"
+    # v2025.0.3
+    chai:
+      require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
+    # v2025.0.3.0
+    umpire:
+      require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
+    # v2025.0.3.0
+    raja:
+      require: "@git.1d70abf171474d331f1409908bdf1b1c3fe19222=develop"
+    # v2025.0.3.0
+    camp:
+      require: "@git.ee0a3069a7ae72da8bcea63c06260fad34901d43=main"
+    # v2.12.0
+    caliper:
+      require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
+    # v0.9.2
+    conduit:
+      require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
+    # master - 04/12/20
+    uncrustify:
+      require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
+    # master - 04/26/20
+    superlu-dist:
+      require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+
+    ####
+    # spec of spack packages to reuse
+    bison:
+      externals:
+      - spec: bison@3.8.2
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/bison-3.8.2-mkim26leceonxvdvlpukc4y65kkaa4j3/
+      buildable: false
+    gmp:
+      externals:
+      - spec: gmp@6.2.1
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/gmp-6.2.1-h7dxik46ba5ebtbvpdtfqm7kanbxokzm
+      buildable: false
+    mpfr:
+      externals:
+      - spec: mpfr@4.2.0
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/mpfr-4.2.0-i6bud7m6k6lmduamd6h5gw62xdf2wytf
+      buildable: false      
+    libiconv:
+      externals:
+      - spec: libiconv@1.17
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/libiconv-1.17-m3y2ti2b4r73c2w2d4tbln6bdlozblq6
+      buildable: false
+    perl:
+      externals:
+      - spec: perl@5.38.0
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/perl-5.38.0-vjg3pfiwld5tk2vu22ji2f2fgrgxrekn
+      buildable: false
+    berkeley-db:
+      externals:
+      - spec: berkeley-db@18.1.40
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/berkeley-db-18.1.40-nqcmpq7kkd5nqo7x6dd7tvcahv7fk5nd
+      buildable: false
+    cmake:
+      externals:
+      - spec: cmake@3.29.6
+        prefix: /hrtc/apps/devtools/spack/MAPLE/linux-rocky9-neoverse_v2/gcc-12.2.0/cmake-3.29.6-yl7bm5nfishcx3d6dlkqfj7pc2muvowe
+      buildable: false
+
+    ####
+    # spec of system packages to reuse
+    # bin
+    flex:
+      externals:
+      - spec: flex@2.6.4+lex
+        prefix: /usr
+      buildable: false
+    git:
+      externals:
+      - spec: git@2.39.3~tcltk
+        prefix: /usr
+      buildable: false
+    gmake:
+      externals:
+      - spec: gmake@4.3
+        prefix: /usr
+      buildable: false
+    m4:
+      externals:
+      - spec: m4@1.4.19
+        prefix: /usr
+      buildable: false
+    python:
+      buildable: False
+      externals:
+      - spec: python@3.9.18
+        prefix: /usr
+    #lib
+    cuda:
+      externals:
+      - spec: cuda@12.4.131
+        prefix: /hrtc/apps/cuda/12.4.131/aarch64/rocky9/
+      buildable: false
+    openmpi:
+      externals:
+      - spec: openmpi@5.0.5
+        prefix: /hrtc/apps/mpi/openmpi/aarch64/rocky9/5.0.5/llvm/17.0.4/cuda.12.4
+      buildable: false
+    pkgconf:
+      externals:
+      - spec: pkgconf@3.0.0
+        prefix: /usr
+      buildable: false
+    readline:
+      externals:
+      - spec: readline@8.1
+        prefix: /usr
+      buildable: false        
+
+
