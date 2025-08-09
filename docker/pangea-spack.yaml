@@ -25,9 +25,6 @@ spack:
       target: ppc64le
       modules: []
       environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
         prepend_path:
           LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
       extra_rpaths: []
@@ -89,11 +86,6 @@ spack:
       - spec: automake@1.16.1
         prefix: /usr
       buildable: false
-    bison:
-      externals:
-      - spec: bison@3.0.4
-        prefix: /usr
-      buildable: false
     bzip2:
       externals:
       - spec: bzip2@1.0.6
@@ -108,11 +100,6 @@ spack:
       externals:
       - spec: cuda@11.5.0 +allow-unsupported-compilers
         prefix: /data_local/sw/cuda/11.5.0
-      buildable: false
-    flex:
-      externals:
-      - spec: flex@2.6.1+lex
-        prefix: /usr
       buildable: false
     gettext:
       externals:

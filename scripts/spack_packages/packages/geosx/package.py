@@ -148,7 +148,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on("superlu-dist+openmp", when="+openmp")
 
     # -Wno-error=implicit-function-declaration needed for 'METIS_PartMeshDual' error
-    depends_on("scotch@7.0.7 ~compression +mpi +esmumps +int64 ~shared ~metis build_system=cmake cflags='-fPIC' cxxflags='-fPIC'", when='+scotch')
+    depends_on("scotch@7.0.8 ~compression +mpi +esmumps +int64 determinism=FULL ~shared ~metis build_system=cmake cflags='-fPIC' cxxflags='-fPIC'", when='+scotch')
 
     depends_on('suite-sparse@5.10.1')
     depends_on("suite-sparse~openmp", when="~openmp")

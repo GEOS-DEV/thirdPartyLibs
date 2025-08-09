@@ -39,10 +39,6 @@ spack:
       operating_system: rocky9
       target: x86_64
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
 
   #############
@@ -102,11 +98,6 @@ spack:
 
     ####
     # spec of spack packages to reuse
-    bison:
-      externals:
-      - spec: bison@3.8.2
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/bison-3.8.2-ws5cszsf5536mcdqj3zbt7uynp6ho756/
-      buildable: false
     gmp:
       externals:
       - spec: gmp@6.3.0
@@ -141,11 +132,6 @@ spack:
     ####
     # spec of system packages to reuse
     # bin
-    flex:
-      externals:
-      - spec: flex@2.6.4+lex
-        prefix: /usr
-      buildable: false
     git:
       externals:
       - spec: git@2.39.3~tcltk
