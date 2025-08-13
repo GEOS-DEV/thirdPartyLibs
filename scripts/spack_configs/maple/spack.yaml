@@ -1,12 +1,12 @@
-# This is a Spack Environment file for Pine.
+# This is a Spack Environment file for Maple.
 #
 # It describes a set of packages to be installed, along with
 # configuration settings.
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%gcc@11.4.1 ~openmp~pygeosx~docs"                  \
-#    --spack-env-file=scripts/spack_configs/pine/spack.yaml     \
+#    --spec "%clang@17.0.4 +cuda~pygeosx~docs cuda_arch=90 ^cuda@12.4.131+allow-unsupported-compilers"                  \
+#    --spack-env-file=scripts/spack_configs/maple/spack.yaml     \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
 spack:
@@ -27,17 +27,17 @@ spack:
   #############
   compilers:
   - compiler:
-      spec: gcc@11.4.1
+      spec: clang@17.0.4
       paths:
-        cc: /usr/bin/gcc
-        cxx: /usr/bin/g++
+        cc: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang
+        cxx: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/llvm-17.0.4-24xg7dvliazr7dqlcimhsgpog3nvdiie/bin/clang++
         f77: /usr/bin/gfortran
         fc: /usr/bin/gfortran
       flags:
-        cflags: -march=native -mtune=native
-        cxxflags: -march=native -mtune=native
+        cflags:
+        cxxflags:
       operating_system: rocky9
-      target: x86_64
+      target: aarch64
       modules: []
       environment:
         set: # Needed for scotch
@@ -50,20 +50,19 @@ spack:
   #############
   packages:
     all:
-      target: [zen4]
-      compiler: [gcc]
+      target: [neoverse_n1]
+      compiler: [clang]
       providers:
-        blas: [intel-mkl]
-        lapack: [intel-mkl]
+        blas: [openblas]
+        lapack: [openblas]
         mpi: [openmpi]
 
     ####
-    # make sure spack doesn't rebuild mpi, blas and lapack libs
+    # make sure spack doesn't rebuild mpi and mathpresso libs
     mpi:
       buildable: false
-    blas:
-      buildable: false
-    lapack:
+
+    mathpresso:
       buildable: false
 
     ####
@@ -74,7 +73,7 @@ spack:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
     # v2.32.0-33
     hypre:
-      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
+      require: "@git.21e5953ddc6daaa24699236108866afa597a415c"
     # v2025.0.3
     chai:
       require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
@@ -105,37 +104,37 @@ spack:
     bison:
       externals:
       - spec: bison@3.8.2
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/bison-3.8.2-ws5cszsf5536mcdqj3zbt7uynp6ho756/
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/bison-3.8.2-mkim26leceonxvdvlpukc4y65kkaa4j3/
       buildable: false
     gmp:
       externals:
-      - spec: gmp@6.3.0
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/gmp-6.3.0-q4glkxa77fd4rejkrrsuydut2c222fkm
+      - spec: gmp@6.2.1
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/gmp-6.2.1-h7dxik46ba5ebtbvpdtfqm7kanbxokzm
       buildable: false
     mpfr:
       externals:
       - spec: mpfr@4.2.0
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/mpfr-4.2.1-eaxjflobjpilpwfe4aalusexhcxhptrf
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/mpfr-4.2.0-i6bud7m6k6lmduamd6h5gw62xdf2wytf
       buildable: false      
     libiconv:
       externals:
       - spec: libiconv@1.17
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/libiconv-1.17-crgtppb7hj54qwkl3hfc6ejyu34gsa4d
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/libiconv-1.17-m3y2ti2b4r73c2w2d4tbln6bdlozblq6
       buildable: false
     perl:
       externals:
-      - spec: perl@5.38.2
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/perl-5.38.2-wxq42supt6zs3f63ajjtp6423q6teyot
+      - spec: perl@5.38.0
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/perl-5.38.0-vjg3pfiwld5tk2vu22ji2f2fgrgxrekn
       buildable: false
     berkeley-db:
       externals:
       - spec: berkeley-db@18.1.40
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/berkeley-db-18.1.40-nixwddyxlb523z3aly4b7bje4rfft3me
+        prefix: /hrtc/apps/devtools/spack/GHOPPER/linux-rocky9-neoverse_n1/gcc-11.4.1/berkeley-db-18.1.40-nqcmpq7kkd5nqo7x6dd7tvcahv7fk5nd
       buildable: false
     cmake:
       externals:
       - spec: cmake@3.29.6
-        prefix: /hrtc/apps/devtools/spack/PINE/linux-rocky9-zen4/gcc-11.4.1/cmake-3.29.6-i23jd7kq7lyqvrpsguhznfhoy4mso6up
+        prefix: /hrtc/apps/devtools/spack/MAPLE/linux-rocky9-neoverse_v2/gcc-12.2.0/cmake-3.29.6-yl7bm5nfishcx3d6dlkqfj7pc2muvowe
       buildable: false
 
     ####
@@ -167,15 +166,15 @@ spack:
       - spec: python@3.9.18
         prefix: /usr
     #lib
+    cuda:
+      externals:
+      - spec: cuda@12.4.131
+        prefix: /hrtc/apps/cuda/12.4.131/aarch64/rocky9/
+      buildable: false
     openmpi:
       externals:
       - spec: openmpi@5.0.5
-        prefix: /hrtc/apps/mpi/openmpi/x86_64/rocky9/5.0.5/gcc/11.4.1/nocuda/
-      buildable: false
-    intel-mkl:
-      externals:
-      - spec: intel-mkl@219.5.281
-        prefix: /apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/mkl/
+        prefix: /hrtc/apps/mpi/openmpi/aarch64/rocky9/5.0.5/llvm/17.0.4/cuda.12.4
       buildable: false
     pkgconf:
       externals:
