@@ -96,8 +96,6 @@ RUN apt-get install -y --no-install-recommends \
     make \
     bc \
     file \
-    bison \
-    flex \
 # GEOS patches some tpl. Remove when it's not the case anymore.
     patch \
 # `ca-certificates`  needed by `git` to download spack repo.

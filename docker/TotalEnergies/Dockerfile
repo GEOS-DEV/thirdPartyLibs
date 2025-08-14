@@ -38,8 +38,6 @@ RUN yum install --disablerepo=intel-mkl-repo -y \
     make \
     bc \
     file \
-    bison \
-    flex \
     patch \
     ca-certificates \
     autoconf \

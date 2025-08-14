@@ -29,10 +29,6 @@ spack:
         operating_system: sequoia
         target: aarch64
         modules: []
-        environment:
-          set: # Needed for scotch
-            BISON: bison
-            FLEX: flex
         extra_rpaths: []
     - compiler:
         spec: apple-clang@17.0.0
@@ -50,10 +46,6 @@ spack:
         operating_system: sequoia
         target: aarch64
         modules: []
-        environment:
-          set: # Needed for scotch
-            BISON: bison
-            FLEX: flex
         extra_rpaths: []
 
   packages:
@@ -170,11 +162,6 @@ spack:
       externals:
         - spec: gettext@0.23.1 
           prefix: /opt/homebrew/opt/gettext
-    flex:
-      buildable: False
-      externals:
-        - spec: flex@2.6.4
-          prefix: /opt/homebrew/opt/flex
 
     addr2line:
       buildable: False
