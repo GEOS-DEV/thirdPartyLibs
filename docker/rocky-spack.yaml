@@ -110,7 +110,7 @@ spack:
     cuda:
       buildable: False
       externals:
-      - spec: cuda@12.5.0%gcc@13.3.1 +allow-unsupported-compilers
+      - spec: cuda@12.9.1%gcc@13.3.1 +allow-unsupported-compilers
         prefix: /usr/local/cuda
       - spec: cuda@12.6.3%clang@17.0.6 +allow-unsupported-compilers
         prefix: /usr/local/cuda
