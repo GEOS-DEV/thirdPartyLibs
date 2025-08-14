@@ -101,7 +101,7 @@ spack:
           FLEX: flex
       extra_rpaths: []
   - compiler:
-      spec: gcc@12noAVX
+      spec: gcc@13noAVX
       paths:
         cc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gcc
         cxx: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/g++
