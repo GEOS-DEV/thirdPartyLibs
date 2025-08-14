@@ -16,9 +16,6 @@ RUN dnf install -y \
     make \
     bc \
     file \
-    # Scotch deps \
-    bison \
-    flex \
     # vtk deps \
     patch && \
     git-lfs install #&& alternatives --set python /usr/bin/python3
