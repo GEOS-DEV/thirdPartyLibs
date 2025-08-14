@@ -42,10 +42,6 @@ spack:
       operating_system: rhel8
       target: ppc64le
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
         prepend_path: # Needed for caliper
           LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
       extra_rpaths: []
@@ -81,7 +77,7 @@ spack:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
     # v2.32.0-33
     hypre:
-      require: "@git.21e5953ddc6daaa24699236108866afa597a415c"
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
     # v2025.0.3
     chai:
       require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
@@ -113,11 +109,6 @@ spack:
       externals:
       - spec: berkeley-db@18.1.40
         prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/berkeley-db-18.1.40-y53coeam7ym7i2wnyzv3j52t6agjfuhh
-      buildable: false
-    bison:
-      externals:
-      - spec: bison@3.8.2
-        prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/bison-3.8.2-wwemfpkqdr7voqfkbu4qfs5xjzwf7anj
       buildable: false
     cmake:
       externals:
@@ -163,11 +154,6 @@ spack:
     # spec of system packages to reuse
 
     # bin
-    flex:
-      externals:
-      - spec: flex@2.6.1+lex
-        prefix: /usr
-      buildable: false
     git:
       externals:
       - spec: git@2.27.0+tcltk

@@ -51,8 +51,6 @@ RUN dnf clean all && \
         tbb-devel \
         bc \
         file \
-        bison \
-        flex \
         patch \
         ca-certificates \
         autoconf \

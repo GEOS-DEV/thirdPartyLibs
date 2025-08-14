@@ -51,10 +51,6 @@ spack:
       operating_system: rhel7
       target: ppc64le
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
   - compiler:
       spec: clang@13.0.1
@@ -67,10 +63,6 @@ spack:
       operating_system: rhel7
       target: ppc64le
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
   - compiler:
       spec: gcc@8.3.1
@@ -85,10 +77,6 @@ spack:
       operating_system: rhel7
       target: ppc64le
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
   - compiler:
       spec: gcc@12.2.1
@@ -103,10 +91,6 @@ spack:
       operating_system: rhel7
       target: ppc64le
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
 
   packages:
@@ -122,7 +106,7 @@ spack:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
     hypre:
-      require: "@git.be52325a3ed8923fb93af348b1262ecfe44ab5d2"
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
 
     # v2025.0.3.0
     chai:
@@ -233,11 +217,6 @@ spack:
       buildable: False
       externals:
         - spec: libtool@2.4.2
-          prefix: /usr
-    flex:
-      buildable: False
-      externals:
-        - spec: flex@2.5.37
           prefix: /usr
     gettext:
       buildable: False

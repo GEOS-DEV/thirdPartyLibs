@@ -28,10 +28,6 @@ spack:
         cflags: -pthread
         cxxflags: -pthread
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
 
   packages:
@@ -48,7 +44,7 @@ spack:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
     hypre:
-      require: "@git.be52325a3ed8923fb93af348b1262ecfe44ab5d2"
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
 
     # v2025.0.3.0
     chai:
@@ -92,13 +88,6 @@ spack:
       - spec: automake@1.13.4
         prefix: /usr
 
-    bison:
-      version: [3.0.4]
-      buildable: false
-      externals:
-      - spec: bison@3.0.4
-        prefix: /usr
-
     cmake:
       buildable: false
       externals:
@@ -116,12 +105,6 @@ spack:
     #  externals:
     #  - spec: diffutils@3.3
     #    prefix: /usr
-
-    flex:
-      buildable: false
-      externals:
-      - spec: flex@2.5.37
-        prefix: /usr
 
     #gettext:
     #  buildable: false

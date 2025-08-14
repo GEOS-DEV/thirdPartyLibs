@@ -29,10 +29,6 @@ spack:
         operating_system: sequoia
         target: aarch64
         modules: []
-        environment:
-          set: # Needed for scotch
-            BISON: bison
-            FLEX: flex
         extra_rpaths: []
     - compiler:
         spec: apple-clang@17.0.0
@@ -50,10 +46,6 @@ spack:
         operating_system: sequoia
         target: aarch64
         modules: []
-        environment:
-          set: # Needed for scotch
-            BISON: bison
-            FLEX: flex
         extra_rpaths: []
 
   packages:
@@ -77,7 +69,7 @@ spack:
 
     # master - 10/18/24
     hypre:
-      require: "@git.c893886d15eb57e87dd36efec23693ece3ddc88e"
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
 
     # v2024.07.0
     chai:
@@ -170,11 +162,6 @@ spack:
       externals:
         - spec: gettext@0.23.1 
           prefix: /opt/homebrew/opt/gettext
-    flex:
-      buildable: False
-      externals:
-        - spec: flex@2.6.4
-          prefix: /opt/homebrew/opt/flex
 
     addr2line:
       buildable: False

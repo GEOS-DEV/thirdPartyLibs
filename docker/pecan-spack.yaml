@@ -15,10 +15,6 @@ spack:
   compilers::
   # Pecan CPU/GPU compiler
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -48,7 +44,7 @@ spack:
       require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
     hypre:
-      require: "@git.be52325a3ed8923fb93af348b1262ecfe44ab5d2"
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
 
     # v2025.0.3.0
     chai:
@@ -92,12 +88,6 @@ spack:
       externals:
       - spec: automake@1.16.5
         prefix: /usr
-    bison:
-      version: [3.8.2]
-      buildable: false
-      externals:
-      - spec: bison@3.8.2
-        prefix: /usr
     cmake:
       version: [3.28.3]
       buildable: false
@@ -109,12 +99,6 @@ spack:
       externals:
       - spec: cuda@11.5.1 +allow-unsupported-compilers
         prefix: /hrtc/apps/cuda/11.5.119/x86_64/centos7
-    flex:
-      version: [2.6.4]
-      buildable: false
-      externals:
-      - spec: flex@2.6.4
-        prefix: /usr
 
     # Lock down blas, lapack implementation
     intel-mkl:
