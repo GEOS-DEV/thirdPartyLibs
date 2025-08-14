@@ -85,7 +85,7 @@ class Geosx(CMakePackage, CudaPackage):
     variant('mathpresso', default=True, description='Build mathpresso.')
 
     variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
-        size limit if reauired. Zero or negative to not activate the adjustment')
+        size limit if reauired. Zero or negative to not activate the adjustment")
 
     # SPHINX_BEGIN_DEPENDS
 
@@ -446,7 +446,7 @@ class Geosx(CMakePackage, CudaPackage):
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS_DEBUG', '-g -G -O0 -Xcompiler -O0'))
 
-                cuda_stack_size = spec['cuda_stack_size'].value
+                cuda_stack_size = int(spec.variants['cuda_stack_size'].value)
                 if 0 < cuda_stack_size:
                     cfg.write(cmake_cache_option('ENABLE_CUDA_STACK_SIZE', True, "Adjust the CUDA stack size limit"))
                     cfg.write(cmake_cache_entry('CUDA_STACK_SIZE', cuda_stack_size, "CUDA stack size in KB"))
