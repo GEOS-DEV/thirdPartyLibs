@@ -2,7 +2,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-FROM nvidia/cuda:12.9.1-cudnn-devel-rockylinux9 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:12.9.1-devel-rockylinux8 AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
@@ -13,8 +13,7 @@ RUN dnf clean all && \
     dnf -y update && \
     dnf -y install \
         which \
-        gcc \
-        gcc-gfortran \
+        gcc-toolset-13 \
         python3 \
         zlib-devel \
         tbb \
