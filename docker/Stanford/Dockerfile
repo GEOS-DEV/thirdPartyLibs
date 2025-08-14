@@ -50,8 +50,6 @@ RUN yum install -y \
     make \
     bc \
     file \
-    bison \
-    flex \
     patch \
     ca-certificates \
     autoconf-2.69 \

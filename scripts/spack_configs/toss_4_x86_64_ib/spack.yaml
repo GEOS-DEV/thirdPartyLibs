@@ -53,10 +53,6 @@ spack:
       operating_system: rhel8
       target: x86_64
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
   - compiler:
       spec: gcc@12.1.1
@@ -68,10 +64,6 @@ spack:
       operating_system: rhel8
       target: x86_64
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
   - compiler:
       spec: gcc@12noAVX
@@ -85,10 +77,6 @@ spack:
       operating_system: rhel8
       target: x86_64
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
 
   packages:
@@ -99,8 +87,6 @@ spack:
         mpi: [mvapich2]
         blas: [intel-oneapi-mkl]
         lapack: [intel-oneapi-mkl]
-
-
 
    # Lock down which MPI we are using
     mvapich2:
@@ -191,8 +177,3 @@ spack:
       externals:
         - spec: gettext@0.19.8.1
           prefix: /usr/bin/
-    flex:
-      buildable: False
-      externals:
-        - spec: flex@2.6.1
-          prefix: /usr

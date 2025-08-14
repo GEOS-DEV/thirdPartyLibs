@@ -47,10 +47,6 @@ spack:
       operating_system: rhel8
       target: ppc64le
       modules: []
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
         prepend_path: # Needed for caliper
           LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
       extra_rpaths: []
@@ -79,16 +75,12 @@ spack:
       buildable: false
 
     ####
+
     # spec of spack packages to reuse
     berkeley-db:
       externals:
       - spec: berkeley-db@18.1.40
         prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/berkeley-db-18.1.40-y53coeam7ym7i2wnyzv3j52t6agjfuhh
-      buildable: false
-    bison:
-      externals:
-      - spec: bison@3.8.2
-        prefix: /data_local/sw/spack/0.22.1/opt/spack/linux-rhel8-power9le/gcc-8.4.1/bison-3.8.2-wwemfpkqdr7voqfkbu4qfs5xjzwf7anj
       buildable: false
     cmake:
       externals:
@@ -134,11 +126,6 @@ spack:
     # spec of system packages to reuse
 
     # bin
-    flex:
-      externals:
-      - spec: flex@2.6.1+lex
-        prefix: /usr
-      buildable: false
     git:
       externals:
       - spec: git@2.27.0+tcltk

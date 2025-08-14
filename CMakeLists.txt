@@ -749,7 +749,7 @@ if( ENABLE_MPI )
     set(SUPERLU_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}")
     set(SUPERLU_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
   endif()
-  
+
 
   set(PARMETIS_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include)
   set(PARMETIS_LIBRARIES ${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a)
@@ -795,7 +795,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "${TPL_MIRROR_DIR}/hypre-v2.33.0-12-gbe52325a3.tar.gz" )
+  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/907a2d07b64fe47bdde4540c54665c83ced83a2c.tar.gz" )
+  set( HYPRE_URL_HASH "ca114fe641fc804303804bef3701e1e94b579205728667a69b512410d60f9e03" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -883,6 +884,8 @@ if( ENABLE_HYPRE )
 
   ExternalProject_Add( hypre
                        URL ${HYPRE_URL}
+                       URL_HASH SHA256=${HYPRE_URL_HASH}
+                       UPDATE_COMMAND ""  # Skip git pull/update since this is a snapshot
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
@@ -980,7 +983,7 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.7.tar.gz" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.8.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
 
@@ -1006,7 +1009,7 @@ if( ENABLE_SCOTCH )
                                     -D BUILD_LIBSCOTCHMETIS:BOOL=OFF
                                     -D THREADS:BOOL=${SCOTCH_THREADS}
                                     -D INTSIZE:STRING=64
-                                    -D SCOTCH_RANDOM:STRING=FIXED_SEED
+                                    -D SCOTCH_DETERMINISTIC:STRING=FULL
                                     -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}

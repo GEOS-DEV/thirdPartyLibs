@@ -20,10 +20,6 @@ spack:
 
   compilers::
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags: {}
       modules: []
@@ -36,10 +32,6 @@ spack:
       spec: clang@15
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags: {}
       modules: []
@@ -52,10 +44,6 @@ spack:
       spec: clang@10
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -70,10 +58,6 @@ spack:
       spec: gcc@12
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -88,10 +72,6 @@ spack:
       spec: gcc@11
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -106,10 +86,6 @@ spack:
       spec: gcc@10
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -124,10 +100,6 @@ spack:
       spec: gcc@9
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -163,12 +135,6 @@ spack:
       externals:
       - spec: automake@1.16.5
         prefix: /usr
-    bison:
-      version: [3.8.2]
-      buildable: false
-      externals:
-      - spec: bison@3.8.2
-        prefix: /usr
     cmake:
       version: [3.28.3]
       buildable: false
@@ -180,12 +146,6 @@ spack:
       externals:
       - spec: cuda@11.8.0 +allow-unsupported-compilers
         prefix: /usr/local/cuda
-    flex:
-      version: [2.6.4]
-      buildable: false
-      externals:
-      - spec: flex@2.6.4
-        prefix: /usr
     findutils:
       version: [4.7.0]
       buildable: false

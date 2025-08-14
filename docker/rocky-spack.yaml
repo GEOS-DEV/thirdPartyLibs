@@ -19,10 +19,6 @@ spack:
 
   compilers::
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -37,10 +33,6 @@ spack:
       spec: clang@17.0.6
       target: x86_64
   - compiler:
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
       extra_rpaths: []
       flags:
         cflags: -pthread
@@ -76,12 +68,6 @@ spack:
       externals:
       - spec: automake@1.16.5
         prefix: /usr
-    bison:
-      version: [3.8.2]
-      buildable: false
-      externals:
-      - spec: bison@3.8.2
-        prefix: /usr
     cmake:
       version: [3.28.6]
       buildable: false
@@ -95,12 +81,6 @@ spack:
         prefix: /usr/local/cuda
       - spec: cuda@12.6.3%clang@17.0.6 +allow-unsupported-compilers
         prefix: /usr/local/cuda
-    flex:
-      version: [2.6.4]
-      buildable: false
-      externals:
-      - spec: flex@2.6.4
-        prefix: /usr
     m4:
       buildable: false
       externals:
