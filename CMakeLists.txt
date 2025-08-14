@@ -983,7 +983,7 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.7.tar.gz" )
+    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.8.tar.gz" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
 
@@ -1009,7 +1009,7 @@ if( ENABLE_SCOTCH )
                                     -D BUILD_LIBSCOTCHMETIS:BOOL=OFF
                                     -D THREADS:BOOL=${SCOTCH_THREADS}
                                     -D INTSIZE:STRING=64
-                                    -D SCOTCH_RANDOM:STRING=FIXED_SEED
+                                    -D SCOTCH_DETERMINISTIC:STRING=FULL
                                     -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
                                     -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
