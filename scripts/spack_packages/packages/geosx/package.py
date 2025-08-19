@@ -85,7 +85,7 @@ class Geosx(CMakePackage, CudaPackage):
     variant('mathpresso', default=True, description='Build mathpresso.')
 
     variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
-        size limit if reauired. Zero or negative to not activate the adjustment")
+        size limit if required. Zero or negative keep default behavior")
 
     # SPHINX_BEGIN_DEPENDS
 
