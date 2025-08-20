@@ -73,6 +73,38 @@ spack:
       target: x86_64
       modules: []
       extra_rpaths: []
+  - compiler:
+      spec: gcc@13.3.1
+      paths:
+        cc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gcc
+        cxx: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/g++
+        f77: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
+        fc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
+      extra_rpaths: []
+  - compiler:
+      spec: gcc@13noAVX
+      paths:
+        cc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gcc
+        cxx: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/g++
+        f77: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
+        fc: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
+      flags:
+        cxxflags: -march=x86-64-v2 -mno-avx512f
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment:
+        set: # Needed for scotch
+          BISON: bison
+          FLEX: flex
+      extra_rpaths: []
 
   packages:
     all:
