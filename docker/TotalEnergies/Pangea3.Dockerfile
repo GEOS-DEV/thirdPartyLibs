@@ -16,6 +16,7 @@ RUN dnf clean all && \
     dnf -y install \
         autoconf \
         automake \
+        gettext-devel \
         libtool \
         bzip2 \
         unzip

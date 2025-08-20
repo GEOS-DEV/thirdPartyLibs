@@ -50,8 +50,6 @@ RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
     bc \
     file \
-    bison \
-    flex \
     patch \
     ca-certificates \
     git
