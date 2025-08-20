@@ -84,6 +84,9 @@ class Geosx(CMakePackage, CudaPackage):
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
+    variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
+        size limit if required. Zero or negative keep default behavior")
+
     # SPHINX_BEGIN_DEPENDS
 
     depends_on('cmake@3.24:', type='build')
@@ -442,6 +445,11 @@ class Geosx(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS_RELWITHDEBINFO', '-g -lineinfo ${CMAKE_CUDA_FLAGS_RELEASE}'))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS_DEBUG', '-g -G -O0 -Xcompiler -O0'))
+
+                cuda_stack_size = int(spec.variants['cuda_stack_size'].value)
+                if 0 < cuda_stack_size:
+                    cfg.write(cmake_cache_option('ENABLE_CUDA_STACK_SIZE', True, "Adjust the CUDA stack size limit"))
+                    cfg.write(cmake_cache_entry('CUDA_STACK_SIZE', cuda_stack_size, "CUDA stack size in KB"))
 
             else:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', False))

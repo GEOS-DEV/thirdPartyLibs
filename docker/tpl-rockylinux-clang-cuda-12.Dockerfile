@@ -3,7 +3,7 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-FROM nvidia/cuda:12.6.3-devel-rockylinux8 AS tpl_toolchain_intersect_geosx_toolchain
+FROM nvidia/cuda:12.9.1-devel-rockylinux8 AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
@@ -70,7 +70,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.6.3+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
