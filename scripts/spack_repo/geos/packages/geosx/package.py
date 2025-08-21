@@ -87,7 +87,7 @@ class Geosx(CMakePackage, CudaPackage):
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
-    variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
+    variant('cuda_stack_size', default="0", description="Defines the adjusted cuda stack \
         size limit if required. Zero or negative keep default behavior")
 
     # SPHINX_BEGIN_DEPENDS
@@ -242,6 +242,10 @@ class Geosx(CMakePackage, CudaPackage):
 
     def _get_host_config_path(self, spec, lvarray=False):
         var = ''
+
+        if 'no-avx' in str(spec.compiler_flags):
+            var += "-noAVX"
+
         if '+cuda' in spec:
             var = '-'.join([var, 'cuda'])
             var += "@" + str(spec['cuda'].version)
