@@ -75,10 +75,21 @@ spack:
   packages:
     all:
       target: [ivybridge]
-      providers:
-        mpi: [mvapich2]
-        blas: [intel-oneapi-mkl]
-        lapack: [intel-oneapi-mkl]
+
+    mpi:
+      require:
+      - mvapich2
+
+    zlib-api:
+      require:
+      - zlib
+
+    blas:
+      require:
+      - "openblas"
+    lapack:
+      require:
+      - "openblas"
 
     # Compilers
     llvm:
@@ -90,10 +101,6 @@ spack:
             c: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang
             cxx: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++
             fortran: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-          environment:
-            set: # Needed for scotch
-              BISON: bison
-              FLEX: flex
           extra_rpaths: []
     gcc:
       externals:
@@ -104,26 +111,23 @@ spack:
             c: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gcc
             cxx: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/g++
             fortran: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
-          environment:
-            set: # Needed for scotch
-              BISON: bison
-              FLEX: flex
           extra_rpaths: []
 
     # Lock down which MPI we are using
     mvapich2:
       buildable: False
       externals:
-        - spec: mvapich2@2.3.7.gcc process_managers=auto %gcc@12.1.1
+        - spec: mvapich2@2.3.7.gcc process_managers=slurm %gcc@12.1.1
           prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-12.1.1-magic
-        - spec: mvapich2@2.3.7.clang process_managers=auto %clang@14.0.6
+        - spec: mvapich2@2.3.7.clang process_managers=slurm %clang@14.0.6
           prefix:  /usr/tce/packages/mvapich2/mvapich2-2.3.7-clang-14.0.6-magic
 
-    intel-oneapi-mkl:
-      externals:
-        - spec: intel-oneapi-mkl@2022.1.0 threads=openmp
-          prefix: /usr/tce/packages/mkl/mkl-2022.1.0/
-      buildable: False
+    # Spack issue prevents compilation: https://github.com/spack/spack/issues/49994
+    # intel-oneapi-mkl:
+    #   externals:
+    #     - spec: intel-oneapi-mkl@2022.1.0 threads=openmp %gcc@12.1.1
+    #       prefix: /usr/tce/packages/mkl/mkl-2022.1.0/
+    #   buildable: False
 
     # System level packages to not build
     papi:
@@ -197,9 +201,13 @@ spack:
       externals:
         - spec: gettext@0.19.8.1
           prefix: /usr/bin/
-
-    flex:
-      buildable: False
+    openblas:
+      buildable: false
       externals:
-        - spec: flex@2.6.1
-          prefix: /usr
+      - prefix: /usr
+        spec: openblas@0.3.15
+    zlib:
+      buildable: false
+      externals:
+      - spec: zlib@1.2.11
+        prefix: /usr
