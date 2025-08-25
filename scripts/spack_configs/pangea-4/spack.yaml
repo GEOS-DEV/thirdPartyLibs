@@ -72,6 +72,12 @@ spack:
       buildable: false
 
     ####
+    # packages necessary on pangea4 when +grpc configuration is requested
+    protobuf:
+      require: "@3.26.1"
+    grpc:
+      require: "@1.64.0"
+    
     # spec of spack packages to reuse
 
     intel-oneapi-mkl:
