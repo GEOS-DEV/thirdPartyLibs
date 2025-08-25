@@ -5,7 +5,7 @@
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%gcc@11.4.0 +cuda+pygeosx+docs                     \
+#    --spec "%gcc@11.4.0 +cuda+pygeosx+docs+grpc                \
 #    cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers"     \
 #    --spack-env-file=scripts/spack_configs/pangea-3/spack.yaml \
 #    --project-json=.uberenv_config.json                        \
@@ -103,6 +103,9 @@ spack:
     # master - 04/26/20
     superlu-dist:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+    # v1.64.0
+    grpc:
+      require: "@git.b8a04acbbf18fd1c805e5d53d62ed9fa4721a4d1"
 
     ####
     # spec of spack packages to reuse
