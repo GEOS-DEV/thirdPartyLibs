@@ -101,7 +101,7 @@ spack:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
     # v1.64.0
     grpc:
-      require: "@git.b8a04acbbf18fd1c805e5d53d62ed9fa4721a4d1"
+      require: "@1.64.0"
 
     ####
     # spec of spack packages to reuse

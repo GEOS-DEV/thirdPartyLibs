@@ -198,7 +198,7 @@ class Geosx(CMakePackage, CudaPackage):
     # Other
     #
     depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
-    depends_on('grpc@1.64.0', when='+grpc')
+    depends_on('grpc', when='+grpc')
 
     # SPHINX_END_DEPENDS
 
