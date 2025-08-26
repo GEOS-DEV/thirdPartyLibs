@@ -71,6 +71,7 @@ class Geosx(CMakePackage, CudaPackage):
             description='Linear algebra interface.',
             values=('trilinos', 'hypre', 'petsc'),
             multi=False)
+    variant('grpc', default=False, description='Build gRPC support.')
     variant('pygeosx', default=True, description='Enable pygeosx.')
 
     # SPHINX_END_VARIANTS
@@ -197,6 +198,7 @@ class Geosx(CMakePackage, CudaPackage):
     # Other
     #
     depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
+    depends_on('grpc', when='+grpc')
 
     # SPHINX_END_DEPENDS
 
@@ -608,6 +610,11 @@ class Geosx(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', False))
                 cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', False))
             
+            if '+grpc' in spec:
+                cfg.write(cmake_cache_option('ENABLE_GRPC', True))
+            else:
+                cfg.write(cmake_cache_option('ENABLE_GRPC', False))
+
             if '+shared' in spec:
                 cfg.write(cmake_cache_option('GEOS_BUILD_SHARED_LIBS', True))
             else:

@@ -5,7 +5,7 @@
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%gcc@12.2.1 ~openmp~pygeosx+docs"                  \
+#    --spec "%gcc@12.2.1 ~openmp~pygeosx+docs+grpc"             \
 #    --spack-env-file=scripts/spack_configs/pangea-4/spack.yaml \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
@@ -99,6 +99,9 @@ spack:
     # master - 04/26/20
     superlu-dist:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+    # v1.64.0
+    grpc:
+      require: "@1.64.0"
 
     ####
     # spec of spack packages to reuse
