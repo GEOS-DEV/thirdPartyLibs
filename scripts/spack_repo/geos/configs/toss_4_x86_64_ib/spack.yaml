@@ -50,11 +50,11 @@ spack:
 
   toolchains:
     clang-14:
-      - spec: '%c=llvm@14.0.6+clang~flang~lld~lldb'
+      - spec: '%[virtuals=c]llvm@14.0.6+clang~flang~lld~lldb'
         when: '%c'
-      - spec: '%cxx=llvm@14.0.6+clang~flang~lld~lldb'
+      - spec: '%[virtuals=cxx]llvm@14.0.6+clang~flang~lld~lldb'
         when: '%cxx'
-      - spec: '%fortran=gcc@12.1.1'
+      - spec: '%[virtuals=fortran]gcc@10.3.1'
         when: '%fortran'
       - spec: '%mvapich2@2.3.7.clang'
         when: '%mpi'
@@ -125,10 +125,19 @@ spack:
           compilers:
             c: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang
             cxx: /usr/tce/packages/clang/clang-14.0.6-magic/bin/clang++
-            fortran: /usr/tce/packages/gcc/gcc-12.1.1-magic/bin/gfortran
           extra_rpaths: []
     gcc:
       externals:
+      - spec: gcc@10.3.1 languages:='c,c++,fortran'
+        prefix: /usr/tce/packages/gcc/gcc-10.3.1
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+            fortran: /usr/tce/packages/gcc/gcc-10.3.1/bin/gfortran
+          flags: {}
+          environment: {}
+          extra_rpaths: []
       - spec: gcc@12.1.1 languages:=c,c++,fortran
         prefix: /usr/tce/packages/gcc/gcc-12.1.1-magic/
         extra_attributes:
