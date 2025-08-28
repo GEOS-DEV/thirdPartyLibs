@@ -47,6 +47,7 @@ spack:
       operating_system: rhel8
       target: ppc64le
       modules: []
+      environment:
         prepend_path: # Needed for caliper
           LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
       extra_rpaths: []
