@@ -63,6 +63,8 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     unzip \
     libmpfr-dev \
     lbzip2 \
+    bzip2 \
+    gnupg \
     virtualenv
 
 # Install clingo for Spack

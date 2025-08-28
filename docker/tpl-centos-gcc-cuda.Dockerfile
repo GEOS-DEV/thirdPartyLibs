@@ -48,6 +48,7 @@ RUN yum -y install \
     # xz \
     unzip \
     bzip2 \
+    gnupg \
     && pip3 install virtualenv
 
 # Install clingo for Spack

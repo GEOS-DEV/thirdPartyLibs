@@ -26,6 +26,7 @@ RUN dnf clean all && \
         unzip \
         mpfr-devel \
         bzip2 \
+        gnupg \
         xz \
         python3-virtualenv
 
