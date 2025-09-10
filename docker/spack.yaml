@@ -17,111 +17,129 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-
-  compilers::
-  - compiler:
-      extra_rpaths: []
-      flags: {}
-      modules: []
-      operating_system: ubuntu22.04
-      paths:
-        cc: /usr/bin/clang-15
-        cxx: /usr/bin/clang++-15
-        f77: /usr/bin/gfortran-11
-        fc: /usr/bin/gfortran-11
-      spec: clang@15
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags: {}
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/clang
-        cxx: /usr/bin/clang++
-        f77: /usr/bin/gfortran
-        fc: /usr/bin/gfortran
-      spec: clang@10
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu22.04
-      paths:
-        cc: /usr/bin/gcc-12
-        cxx: /usr/bin/g++-12
-        f77: /usr/bin/gfortran-12
-        fc: /usr/bin/gfortran-12
-      spec: gcc@12
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu22.04
-      paths:
-        cc: /usr/bin/gcc-11
-        cxx: /usr/bin/g++-11
-        f77: /usr/bin/gfortran-11
-        fc: /usr/bin/gfortran-11
-      spec: gcc@11
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/gcc-10
-        cxx: /usr/bin/g++-10
-        f77: /usr/bin/gfortran-10
-        fc: /usr/bin/gfortran-10
-      spec: gcc@10
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/gcc-9
-        cxx: /usr/bin/g++-9
-        f77: /usr/bin/gfortran-9
-        fc: /usr/bin/gfortran-9
-      spec: gcc@9
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: centos7
-      paths:
-        cc: /opt/rh/devtoolset-8/root/usr/bin/gcc
-        cxx: /opt/rh/devtoolset-8/root/usr/bin/g++
-        f77: /opt/rh/devtoolset-8/root/usr/bin/gfortran
-        fc: /opt/rh/devtoolset-8/root/usr/bin/gfortran
-      spec: gcc@8
-      target: x86_64
+  toolchains:
+    clang-15:
+      - spec: '%[virtuals=c]llvm@15.0.7+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@15.0.7+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@11.4.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
+    clang-10:
+      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@9.4.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
+    gcc-9:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@9.5.0'
+        when: '%c'
+      - spec: '%cxx=gcc@9.5.0'
+        when: '%cxx'
+      - spec: '%fortran=gcc@9.5.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
+    gcc-10:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@10.5.0'
+        when: '%c'
+      - spec: '%cxx=gcc@10.5.0'
+        when: '%cxx'
+      - spec: '%fortran=gcc@10.5.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
+    gcc-11:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@11.4.0'
+        when: '%c'
+      - spec: '%cxx=gcc@11.4.0'
+        when: '%cxx'
+      - spec: '%fortran=gcc@11.4.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
+    gcc-12:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@12.3.0'
+        when: '%c'
+      - spec: '%cxx=gcc@12.3.0'
+        when: '%cxx'
+      - spec: '%fortran=gcc@12.3.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
 
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc, clang]
-      providers:
-        blas: [netlib-lapack]
-        lapack: [netlib-lapack]
-        mpi: [openmpi]
+
+    mpi:
+      require:
+      - openmpi
+
+    blas:
+      require:
+      - "netlib-lapack"
+    lapack:
+      require:
+      - "netlib-lapack"
+
+    llvm:
+      externals:
+      - spec: llvm@10.0.0+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
+      - spec: llvm@15.0.7+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang-15
+            cxx: /usr/bin/clang++-15
+
+    gcc:
+      externals:
+      - spec: gcc@9.5.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-9
+            cxx: /usr/bin/g++-9
+            fortran: /usr/bin/gfortran-9
+      - spec: gcc@10.5.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-10
+            cxx: /usr/bin/g++-10
+            fortran: /usr/bin/gfortran-10
+      - spec: gcc@11.4.0 languages:=c,fortran
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-11
+            fortran: /usr/bin/gfortran-11
+      - spec: gcc@12.3.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-12
+            cxx: /usr/bin/g++-12
+            fortran: /usr/bin/gfortran-12
 
     autoconf:
       version: [2.71]
@@ -163,10 +181,6 @@ spack:
       - spec: mpfr@6.0.2
         prefix: /usr
 
-    # Spack may grab for mpi & we don't want to use them
-    mpi:
-      buildable: false
-
     netlib-lapack:
       buildable: false
       externals:
@@ -179,18 +193,16 @@ spack:
         prefix: /usr
     openmpi:
       externals:
-      - spec: openmpi@4.1.2%clang
+      - spec: openmpi@4.1.2 %llvm
         prefix: /usr
-      - spec: openmpi@1.10.7%gcc@8
-        prefix: /usr/lib64/openmpi
         modules: [mpi]
-      - spec: openmpi@4.1.2%gcc@9
+      - spec: openmpi@4.1.2 %gcc@9.5.0
         prefix: /usr
-      - spec: openmpi@4.1.2%gcc@10
+      - spec: openmpi@4.1.2 %gcc@10.5.0
         prefix: /usr
-      - spec: openmpi@4.1.2%gcc@11
+      - spec: openmpi@4.1.2 %gcc@11.4.0
         prefix: /usr
-      - spec: openmpi@4.1.2%gcc@12
+      - spec: openmpi@4.1.2 %gcc@12.3.0
         prefix: /usr
     perl:
       buildable: false
