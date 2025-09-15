@@ -99,6 +99,9 @@ spack:
     # master - 04/26/20
     superlu-dist:
       require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+    # v1.64.0
+    grpc:
+      require: "@1.64.0"
 
     ####
     # spec of spack packages to reuse
