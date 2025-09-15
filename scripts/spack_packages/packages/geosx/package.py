@@ -612,6 +612,11 @@ class Geosx(CMakePackage, CudaPackage):
             
             if '+grpc' in spec:
                 cfg.write(cmake_cache_option('ENABLE_GRPC', True))
+                cfg.write(cmake_cache_entry('GRPC_DIR', spec['grpc'].prefix))
+                cfg.write(cmake_cache_entry('ABSL_DIR', spec['abseil-cpp'].prefix))
+                cfg.write(cmake_cache_entry('RE2_DIR', spec['re2'].prefix))
+                cfg.write(cmake_cache_entry('C-ARES_DIR', spec['c-ares'].prefix))
+                cfg.write(cmake_cache_entry('PROTOBUF_DIR', spec['protobuf'].prefix))
             else:
                 cfg.write(cmake_cache_option('ENABLE_GRPC', False))
 

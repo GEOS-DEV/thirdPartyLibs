@@ -5,7 +5,7 @@
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%gcc@12.2.1 ~openmp~pygeosx+docs+grpc"             \
+#    --spec "%gcc@12.2.1 ~openmp~pygeosx+docs"                  \
 #    --spack-env-file=scripts/spack_configs/pangea-4/spack.yaml \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
