@@ -17,31 +17,41 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers::
-  - compiler:
-      spec: gcc@=9.4.0
-      paths:
-        cc: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gcc
-        cxx: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/g++
-        f77: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gfortran
-        fc: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gfortran
-      flags: {}
-      operating_system: almalinux8
-      target: ppc64le
-      modules: []
-      environment:
-        prepend_path:
-          LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
-      extra_rpaths: []
+  toolchains:
+    gcc-9:
+      - spec: '%c=gcc@9.4.0'
+        when: '%c'
+      - spec: '%cxx=gcc@9.4.0'
+        when: '%cxx'
+      - spec: '%fortran=gcc@9.4.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
 
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc]
-      providers:
-        blas: [openblas]
-        lapack: [openblas]
-        mpi: [openmpi]
+
+    mpi:
+      require:
+      - openmpi
+
+    blas:
+      require:
+      - "openblas"
+    lapack:
+      require:
+      - "openblas"
+
+    gcc:
+      externals:
+      - spec: gcc@9.4.0 languages:='c,c++,fortran'
+        prefix: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v
+        extra_attributes:
+          compilers:
+            c: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gcc
+            cxx: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/g++
+            fortran: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gfortran
 
     autoconf:
       externals:
@@ -94,10 +104,6 @@ spack:
       - spec: openblas@0.3.18
         prefix: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-9.4.0/openblas-0.3.18-vk36pzksytuhylqesg4cca7667np5sjp
       buildable: false
-    blas:
-      buildable: false
-    lapack:
-      buildable: false
 
     libtool:
       externals:
@@ -108,10 +114,6 @@ spack:
       externals:
       - spec: m4@1.4.18
         prefix: /usr
-      buildable: false
-
-    # Spack may grab for mpi & we don't want to use them
-    mpi:
       buildable: false
 
     openmpi:

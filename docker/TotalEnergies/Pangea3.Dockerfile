@@ -52,7 +52,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib/liblsf.so /usr/lib64/liblsf.so && \
 # Run uberenv
      ./scripts/uberenv/uberenv.py \
-       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %gcc@9.4.0 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %gcc-9 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/pangea-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -63,7 +63,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      cp *.cmake /spack-generated-wave-solver-only.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
-     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
+     rm -rf bin/ build_stage/ builtin_spack_packages_repo/ misc_cache/ spack/ spack_env/ .spack-db/
 
 # Build only the wave solver for Pangea 3
 RUN echo 'set ( GEOS_ENABLE_CONTACT OFF CACHE BOOL "" FORCE )' >> /spack-generated-wave-solver-only.cmake && \
