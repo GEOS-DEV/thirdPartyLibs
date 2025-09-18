@@ -116,7 +116,7 @@ spack:
 
     openmpi:
       externals:
-      - spec: openmpi@4.1.2%gcc@9.4.0 +cuda~cxx~cxx_exceptions~java+lustre~memchecker+pmi+static~wrapper-rpath schedulers=lsf
+      - spec: openmpi@4.1.2 +cuda~cxx~cxx_exceptions~java+lustre~memchecker+pmi+static~wrapper-rpath schedulers=lsf %gcc@9.4.0
         prefix: /data_local/sw/openmpi/4.1.2/env/gcc-8.4.1
 
     # Built-in ncurses causes spack failure
@@ -137,7 +137,7 @@ spack:
       buildable: false
     python:
       externals:
-      - spec: python@3.8.17+bz2+crypt+ctypes+dbm+lzma+nis+pyexpat~pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
+      - spec: python@3.8.17+bz2+crypt+ctypes+dbm+lzma+pyexpat~pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
         prefix: /usr
       buildable: false
     readline:

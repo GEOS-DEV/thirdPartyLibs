@@ -48,9 +48,11 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/libnsl.so.2.0.0  /usr/lib64/libnsl.so && \
      ln -s /usr/lib64/librdmacm.so.1.3.48.0  /usr/lib64/librdmacm.so && \
      ln -s /usr/lib64/liblustreapi.so.1 /usr/lib64/liblustreapi.so && \
+     ln -s /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib/libbat.so /usr/lib64/libbat.so && \
+     ln -s /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib/liblsf.so /usr/lib64/liblsf.so && \
 # Run uberenv
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@9.4.0+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %gcc@9.4.0 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/pangea-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
