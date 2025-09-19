@@ -41,10 +41,10 @@ fi
 
 echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR..."
 
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12      "%gcc@12.1.1 +docs"   "salloc -n 56 -p pdebug" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12noAVX "%gcc@12noAVX +docs"  "salloc -n 56 -p pdebug" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-13      "%gcc@13.3.1 +docs"   "salloc -n 56 -p pdebug" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane clang-14    "%clang@14.0.6 +docs" "salloc -n 56 -p pdebug" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12      "%gcc@12.1.1 +docs"   "salloc -n 112 --exclusive -p pdebug" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12noAVX "%gcc@12noAVX +docs"  "salloc -n 112 --exclusive -p pdebug" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-13      "%gcc@13.3.1 +docs"   "salloc -n 112 --exclusive -p pdebug" $@ &
+./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane clang-14    "%clang@14.0.6 +docs" "salloc -n 112 --exclusive -p pdebug" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen gcc-8-cuda-11 "%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen gcc-12-cuda-12 "%gcc@12.2.1+cuda~uncrustify cuda_arch=70 ^cuda@12.2.2+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
 ./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR lassen clang-13-cuda-11 "%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers" "lalloc 1 -W 150" $@ &
