@@ -19,6 +19,7 @@ RUN dnf clean all && \
         gettext-devel \
         libtool \
         bzip2 \
+        gnupg2 \
         unzip
 
 # All the environment variables defined in this Dockerfile

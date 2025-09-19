@@ -23,6 +23,7 @@ RUN yum install -y \
     # xz \
     unzip \
     bzip2 \
+    gnupg \
     && pip3 install virtualenv
 
 # Set locale to bypass ascii codec decode error
