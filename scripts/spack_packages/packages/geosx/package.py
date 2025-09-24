@@ -46,7 +46,7 @@ def cmake_cache_option(name, boolean_value, comment=""):
     return 'set(%s %s CACHE BOOL "%s")\n\n' % (name, value, comment)
 
 
-class Geosx(CMakePackage, CudaPackage):
+class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     """GEOSX simulation framework."""
 
     homepage = "https://github.com/GEOS-DEV/GEOS"
@@ -117,12 +117,24 @@ class Geosx(CMakePackage, CudaPackage):
 
     depends_on('camp')
 
+    #
+    # GPUs
+    #
     with when('+cuda'):
         for sm_ in CudaPackage.cuda_arch_values:
             depends_on('raja+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('umpire+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('chai+cuda~separable_compilation cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('camp+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
+            depends_on('hypre+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
+
+    with when('+rocm'):
+        for gfx_ in ROCmPackage.amdgpu_targets:
+            depends_on(f"raja+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
+            depends_on(f"umpire+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
+            depends_on(f"chai+rocm~separable_compilation amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
+            depends_on(f"camp+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
+            depends_on(f"hypre+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
 
     #
     # IO
@@ -130,7 +142,7 @@ class Geosx(CMakePackage, CudaPackage):
     depends_on('hdf5@1.12.1')
     depends_on('silo@4.11.1-bsd~fortran~shared~python')
 
-    depends_on('conduit~test~fortran~hdf5_compat~shared')
+    depends_on('conduit~test~fortran~hdf5_compat+shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
     depends_on('caliper~gotcha~sampler~libunwind~libdw', when='+caliper')
@@ -165,13 +177,10 @@ class Geosx(CMakePackage, CudaPackage):
 
     with when("+hypre"):
         depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
         depends_on("hypre~openmp", when="~openmp")
         depends_on("hypre+openmp", when="+openmp")
-
-    with when('+cuda'):
-        for sm_ in CudaPackage.cuda_arch_values:
-            depends_on('hypre+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
@@ -239,6 +248,10 @@ class Geosx(CMakePackage, CudaPackage):
         if '+cuda' in spec:
             var = '-'.join([var, 'cuda'])
             var += "@" + str(spec['cuda'].version)
+        elif '+rocm' in spec:
+            var = '-'.join([var, 'rocm'])
+            var += "@" + str(spec['hip'].version)
+
 
         hostname = socket.gethostname().rstrip('1234567890')
 
@@ -354,6 +367,9 @@ class Geosx(CMakePackage, CudaPackage):
                 else:
                     cfg.write(cmake_cache_entry('MPIEXEC', 'jsrun'))
                     cfg.write(cmake_cache_list('MPIEXEC_NUMPROC_FLAG', ['-g1', '--bind', 'rs', '-n']))
+            elif sys_type in ('toss_4_x86_64_ib_cray'):
+                cfg.write(cmake_cache_entry('MPIEXEC', 'srun'))
+                cfg.write(cmake_cache_entry('MPIEXEC_NUMPROC_FLAG', '-n'))
             else:
                 # Taken from cached_cmake class:
                 # https://github.com/spack/spack/blob/develop/lib/spack/spack/build_systems/cached_cmake.py#L180-234
@@ -455,6 +471,22 @@ class Geosx(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_option('ENABLE_CUDA', False))
 
             cfg.write('#{0}\n'.format('-' * 80))
+            cfg.write('# ROCm/HIP\n')
+            cfg.write('#{0}\n\n'.format('-' * 80))
+            if '+rocm' in spec:
+                cfg.write(cmake_cache_option('ENABLE_HIP', True))
+                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', 17))
+                cfg.write(cmake_cache_entry('CMAKE_HIP_COMPILER', spec['hip'].prefix.bin.hipcc))
+
+                if not spec.satisfies('amdgpu_target=none'):
+                    cmake_hip_archs = ";".join(spec.variants["amdgpu_target"].value)
+                    cfg.write(cmake_cache_string('CMAKE_HIP_ARCHITECTURES', cmake_hip_archs))
+
+                cfg.write(cmake_cache_entry('ROCM_PATH', spec['hip'].prefix))
+            else:
+                cfg.write(cmake_cache_option('ENABLE_HIP', False))
+
+            cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Performance Portability TPLs\n')
             cfg.write('#{0}\n\n'.format('-' * 80))
 
@@ -539,12 +571,12 @@ class Geosx(CMakePackage, CudaPackage):
 
                     if tpl == 'hypre' and '+cuda' in spec:
                         cfg.write(cmake_cache_string('ENABLE_HYPRE_DEVICE', "CUDA"))
-                    elif tpl == 'hypre' and '+hip' in spec:
+                    elif tpl == 'hypre' and '+rocm' in spec:
                         cfg.write(cmake_cache_string('ENABLE_HYPRE_DEVICE', "HIP"))
                 else:
                     cfg.write(cmake_cache_option('ENABLE_{}'.format(cmake_name), False))
 
-            if '+caliper' in spec and '+hypre' in spec and '+cuda' not in spec:
+            if '+caliper' in spec and '+hypre' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CALIPER_HYPRE', True))
 
             if 'lai=trilinos' in spec:
@@ -607,7 +639,7 @@ class Geosx(CMakePackage, CudaPackage):
             else:
                 cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', False))
                 cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', False))
-            
+
             if '+shared' in spec:
                 cfg.write(cmake_cache_option('GEOS_BUILD_SHARED_LIBS', True))
             else:
