@@ -34,8 +34,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libomp-${CLANG_MAJOR_VERSION}-dev \
         g++-14 \
         libstdc++-14-dev \
-        gfortran-12 \
-        libtbb2 \
+        gfortran-14 \
+        libtbb12 \
+        libtbbmalloc2 \
         libblas-dev \
         liblapack-dev \
         zlib1g-dev \
@@ -139,5 +140,5 @@ ENV SCCACHE=/opt/sccache/bin/sccache
 ENV ROCM_PATH=/opt/rocm-${ROCM_VERSION}
 ENV HIP_PATH=${ROCM_PATH}/hip
 ENV PATH=${ROCM_PATH}/bin:${ROCM_PATH}/llvm/bin:${PATH}
-ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib:${LD_LIBRARY_PATH:-}
+ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 ENV CMAKE_HIP_ARCHITECTURES=${AMDGPU_TARGET}

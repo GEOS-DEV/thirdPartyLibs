@@ -18,13 +18,13 @@ spack:
   compilers::
   - compiler:
       spec: clang@20
-      operating_system: ubuntu22.04
+      operating_system: ubuntu24.04
       target: x86_64
       paths:
         cc: /usr/bin/clang-20
         cxx: /usr/bin/clang++-20
-        f77: /usr/bin/gfortran-12
-        fc: /usr/bin/gfortran-12
+        f77: /usr/bin/gfortran-14
+        fc: /usr/bin/gfortran-14
       flags:
         cflags: -pthread
         cxxflags: -pthread
@@ -50,92 +50,92 @@ spack:
     hip:
       buildable: false
       externals:
-      - spec: hip@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: hip@6.4.3
+        prefix: /opt/rocm
 
     rocprim:
       buildable: false
       externals:
-      - spec: rocprim@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocprim@6.4.3
+        prefix: /opt/rocm
 
     rocsparse:
       buildable: false
       externals:
-      - spec: rocsparse@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocsparse@6.4.3
+        prefix: /opt/rocm
 
     roctracer:
       buildable: false
       externals:
-      - spec: roctracer@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: roctracer@6.4.3
+        prefix: /opt/rocm
 
     rocblas:
       buildable: false
       externals:
-      - spec: rocblas@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocblas@6.4.3
+        prefix: /opt/rocm
 
     rocrand:
       buildable: false
       externals:
-      - spec: rocrand@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocrand@6.4.3
+        prefix: /opt/rocm
 
     rocsolver:
       buildable: false
       externals:
-      - spec: rocsolver@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocsolver@6.4.3
+        prefix: /opt/rocm
 
     rocthrust:
       buildable: false
       externals:
-      - spec: rocthrust@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocthrust@6.4.3
+        prefix: /opt/rocm
 
     hipblas:
       buildable: false
       externals:
-      - spec: hipblas@6.4.2 +rocm
-        prefix: /opt/rocm-6.4.2
+      - spec: hipblas@6.4.3 +rocm
+        prefix: /opt/rocm
 
     hipsparse:
       buildable: false
       externals:
-      - spec: hipsparse@6.4.2 +rocm
-        prefix: /opt/rocm-6.4.2
+      - spec: hipsparse@6.4.3 +rocm
+        prefix: /opt/rocm
 
     hipfft:
       buildable: false
       externals:
-      - spec: hipfft@6.4.2 +rocm
-        prefix: /opt/rocm-6.4.2
+      - spec: hipfft@6.4.3 +rocm
+        prefix: /opt/rocm
 
     hipsolver:
       buildable: false
       externals:
-      - spec: hipsolver@6.4.2 +rocm
-        prefix: /opt/rocm-6.4.2
+      - spec: hipsolver@6.4.3 +rocm
+        prefix: /opt/rocm
 
     hiprand:
       buildable: false
       externals:
-      - spec: hiprand@6.4.2 +rocm
-        prefix: /opt/rocm-6.4.2
+      - spec: hiprand@6.4.3 +rocm
+        prefix: /opt/rocm
 
     rocm-device-libs:
       buildable: false
       externals:
-      - spec: rocm-device-libs@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: rocm-device-libs@6.4.3
+        prefix: /opt/rocm
 
     hsa-rocr-dev:
       buildable: false
       externals:
-      - spec: hsa-rocr-dev@6.4.2
-        prefix: /opt/rocm-6.4.2
+      - spec: hsa-rocr-dev@6.4.3
+        prefix: /opt/rocm
 
     openmpi:
       externals:
