@@ -32,6 +32,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         clang-${CLANG_MAJOR_VERSION} \
         libomp-${CLANG_MAJOR_VERSION}-dev \
+        g++ \
+        libstdc++-dev \
         gfortran-12 \
         libtbb2 \
         libblas-dev \
