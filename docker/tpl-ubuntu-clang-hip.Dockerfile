@@ -56,15 +56,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         bzip2 \
         help2man \
         libtool \
-        gmp \
-        lapack \
+        libgmp-dev \
+        liblapack3 \
         unzip \
         libmpfr-dev \
         lbzip2 \
         bzip2 \
         gnupg \
         virtualenv \
-        pugixml \
+        libpugixml-dev \
         git && \
     rm -rf /var/lib/apt/lists/*
 
