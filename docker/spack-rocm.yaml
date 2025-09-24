@@ -262,7 +262,7 @@ spack:
     pugixml:
       buildable: false
       externals:
-      - spec: pugixml@1.14.0
+      - spec: pugixml@1.13.0
         prefix: /usr
     lapack:
       buildable: false
