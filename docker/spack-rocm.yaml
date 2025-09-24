@@ -1,0 +1,115 @@
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage::
+    - $spack/../build_stage
+
+  view: false
+
+  include:
+  - ../defaults.yaml
+  - ../versions.yaml
+
+  compilers::
+  - compiler:
+      spec: clang@20
+      operating_system: ubuntu22.04
+      target: x86_64
+      paths:
+        cc: /usr/bin/clang-20
+        cxx: /usr/bin/clang++-20
+        f77: /usr/bin/gfortran-12
+        fc: /usr/bin/gfortran-12
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      extra_rpaths: []
+
+  packages:
+    all:
+      target: [x86_64]
+      compiler: [clang]
+      providers:
+        blas: [netlib-lapack]
+        lapack: [netlib-lapack]
+        mpi: [openmpi]
+
+    cmake:
+      version: [3.28.6]
+      buildable: false
+      externals:
+      - spec: cmake@3.28.6
+        prefix: /usr/local
+
+    hip:
+      buildable: false
+      externals:
+      - spec: hip@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocprim:
+      buildable: false
+      externals:
+      - spec: rocprim@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocsparse:
+      buildable: false
+      externals:
+      - spec: rocsparse@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    roctracer:
+      buildable: false
+      externals:
+      - spec: roctracer@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocblas:
+      buildable: false
+      externals:
+      - spec: rocblas@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocrand:
+      buildable: false
+      externals:
+      - spec: rocrand@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocsolver:
+      buildable: false
+      externals:
+      - spec: rocsolver@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocthrust:
+      buildable: false
+      externals:
+      - spec: rocthrust@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    rocm-device-libs:
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    hsa-rocr-dev:
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@6.4.2
+        prefix: /opt/rocm-6.4.2
+
+    openmpi:
+      externals:
+      - spec: openmpi@4.1.2%clang
+        prefix: /usr
+
+
