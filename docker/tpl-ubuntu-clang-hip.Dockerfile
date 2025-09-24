@@ -3,8 +3,8 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# Base image is set by workflow via DOCKER_ROOT_IMAGE, default to rocm/dev-ubuntu-22.04:6.4.2
-ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-22.04:6.4.2
+# Base image is set by workflow via DOCKER_ROOT_IMAGE, default to rocm/dev-ubuntu-24.04:6.4.3
+ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-24.04:6.4.3
 
 FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -15,7 +15,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # Parameters
 ARG CLANG_MAJOR_VERSION=20
 ARG AMDGPU_TARGET=gfx942
-ARG ROCM_VERSION=6.4.2
+ARG ROCM_VERSION=6.4.3
 
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
     apt-get update
@@ -32,8 +32,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         clang-${CLANG_MAJOR_VERSION} \
         libomp-${CLANG_MAJOR_VERSION}-dev \
-        g++ \
-        libstdc++-dev \
+        g++-14 \
+        libstdc++-14-dev \
         gfortran-12 \
         libtbb2 \
         libblas-dev \
@@ -141,5 +141,3 @@ ENV HIP_PATH=${ROCM_PATH}/hip
 ENV PATH=${ROCM_PATH}/bin:${ROCM_PATH}/llvm/bin:${PATH}
 ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib:${LD_LIBRARY_PATH:-}
 ENV CMAKE_HIP_ARCHITECTURES=${AMDGPU_TARGET}
-
-
