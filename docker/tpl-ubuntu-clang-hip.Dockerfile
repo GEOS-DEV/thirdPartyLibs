@@ -50,12 +50,21 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         doxygen \
         pkg-config \
         xz-utils \
+        gettext \
+        bison \
+        flex \
+        bzip2 \
+        help2man \
+        libtool \
+        gmp \
+        lapack \
         unzip \
         libmpfr-dev \
         lbzip2 \
         bzip2 \
         gnupg \
         virtualenv \
+        pugixml \
         git && \
     rm -rf /var/lib/apt/lists/*
 
