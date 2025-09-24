@@ -58,9 +58,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git && \
     rm -rf /var/lib/apt/lists/*
 
-# Install clingo for Spack (Ubuntu 24.04 is PEP 668-managed)
-RUN python3 -m pip install --upgrade pip --break-system-packages && \
-    python3 -m pip install clingo --break-system-packages
+# Install clingo for Spack via apt (avoids PEP 668 issues)
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      python3-clingo && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
