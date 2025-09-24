@@ -83,10 +83,10 @@ jobs:
           #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
           #   RUNS_ON: ubuntu-latest
 
-          - name: Ubuntu (22.04, clang 20 + ROCm 6.4.2 HIP)
-            DOCKER_REPOSITORY: geosx/ubuntu22.04-clang20-rocm6.4.2
+          - name: Ubuntu (24.04, clang 20 + ROCm 6.4.3 HIP)
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang20-rocm6.4.3
             TPL_DOCKERFILE: docker/tpl-ubuntu-clang-hip.Dockerfile
-            DOCKER_ROOT_IMAGE: rocm/dev-ubuntu-22.04:6.4.2
+            DOCKER_ROOT_IMAGE: rocm/dev-ubuntu-24.04:6.4.3
             DOCKER_COMPILER_BUILD_ARG: "--build-arg CLANG_MAJOR_VERSION=20"
             RUNS_ON: ubuntu-latest
 
