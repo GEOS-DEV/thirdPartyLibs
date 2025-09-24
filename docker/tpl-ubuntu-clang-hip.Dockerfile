@@ -58,11 +58,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git && \
     rm -rf /var/lib/apt/lists/*
 
-# Install clingo for Spack via apt (avoids PEP 668 issues)
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      python3-clingo && \
-    rm -rf /var/lib/apt/lists/*
+# Install clingo for Spack (use pip without upgrading pip to avoid Debian conflict)
+RUN python3 -m pip install clingo --break-system-packages
 
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
