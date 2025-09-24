@@ -39,6 +39,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libtbbmalloc2 \
         libblas-dev \
         liblapack-dev \
+        libz3-dev \
         zlib1g-dev \
         openmpi-bin \
         libopenmpi-dev \
