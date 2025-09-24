@@ -33,8 +33,8 @@ spack:
       target: [x86_64]
       compiler: [clang]
       providers:
-        blas: [lapack]
-        lapack: [lapack]
+        blas: [netlib-lapack]
+        lapack: [netlib-lapack]
         mpi: [openmpi]
 
     cmake:
@@ -263,9 +263,4 @@ spack:
       buildable: false
       externals:
       - spec: pugixml@1.13.0
-        prefix: /usr
-    lapack:
-      buildable: false
-      externals:
-      - spec: lapack@3.12.0
         prefix: /usr

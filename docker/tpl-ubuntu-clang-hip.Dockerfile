@@ -57,7 +57,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         help2man \
         libtool \
         libgmp-dev \
-        liblapack3 \
         unzip \
         libmpfr-dev \
         lbzip2 \
