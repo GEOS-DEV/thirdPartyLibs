@@ -95,6 +95,36 @@ spack:
       - spec: rocthrust@6.4.2
         prefix: /opt/rocm-6.4.2
 
+    hipblas:
+      buildable: false
+      externals:
+      - spec: hipblas@6.4.2 +rocm
+        prefix: /opt/rocm-6.4.2
+
+    hipsparse:
+      buildable: false
+      externals:
+      - spec: hipsparse@6.4.2 +rocm
+        prefix: /opt/rocm-6.4.2
+
+    hipfft:
+      buildable: false
+      externals:
+      - spec: hipfft@6.4.2 +rocm
+        prefix: /opt/rocm-6.4.2
+
+    hipsolver:
+      buildable: false
+      externals:
+      - spec: hipsolver@6.4.2 +rocm
+        prefix: /opt/rocm-6.4.2
+
+    hiprand:
+      buildable: false
+      externals:
+      - spec: hiprand@6.4.2 +rocm
+        prefix: /opt/rocm-6.4.2
+
     rocm-device-libs:
       buildable: false
       externals:

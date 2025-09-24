@@ -3,8 +3,8 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# Base image is set by workflow via DOCKER_ROOT_IMAGE, e.g. rocm/dev-ubuntu-22.04:6.4.2
-ARG DOCKER_ROOT_IMAGE
+# Base image is set by workflow via DOCKER_ROOT_IMAGE, default to rocm/dev-ubuntu-22.04:6.4.2
+ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-22.04:6.4.2
 
 FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -86,6 +86,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ./scripts/uberenv/uberenv.py \
        --spec "%clang@${CLANG_MAJOR_VERSION} +rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
+       --spack-debug \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \
@@ -136,7 +137,7 @@ ENV SCCACHE=/opt/sccache/bin/sccache
 ENV ROCM_PATH=/opt/rocm-${ROCM_VERSION}
 ENV HIP_PATH=${ROCM_PATH}/hip
 ENV PATH=${ROCM_PATH}/bin:${ROCM_PATH}/llvm/bin:${PATH}
-ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib:${LD_LIBRARY_PATH:-}
 ENV CMAKE_HIP_ARCHITECTURES=${AMDGPU_TARGET}
 
 
