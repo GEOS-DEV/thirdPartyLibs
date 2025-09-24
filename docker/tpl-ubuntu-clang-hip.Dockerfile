@@ -58,9 +58,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git && \
     rm -rf /var/lib/apt/lists/*
 
-# Install clingo for Spack
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install clingo
+# Install clingo for Spack (Ubuntu 24.04 is PEP 668-managed)
+RUN python3 -m pip install --upgrade pip --break-system-packages && \
+    python3 -m pip install clingo --break-system-packages
 
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
@@ -140,5 +140,5 @@ ENV SCCACHE=/opt/sccache/bin/sccache
 ENV ROCM_PATH=/opt/rocm-${ROCM_VERSION}
 ENV HIP_PATH=${ROCM_PATH}/hip
 ENV PATH=${ROCM_PATH}/bin:${ROCM_PATH}/llvm/bin:${PATH}
-ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=${ROCM_PATH}/lib:${ROCM_PATH}/lib64:${ROCM_PATH}/llvm/lib
 ENV CMAKE_HIP_ARCHITECTURES=${AMDGPU_TARGET}
