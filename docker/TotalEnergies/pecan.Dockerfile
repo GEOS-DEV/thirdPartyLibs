@@ -34,6 +34,7 @@ RUN yum install -y \
     gcc-c++ \
     wget \
     bzip2 \
+    gnupg \
     zlib-devel
 
 WORKDIR /tmp/src
