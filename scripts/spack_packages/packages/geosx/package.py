@@ -595,6 +595,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
             if '+pygeosx' in spec:
                 cfg.write(cmake_cache_option('ENABLE_PYGEOSX', True))
+                cfg.write(cmake_cache_option('ENABLE_PYLVARRAY', True))
             else:
                 cfg.write(cmake_cache_option('ENABLE_PYGEOSX', False))
 
