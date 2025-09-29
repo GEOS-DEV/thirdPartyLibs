@@ -59,6 +59,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libpugixml-dev \
         roctracer-dev \
         rocsparse-dev \
+        rocsolver-dev \
         rocblas-dev \
         rocprim-dev \
         rocthrust-dev \
