@@ -4,7 +4,7 @@ ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
 # Base image is set by workflow via DOCKER_ROOT_IMAGE
-ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-24.04:6.4.3-complete
+ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-24.04:6.4.3
 
 FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -24,7 +24,7 @@ ENV SPACK_BUILD_JOBS=${SPACK_BUILD_JOBS}
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
     apt-get update
 
-# Install system packags
+# Install system packages
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         wget \
         gnupg \
@@ -57,6 +57,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         gnupg \
         virtualenv \
         libpugixml-dev \
+        roctracer-dev \
+        rocsparse-dev \
+        rocblas-dev \
+        rocprim-dev \
+        rocthrust-dev \
         git && \
     rm -rf /var/lib/apt/lists/*
 
