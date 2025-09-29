@@ -102,12 +102,11 @@ RUN apt-get update && \
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
-#       --spack-debug \
-# --spec "%gcc@${GCC_MAJOR_VERSION} +rocm~uncrustify~openmp~pygeosx~trilinos~petsc~vtk amdgpu_target=${AMDGPU_TARGET} ^mpich@4.2.0 ^caliper~papi" \
+# --spack-debug to debug build
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc~vtk amdgpu_target=${AMDGPU_TARGET} ^mpich@4.2.0 ^caliper~papi" \
+       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc~vtk amdgpu_target=${AMDGPU_TARGET} %gcc@${GCC_MAJOR_VERSION} ^mpich@4.2.0 ^caliper~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
