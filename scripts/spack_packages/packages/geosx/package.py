@@ -289,9 +289,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         #######################
         # Compiler Info
         #######################
-        sys_type = self._get_sys_type(spec)
-        c_compiler = self.compiler.cc
-        cpp_compiler = self.compiler.cxx
+        c_compiler = env["SPACK_CC"]
+        cpp_compiler = env["SPACK_CXX"]
 
         #######################################################################
         # By directly fetching the names of the actual compilers we appear
@@ -679,8 +678,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         #######################
         # Compiler Info
         #######################
-        c_compiler = self.compiler.cc
-        cpp_compiler = self.compiler.cxx
+        c_compiler = env["SPACK_CC"]
+        cpp_compiler = env["SPACK_CXX"]
 
         #######################################################################
         # By directly fetching the names of the actual compilers we appear
