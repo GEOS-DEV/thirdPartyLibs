@@ -234,21 +234,21 @@ class Geosx(CachedCMakePackage, CudaPackage, ROCmPackage):
         return sys_type
 
     def _get_host_config_path(self, spec, lvarray=False):
-        var = ''
-        if '+cuda' in spec:
-            var = '-'.join([var, 'cuda'])
-            var += "@" + str(spec['cuda'].version)
-        elif '+rocm' in spec:
-            var = '-'.join([var, 'rocm'])
-            var += "@" + str(spec['hip'].version)
-
+        gpu_backend = ""
+        if "+cuda" in spec:
+            gpu_backend = f"cuda@{spec['cuda'].version}"
+        elif "+rocm" in spec:
+            gpu_backend = f"rocm@{spec['hip'].version}"
 
         hostname = socket.gethostname().rstrip('1234567890')
-
         if lvarray:
             hostname = "lvarray-" + hostname
 
-        host_config_path = "%s-%s-%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler)).replace('=',''), var)
+        host_config_path = "%s-%s-%s-%s%s.cmake" % (hostname,
+                                                    self._get_sys_type(spec),
+                                                    self.spec.compiler.name,
+                                                    self.spec.compiler.version,
+                                                    gpu_backend)
 
         dest_dir = self.stage.source_path
         host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
