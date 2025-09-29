@@ -3,8 +3,8 @@ ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# Base image is set by workflow via DOCKER_ROOT_IMAGE, default to rocm/dev-ubuntu-24.04:6.4.3
-ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-24.04:6.4.3
+# Base image is set by workflow via DOCKER_ROOT_IMAGE
+ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-24.04:6.4.3-complete
 
 FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -13,36 +13,29 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Parameters
-ARG CLANG_MAJOR_VERSION=20
+ARG GCC_MAJOR_VERSION=13
 ARG AMDGPU_TARGET=gfx942
 ARG ROCM_VERSION=6.4.3
+
+# Allow changing the number of cores used for building code via spack
+ARG SPACK_BUILD_JOBS=4
+ENV SPACK_BUILD_JOBS=${SPACK_BUILD_JOBS}
 
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
     apt-get update
 
-# Install Clang 20 from the official LLVM APT repository and common dependencies
+# Install system packags
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         wget \
         gnupg \
         ca-certificates \
-        lsb-release && \
-    echo "deb http://apt.llvm.org/$(lsb_release -sc)/ llvm-toolchain-$(lsb_release -sc)-${CLANG_MAJOR_VERSION} main" > /etc/apt/sources.list.d/llvm.list && \
-    wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        clang-${CLANG_MAJOR_VERSION} \
-        libomp-${CLANG_MAJOR_VERSION}-dev \
-        g++-14 \
-        libstdc++-14-dev \
-        gfortran-14 \
         libtbb12 \
         libtbbmalloc2 \
         libblas-dev \
-        liblapack-dev \
         libz3-dev \
         zlib1g-dev \
-        openmpi-bin \
-        libopenmpi-dev \
+        libmpich-dev \
+        mpich \
         python3 \
         python3-dev \
         python3-pip \
@@ -73,6 +66,16 @@ RUN python3 -m pip install clingo --break-system-packages
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
+# Hack for spack to see Ubuntu's mpich in a standard prefix layout
+RUN mkdir -p /opt/mpich-system/bin /opt/mpich-system/include /opt/mpich-system/lib && \
+    ln -s /usr/bin/mpicc   /opt/mpich-system/bin/mpicc && \
+    ln -s /usr/bin/mpicxx  /opt/mpich-system/bin/mpicxx && \
+    ln -s /usr/bin/mpif90  /opt/mpich-system/bin/mpif90 && \
+    ln -s /usr/bin/mpifort /opt/mpich-system/bin/mpifort && \
+    ln -s /usr/bin/mpirun  /opt/mpich-system/bin/mpirun && \
+    ln -s /usr/lib/x86_64-linux-gnu/mpich/include/* /opt/mpich-system/include/ && \
+    ln -s /usr/lib/x86_64-linux-gnu/mpich/lib/*     /opt/mpich-system/lib/
+
 # Installing TPLs
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
@@ -92,12 +95,13 @@ RUN apt-get update && \
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
+#       --spack-debug \
+# --spec "%gcc@${GCC_MAJOR_VERSION} +rocm~uncrustify~openmp~pygeosx~trilinos~petsc~vtk amdgpu_target=${AMDGPU_TARGET} ^mpich@4.2.0 ^caliper~papi" \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@${CLANG_MAJOR_VERSION} +rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc~vtk amdgpu_target=${AMDGPU_TARGET} ^mpich@4.2.0 ^caliper~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
-       --spack-debug \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

@@ -11,7 +11,7 @@
 #------------------------------------------------------------------------------------------------------------
 
 #
-# This file lists the package versions for geos's dependencies
+# This file lists the package versions for geos' dependencies
 #
 packages:
   # v0.7.1 - 09/04/25
@@ -22,19 +22,19 @@ packages:
   hypre:
     require: "@git.4dd96d0e83088890879612c58364f6c10756ed90"
 
-  # v2025.0.9.1
+  # v2025.09.1
   chai:
     require: "@git.51e66b8a5a6caac41aa329c8643180b8e2b33e5f=develop"
 
-  # v2025.0.9.0
+  # v2025.09.0
   umpire:
     require: "@git.6b0ea9edbbbc741c8a429768d946549cd3bd7d33=develop"
 
-  # v2025.0.9.0
+  # 2025.09.0
   raja:
     require: "@git.ca756788dbdd43fec2a3840389126ae94a905d5f=develop"
 
-  # v2025.0.9.2
+  # v2025.09.2
   camp:
     require: "@git.4070ce93a802849d61037310a87c50cc24c9e498=main"
 

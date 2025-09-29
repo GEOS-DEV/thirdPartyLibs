@@ -6,8 +6,7 @@
 import os
 import sys
 
-from spack import *
-
+from spack.package import *
 
 class Vtk(CMakePackage):
     """The Visualization Toolkit (VTK) is an open-source, freely
@@ -19,7 +18,7 @@ class Vtk(CMakePackage):
     list_url = "http://www.vtk.org/download/"
 
     maintainers = ['chuckatkins', 'danlipsa']
-    
+
     version("9.4.2", sha256="36c98e0da96bb12a30fe53708097aa9492e7b66d5c3b366e1c8dc251e2856a02", preferred=True)
     version("9.3.1", sha256="8354ec084ea0d2dc3d23dbe4243823c4bfc270382d0ce8d658939fd50061cab8")
     version("9.2.6", sha256="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12")
@@ -53,7 +52,7 @@ class Vtk(CMakePackage):
     depends_on('py-mpi4py', when='+python+mpi', type='run')
 
     depends_on('mpi', when='+mpi')
-    
+
     patch_dir = os.path.join(os.path.dirname(__file__), '9.4.2-patch')
     if os.path.isdir(patch_dir):
         for fname in sorted(os.listdir(patch_dir)):

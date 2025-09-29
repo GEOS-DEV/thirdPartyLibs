@@ -3,13 +3,11 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import *
 import warnings
 
 import socket
 import os
-
-import llnl.util.tty as tty
 
 from os import environ as env
 from os.path import join as pjoin
@@ -72,6 +70,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             values=('trilinos', 'hypre', 'petsc'),
             multi=False)
     variant('pygeosx', default=True, description='Enable pygeosx.')
+    variant('cxxstd', default='17', description='CXX standard.')
 
     # SPHINX_END_VARIANTS
 
@@ -84,7 +83,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
-    variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
+    variant('cuda_stack_size', default='0', description="Defines the adjusted cuda stack \
         size limit if required. Zero or negative keep default behavior")
 
     # SPHINX_BEGIN_DEPENDS
@@ -103,19 +102,19 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    depends_on('raja ~examples~exercises~shared')
+    depends_on("raja ~examples~exercises~shared")
     depends_on("raja~openmp", when="~openmp")
     depends_on("raja+openmp", when="+openmp")
 
-    depends_on('umpire +c~examples+fortran~device_alloc~shared')
+    depends_on("umpire +c~examples+fortran~device_alloc~shared")
     depends_on("umpire~openmp", when="~openmp")
     depends_on("umpire+openmp", when="+openmp")
 
-    depends_on('chai +raja~examples~shared')
+    depends_on("chai +raja~examples~shared")
     depends_on("chai~openmp", when="~openmp")
     depends_on("chai+openmp", when="+openmp")
 
-    depends_on('camp')
+    depends_on("camp")
 
     #
     # GPUs
@@ -149,7 +148,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('pugixml@1.13 ~shared')
 
-    depends_on('fmt@10.0.0 cxxstd=14')
+    #depends_on('fmt@10.0.0 cxxstd=14')
+    depends_on("fmt@11")
     depends_on('vtk@9.4.2', when='+vtk')
 
     #
@@ -220,6 +220,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     phases = ['geos_hostconfig', 'lvarray_hostconfig']
     #phases = ['hostconfig', 'cmake', 'build', 'install']
 
+    # This method is called to finalize dependencies
+    def dependencies(self):
+        super().dependencies()
+        # Add a conditional dependency on fmt with the cxxstd variant
+        self.depends_on(f"fmt@11 cxxstd=c++{self.spec.variants['cxxstd'].value}")
+
     @run_after('build')
     @on_package_attributes(run_tests=True)
     def check(self):
@@ -283,8 +289,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         #######################
         # Compiler Info
         #######################
-        c_compiler = env["SPACK_CC"]
-        cpp_compiler = env["SPACK_CXX"]
+        sys_type = self._get_sys_type(spec)
+        c_compiler = self.compiler.cc
+        cpp_compiler = self.compiler.cxx
 
         #######################################################################
         # By directly fetching the names of the actual compilers we appear
@@ -346,7 +353,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write("# CMake Standard\n")
             cfg.write("#{0}\n\n".format("-" * 80))
 
-            cfg.write(cmake_cache_string("BLT_CXX_STD", "c++17"))
+            cfg.write(cmake_cache_string("BLT_CXX_STD", f"c++{spec.variants['cxxstd'].value}"))
 
             cfg.write("#{0}\n".format("-" * 80))
             cfg.write("# MPI\n")
@@ -430,7 +437,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', 17))
+                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_entry('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))
@@ -475,7 +482,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+rocm' in spec:
                 cfg.write(cmake_cache_option('ENABLE_HIP', True))
-                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', spec.variants['cxxstd'].value))
                 cfg.write(cmake_cache_entry('CMAKE_HIP_COMPILER', spec['hip'].prefix.bin.hipcc))
 
                 if not spec.satisfies('amdgpu_target=none'):
@@ -672,8 +679,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         #######################
         # Compiler Info
         #######################
-        c_compiler = env["SPACK_CC"]
-        cpp_compiler = env["SPACK_CXX"]
+        c_compiler = self.compiler.cc
+        cpp_compiler = self.compiler.cxx
 
         #######################################################################
         # By directly fetching the names of the actual compilers we appear
@@ -734,7 +741,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', 17))
+                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', self.spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_entry('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))
