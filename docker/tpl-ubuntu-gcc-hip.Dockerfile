@@ -62,6 +62,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         rocsolver-dev \
         rocblas-dev \
         rocprim-dev \
+        rocrand-dev \
         rocthrust-dev \
         git && \
     rm -rf /var/lib/apt/lists/*
