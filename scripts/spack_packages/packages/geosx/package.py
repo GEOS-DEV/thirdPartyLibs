@@ -72,8 +72,11 @@ class Geosx(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     # SPHINX_BEGIN_DEPENDS
 
-    depends_on('cmake@3.24:', type='build')
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
+    #depends_on("fortran", type="build")
 
+    depends_on('cmake@3.24:', type='build')
     depends_on('blt')
 
     #
