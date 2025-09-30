@@ -37,7 +37,6 @@ spack:
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc, clang]
       providers:
         blas: [intel-mkl]
         lapack: [intel-mkl]

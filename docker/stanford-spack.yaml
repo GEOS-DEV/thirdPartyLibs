@@ -18,31 +18,23 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers::
-  # Sherlock CPU/GPU Compiler (centos7 x86_64)
-  - compiler:
-      spec: gcc@10.1.0
-      operating_system: centos7
-      target: x86_64
-      paths:
-        cc: /share/software/user/open/gcc/10.1.0/bin/gcc
-        cxx: /share/software/user/open/gcc/10.1.0/bin/g++
-        f77: /share/software/user/open/gcc/10.1.0/bin/gfortran
-        fc: /share/software/user/open/gcc/10.1.0/bin/gfortran
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      extra_rpaths: []
-
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc]
       providers:
         mpi: [openmpi]
         blas: [openblas]
         lapack: [openblas]
+
+    gcc:
+      externals:
+      - spec: gcc@10.5.0 languages:='c,c++,fortran'
+        prefix: /share/software/user/open/gcc/10.1.0
+        extra_attributes:
+          compilers:
+            c: /share/software/user/open/gcc/10.1.0/bin/gcc
+            cxx: /share/software/user/open/gcc/10.1.0/bin/g++
+            fortran: /share/software/user/open/gcc/10.1.0/bin/gfortran
 
     autoconf:
       buildable: false

@@ -63,8 +63,6 @@ spack:
             cxx: /usr/bin/g++-13
             fortran: /usr/bin/gfortran-13
     clang:
-      version: [10.0.0, 15.0.7]
-      buildable: false
       externals:
       - spec: clang@10.0.0 languages:='c,c++'
         prefix: /usr

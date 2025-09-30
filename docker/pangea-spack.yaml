@@ -17,31 +17,26 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers::
-  - compiler:
-      spec: gcc@=9.4.0
-      paths:
-        cc: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gcc
-        cxx: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/g++
-        f77: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gfortran
-        fc: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gfortran
-      flags: {}
-      operating_system: almalinux8
-      target: ppc64le
-      modules: []
-      environment:
-        prepend_path:
-          LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
-      extra_rpaths: []
-
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc]
       providers:
         blas: [openblas]
         lapack: [openblas]
         mpi: [openmpi]
+
+    gcc:
+      externals:
+      - spec: gcc@9.4.0 languages:='c,c++,fortran'
+        prefix: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v
+        extra_attributes:
+          compilers:
+            c: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gcc
+            cxx: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/g++
+            fortran: /data_local/sw/spack/0.17.0/opt/spack/linux-rhel8-power9le/gcc-8.4.1/gcc-9.4.0-xe5cqnyajaqz75up3gflln5zlj2rue5v/bin/gfortran
+          environment:
+            prepend_path:
+              LD_LIBRARY_PATH: /data_local/sw/lsf/10.1/linux3.10-glibc2.17-ppc64le/lib
 
     autoconf:
       externals:
