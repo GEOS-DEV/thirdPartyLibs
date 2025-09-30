@@ -1,5 +1,5 @@
 # NOTE: see docker/tpl-ubuntu-gcc.Dockerfile for detailed comments
-ARG TMP_DIR=/tmp 
+ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
@@ -11,12 +11,12 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
     sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo && \
-    sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo 
+    sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo
 
 # Using gcc 8.3.1 provided by the Software Collections (SCL).
 RUN yum install -y \
     centos-release-scl
-    
+
 # Modify the SCLo repository configuration
 RUN sed -i 's|^mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
     sed -i 's|^baseurl=http://mirror.centos.org/centos/\$releasever/sclo/\$basearch/rh|baseurl=http://vault.centos.org/7.9.2009/sclo/x86_64/rh|g' /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
@@ -25,7 +25,7 @@ RUN sed -i 's|^mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-SCLo-scl.repo
 
 # Install necessary tools and update the system
 RUN yum -y update && \
-    yum -y install yum-utils    
+    yum -y install yum-utils
 
 RUN yum install -y \
     devtoolset-8-gcc \
@@ -49,6 +49,15 @@ RUN yum -y install \
     unzip \
     bzip2 \
     gnupg \
+    tbb-devel \
+    make \
+    bc \
+    file \
+    patch \
+    ca-certificates \
+    autoconf \
+    automake \
+    git \
     && pip3 install virtualenv
 
 # Install clingo for Spack
@@ -62,17 +71,6 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
 
-RUN yum install -y \
-    tbb-devel \
-    make \
-    bc \
-    file \
-    patch \
-    ca-certificates \
-    autoconf \
-    automake \
-    git
-
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
@@ -81,8 +79,8 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Create symlink to openmpi include directory
      ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@8+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
-       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %c,cxx,fortran=gcc@8 ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spack-env-file=${SRC_DIR}/docker/centos-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

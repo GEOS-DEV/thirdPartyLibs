@@ -17,111 +17,67 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-
-  compilers::
-  - compiler:
-      extra_rpaths: []
-      flags: {}
-      modules: []
-      operating_system: ubuntu22.04
-      paths:
-        cc: /usr/bin/clang-15
-        cxx: /usr/bin/clang++-15
-        f77: /usr/bin/gfortran-11
-        fc: /usr/bin/gfortran-11
-      spec: clang@15
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags: {}
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/clang
-        cxx: /usr/bin/clang++
-        f77: /usr/bin/gfortran
-        fc: /usr/bin/gfortran
-      spec: clang@10
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu22.04
-      paths:
-        cc: /usr/bin/gcc-12
-        cxx: /usr/bin/g++-12
-        f77: /usr/bin/gfortran-12
-        fc: /usr/bin/gfortran-12
-      spec: gcc@12
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu22.04
-      paths:
-        cc: /usr/bin/gcc-11
-        cxx: /usr/bin/g++-11
-        f77: /usr/bin/gfortran-11
-        fc: /usr/bin/gfortran-11
-      spec: gcc@11
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/gcc-10
-        cxx: /usr/bin/g++-10
-        f77: /usr/bin/gfortran-10
-        fc: /usr/bin/gfortran-10
-      spec: gcc@10
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/gcc-9
-        cxx: /usr/bin/g++-9
-        f77: /usr/bin/gfortran-9
-        fc: /usr/bin/gfortran-9
-      spec: gcc@9
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: centos7
-      paths:
-        cc: /opt/rh/devtoolset-8/root/usr/bin/gcc
-        cxx: /opt/rh/devtoolset-8/root/usr/bin/g++
-        f77: /opt/rh/devtoolset-8/root/usr/bin/gfortran
-        fc: /opt/rh/devtoolset-8/root/usr/bin/gfortran
-      spec: gcc@8
-      target: x86_64
-
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc, clang]
       providers:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
         mpi: [openmpi]
+
+    gcc:
+      externals:
+      - spec: gcc@9.4.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-9
+            cxx: /usr/bin/g++-9
+            fortran: /usr/bin/gfortran-9
+      - spec: gcc@10.5.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-10
+            cxx: /usr/bin/g++-10
+            fortran: /usr/bin/gfortran-10
+      - spec: gcc@11.4.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-11
+            cxx: /usr/bin/g++-11
+            fortran: /usr/bin/gfortran-11
+      - spec: gcc@12.3.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-12
+            cxx: /usr/bin/g++-12
+            fortran: /usr/bin/gfortran-12
+      - spec: gcc@13.3.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-13
+            cxx: /usr/bin/g++-13
+            fortran: /usr/bin/gfortran-13
+    clang:
+      version: [10.0.0, 15.0.7]
+      buildable: false
+      externals:
+      - spec: clang@10.0.0 languages:='c,c++'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang-10
+            cxx: /usr/bin/clang++-10
+      - spec: clang@15.0.7 languages:='c,c++'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang-15
+            cxx: /usr/bin/clang++-15
 
     autoconf:
       version: [2.71]
@@ -192,6 +148,11 @@ spack:
         prefix: /usr
       - spec: openmpi@4.1.2%gcc@12
         prefix: /usr
+    hwloc:
+      buildable: false
+      externals:
+      - spec: hwloc@2.7.0
+        prefix: /usr
     perl:
       buildable: false
       externals:
@@ -236,4 +197,19 @@ spack:
       buildable: false
       externals:
       - spec: zlib@1.2.11
+        prefix: /usr
+    doxygen:
+      buildable: false
+      externals:
+      - spec: doxygen@1.9.1
+        prefix: /usr
+    bison:
+      buildable: false
+      externals:
+      - spec: bison@3.8.2
+        prefix: /usr
+    flex:
+      buildable: false
+      externals:
+      - spec: flex@2.6.4
         prefix: /usr

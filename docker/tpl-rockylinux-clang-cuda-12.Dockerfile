@@ -13,7 +13,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 RUN dnf clean all && \
     dnf -y update && \
     dnf -y install \
-        which \ 
+        which \
         clang-17.0.6 \
         gcc-gfortran \
         python3 \
@@ -70,7 +70,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@17.0.6+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %c,cxx=clang@17.0.6 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \

@@ -5,8 +5,7 @@ ARG BLD_DIR=$TMP_DIR/build
 
 # Defining the building toolchain that are common to both GEOSX and its TPLs.
 # The docker base image could be any version of ubuntu/debian (as long as package names are unchanged).
-ARG DOCKER_ROOT_IMAGE
-
+ARG DOCKER_ROOT_IMAGE=ubuntu:24.04
 
 FROM $DOCKER_ROOT_IMAGE AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
@@ -25,7 +24,12 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # The GCC_MAJOR_VERSION argument is here to parametrise (--build-arg) the build from the `docker build` command line.
 # Note that docker seems to forget about the ARGs after each FROM statement.
 # This is why we repeat it below.
-ARG GCC_MAJOR_VERSION
+ARG GCC_MAJOR_VERSION=12
+ENV GCC_MAJOR_VERSION=${GCC_MAJOR_VERSION}
+
+# Allow changing the number of cores used for building code via spack
+ARG SPACK_BUILD_JOBS=4
+ENV SPACK_BUILD_JOBS=${SPACK_BUILD_JOBS}
 
 # Do not apt-get upgrade (ask the maintainer if you really think something should be upgraded)
 RUN apt-get update
@@ -65,6 +69,16 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     lbzip2 \
     bzip2 \
     gnupg \
+# `ca-certificates`  needed by `git` to download spack repo.
+    ca-certificates \
+    git \
+    libtbb-dev \
+    make \
+    bc \
+    file \
+    patch \
+    bison \
+    flex \
     virtualenv
 
 # Install clingo for Spack
@@ -91,19 +105,7 @@ ARG BLD_DIR
 
 # This is the version from the `docker build` command line.
 # It is repeated because docker forgets about the ARGs after FROM statements.
-ARG GCC_MAJOR_VERSION
-
-RUN apt-get install -y --no-install-recommends \
-    libtbb-dev \
-    make \
-    bc \
-    file \
-# GEOS patches some tpl. Remove when it's not the case anymore.
-    patch \
-# `ca-certificates`  needed by `git` to download spack repo.
-    ca-certificates \
-    git
-
+# ARG GCC_MAJOR_VERSION
 
 # Run uberenv
 # Have to create install directory first for uberenv
@@ -111,8 +113,9 @@ RUN apt-get install -y --no-install-recommends \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@${GCC_MAJOR_VERSION} ~pygeosx +docs" \
-       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+       --spec "~pygeosx +docs %c,cxx,fortran=gcc@${GCC_MAJOR_VERSION}" \
+       --spack-debug \
+       --spack-env-file=${SRC_DIR}/docker/ubuntu-spack.yaml \
        --project-json=${SRC_DIR}/.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

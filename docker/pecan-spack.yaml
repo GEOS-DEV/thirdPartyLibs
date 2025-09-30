@@ -72,8 +72,8 @@ spack:
       buildable: False
       externals:
         # Pecan CPU/GPU
-        - spec: intel-mkl@2019.5.281%gcc@8.2.0 threads=openmp
-          prefix: /opt/intel/compilers_and_libraries_2019.5.281/linux/mkl/
+        - spec: intel-mkl@2019.5.281 threads=openmp %gcc@8.2.0
+          prefix: /opt/intel/compilers_and_libraries_2019.5.281/linux/mkl
     blas:
       buildable: false
 

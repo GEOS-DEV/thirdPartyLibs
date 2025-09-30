@@ -186,7 +186,7 @@ class Geosx(CachedCMakePackage, CudaPackage, ROCmPackage):
     #
     # Documentation
     #
-    depends_on('doxygen@1.8.20', when='+docs', type='build')
+    depends_on('doxygen@1.8.20:', when='+docs', type='build')
     depends_on('py-sphinx@1.6.3:', when='+docs', type='build')
 
     #

@@ -17,36 +17,6 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers::
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: rocky8
-      paths:
-        cc: /usr/bin/clang
-        cxx: /usr/bin/clang++
-        f77: /usr/bin/gfortran
-        fc: /usr/bin/gfortran
-      spec: clang@17.0.6
-      target: x86_64
-  - compiler:
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: rocky8
-      paths:
-        cc: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
-        cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
-        f77: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
-        fc: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
-      spec: gcc@13.3.1
-      target: x86_64
-
   packages:
     all:
       target: [x86_64]
@@ -55,6 +25,28 @@ spack:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
         mpi: [openmpi]
+
+    gcc:
+      version: [13.3.1]
+      buildable: false
+      externals:
+      - spec: gcc@13.3.1 languages:='c,c++,fortran'
+        prefix: /opt/rh/gcc-toolset-13/root/usr/
+        extra_attributes:
+          compilers:
+            c: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
+            cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
+            fortran: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+    clang:
+      version: [17.0.6]
+      buildable: false
+      externals:
+      - spec: clang@17 languages:='c,c++'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang-17
+            cxx: /usr/bin/clang++-17
 
     autoconf:
       version: [2.71]
@@ -77,9 +69,9 @@ spack:
     cuda:
       buildable: False
       externals:
-      - spec: cuda@12.9.1%gcc@13.3.1 +allow-unsupported-compilers
+      - spec: cuda@12.9.1 +allow-unsupported-compilers %gcc@13.3.1
         prefix: /usr/local/cuda
-      - spec: cuda@12.9.1%clang@17.0.6 +allow-unsupported-compilers
+      - spec: cuda@12.9.1 +allow-unsupported-compilers %clang@17.0.6
         prefix: /usr/local/cuda
     m4:
       buildable: false
