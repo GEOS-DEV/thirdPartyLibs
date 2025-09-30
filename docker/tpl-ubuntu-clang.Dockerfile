@@ -74,7 +74,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "~shared~openmp+docs %c,cxx=%clang@${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "~shared~openmp+docs %c,cxx=clang@${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/ubuntu-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \

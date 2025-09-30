@@ -20,15 +20,12 @@ spack:
   packages:
     all:
       target: [x86_64]
-      compiler: [gcc, clang]
       providers:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
         mpi: [openmpi]
 
     gcc:
-      version: [13.3.1]
-      buildable: false
       externals:
       - spec: gcc@13.3.1 languages:='c,c++,fortran'
         prefix: /opt/rh/gcc-toolset-13/root/usr/
@@ -38,8 +35,6 @@ spack:
             cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
             fortran: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
     clang:
-      version: [17.0.6]
-      buildable: false
       externals:
       - spec: clang@17 languages:='c,c++'
         prefix: /usr

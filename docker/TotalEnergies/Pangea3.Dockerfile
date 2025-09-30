@@ -50,7 +50,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/liblustreapi.so.1 /usr/lib64/liblustreapi.so && \
 # Run uberenv
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@9.4.0+cuda~uncrustify~openmp~pygeosx cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %c,cxx,fortran=gcc@9.4.0 ^cuda@11.5.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/pangea-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
