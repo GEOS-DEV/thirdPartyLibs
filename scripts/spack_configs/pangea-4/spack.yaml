@@ -76,7 +76,7 @@ spack:
     protobuf:
       require: "@3.26.1"
     grpc:
-      require: "@1.64.0"
+      require: "@1.64.0-full-clone"
     
     # spec of spack packages to reuse
 
