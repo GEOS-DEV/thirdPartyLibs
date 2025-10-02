@@ -58,6 +58,7 @@ ARG GCC_MAJOR_VERSION
 
 RUN apt-get install -y --no-install-recommends \
     gfortran-$GCC_MAJOR_VERSION \
+    g++-$GCC_MAJOR_VERSION \
     libtbb-dev \
     make \
     bc \
@@ -68,13 +69,26 @@ RUN apt-get install -y --no-install-recommends \
     ca-certificates \
     git
 
+# Add MPI environment path info
+ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
+    CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
+    MPICC=/usr/bin/mpicc \
+    MPICXX=/usr/bin/mpicxx \
+    MPIEXEC=/usr/bin/mpirun
+# The multi-line definition of arguments does not seem happy
+# when a variable uses the value of another variable previously defined on the same line.
+ENV OMPI_CC=$CC \
+    OMPI_CXX=$CXX
+
 # Run uberenv
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+# Create symlinks to g++ libraries
+     ln -s /usr/bin/g++-${GCC_MAJOR_VERSION} /usr/bin/g++ && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%clang@${CLANG_MAJOR_VERSION} ~shared~openmp+docs ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "~shared~openmp+docs %clang@${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -85,7 +99,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      cp *.cmake /spack-generated.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
-     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
+     rm -rf bin/ build_stage/ builtin_spack_packages_repo/ misc_cache/ spack/ spack_env/ .spack-db/
 
 # Extract only TPLs from previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain

@@ -11,10 +11,8 @@
 import os
 import shutil
 
-import llnl.util.tty as tty
-
 from spack.package import *
-
+from spack_repo.builtin.build_systems.cmake import CMakePackage
 
 class Hdf5(CMakePackage):
     """HDF5 is a data model, library, and file format for storing and managing
@@ -198,6 +196,10 @@ class Hdf5(CMakePackage):
         values=("default", "v114", "v112", "v110", "v18", "v16"),
         multi=False,
     )
+
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
+    depends_on("fortran", type="build", when="+fortran")
 
     depends_on("cmake@3.12:", type="build")
 

@@ -6,8 +6,8 @@
 import os
 import sys
 
-from spack import *
-
+from spack.package import *
+from spack_repo.builtin.build_systems.cmake import CMakePackage
 
 class Vtk(CMakePackage):
     """The Visualization Toolkit (VTK) is an open-source, freely

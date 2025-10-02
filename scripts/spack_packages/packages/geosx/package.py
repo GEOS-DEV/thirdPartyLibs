@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import *
 import warnings
 
 import socket
@@ -13,6 +13,11 @@ import llnl.util.tty as tty
 
 from os import environ as env
 from os.path import join as pjoin
+
+from spack_repo.builtin.build_systems.cached_cmake import cmake_cache_path
+
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
 
 # Tested specs are located at scripts/spack_configs/<$SYS_TYPE>/spack.yaml (e.g. %clang@10.0.1)
 
@@ -84,10 +89,13 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
-    variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
+    variant('cuda_stack_size', default="0", description="Defines the adjusted cuda stack \
         size limit if required. Zero or negative keep default behavior")
 
     # SPHINX_BEGIN_DEPENDS
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
+    depends_on("fortran", type="build")
 
     depends_on('cmake@3.24:', type='build')
 
@@ -245,6 +253,10 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     def _get_host_config_path(self, spec, lvarray=False):
         var = ''
+
+        if 'no-avx' in str(spec.compiler_flags):
+            var += "-noAVX"
+
         if '+cuda' in spec:
             var = '-'.join([var, 'cuda'])
             var += "@" + str(spec['cuda'].version)
@@ -258,7 +270,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         if lvarray:
             hostname = "lvarray-" + hostname
 
-        host_config_path = "%s-%s-%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler)).replace('=',''), var)
+        host_config_path = "%s-%s-%s@%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler.name)), str(spec.compiler.version),var)
 
         dest_dir = self.stage.source_path
         host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
