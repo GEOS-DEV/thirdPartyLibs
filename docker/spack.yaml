@@ -127,11 +127,12 @@ spack:
             c: /usr/bin/gcc-10
             cxx: /usr/bin/g++-10
             fortran: /usr/bin/gfortran-10
-      - spec: gcc@11.4.0 languages:=c,fortran
+      - spec: gcc@11.4.0 languages:='c,c++,fortran'
         prefix: /usr
         extra_attributes:
           compilers:
             c: /usr/bin/gcc-11
+            cxx: /usr/bin/g++-11
             fortran: /usr/bin/gfortran-11
       - spec: gcc@12.3.0 languages:='c,c++,fortran'
         prefix: /usr
