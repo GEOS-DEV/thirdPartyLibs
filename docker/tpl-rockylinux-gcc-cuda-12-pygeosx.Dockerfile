@@ -22,17 +22,16 @@ RUN dnf clean all && \
         openmpi \
         openmpi-devel \
     # Additional spack dependencies
-        python3-pip \
         unzip \
         mpfr-devel \
         bzip2 \
         gnupg \
-        xz \
-        python3-virtualenv
+        xz
 
 # Install clingo for Spack
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install clingo
+RUN python3.12 -m ensurepip && \
+    python3.12 -m pip install --upgrade pip && \
+    python3.12 -m pip install clingo
 
 # Custom install script for CMake or other tools
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
@@ -73,18 +72,11 @@ RUN dnf clean all && \
 #      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
 #      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
 #      ./scripts/uberenv/uberenv.py \
-#        --spec "%gcc@13.3.1+cuda+pygeosx~uncrustify~openmp cuda_arch=70 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+#        --spec "%gcc@13.3.1 ^python@3.12" \
 #        --spack-env-file=${SRC_DIR}/docker/rocky-pygeosx-spack.yaml \
-#        --project-json=.uberenv_config.json \
+#        --project-json=./scripts/pygeosx_configs/pygeosx.json \
 #        --prefix ${GEOSX_TPL_DIR} \
-#        -k && \
-# # Remove host-config generated for LvArray
-#      rm lvarray* && \
-# # Rename and copy spack-generated host-config to root directory
-#      cp *.cmake /spack-generated.cmake && \
-# # Remove extraneous spack files
-#      cd ${GEOSX_TPL_DIR} && \
-#      rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
+#        -k
 
 # # Run uberenv
 # # Have to create install directory first for uberenv
@@ -97,9 +89,9 @@ RUN dnf clean all && \
 #      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
 #      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
 #      ./scripts/uberenv/uberenv.py \
-#        --spec "%gcc@13.3.1" \
+#        --spec "%gcc@13.3.1+cuda+pygeosx~uncrustify~openmp cuda_arch=70 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
 #        --spack-env-file=${SRC_DIR}/docker/rocky-pygeosx-spack.yaml \
-#        --project-json=./scripts/pygeosx_configs/pygeosx.json \
+#        --project-json=.uberenv_config.json \
 #        --prefix ${GEOSX_TPL_DIR} \
 #        -k && \
 # # Remove host-config generated for LvArray
