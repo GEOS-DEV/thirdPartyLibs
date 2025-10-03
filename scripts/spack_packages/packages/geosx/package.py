@@ -9,8 +9,6 @@ import warnings
 import socket
 import os
 
-import llnl.util.tty as tty
-
 from os import environ as env
 from os.path import join as pjoin
 
