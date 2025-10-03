@@ -1,0 +1,164 @@
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage::
+    - $spack/../build_stage
+
+  # Regular TPLs do not need views
+  view: false
+
+  # Include shared variants and versions
+  include:
+  - ../defaults.yaml
+  - ../versions.yaml
+
+  compilers::
+  - compiler:
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: rocky8
+      paths:
+        cc: /usr/bin/clang
+        cxx: /usr/bin/clang++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      spec: clang@17.0.6
+      target: x86_64
+  - compiler:
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: rocky8
+      paths:
+        cc: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
+        cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
+        f77: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+        fc: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+      spec: gcc@13.3.1
+      target: x86_64
+
+  packages:
+    all:
+      target: [x86_64]
+      compiler: [gcc, clang]
+      providers:
+        blas: [netlib-lapack]
+        lapack: [netlib-lapack]
+        mpi: [openmpi]
+
+    autoconf:
+      version: [2.69]
+      buildable: false
+      externals:
+      - spec: autoconf@2.69
+        prefix: /usr
+    automake:
+      version: [1.16.1]
+      buildable: false
+      externals:
+      - spec: automake@1.16.1
+        prefix: /usr
+    cmake:
+      version: [3.28.6]
+      buildable: false
+      externals:
+      - spec: cmake@3.28.6
+        prefix: /usr/local
+    cuda:
+      buildable: False
+      externals:
+      - spec: cuda@12.9.1%gcc@13.3.1 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+      - spec: cuda@12.9.1%clang@17.0.6 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+    m4:
+      buildable: false
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+
+    # Spack may grab for mpi & we don't want to use them
+    mpi:
+      buildable: false
+
+    netlib-lapack:
+      buildable: false
+      externals:
+      - spec: netlib-lapack@3.8.0
+        prefix: /usr
+    netlib-blas:
+      buildable: false
+      externals:
+      - spec: netlib-blas@3.8.0
+        prefix: /usr
+    openmpi:
+      externals:
+      - spec: openmpi@4.1.1
+        prefix: /usr/lib64/openmpi
+    perl:
+      buildable: false
+      externals:
+      - spec: perl@5.26.3
+        prefix: /usr
+    pkg-config:
+      buildable: false
+      externals:
+      - spec: pkg-config@1.4.2
+        prefix: /usr
+    tar:
+      buildable: false
+      externals:
+      - spec: tar@1.34
+        prefix: /usr
+    unzip:
+      buildable: false
+      externals:
+      - spec: unzip@6.0
+        prefix: /usr
+    xz:
+      buildable: false
+      externals:
+      - spec: xz@5.2.5
+        prefix: /usr
+
+    # Pygeosx dependencies
+    openssl:
+      buildable: false
+      externals:
+      - spec: openssl@1.1.1
+        prefix: /usr
+    tk:
+      buildable: false
+      externals:
+      - spec: tk@8.6.8
+        prefix: /usr
+    tcl:
+      buildable: false
+      externals:
+      - spec: tcl@8.6.8
+        prefix: /usr
+    gmake:
+      buildable: false
+      externals:
+      - spec: gmake@4.2.1
+        prefix: /usr
+    libxcrypt:
+      buildable: false
+      externals:
+      - spec: libxcrypt@4.1.1
+        prefix: /usr
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.8.2
+        prefix: /usr
