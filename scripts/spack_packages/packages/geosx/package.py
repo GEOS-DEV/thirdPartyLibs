@@ -427,7 +427,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_string('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value)
+                cfg.write(cmake_cache_string('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_path('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))
