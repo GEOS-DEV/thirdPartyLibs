@@ -18,6 +18,15 @@ spack:
   - ../versions.yaml
 
   toolchains:
+    amdclang-18:
+      - spec: '%[virtuals=c]llvm-amdgpu@6.4.3'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm-amdgpu@6.4.3'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@13.3.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
     clang-15:
       - spec: '%[virtuals=c]llvm@15.0.7+clang~flang~lld~lldb'
         when: '%c'
@@ -80,15 +89,26 @@ spack:
         when: '%fortran'
       - spec: '%openmpi@4.1.2'
         when: '%mpi'
+    gcc-13:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@13.3.0'
+        when: '%c'
+      - spec: '%cxx=gcc@13.3.0'
+        when: '%cxx'
+      - spec: '%fortran=gcc@13.3.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'
 
   packages:
     all:
       target: [x86_64]
 
+    # Require
     mpi:
       require:
       - openmpi
-
     blas:
       require:
       - "netlib-lapack"
@@ -96,6 +116,7 @@ spack:
       require:
       - "netlib-lapack"
 
+    # Compiler packages
     llvm:
       externals:
       - spec: llvm@10.0.0+clang~flang~lld~lldb
@@ -110,7 +131,15 @@ spack:
           compilers:
             c: /usr/bin/clang-15
             cxx: /usr/bin/clang++-15
-
+    llvm-amdgpu:
+      buildable: false
+      externals:
+      - spec: llvm-amdgpu@6.4.3
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/amdclang
+            cxx: /usr/bin/amdclang++
     gcc:
       externals:
       - spec: gcc@9.5.0 languages:='c,c++,fortran'
@@ -141,7 +170,118 @@ spack:
             c: /usr/bin/gcc-12
             cxx: /usr/bin/g++-12
             fortran: /usr/bin/gfortran-12
+      - spec: gcc@13.3.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-13
+            cxx: /usr/bin/g++-13
+            fortran: /usr/bin/gfortran-13
 
+    # MPI
+    openmpi:
+      externals:
+      - spec: openmpi@4.1.2 %llvm
+        prefix: /usr
+        modules: [mpi]
+      - spec: openmpi@4.1.2 %llvm-amdgpu@6.4.3
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@9.5.0
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@10.5.0
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@11.4.0
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@12.3.0
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@13.3.0
+        prefix: /usr
+
+    # CUDA packages
+    cuda:
+      buildable: False
+      externals:
+      - spec: cuda@11.8.0 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+
+    # ROCm packages
+    hip:
+      buildable: false
+      externals:
+      - spec: hip@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocprim:
+      buildable: false
+      externals:
+      - spec: rocprim@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocsparse:
+      buildable: false
+      externals:
+      - spec: rocsparse@6.4.3
+        prefix: /opt/rocm-6.4.3
+    roctracer:
+      buildable: false
+      externals:
+      - spec: roctracer@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocblas:
+      buildable: false
+      externals:
+      - spec: rocblas@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocrand:
+      buildable: false
+      externals:
+      - spec: rocrand@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocsolver:
+      buildable: false
+      externals:
+      - spec: rocsolver@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocthrust:
+      buildable: false
+      externals:
+      - spec: rocthrust@6.4.3
+        prefix: /opt/rocm-6.4.3
+    hipblas:
+      buildable: false
+      externals:
+      - spec: hipblas@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hipsparse:
+      buildable: false
+      externals:
+      - spec: hipsparse@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hipfft:
+      buildable: false
+      externals:
+      - spec: hipfft@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hipsolver:
+      buildable: false
+      externals:
+      - spec: hipsolver@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hiprand:
+      buildable: false
+      externals:
+      - spec: hiprand@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    rocm-device-libs:
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@6.4.3
+        prefix: /opt/rocm-6.4.3
+    hsa-rocr-dev:
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@6.4.3
+        prefix: /opt/rocm-6.4.3
+
+    # System packages
     autoconf:
       version: [2.71]
       buildable: false
@@ -160,11 +300,6 @@ spack:
       externals:
       - spec: cmake@3.28.3
         prefix: /usr/local
-    cuda:
-      buildable: False
-      externals:
-      - spec: cuda@11.8.0 +allow-unsupported-compilers
-        prefix: /usr/local/cuda
     findutils:
       version: [4.7.0]
       buildable: false
@@ -181,7 +316,6 @@ spack:
       externals:
       - spec: mpfr@6.0.2
         prefix: /usr
-
     netlib-lapack:
       buildable: false
       externals:
@@ -191,19 +325,6 @@ spack:
       buildable: false
       externals:
       - spec: netlib-blas@3.10.0
-        prefix: /usr
-    openmpi:
-      externals:
-      - spec: openmpi@4.1.2 %llvm
-        prefix: /usr
-        modules: [mpi]
-      - spec: openmpi@4.1.2 %gcc@9.5.0
-        prefix: /usr
-      - spec: openmpi@4.1.2 %gcc@10.5.0
-        prefix: /usr
-      - spec: openmpi@4.1.2 %gcc@11.4.0
-        prefix: /usr
-      - spec: openmpi@4.1.2 %gcc@12.3.0
         prefix: /usr
     perl:
       buildable: false
@@ -249,4 +370,54 @@ spack:
       buildable: false
       externals:
       - spec: zlib@1.2.11
+        prefix: /usr
+    z3:
+      buildable: false
+      externals:
+      - spec: z3@4.8.12
+        prefix: /usr
+    gettext:
+      buildable: false
+      externals:
+      - spec: gettext@0.21
+        prefix: /usr
+    bison:
+      buildable: false
+      externals:
+      - spec: bison@3.8.2
+        prefix: /usr
+    flex:
+      buildable: false
+      externals:
+      - spec: flex@2.6.4
+        prefix: /usr
+    bzip2:
+      buildable: false
+      externals:
+      - spec: bzip2@1.0.8
+        prefix: /usr
+    help2man:
+      buildable: false
+      externals:
+      - spec: help2man@1.49.3
+        prefix: /usr
+    libtool:
+      buildable: false
+      externals:
+      - spec: libtool@2.4.7
+        prefix: /usr
+    gmp:
+      buildable: false
+      externals:
+      - spec: gmp@6.3.0
+        prefix: /usr
+    pugixml:
+      buildable: false
+      externals:
+      - spec: pugixml@1.13.0
+        prefix: /usr
+    gmake:
+      buildable: false
+      externals:
+      - spec: gmake@4.4.1
         prefix: /usr

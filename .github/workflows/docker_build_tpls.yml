@@ -81,6 +81,12 @@ jobs:
           #   SPEC: "~pygeosx~openmp cuda_arch=70 %gcc@10.1.0 ^cuda@12.4.0+allow-unsupported-compilers"
           #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
           #   RUNS_ON: ubuntu-latest
+          - name: Ubuntu (24.04, gcc 13.3.0 + ROCm 6.4.3)
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13.3.0-rocm6.4.3
+            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc-hip.Dockerfile
+            DOCKER_ROOT_IMAGE: rocm/dev-ubuntu-24.04:6.4.3
+            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=13"
+            RUNS_ON: ubuntu-latest
 
     steps:
     - name: Checkout
