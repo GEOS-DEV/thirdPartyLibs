@@ -106,8 +106,8 @@ RUN apt-get update && \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %gcc-13 ^mpich@4.2.0 ^caliper~papi" \
-       --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
+       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %gcc-13 ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

@@ -171,6 +171,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +openmp", when="+openmp")
+        depends_on("hypre +caliper", when="+caliper")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
