@@ -13,7 +13,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 RUN dnf clean all && \
     dnf -y update && \
     dnf -y install \
-        which \ 
+        which \
         clang-17.0.6 \
         gcc-toolset-13 \
         python3 \
@@ -28,6 +28,10 @@ RUN dnf clean all && \
         unzip \
         mpfr-devel \
         bzip2 \
+        flex \
+        bison \
+        gettext \
+        help2man \
         gnupg \
         xz \
         python3-virtualenv

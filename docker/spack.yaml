@@ -321,11 +321,6 @@ spack:
       externals:
       - spec: netlib-lapack@3.10.0
         prefix: /usr
-    netlib-blas:
-      buildable: false
-      externals:
-      - spec: netlib-blas@3.10.0
-        prefix: /usr
     perl:
       buildable: false
       externals:
