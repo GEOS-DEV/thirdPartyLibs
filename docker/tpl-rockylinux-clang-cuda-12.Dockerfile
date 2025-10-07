@@ -31,7 +31,6 @@ RUN dnf clean all && \
         flex \
         bison \
         gettext \
-        help2man \
         gnupg \
         xz \
         python3-virtualenv
