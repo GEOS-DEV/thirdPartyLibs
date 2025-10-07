@@ -49,6 +49,7 @@ if [ $? -eq 0 ]; then
   rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/.spack-db"
   rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/misc_cache"
   rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/spack"
+  rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/builtin_spack_packages_repo"
   rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/build_stage"
 
   # --- 3. Conditionally Set Permissions ---
