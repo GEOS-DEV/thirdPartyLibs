@@ -41,8 +41,8 @@ spack:
         all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
-    build_stage::
-    - $spack/../build_stage
+    build_stage: $spack/../build_stage
+    build_jobs: 112
 
   # Regular TPLs do not need views
   view: false
@@ -112,7 +112,7 @@ spack:
 
   packages:
     all:
-      target: [ivybridge]
+      target: [sapphirerapids]
 
     mpi:
       require:
