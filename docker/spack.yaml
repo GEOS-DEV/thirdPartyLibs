@@ -319,7 +319,7 @@ spack:
     netlib-lapack:
       buildable: false
       externals:
-      - spec: netlib-lapack@3.10.0
+      - spec: netlib-lapack@3.12.0
         prefix: /usr
     perl:
       buildable: false
@@ -415,4 +415,9 @@ spack:
       buildable: false
       externals:
       - spec: gmake@4.4.1
+        prefix: /usr
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.11.1
         prefix: /usr

@@ -32,6 +32,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libtbb12 \
         libtbbmalloc2 \
         libblas-dev \
+        liblapack-dev \
         libz3-dev \
         zlib1g-dev \
         libmpich-dev \
@@ -92,6 +93,8 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       libtbb-dev \
       make \
+      ninja-build \
+      gmake \
       bc \
       file \
       patch \
@@ -106,7 +109,7 @@ RUN apt-get update && \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-18 ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} generator==ninja %amdclang-18 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
