@@ -145,8 +145,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Math
     #
-    depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
-    depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
+    depends_on("parmetis@4.0.3+int64+shared cflags='-fPIC' cxxflags='-fPIC'")
+    depends_on("metis +int64+shared cflags='-fPIC' cxxflags='-fPIC'")
 
     depends_on("superlu-dist +int64  fflags='-fPIC'")
     depends_on("superlu-dist~openmp", when="~openmp")
