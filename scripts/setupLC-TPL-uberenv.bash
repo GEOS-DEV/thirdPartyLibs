@@ -104,7 +104,8 @@ function launch_jobs() {
 
     tuolumne)
       ALLOC_CMD="salloc -N 1 --exclusive -t 120 -A vortex"
-      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs %cce-20 amdgpu_target=gfx942 ^vtk generator=ninja" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942 %cce-20 ^vtk generator=ninja" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne llvm-amdgpu-6.4.2-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942 %llvm-amdgpu_6_4_2 ^vtk generator=ninja" "${ALLOC_CMD}" "$@" &
       ;;
 
     *)

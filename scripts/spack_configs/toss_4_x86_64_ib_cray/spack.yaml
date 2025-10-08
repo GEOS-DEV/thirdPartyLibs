@@ -11,10 +11,12 @@
 #------------------------------------------------------------------------------------------------------------
 
 # geosx@develop%cce@20.0.0
+# geosx@develop%llvm-amdgpu_6_4_2
 #
 # Uberenv command to build geos dependencies:
-# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %cce-20 ^hip@6.4.2 ^hipblas@6.4.2 ^hipsparse@6.4.2 ^hsa-rocr-dev@6.4.2  ^rocprim@6.4.2 ^hdf5 cflags=-Wno-int-conversion"
+# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %cce-20 ^vtk generator=ninja"
 #
+# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %llvm-amdgpu_6_4_2 ^vtk generator=ninja"
 
 
 spack:
@@ -74,16 +76,14 @@ spack:
             c: /usr/tce/packages/cce-tce/cce-20.0.0/bin/craycc
             cxx: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayCC
             fortran: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayftn
-          # flags: {}
-          # environment: {}
-          # extra_rpaths: []
+          flags: {}
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
           extra_rpaths:
           - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
           - /opt/cray/pe/mpich/9.0.1/gtl/lib
-          flags:
-            cflags: -fPIC
-            cxxflags: -fPIC
-            fflags: -fPIC
         modules:
         - PrgEnv-cray/8.6.0
         - craype-x86-genoa
@@ -109,9 +109,11 @@ spack:
             c: /opt/rocm-6.4.2/llvm/bin/amdclang
             cxx: /opt/rocm-6.4.2/llvm/bin/amdclang++
             fortran: /opt/rocm-6.4.2/llvm/bin/amdflang
-          # environment: {}
-          # extra_rpaths: []
-          # flags: {}
+          flags: {}
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
           extra_rpaths:
           - /opt/rocm-6.4.2/lib
           - /opt/rocm-6.4.2/llvm/lib
