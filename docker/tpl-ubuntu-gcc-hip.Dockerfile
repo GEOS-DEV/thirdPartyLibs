@@ -35,8 +35,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         liblapack-dev \
         libz3-dev \
         zlib1g-dev \
-        libmpich-dev \
-        mpich \
+        openmpi-bin \
+        libopenmpi-dev \
         python3 \
         python3-dev \
         python3-pip \
@@ -74,15 +74,14 @@ RUN python3 -m pip install clingo --break-system-packages
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
-# Hack for spack to see Ubuntu's mpich in a standard prefix layout
-RUN mkdir -p /opt/mpich-system/bin /opt/mpich-system/include /opt/mpich-system/lib && \
-    ln -s /usr/bin/mpicc   /opt/mpich-system/bin/mpicc && \
-    ln -s /usr/bin/mpicxx  /opt/mpich-system/bin/mpicxx && \
-    ln -s /usr/bin/mpif90  /opt/mpich-system/bin/mpif90 && \
-    ln -s /usr/bin/mpifort /opt/mpich-system/bin/mpifort && \
-    ln -s /usr/bin/mpirun  /opt/mpich-system/bin/mpirun && \
-    ln -s /usr/lib/x86_64-linux-gnu/mpich/include/* /opt/mpich-system/include/ && \
-    ln -s /usr/lib/x86_64-linux-gnu/mpich/lib/*     /opt/mpich-system/lib/
+ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
+    CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
+    MPICC=/usr/bin/mpicc \
+    MPICXX=/usr/bin/mpicxx \
+    MPIEXEC=/usr/bin/mpirun
+
+ENV OMPI_CC=$CC \
+    OMPI_CXX=$CXX
 
 # Installing TPLs
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
