@@ -298,10 +298,11 @@ spack:
     bison:
       buildable: false
       externals:
-      - spec: bison@3.0.4
-        prefix: /usr
-    flex:
-      buildable: false
-      externals:
-      - spec: flex@2.6.1
-        prefix: /usr
+      - spec: bison@3.8.2
+        prefix: /collab/usr/gapps/python/build/spack-toss4.1/opt/spack/linux-rhel8-ivybridge/gcc-10.3.1/bison-3.8.2-ihsbaayrrhbmxufyobmimzq3lhxxdbck/
+    # Avoid using external flex - issues compiling scotch
+    # flex:
+    #   buildable: false
+    #   externals:
+    #   - spec: flex@2.6.1
+    #     prefix: /usr
