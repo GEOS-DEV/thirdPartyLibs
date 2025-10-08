@@ -3,9 +3,10 @@
 ## Builds the TPLs for a specific system and host config.
 ## Usage ./setupLC-TPL-uberenv-helper.bash <InstallDir> <Machine> <Compiler> <SpackSpec> <AllocCmd> [ExtraArgs...]
 
-# --- 1. Initialize Control Variable ---
-# By default, we will set permissions.
+# --- 1. Initialize Control Variables ---
+# By default, we will set permissions and reuse a previous build if available
 SET_PERMISSIONS=true
+CLEAN=false
 
 # --- Argument Parsing ---
 INSTALL_DIR=$1
@@ -22,14 +23,27 @@ shift 5
 for arg in "$@"; do
   if [[ "$arg" == "--no-permissions" ]]; then
     SET_PERMISSIONS=false
-    echo "Found --no-permissions flag. Will skip permission updates."
-    break
+    echo "Found --no-permissions flag in uberenv-helper. Will skip permission updates."
+    shift
+  elif [[ "$arg" == "--clean" ]]; then
+    CLEAN=true
+    echo "Found --clean flag in uberenv-helper. Will clean build first"
+    shift
   fi
 done
 
 # --- Main Execution ---
 CONFIG=$MACHINE-$COMPILER
 LOG_FILE=$CONFIG.log
+
+# --- Clean build ---
+if [ "$CLEAN" = true ]; then
+  DEST=${INSTALL_DIR}/${CONFIG}_tpls
+  echo "Removing ${DEST}" && rm -rf "${DEST}"
+
+  DEST=${LOG_FILE}
+  echo "Removing ${DEST}" && rm -rf "${DEST}"
+fi
 
 echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
@@ -39,6 +53,7 @@ ssh "$MACHINE" -t "
 cd \"$PWD\" &&
 $GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix \"${INSTALL_DIR}/${CONFIG}_tpls\" --spack-env-name \"${CONFIG}_env\" \"$@\" &&
 exit" > "$LOG_FILE" 2>&1
+#echo "Getting a node: $GET_A_NODE"
 
 ## Check the last ten lines of the log file.
 ## A successful install should show up on one of the final lines.

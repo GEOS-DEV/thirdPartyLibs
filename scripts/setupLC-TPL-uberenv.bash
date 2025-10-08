@@ -8,6 +8,7 @@
 ##                (e.g., "dane,matrix"). Defaults to all.
 ##   ExtraArgs:   (Optional) Additional arguments forwarded to the helper script.
 ##                Use --no-permissions to skip all chmod/chgrp calls.
+##                Use --clean to clean data from previous build.
 
 # --- Configuration ---
 # All known machines. Add new machine names here.
@@ -42,9 +43,8 @@ declare -a FORWARDED_ARGS=()
 for arg in "$@"; do
   if [[ "$arg" == "--no-permissions" ]]; then
     SET_PERMISSIONS=false
-  else
-    FORWARDED_ARGS+=("$arg")
   fi
+  FORWARDED_ARGS+=("$arg")
 done
 
 # --- Setup ---
@@ -104,7 +104,7 @@ function launch_jobs() {
 
     tuolumne)
       ALLOC_CMD="salloc -N 1 --exclusive -t 120 -A vortex"
-      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs %cce-20 amdgpu_target=gfx942" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs %cce-20 amdgpu_target=gfx942 ^vtk generator=ninja" "${ALLOC_CMD}" "$@" &
       ;;
 
     *)
