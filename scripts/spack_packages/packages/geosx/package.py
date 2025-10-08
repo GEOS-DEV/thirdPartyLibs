@@ -659,9 +659,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             # Lassen
             if sys_type in ('blueos_3_ppc64le_ib_p9'):
                 cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--ats jsrun_omp --ats jsrun_bind=packed'))
-            # Ruby
+            # Dane/Matrix
             if sys_type in ('toss_4_x86_64_ib'):
-                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm56'))
+                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm112'))
 
     def lvarray_hostconfig(self, spec, prefix, py_site_pkgs_dir=None):
         """

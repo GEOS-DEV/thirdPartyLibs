@@ -13,7 +13,7 @@
 # geosx@develop%cce@20.0.0
 #
 # Uberenv command to build geos dependencies:
-# python3 ./scripts/uberenv/uberenv.py --spec="%cce@20.0.0 +docs"
+# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %cce_20 ^hip@6.4.2 ^hipblas@6.4.2 ^hipsparse@6.4.2 ^hsa-rocr-dev@6.4.2  ^rocprim@6.4.2 ^hdf5 cflags=-Wno-int-conversion"
 #
 
 
@@ -26,7 +26,7 @@ spack:
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
     build_stage: $spack/../build_stage
-    build_jobs: 48
+    build_jobs: 96
 
   # Regular TPLs do not need views
   view: false
@@ -36,76 +36,28 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers:
-  - compiler:
-      spec: cce@=20.0.0
-      paths:
-        cc: /usr/tce/packages/cce-tce/cce-20.0.0/bin/craycc
-        cxx: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayCC
-        f77: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayftn
-        fc: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayftn
-      flags: {}
-      operating_system: rhel8
-      target: x86_64
-      modules:
-      - PrgEnv-cray/8.6.0
-      - craype-x86-genoa
-      - craype/2.7.35
-      - craype-network-ofi
-      - craype-accel-amd-gfx942
-      - cray-mpich/9.0.1
-      - cray-libsci/25.09.0
-      - cce/20.0.0
-      - libfabric/2.1
-      - flux_wrappers/0.1
-      - StdEnv
-      - perftools-base/25.09.0
-      - xpmem/2.6.5
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
-      extra_rpaths:
-      - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
-      - /opt/cray/pe/mpich/9.0.1/gtl/lib
-  - compiler:
-      spec: rocmcc@=6.4.2
-      paths:
-        cc: /opt/rocm-6.4.2/llvm/bin/amdclang
-        cxx: /opt/rocm-6.4.2/llvm/bin/amdclang++
-        f77: /opt/rocm-6.4.2/llvm/bin/amdflang
-        fc: /opt/rocm-6.4.2/llvm/bin/amdflang
-      flags: {}
-      operating_system: rhel8
-      target: x86_64
-      modules:
-      - rocm/6.4.2
-      - PrgEnv-cray/8.6.0
-      - craype-x86-genoa
-      - craype/2.7.35
-      - craype-network-ofi
-      - craype-accel-amd-gfx942
-      - cray-mpich/9.0.1
-      - cray-libsci/25.09.0
-      - cce/20.0.0
-      - libfabric/2.1
-      - flux_wrappers/0.1
-      - StdEnv
-      - perftools-base/25.09.0
-      - xpmem/2.6.5
-      environment:
-        set: # Needed for scotch
-          BISON: bison
-          FLEX: flex
-      extra_rpaths:
-      - /opt/rocm-6.4.2/lib
-      - /opt/rocm-6.4.2/llvm/lib
-      - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
-      - /opt/cray/pe/mpich/9.0.1/gtl/lib
+  toolchains:
+    llvm-amdgpu_6_4_2:
+    - spec: '%c=llvm-amdgpu@6.4.2'
+      when: '%c'
+    - spec: '%cxx=llvm-amdgpu@6.4.2'
+      when: '%cxx'
+    - spec: '%fortran=llvm-amdgpu@6.4.2'
+      when: '%fortran'
+    - spec: '%cray-mpich@9.0.1_llvm_amdgpu'
+      when: '%mpi'
+    cce_20:
+    - spec: '%c=cce@20.0.0'
+      when: '%c'
+    - spec: '%cxx=cce@20.0.0'
+      when: '%cxx'
+    - spec: '%fortran=cce@20.0.0'
+      when: '%fortran'
+    - spec: '%cray-mpich@9.0.1_cce'
+      when: '%mpi'
 
   packages:
     all:
-      require: target=zen4
       providers:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
@@ -113,14 +65,94 @@ spack:
         zlib-api: [zlib]
         pkgconfig: [pkgconf]
 
+    cce:
+      externals:
+      - spec: cce@=20.0.0
+        prefix: /usr/tce/packages/cce-tce/cce-20.0.0
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/cce-tce/cce-20.0.0/bin/craycc
+            cxx: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayCC
+            fortran: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayftn
+          # flags: {}
+          # environment: {}
+          # extra_rpaths: []
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
+          extra_rpaths:
+          - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
+          - /opt/cray/pe/mpich/9.0.1/gtl/lib
+          flags:
+            cflags: -fPIC
+            cxxflags: -fPIC
+            fflags: -fPIC
+        modules:
+        - PrgEnv-cray/8.6.0
+        - craype-x86-genoa
+        - craype/2.7.35
+        - craype-network-ofi
+        - craype-accel-amd-gfx942
+        - cray-mpich/9.0.1
+        - cray-libsci/25.09.0
+        - cce/20.0.0
+        - libfabric/2.1
+        - flux_wrappers/0.1
+        - StdEnv
+        - perftools-base/25.09.0
+        - xpmem/2.6.5
+
+
+    llvm-amdgpu:
+      externals:
+      - spec: llvm-amdgpu@=6.4.2
+        prefix: /opt/rocm-6.4.2/llvm
+        extra_attributes:
+          compilers:
+            c: /opt/rocm-6.4.2/llvm/bin/amdclang
+            cxx: /opt/rocm-6.4.2/llvm/bin/amdclang++
+            fortran: /opt/rocm-6.4.2/llvm/bin/amdflang
+          # environment: {}
+          # extra_rpaths: []
+          # flags: {}
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
+          extra_rpaths:
+          - /opt/rocm-6.4.2/lib
+          - /opt/rocm-6.4.2/llvm/lib
+          - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
+          - /opt/cray/pe/mpich/9.0.1/gtl/lib
+        modules:
+        - rocm/6.4.2
+        - PrgEnv-cray/8.6.0
+        - craype-x86-genoa
+        - craype/2.7.35
+        - craype-network-ofi
+        - craype-accel-amd-gfx942
+        - cray-mpich/9.0.1
+        - cray-libsci/25.09.0
+        - cce/20.0.0
+        - libfabric/2.1
+        - flux_wrappers/0.1
+        - StdEnv
+        - perftools-base/25.09.0
+        - xpmem/2.6.5
+
+
+
     # Lock down which MPI we are using
     cray-mpich:
       buildable: false
       externals:
-      - spec: cray-mpich@9.0.1%cce@20.0.0
-        prefix: /usr/tce/packages/cray-mpich/cray-mpich-9.0.1-cce-20.0.0-magic
-      - spec: cray-mpich@9.0.1%rocmcc@6.4.2
-        prefix: /usr/tce/packages/cray-mpich/cray-mpich-9.0.1-rocmcc-6.4.2-cce-20.0.0-magic
+      - spec: cray-mpich@9.0.1_cce %cce@20.0.0
+        # prefix: /usr/tce/packages/cray-mpich/cray-mpich-9.0.1-cce-20.0.0-magic
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-9.0.1-rocmcc-6.4.2-cce-20.0.0/
+      - spec: cray-mpich@9.0.1_llvm_amdgpu %llvm-amdgpu@6.4.2
+        # prefix: /usr/tce/packages/cray-mpich/cray-mpich-9.0.1-rocmcc-6.4.2-cce-20.0.0-magic
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-9.0.1-rocmcc-6.4.2/
 
     # ROCm packages
     hip:
@@ -163,14 +195,6 @@ spack:
         prefix: /opt/rocm-6.4.0
       - spec: hipsolver@6.4.2
         prefix: /opt/rocm-6.4.2
-    llvm-amdgpu:
-      version: [6.4.0, 6.4.2]
-      buildable: false
-      externals:
-      - spec: llvm-amdgpu@6.4.0
-        prefix: /opt/rocm-6.4.0/llvm
-      - spec: llvm-amdgpu@6.4.2
-        prefix: /opt/rocm-6.4.2/llvm
     hsa-rocr-dev:
       version: [6.4.0, 6.4.2]
       buildable: false
