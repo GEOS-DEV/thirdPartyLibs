@@ -94,7 +94,6 @@ RUN apt-get update && \
       libtbb-dev \
       make \
       ninja-build \
-      gmake \
       bc \
       file \
       patch \
