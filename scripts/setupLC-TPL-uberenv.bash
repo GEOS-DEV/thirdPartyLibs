@@ -1,62 +1,145 @@
 #!/bin/bash
 
-## Builds the TPLs on all LC systems. Must be run from the top level TPL directory.
-## Usage ./setupLC-TPL-uberenv.bash pathToInstallDirectory
+## Builds the TPLs on specified LC systems.
+## Usage: ./setupLC-TPL-uberenv.bash <InstallDir> [MachineList] [ExtraArgs...]
+##
+##   InstallDir:  Absolute path to the installation directory.
+##   MachineList: (Optional) Comma-separated list of machines to build on
+##                (e.g., "dane,matrix"). Defaults to all.
+##   ExtraArgs:   (Optional) Additional arguments forwarded to the helper script.
+##                Use --no-permissions to skip all chmod/chgrp calls.
+
+# --- Configuration ---
+# All known machines. Add new machine names here.
+declare -a ALL_MACHINES=("dane" "matrix" "tuolumne")
+
+# --- Argument Parsing ---
 INSTALL_DIR=$1
+MACHINE_LIST_STR=${2:-"all"} # Default to "all" if the second argument is not provided
 
-## Eat up the command line arguments so the rest can be forwarded to setupLC-TPL-helper.
-shift
-shift
+# Validate INSTALL_DIR before proceeding
+if [[ -z "$INSTALL_DIR" ]]; then
+  echo "ERROR: No installation directory path was provided." >&2
+  exit 1
+fi
+if [[ ! -d "$INSTALL_DIR" ]]; then
+  echo "ERROR: Installation directory '$INSTALL_DIR' does not exist." >&2
+  exit 1
+fi
+if [[ ! "$INSTALL_DIR" = /* ]]; then
+  echo "ERROR: Installation directory must be an absolute path." >&2
+  exit 1
+fi
 
-## Trap the interupt signal and kill all children.
-trap 'killall' INT
+# Eat up the first two arguments so the rest can be forwarded.
+shift 2 2>/dev/null
 
-killall() {
-    trap '' INT TERM     # ignore INT and TERM while shutting down
-    echo "**** Shutting down. Killing chid processes ****"     # added double quotes
-    kill -TERM 0         # fixed order, send TERM not INT
-    wait
-    echo DONE
+# --- Initialize Control Variable and Parse Extra Arguments ---
+SET_PERMISSIONS=true
+declare -a FORWARDED_ARGS=()
+
+# Loop through remaining args, filter out our flag, and collect the rest.
+for arg in "$@"; do
+  if [[ "$arg" == "--no-permissions" ]]; then
+    SET_PERMISSIONS=false
+  else
+    FORWARDED_ARGS+=("$arg")
+  fi
+done
+
+# --- Setup ---
+# Check for uberenv script
+if [[ ! -e "scripts/uberenv/uberenv.py" ]]; then
+  echo "ERROR: uberenv.py script not found. Please initialize uberenv submodule first." >&2
+  exit 1
+fi
+
+# Determine which machines to run on
+declare -a MACHINES_TO_RUN
+if [[ "$MACHINE_LIST_STR" == "all" ]]; then
+  MACHINES_TO_RUN=("${ALL_MACHINES[@]}")
+else
+  # Convert comma-separated string to array
+  IFS=',' read -r -a MACHINES_TO_RUN <<< "$MACHINE_LIST_STR"
+fi
+
+# --- Functions ---
+# Trap the interrupt signal and kill all children.
+trap 'kill_children' INT
+
+function kill_children() {
+  trap '' INT TERM # Ignore signals while shutting down
+  echo -e "\n**** Shutting down. Sending TERM signal to child processes ****"
+  # Kill the entire process group, which includes all background jobs
+  kill -TERM 0
+  wait
+  echo "DONE"
 }
 
-if [[ ! -e "scripts/uberenv/uberenv.py" ]]; then
-  echo "uberenv.py script not found. Please initialize uberenv submodule first."
-  exit
+# Function to launch jobs for a specific machine
+function launch_jobs() {
+  local machine=$1
+  shift # The rest of $@ are the forwarded arguments
+  local UBERENV_HELPER=./scripts/setupLC-TPL-uberenv-helper.bash
+
+  echo "-----> Launching jobs for [${machine}]..."
+
+  case "$machine" in
+    dane)
+      ALLOC_CMD="salloc -N 1 -n 112 --exclusive -t 120 -A vortex"
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12                 "+docs %gcc-12"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12noAVX            "+docs %gcc-12-noAVX"  "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-13                 "+docs %gcc-13"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-14               "+docs %clang-14" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-19               "+docs %clang-19" "${ALLOC_CMD}" "$@" &
+      ;;
+
+    matrix)
+      ALLOC_CMD="salloc -N 1 --exclusive -t 120 -A vortex"
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-12-cuda-12.6     "+cuda~uncrustify cuda_arch=90 %gcc-12 ^cuda@12.6.0+allow-unsupported-compilers"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9     "+cuda~uncrustify cuda_arch=90 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix clang-14-cuda-12.6   "+cuda~uncrustify cuda_arch=90 %clang-14 ^cuda@12.6.0+allow-unsupported-compilers" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix clang-19-cuda-12.9   "+cuda~uncrustify cuda_arch=90 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers" "${ALLOC_CMD}" "$@" &
+      ;;
+
+    tuolumne)
+      ALLOC_CMD="salloc -N 1 --exclusive -t 120 -A vortex"
+      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs %cce-20 amdgpu_target=gfx942" "${ALLOC_CMD}" "$@" &
+      ;;
+
+    *)
+      echo "WARNING: Unknown machine '$machine'. Skipping." >&2
+      ;;
+  esac
+}
+
+# --- Main Execution ---
+echo "Building TPLs for machines: ${MACHINES_TO_RUN[*]}"
+echo "Installation directory: $INSTALL_DIR"
+echo "Forwarded arguments: ${FORWARDED_ARGS[*]}"
+if [ "$SET_PERMISSIONS" = false ]; then
+    echo "Permissions: SKIPPING all chmod/chgrp calls."
 fi
+echo "---"
 
-if [[ -z $INSTALL_DIR ]]; then
-  echo "No installation directory path was provided"
-  exit
-fi
+for machine in "${MACHINES_TO_RUN[@]}"; do
+  launch_jobs "$machine" "${FORWARDED_ARGS[@]}"
+done
 
-if [[ ! -d $INSTALL_DIR ]]; then
-  echo "Installation directory $INSTALL_DIR does not exist. Please initialize first."
-  exit
-fi
-
-if [[ ! "$INSTALL_DIR" = /* ]]; then
-  echo "Installation directory $INSTALL_DIR must be an absolute path."
-  exit
-fi
-
-echo "Building all LC TPLs from $GEOS_BRANCH to be installed at $INSTALL_DIR..."
-
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12      "%gcc@12.1.1 +docs"   "salloc -N 1 -n 112 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-12noAVX "%gcc@12noAVX +docs"  "salloc -N 1 -n 112 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane gcc-13      "%gcc@13.3.1 +docs"   "salloc -N 1 -n 112 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane clang-14    "%clang@14.0.6 +docs" "salloc -N 1 -n 112 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR dane clang-19    "%clang@19.1.3 +docs" "salloc -N 1 -n 112 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR matrix gcc-12-cuda-12.6   "%gcc@12.1.1+cuda~uncrustify   cuda_arch=90 ^cuda@12.6.0+allow-unsupported-compilers" "salloc -N 1 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR matrix gcc-13-cuda-12.9   "%gcc@13.3.1+cuda~uncrustify   cuda_arch=90 ^cuda@12.9.1+allow-unsupported-compilers" "salloc -N 1 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR matrix clang-14-cuda-12.6 "%clang@14.0.6+cuda~uncrustify cuda_arch=90 ^cuda@12.6.0+allow-unsupported-compilers" "salloc -N 1 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR matrix clang-19-cuda-12.9 "%clang@19.1.3+cuda~uncrustify cuda_arch=90 ^cuda@12.9.1+allow-unsupported-compilers" "salloc -N 1 --exclusive -t 120 -A vortex" $@ &
-./scripts/setupLC-TPL-uberenv-helper.bash $INSTALL_DIR tuolumne cce-20-rocm-6.4.2 "%cce@20.0.0 +rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942" "salloc -N 1 --exclusive -t 120 -A vortex" $@ &
-
+echo "All jobs launched. Waiting for completion..."
 # Note: Estimated completion time is ~90 minutes.
 # Check log files for unreported completion of jobs.
 wait
 
-chmod -R g+rx $INSTALL_DIR
-chgrp -R GEOS $INSTALL_DIR
+# --- Conditionally Set Final Permissions ---
+if [ "$SET_PERMISSIONS" = true ]; then
+  echo "---"
+  echo "Finalizing permissions..."
+  chmod -R g+rx "$INSTALL_DIR"
+  chgrp -R GEOS "$INSTALL_DIR"
+else
+    echo "---"
+    echo "Skipping final permission updates as requested."
+fi
 
-echo "Complete"
+echo "Complete."

@@ -41,8 +41,8 @@ spack:
         all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
-    build_stage::
-    - $spack/../build_stage
+    build_stage: $spack/../build_stage
+    build_jobs: 112
 
   # Regular TPLs do not need views
   view: false
@@ -112,7 +112,7 @@ spack:
 
   packages:
     all:
-      target: [ivybridge]
+      target: [sapphirerapids]
 
     mpi:
       require:
@@ -174,6 +174,16 @@ spack:
             cxx: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/g++
             fortran: /usr/tce/packages/gcc/gcc-13.3.1-magic/bin/gfortran
           extra_rpaths: []
+
+    gcc-runtime:
+      buildable: False
+      externals:
+      - spec: gcc-runtime@13.3.1
+        prefix: /usr/tce/packages/gcc/gcc-13.3.1/lib/gcc/x86_64-redhat-linux/13
+      - spec: gcc-runtime@12.1.1
+        prefix: /usr/tce/packages/gcc/gcc-12.1.1/lib/gcc/x86_64-redhat-linux/12
+      - spec: gcc-runtime@11.2.1
+        prefix: /usr/tce/packages/gcc/gcc-11.2.1/lib/gcc/x86_64-redhat-linux/11
 
     # Lock down which MPI we are using
     mvapich2:
@@ -284,4 +294,14 @@ spack:
       buildable: false
       externals:
       - spec: zlib@1.2.11
+        prefix: /usr
+    bison:
+      buildable: false
+      externals:
+      - spec: bison@3.0.4
+        prefix: /usr
+    flex:
+      buildable: false
+      externals:
+      - spec: flex@2.6.1
         prefix: /usr
