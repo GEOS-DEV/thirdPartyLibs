@@ -52,7 +52,10 @@ class Vtk(CMakePackage):
     # We need mpi4py if buidling python wrappers and using MPI
     depends_on('py-mpi4py', when='+python+mpi', type='run')
 
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
     depends_on('mpi', when='+mpi')
+
     
     patch_dir = os.path.join(os.path.dirname(__file__), '9.4.2-patch')
     if os.path.isdir(patch_dir):

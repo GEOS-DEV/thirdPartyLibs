@@ -28,10 +28,6 @@
 #
 # python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=90 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers"
 #
-#
-# No AVX instructions:
-# python3 ./scripts/uberenv/uberenv.py --spec="+docs %gcc-12-noAVX"
-#
 
 spack:
   config:
@@ -63,52 +59,32 @@ spack:
     - spec: '%mvapich2@2.3.7.clang_19'
       when: '%mpi'
     clang-14:
-      - spec: '%[virtuals=c]llvm@14.0.6+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@14.0.6+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@12.1.1'
-        when: '%fortran'
-      - spec: '%mvapich2@2.3.7.clang_14'
-        when: '%mpi'
+    - spec: '%c=llvm@14.0.6'
+      when: '%c'
+    - spec: '%cxx=llvm@14.0.6'
+      when: '%cxx'
+    - spec: '%fortran=gcc@10.3.1'
+      when: '%fortran'
+    - spec: '%mvapich2@2.3.7.clang_14'
+      when: '%mpi'
     gcc-12:
-      - spec: '%c=gcc@12.1.1'
-        when: '%c'
-      - spec: '%cxx=gcc@12.1.1'
-        when: '%cxx'
-      - spec: '%fortran=gcc@12.1.1'
-        when: '%fortran'
-      - spec: '%mvapich2@2.3.7.gcc'
-        when: '%mpi'
-    gcc-12-noAVX:
-      - spec: cxxflags='-march=x86-64-v2 -mno-avx512f'
-      - spec: '%c=gcc@12.1.1'
-        when: '%c'
-      - spec: '%cxx=gcc@12.1.1'
-        when: '%cxx'
-      - spec: '%fortran=gcc@12.1.1'
-        when: '%fortran'
-      - spec: '%mvapich2@2.3.7.gcc'
-        when: '%mpi'
+    - spec: '%c=gcc@12.1.1'
+      when: '%c'
+    - spec: '%cxx=gcc@12.1.1'
+      when: '%cxx'
+    - spec: '%fortran=gcc@12.1.1'
+      when: '%fortran'
+    - spec: '%mvapich2@2.3.7.gcc'
+      when: '%mpi'
     gcc-13:
-      - spec: '%c=gcc@13.3.1'
-        when: '%c'
-      - spec: '%cxx=gcc@13.3.1'
-        when: '%cxx'
-      - spec: '%fortran=gcc@13.3.1'
-        when: '%fortran'
-      - spec: '%mvapich2@2.3.7.gcc'
-        when: '%mpi'
-    gcc-13-noAVX:
-      - spec: cxxflags='-march=x86-64-v2 -mno-avx512f'
-      - spec: '%c=gcc@13.3.1'
-        when: '%c'
-      - spec: '%cxx=gcc@13.3.1'
-        when: '%cxx'
-      - spec: '%fortran=gcc@13.3.1'
-        when: '%fortran'
-      - spec: '%mvapich2@2.3.7.gcc'
-        when: '%mpi'
+    - spec: '%c=gcc@13.3.1'
+      when: '%c'
+    - spec: '%cxx=gcc@13.3.1'
+      when: '%cxx'
+    - spec: '%fortran=gcc@13.3.1'
+      when: '%fortran'
+    - spec: '%mvapich2@2.3.7.gcc'
+      when: '%mpi'
 
   packages:
     all:
@@ -295,13 +271,19 @@ spack:
       externals:
       - spec: zlib@1.2.11
         prefix: /usr
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.11.1
+        prefix: /usr/tce/packages/ninja/ninja-1.11.1
     bison:
       buildable: false
       externals:
-      - spec: bison@3.0.4
-        prefix: /usr
-    flex:
-      buildable: false
-      externals:
-      - spec: flex@2.6.1
-        prefix: /usr
+      - spec: bison@3.8.2
+        prefix: /collab/usr/gapps/python/build/spack-toss4.1/opt/spack/linux-rhel8-ivybridge/gcc-10.3.1/bison-3.8.2-ihsbaayrrhbmxufyobmimzq3lhxxdbck/
+    # Avoid using external flex - issues compiling scotch
+    # flex:
+    #   buildable: false
+    #   externals:
+    #   - spec: flex@2.6.1
+    #     prefix: /usr

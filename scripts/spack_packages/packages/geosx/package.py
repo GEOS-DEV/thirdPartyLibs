@@ -252,9 +252,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     def _get_host_config_path(self, spec, lvarray=False):
         var = ''
 
-        if 'no-avx' in str(spec.compiler_flags):
-            var += "-noAVX"
-
         if '+cuda' in spec:
             var = '-'.join([var, 'cuda'])
             var += "@" + str(spec['cuda'].version)
