@@ -10,6 +10,8 @@ from spack_repo.builtin.packages.chai.package import Chai as BuiltinChai
 class Chai(BuiltinChai):
     # Bypass llnl_link_helpers failure
     depends_on("fortran")
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
 
     # From radiuss-packages (PR #143)
     depends_on("blt@0.7.1:", type="build", when="@2025.09.0:")
