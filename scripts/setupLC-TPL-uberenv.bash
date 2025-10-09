@@ -88,7 +88,6 @@ function launch_jobs() {
     dane)
       ALLOC_CMD="salloc -N 1 -n 112 --exclusive -t 120 -A vortex"
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12                 "+docs %gcc-12"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12noAVX            "+docs %gcc-12-noAVX"  "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-13                 "+docs %gcc-13"   "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-14               "+docs %clang-14" "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-19               "+docs %clang-19" "${ALLOC_CMD}" "$@" &
