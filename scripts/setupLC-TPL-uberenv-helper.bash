@@ -7,6 +7,7 @@
 # By default, we will set permissions and reuse a previous build if available
 SET_PERMISSIONS=true
 CLEAN=false
+: ${USER:=$(whoami)}
 
 # --- Argument Parsing ---
 INSTALL_DIR=$1
@@ -48,12 +49,11 @@ fi
 echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
 # Note: The ssh command forwards the extra arguments ($@) to uberenv.py
-ssh "$MACHINE" -t "
+ssh "${USER}@${MACHINE}.llnl.gov" -t "
 . /etc/profile &&
 cd \"$PWD\" &&
-$GET_A_NODE ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix \"${INSTALL_DIR}/${CONFIG}_tpls\" --spack-env-name \"${CONFIG}_env\" \"$@\" &&
-exit" > "$LOG_FILE" 2>&1
-#echo "Getting a node: $GET_A_NODE"
+$GET_A_NODE date && ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix \"${INSTALL_DIR}/${CONFIG}_tpls\" --spack-env-name \"${CONFIG}_env\" \"$@\" &&
+date && exit" > "$LOG_FILE" 2>&1
 
 ## Check the last ten lines of the log file.
 ## A successful install should show up on one of the final lines.
