@@ -6,8 +6,7 @@ spack:
         all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
-    build_stage::
-    - $spack/../build_stage
+    build_stage: $spack/../build_stage
 
   # Regular TPLs do not need views
   view: false
@@ -18,7 +17,7 @@ spack:
   - ../versions.yaml
 
   toolchains:
-    amdclang-18:
+    amdclang-19:
       - spec: '%[virtuals=c]llvm-amdgpu@6.4.3'
         when: '%c'
       - spec: '%[virtuals=cxx]llvm-amdgpu@6.4.3'
@@ -381,11 +380,12 @@ spack:
       externals:
       - spec: bison@3.8.2
         prefix: /usr
-    flex:
-      buildable: false
-      externals:
-      - spec: flex@2.6.4
-        prefix: /usr
+    # Rely on spack to build a newer flex for scotch
+    # flex:
+    #   buildable: false
+    #   externals:
+    #   - spec: flex@2.6.4
+    #     prefix: /usr
     bzip2:
       buildable: false
       externals:

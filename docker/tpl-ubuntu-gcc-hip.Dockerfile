@@ -13,7 +13,6 @@ ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Parameters
-ARG GCC_MAJOR_VERSION=13
 ARG AMDGPU_TARGET=gfx942
 ARG ROCM_VERSION=6.4.3
 
@@ -74,14 +73,17 @@ RUN python3 -m pip install clingo --break-system-packages
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
-ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
-    CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
+# OpenMPI hack for Ubuntu
+RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi
+
+# MPI environment variables
+ENV CC=/usr/bin/amdclang \
+    CXX=/usr/bin/amdclang++ \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
-
-ENV OMPI_CC=$CC \
-    OMPI_CXX=$CXX
+    MPIEXEC=/usr/bin/mpirun \
+    OMPI_CC=/usr/bin/amdclang \
+    OMPI_CXX=/usr/bin/amdclang++
 
 # Installing TPLs
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
@@ -107,7 +109,7 @@ RUN apt-get update && \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-18 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
+       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
