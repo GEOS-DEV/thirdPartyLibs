@@ -8,6 +8,7 @@
 ##                (e.g., "dane,matrix"). Defaults to all.
 ##   ExtraArgs:   (Optional) Additional arguments forwarded to the helper script.
 ##                Use --no-permissions to skip all chmod/chgrp calls.
+##                Use --clean to clean data from previous build.
 
 # --- Configuration ---
 # All known machines. Add new machine names here.
@@ -42,9 +43,8 @@ declare -a FORWARDED_ARGS=()
 for arg in "$@"; do
   if [[ "$arg" == "--no-permissions" ]]; then
     SET_PERMISSIONS=false
-  else
-    FORWARDED_ARGS+=("$arg")
   fi
+  FORWARDED_ARGS+=("$arg")
 done
 
 # --- Setup ---
@@ -80,31 +80,33 @@ function kill_children() {
 function launch_jobs() {
   local machine=$1
   shift # The rest of $@ are the forwarded arguments
-  local UBERENV_HELPER=./scripts/setupLC-TPL-uberenv-helper.bash
+  local UBERENV_HELPER="./scripts/setupLC-TPL-uberenv-helper.bash"
+  local COMMON="^vtk generator=ninja"
 
   echo "-----> Launching jobs for [${machine}]..."
 
+  # Note: The max. time allowed on the debug queue is 1h. If we need more, switch to pbatch
   case "$machine" in
     dane)
-      ALLOC_CMD="salloc -N 1 -n 112 --exclusive -t 120 -A vortex"
-      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12                 "+docs %gcc-12"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12noAVX            "+docs %gcc-12-noAVX"  "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-13                 "+docs %gcc-13"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-14               "+docs %clang-14" "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-19               "+docs %clang-19" "${ALLOC_CMD}" "$@" &
+      ALLOC_CMD="salloc -N 1 --exclusive -t 60 -A vortex -ppdebug"
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12                 "+docs %gcc-12 ${COMMON}"        "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-13                 "+docs %gcc-13 ${COMMON}"        "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-14               "+docs %clang-14 ${COMMON}"      "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" dane clang-19               "+docs %clang-19 ${COMMON}"      "${ALLOC_CMD}" "$@" &
       ;;
 
     matrix)
-      ALLOC_CMD="salloc -N 1 --exclusive -t 120 -A vortex"
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-12-cuda-12.6     "+cuda~uncrustify cuda_arch=90 %gcc-12 ^cuda@12.6.0+allow-unsupported-compilers"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9     "+cuda~uncrustify cuda_arch=90 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix clang-14-cuda-12.6   "+cuda~uncrustify cuda_arch=90 %clang-14 ^cuda@12.6.0+allow-unsupported-compilers" "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix clang-19-cuda-12.9   "+cuda~uncrustify cuda_arch=90 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers" "${ALLOC_CMD}" "$@" &
+      ALLOC_CMD="salloc -N 1 --exclusive -t 60 -A vortex -ppdebug"
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-12-cuda-12.6     "+cuda~uncrustify cuda_arch=90 %gcc-12 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9     "+cuda~uncrustify cuda_arch=90 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix clang-14-cuda-12.6   "+cuda~uncrustify cuda_arch=90 %clang-14 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix clang-19-cuda-12.9   "+cuda~uncrustify cuda_arch=90 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
       ;;
 
-    tuolumne)
-      ALLOC_CMD="salloc -N 1 --exclusive -t 120 -A vortex"
-      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs %cce-20 amdgpu_target=gfx942" "${ALLOC_CMD}" "$@" &
+    tuo|tuolumne)
+      ALLOC_CMD="salloc -N 1 --exclusive -t 60 -A vortex -ppdebug"
+      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942 %cce-20 ${COMMON}" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne llvm-amdgpu-6.4.2-rocm-6.4.2  "+rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942 %llvm-amdgpu_6_4_2 ${COMMON}" "${ALLOC_CMD}" "$@" &
       ;;
 
     *)

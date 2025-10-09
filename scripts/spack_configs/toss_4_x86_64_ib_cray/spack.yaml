@@ -11,10 +11,12 @@
 #------------------------------------------------------------------------------------------------------------
 
 # geosx@develop%cce@20.0.0
+# geosx@develop%llvm-amdgpu_6_4_2
 #
 # Uberenv command to build geos dependencies:
-# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %cce_20 ^hip@6.4.2 ^hipblas@6.4.2 ^hipsparse@6.4.2 ^hsa-rocr-dev@6.4.2  ^rocprim@6.4.2 ^hdf5 cflags=-Wno-int-conversion"
+# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %cce-20 ^vtk generator=ninja"
 #
+# python3 ./scripts/uberenv/uberenv.py --spec="+rocm~pygeosx+hypre~trilinos~petsc~docs amdgpu_target=gfx942 %llvm-amdgpu_6_4_2 ^vtk generator=ninja"
 
 
 spack:
@@ -46,7 +48,7 @@ spack:
       when: '%fortran'
     - spec: '%cray-mpich@9.0.1_llvm_amdgpu'
       when: '%mpi'
-    cce_20:
+    cce-20:
     - spec: '%c=cce@20.0.0'
       when: '%c'
     - spec: '%cxx=cce@20.0.0'
@@ -74,9 +76,7 @@ spack:
             c: /usr/tce/packages/cce-tce/cce-20.0.0/bin/craycc
             cxx: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayCC
             fortran: /usr/tce/packages/cce-tce/cce-20.0.0/bin/crayftn
-          # flags: {}
-          # environment: {}
-          # extra_rpaths: []
+          flags: {}
           environment:
             set: # Needed for scotch
               BISON: bison
@@ -84,10 +84,6 @@ spack:
           extra_rpaths:
           - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
           - /opt/cray/pe/mpich/9.0.1/gtl/lib
-          flags:
-            cflags: -fPIC
-            cxxflags: -fPIC
-            fflags: -fPIC
         modules:
         - PrgEnv-cray/8.6.0
         - craype-x86-genoa
@@ -113,9 +109,7 @@ spack:
             c: /opt/rocm-6.4.2/llvm/bin/amdclang
             cxx: /opt/rocm-6.4.2/llvm/bin/amdclang++
             fortran: /opt/rocm-6.4.2/llvm/bin/amdflang
-          # environment: {}
-          # extra_rpaths: []
-          # flags: {}
+          flags: {}
           environment:
             set: # Needed for scotch
               BISON: bison
@@ -141,7 +135,15 @@ spack:
         - perftools-base/25.09.0
         - xpmem/2.6.5
 
-
+    gcc-runtime:
+      buildable: False
+      externals:
+      - spec: gcc-runtime@13.3.1
+        prefix: /usr/tce/packages/gcc/gcc-13.3.1/lib/gcc/x86_64-redhat-linux/13
+      - spec: gcc-runtime@12.1.1
+        prefix: /usr/tce/packages/gcc/gcc-12.1.1/lib/gcc/x86_64-redhat-linux/12
+      - spec: gcc-runtime@11.2.1
+        prefix: /usr/tce/packages/gcc/gcc-11.2.1/lib/gcc/x86_64-redhat-linux/11
 
     # Lock down which MPI we are using
     cray-mpich:
@@ -446,3 +448,19 @@ spack:
       externals:
       - spec: zlib@1.2.11
         prefix: /usr
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.10.2
+        prefix: /usr/tce/packages/ninja/ninja-1.10.2
+    # Avoid using external flex - issues compiling scotch
+    # flex:
+    #   buildable: false
+    #   externals:
+    #   - spec: flex@2.6.1
+    #     prefix: /usr
+    bison:
+      buildable: false
+      externals:
+      - spec: bison@3.8.2
+        prefix: /collab/usr/gapps/python/build/spack-toss4.1/opt/spack/linux-rhel8-ivybridge/gcc-10.3.1/bison-3.8.2-ihsbaayrrhbmxufyobmimzq3lhxxdbck/
