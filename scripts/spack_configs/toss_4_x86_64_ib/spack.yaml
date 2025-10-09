@@ -295,6 +295,11 @@ spack:
       externals:
       - spec: zlib@1.2.11
         prefix: /usr
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.11.1
+        prefix: /usr/tce/packages/ninja/ninja-1.11.1
     bison:
       buildable: false
       externals:
