@@ -48,12 +48,11 @@ fi
 
 echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
-# Note: The ssh command forwards the extra arguments ($@) to uberenv.py
-ssh "${USER}@${MACHINE}.llnl.gov" -t "
-. /etc/profile &&
-cd \"$PWD\" &&
-$GET_A_NODE date && ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix \"${INSTALL_DIR}/${CONFIG}_tpls\" --spack-env-name \"${CONFIG}_env\" \"$@\" &&
-date && exit" > "$LOG_FILE" 2>&1
+# Define the command to be run on the compute node
+REMOTE_CMD="date && ./scripts/uberenv/uberenv.py --spec ${SPEC} --prefix \\\"${INSTALL_DIR}/${CONFIG}_tpls\\\" --spack-env-name \\\"${CONFIG}_env\\\" \\\"$@\\\" && date"
+
+# Execute it via ssh
+ssh "${USER}@${MACHINE}.llnl.gov" -t ". /etc/profile && cd \"$PWD\" && $GET_A_NODE bash -c \"$REMOTE_CMD\" && exit" > "$LOG_FILE" 2>&1
 
 ## Check the last ten lines of the log file.
 ## A successful install should show up on one of the final lines.

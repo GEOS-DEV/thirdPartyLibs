@@ -34,6 +34,10 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         libmpfr-dev \
         lbzip2 \
         bzip2 \
+        flex \
+        bison \
+        gettext \
+        help2man \
         gnupg \
         virtualenv
 

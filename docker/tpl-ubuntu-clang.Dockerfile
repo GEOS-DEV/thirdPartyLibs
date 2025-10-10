@@ -39,6 +39,10 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     libmpfr-dev \
     lbzip2 \
     bzip2 \
+    flex \
+    bison \
+    gettext \
+    help2man \
     gnupg \
     virtualenv
 
