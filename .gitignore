@@ -6,3 +6,4 @@
 .vscode/
 spack-*.txt
 __pycache__
+uberenv_*

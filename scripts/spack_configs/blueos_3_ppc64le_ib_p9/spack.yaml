@@ -16,13 +16,13 @@
 # geosx@develop%clang@13.0.1+cuda cuda_arch=70 ^cuda@12.2.2+allow-unsupported-compilers
 #
 # Uberenv command to build geos dependencies:
-# python3 ./scripts/uberenv/uberenv.py --spec="%clang@10.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=70 %clang-10 ^cuda@11.8.0+allow-unsupported-compilers"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="%gcc@8.3.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=70 %gcc-8 ^cuda@11.8.0+allow-unsupported-compilers"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="%clang@13.0.1+cuda~uncrustify cuda_arch=70 ^cuda@11.8.0+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=70 %clang-13 ^cuda@11.8.0+allow-unsupported-compilers"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="%clang@13.0.1+cuda~openmp~uncrustify cuda_arch=70 ^cuda@12.2.2+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~openmp~uncrustify cuda_arch=70 %clang-13 ^cuda@12.2.2+allow-unsupported-compilers"
 
 
 spack:
@@ -44,79 +44,109 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers::
-  - compiler:
-      spec: clang@10.0.1
-      paths:
-        cc: /usr/tce/packages/clang/clang-10.0.1-gcc-8.3.1/bin/clang
-        cxx: /usr/tce/packages/clang/clang-10.0.1-gcc-8.3.1/bin/clang++
-        f77: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
-      flags: {}
-      operating_system: rhel7
-      target: ppc64le
-      modules: []
-      extra_rpaths: []
-  - compiler:
-      spec: clang@13.0.1
-      paths:
-        cc: /usr/tce/packages/clang/clang-13.0.1-gcc-8.3.1/bin/clang
-        cxx: /usr/tce/packages/clang/clang-13.0.1-gcc-8.3.1/bin/clang++
-        f77: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
-      flags: {}
-      operating_system: rhel7
-      target: ppc64le
-      modules: []
-      extra_rpaths: []
-  - compiler:
-      spec: gcc@8.3.1
-      paths:
-        cc: /usr/tce/packages/gcc/gcc-8.3.1/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-8.3.1/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
-      flags:
-        # Fix for "undefined reference to `_gfortran_transfer_integer_write'"
-        ldlibs: -lgfortran
-      operating_system: rhel7
-      target: ppc64le
-      modules: []
-      extra_rpaths: []
-  - compiler:
-      spec: gcc@12.2.1
-      paths:
-        cc: /usr/tce/packages/gcc/gcc-12.2.1/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-12.2.1/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-12.2.1/bin/gfortran
-        fc: /usr/tce/packages/gcc/gcc-12.2.1/bin/gfortran
-      flags:
-        # Fix for "undefined reference to `_gfortran_transfer_integer_write'"
-        ldlibs: -lgfortran
-      operating_system: rhel7
-      target: ppc64le
-      modules: []
-      extra_rpaths: []
+  toolchains:
+    clang-13:
+      - spec: '%[virtuals=c]llvm@13.0.1+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@13.0.1+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@8.3.1'
+        when: '%fortran'
+      - spec: '%spectrum-mpi@release.clang.13'
+        when: '%mpi'
+    clang-10:
+      - spec: '%[virtuals=c]llvm@10.0.1+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@10.0.1+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@8.3.1'
+        when: '%fortran'
+      - spec: '%spectrum-mpi@release.clang.10'
+        when: '%mpi'
+    gcc-12:
+      - spec: '%c=gcc@12.1.1'
+        when: '%c'
+      - spec: '%cxx=gcc@12.1.1'
+        when: '%cxx'
+      - spec: '%fortran=gcc@12.1.1'
+        when: '%fortran'
+      - spec: '%spectrum-mpi@release.gcc.12'
+        when: '%mpi'
+    gcc-8:
+      - spec: '%c=gcc@8.3.1 '
+        when: '%c'
+      - spec: '%cxx=gcc@8.3.1 '
+        when: '%cxx'
+      - spec: '%fortran=gcc@8.3.1 '
+        when: '%fortran'
+      - spec: '%spectrum-mpi@release.gcc.8'
+        when: '%mpi'
 
   packages:
-    all:
-      compiler: [gcc, clang]
-      providers:
-        mpi: [spectrum-mpi]
-        blas: [essl]
-        lapack: [essl]
+    mpi:
+      require:
+      - spectrum-mpi
+    blas:
+      require:
+      - essl
+    lapack:
+      require:
+      - essl
+
+    llvm:
+      externals:
+      - spec: llvm@10.0.1+clang~flang~lld~lldb
+        prefix: /usr/tce/packages/clang/clang-10.0.1-gcc-8.3.1
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/clang/clang-10.0.1-gcc-8.3.1/bin/clang
+            cxx: /usr/tce/packages/clang/clang-10.0.1-gcc-8.3.1/bin/clang++
+          flags: {}
+          extra_rpaths: []
+      - spec: llvm@13.0.1+clang~flang~lld~lldb
+        prefix: /usr/tce/packages/clang/clang-13.0.1-gcc-8.3.1
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/clang/clang-13.0.1-gcc-8.3.1/bin/clang
+            cxx: /usr/tce/packages/clang/clang-13.0.1-gcc-8.3.1/bin/clang++
+          flags: {}
+          extra_rpaths: []
+    gcc:
+      externals:
+      - spec: gcc@8.3.1 languages:='c,c++,fortran'
+        prefix: /usr/tce/packages/gcc/gcc-8.3.1
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/gcc/gcc-8.3.1/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-8.3.1/bin/g++
+            fortran: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
+          flags:
+        # Fix for "undefined reference to `_gfortran_transfer_integer_write'"
+            ldlibs: -lgfortran
+          extra_rpaths: []
+      - spec: gcc@12.2.1 languages:='c,c++,fortran'
+        prefix: /usr/tce/packages/gcc/gcc-12.2.1
+        extra_attributes:
+          compilers:
+            c: /usr/tce/packages/gcc/gcc-12.2.1/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-12.2.1/bin/g++
+            fortran: /usr/tce/packages/gcc/gcc-12.2.1/bin/gfortran
+          flags:
+        # Fix for "undefined reference to `_gfortran_transfer_integer_write'"
+            ldlibs: -lgfortran
+          extra_rpaths: []
 
     spectrum-mpi:
       buildable: False
       externals:
-        - spec: spectrum-mpi@release%gcc@8.3.1
+        - spec: spectrum-mpi@release.gcc.8 %gcc@8.3.1
           prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1
-        - spec: spectrum-mpi@release%gcc@12.2.1
+        - spec: spectrum-mpi@release.gcc.12 %gcc@12.2.1
           prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-12.2.1
         # Previously clang@upstream - clingo doesn't like "upstream" version
-        - spec: spectrum-mpi@release%clang@10.0.1
+        - spec: spectrum-mpi@release.clang.10 %llvm@10.0.1
           prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-10.0.1-gcc-8.3.1
-        - spec: spectrum-mpi@release%clang@13.0.1
+        - spec: spectrum-mpi@release.clang.13 %llvm@13.0.1
           prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-13.0.1-gcc-8.3.1
 
     essl:
