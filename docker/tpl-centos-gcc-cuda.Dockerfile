@@ -69,6 +69,8 @@ ARG BLD_DIR
 RUN yum install -y \
     tbb-devel \
     make \
+    autopoint \
+    autotools-dev \
     bc \
     file \
     patch \

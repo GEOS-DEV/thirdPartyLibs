@@ -57,6 +57,9 @@ RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
     bc \
     file \
+    autopoint \
+    autotools-dev \
+    automake \
     patch \
     ca-certificates \
     git

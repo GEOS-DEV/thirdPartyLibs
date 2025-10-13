@@ -32,7 +32,6 @@ RUN dnf clean all && \
         bison \
         gettext \
         gnupg \
-        help2man \
         libtool \
         xz \
         python3-virtualenv
@@ -61,6 +60,7 @@ RUN dnf clean all && \
         ca-certificates \
         autoconf \
         automake \
+        autopoint \
         m4 \
         git
 

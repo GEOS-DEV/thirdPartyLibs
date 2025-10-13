@@ -103,6 +103,9 @@ ARG GCC_MAJOR_VERSION
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
     make \
+    autopoint \
+    autotools-dev \
+    automake \
     bc \
     file \
 # GEOS patches some tpl. Remove when it's not the case anymore.

@@ -44,6 +44,9 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     gettext \
     help2man \
     libtool \
+    autopoint \
+    autotools-dev \
+    automake \
     gnupg \
     virtualenv
 
