@@ -32,6 +32,8 @@ RUN dnf clean all && \
         bison \
         gettext \
         gnupg \
+        help2man \
+        libtool \
         xz \
         python3-virtualenv
 

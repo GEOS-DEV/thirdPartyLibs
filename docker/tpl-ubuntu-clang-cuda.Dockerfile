@@ -38,6 +38,7 @@ RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
         bison \
         gettext \
         help2man \
+        libtool \
         gnupg \
         virtualenv
 
@@ -59,6 +60,18 @@ RUN apt-get install -y --no-install-recommends \
     patch \
     ca-certificates \
     git
+
+# OpenMPI hack for Ubuntu
+RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi
+
+# MPI environment variables
+ENV CC=/usr/bin/clang \
+    CXX=/usr/bin/clang++ \
+    MPICC=/usr/bin/mpicc \
+    MPICXX=/usr/bin/mpicxx \
+    MPIEXEC=/usr/bin/mpirun \
+    OMPI_CC=/usr/bin/clang \
+    OMPI_CXX=/usr/bin/clang++
 
 # Run uberenv
 # Have to create install directory first for uberenv
