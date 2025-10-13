@@ -60,7 +60,6 @@ RUN dnf clean all && \
         ca-certificates \
         autoconf \
         automake \
-        autopoint \
         m4 \
         git
 
