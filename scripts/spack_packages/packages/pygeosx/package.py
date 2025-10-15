@@ -12,7 +12,7 @@ class Pygeosx(BundlePackage):
     builds of python tend to be much slower). """
 
     version('fakeversion')
-    depends_on("openblas")
+    # depends_on("openblas")
     depends_on('python@3.10:+shared+pic+tkinter')
     depends_on("py-numpy@1.21.0:+blas+lapack")
     depends_on('py-mpi4py')

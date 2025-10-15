@@ -147,18 +147,3 @@ spack:
       externals:
       - spec: tcl@8.6.8
         prefix: /usr
-    gmake:
-      buildable: false
-      externals:
-      - spec: gmake@4.2.1
-        prefix: /usr
-    libxcrypt:
-      buildable: false
-      externals:
-      - spec: libxcrypt@4.1.1
-        prefix: /usr
-    ninja:
-      buildable: false
-      externals:
-      - spec: ninja@1.8.2
-        prefix: /usr
