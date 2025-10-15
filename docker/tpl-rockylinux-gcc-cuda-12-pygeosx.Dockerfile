@@ -14,7 +14,7 @@ RUN dnf clean all && \
     dnf -y install \
         which \
         gcc-toolset-13 \
-        python3.11-tkinter \
+        python3-tkinter \
         zlib-devel \
         tbb \
         blas \
