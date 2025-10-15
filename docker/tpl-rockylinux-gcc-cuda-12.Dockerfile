@@ -14,7 +14,7 @@ RUN dnf clean all && \
     dnf -y install \
         which \
         gcc-toolset-13 \
-        python3 \
+        python3.11 \
         zlib-devel \
         tbb \
         blas \
@@ -29,9 +29,9 @@ RUN dnf clean all && \
         xz
 
 # Install clingo for Spack
-RUN python3 -m pip ensurepip && \
-    python3 -m pip install --upgrade pip && \
-    python3 -m pip install clingo virtualenv
+RUN python3.11 -m pip ensurepip && \
+    python3.11 -m pip install --upgrade pip && \
+    python3.11 -m pip install clingo virtualenv
 
 # Custom install script for CMake or other tools
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
