@@ -33,7 +33,7 @@ RUN dnf clean all && \
 RUN dnf config-manager --set-enabled  &
 
 # Install clingo for Spack
-RUN python3 -m ensurepip && \
+RUN python3 -m pip ensurepip && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo virtualenv
 

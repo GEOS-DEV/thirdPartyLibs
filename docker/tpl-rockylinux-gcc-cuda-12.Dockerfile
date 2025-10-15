@@ -22,17 +22,16 @@ RUN dnf clean all && \
         openmpi \
         openmpi-devel \
     # Additional spack dependencies
-        python3-pip \
         unzip \
         mpfr-devel \
         bzip2 \
         gnupg \
-        xz \
-        python3-virtualenv
+        xz
 
 # Install clingo for Spack
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install clingo
+RUN python3 -m pip ensurepip && \
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install clingo virtualenv
 
 # Custom install script for CMake or other tools
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
