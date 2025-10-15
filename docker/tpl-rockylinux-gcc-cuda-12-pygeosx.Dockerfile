@@ -29,7 +29,9 @@ RUN dnf clean all && \
         xz
 
 # Install clingo for Spack
-RUN python3 -m pip ensurepip && \
+RUN ls /usr/bin | grep python && \
+    which python && \
+    python3 -m pip ensurepip && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo virtualenv
 
