@@ -81,7 +81,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
        --spack-env-file=${SRC_DIR}/docker/rocky-pygeosx-spack.yaml \
        --project-json=./scripts/pygeosx_configs/pygeosx.json \
        --prefix ${GEOSX_TPL_DIR} \
-       -k
+       -k && \
 # Remove host-config generated for LvArray
      rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
