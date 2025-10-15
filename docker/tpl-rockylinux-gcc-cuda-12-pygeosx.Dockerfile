@@ -73,8 +73,9 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \
+# Remove host-config generated for LvArray
+     rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
-     ls | grep cmake && \
      cp *.cmake /spack-generated.cmake && \
 # Build pygeosx tpl's
      ./scripts/uberenv/uberenv.py \
@@ -83,10 +84,8 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
        --project-json=./scripts/pygeosx_configs/pygeosx.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \
-# Remove host-config generated for LvArray
-     rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
-     ls | grep cmake && \
+     rm lvarray* && \
      cp *.cmake /spack-generated-pygeosx.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
