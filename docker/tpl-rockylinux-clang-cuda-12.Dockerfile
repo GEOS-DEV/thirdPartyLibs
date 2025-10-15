@@ -17,6 +17,7 @@ RUN dnf clean all && \
         clang-17.0.6 \
         gcc-gfortran \
         python3.9 \
+        python3-pip \
         zlib-devel \
         tbb \
         blas \
@@ -33,10 +34,7 @@ RUN dnf clean all && \
 RUN dnf config-manager --set-enabled  &
 
 # Install clingo for Spack
-RUN ls /usr/bin | grep python && \
-    which python3.9 && \
-    python3.9 -m pip ensurepip && \
-    python3.9 -m pip install --upgrade pip && \
+RUN python3.9 -m pip install --upgrade pip && \
     python3.9 -m pip install clingo virtualenv
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh

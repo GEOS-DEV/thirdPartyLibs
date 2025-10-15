@@ -15,6 +15,7 @@ RUN dnf clean all && \
         which \
         gcc-toolset-13 \
         python3.9 \
+        python3-pip \
         zlib-devel \
         tbb \
         blas \
@@ -29,10 +30,7 @@ RUN dnf clean all && \
         xz
 
 # Install clingo for Spack
-RUN ls /usr/bin | grep python && \
-    which python3.9 && \
-    python3.9 -m pip ensurepip && \
-    python3.9 -m pip install --upgrade pip && \
+RUN python3.9 -m pip install --upgrade pip && \
     python3.9 -m pip install clingo virtualenv
 
 # Custom install script for CMake or other tools
