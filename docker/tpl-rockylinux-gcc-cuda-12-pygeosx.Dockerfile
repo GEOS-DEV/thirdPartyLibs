@@ -78,11 +78,12 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Rename and copy spack-generated host-config to root directory
      cp *.cmake /spack-generated.cmake && \
 # Build pygeosx tpl's
+     mkdir -p ${GEOSX_TPL_DIR}-pygeosx && \
      ./scripts/uberenv/uberenv.py \
        --spec "%gcc@13.3.1" \
        --spack-env-file=${SRC_DIR}/docker/rocky-pygeosx-spack.yaml \
        --project-json=./scripts/pygeosx_configs/pygeosx.json \
-       --prefix ${GEOSX_TPL_DIR} \
+       --prefix ${GEOSX_TPL_DIR}-pygeosx \
        -k && \
 # Rename and copy spack-generated host-config to root directory
      rm lvarray* && \
