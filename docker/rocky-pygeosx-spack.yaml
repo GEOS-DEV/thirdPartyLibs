@@ -57,16 +57,16 @@ spack:
         mpi: [openmpi]
 
     autoconf:
-      version: [2.71]
+      version: [2.69]
       buildable: false
       externals:
-      - spec: autoconf@2.71
+      - spec: autoconf@2.69
         prefix: /usr
     automake:
-      version: [1.16.5]
+      version: [1.16.1]
       buildable: false
       externals:
-      - spec: automake@1.16.5
+      - spec: automake@1.16.1
         prefix: /usr
     cmake:
       version: [3.28.6]
@@ -115,11 +115,6 @@ spack:
       externals:
       - spec: pkg-config@1.4.2
         prefix: /usr
-    python:
-      buildable: false
-      externals:
-      - spec: python@3.9.20
-        prefix: /usr
     tar:
       buildable: false
       externals:
@@ -134,4 +129,21 @@ spack:
       buildable: false
       externals:
       - spec: xz@5.2.5
+        prefix: /usr
+
+    # Pygeosx dependencies
+    openssl:
+      buildable: false
+      externals:
+      - spec: openssl@1.1.1
+        prefix: /usr
+    tk:
+      buildable: false
+      externals:
+      - spec: tk@8.6.8
+        prefix: /usr
+    tcl:
+      buildable: false
+      externals:
+      - spec: tcl@8.6.8
         prefix: /usr
