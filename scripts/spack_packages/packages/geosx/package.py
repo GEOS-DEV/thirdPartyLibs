@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import *
 import warnings
 
 import socket
@@ -13,6 +13,11 @@ import llnl.util.tty as tty
 
 from os import environ as env
 from os.path import join as pjoin
+
+from spack_repo.builtin.build_systems.cached_cmake import cmake_cache_path
+
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
 
 # Tested specs are located at scripts/spack_configs/<$SYS_TYPE>/spack.yaml (e.g. %clang@10.0.1)
 
@@ -85,10 +90,13 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
-    variant('cuda_stack_size', default=0, description="Defines the adjusted cuda stack \
+    variant('cuda_stack_size', default="0", description="Defines the adjusted cuda stack \
         size limit if required. Zero or negative keep default behavior")
 
     # SPHINX_BEGIN_DEPENDS
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
+    depends_on("fortran", type="build")
 
     depends_on('cmake@3.24:', type='build')
 
@@ -178,8 +186,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     with when("+hypre"):
         depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +openmp", when="+openmp")
 
@@ -247,6 +255,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     def _get_host_config_path(self, spec, lvarray=False):
         var = ''
+
         if '+cuda' in spec:
             var = '-'.join([var, 'cuda'])
             var += "@" + str(spec['cuda'].version)
@@ -260,7 +269,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         if lvarray:
             hostname = "lvarray-" + hostname
 
-        host_config_path = "%s-%s-%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler)).replace('=',''), var)
+        host_config_path = "%s-%s-%s@%s%s.cmake" % (hostname, self._get_sys_type(spec), (str(spec.compiler.name)), str(spec.compiler.version),var)
 
         dest_dir = self.stage.source_path
         host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
@@ -662,9 +671,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             # Lassen
             if sys_type in ('blueos_3_ppc64le_ib_p9'):
                 cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--ats jsrun_omp --ats jsrun_bind=packed'))
-            # Ruby
+            # Dane/Matrix
             if sys_type in ('toss_4_x86_64_ib'):
-                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm56'))
+                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm112'))
 
     def lvarray_hostconfig(self, spec, prefix, py_site_pkgs_dir=None):
         """

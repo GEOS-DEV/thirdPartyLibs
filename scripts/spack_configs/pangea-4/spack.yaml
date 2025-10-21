@@ -5,7 +5,7 @@
 #
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "%gcc@12.2.1 ~openmp~pygeosx+docs"                  \
+#    --spec "~openmp~pygeosx+docs %gcc-12"                      \
 #    --spack-env-file=scripts/spack_configs/pangea-4/spack.yaml \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
@@ -17,8 +17,7 @@ spack:
         all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
-    build_stage::
-    - $spack/../build_stage
+    build_stage: $spack/../build_stage
 
   # Regular TPLs do not need views
   view: false
@@ -28,47 +27,39 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  #############
-  # COMPILERS #
-  #############
-
-  compilers:
-  - compiler:
-      spec: gcc@=12.2.1
-      paths:
-        cc: /opt/rh/gcc-toolset-12/root/usr/bin/gcc
-        cxx: /opt/rh/gcc-toolset-12/root/usr/bin/g++
-        f77: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
-        fc: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
-      flags:
-        cflags: -march=native -mtune=native
-        cxxflags: -march=native -mtune=native
-      operating_system: rhel8
-      target: x86_64
-      modules: []
-      extra_rpaths: []
+  ################
+  # TOOLCHAINS   #
+  ################
+  toolchains:
+    gcc-12:
+    - spec: '%c=gcc@12.2.1'
+      when: '%c'
+    - spec: '%cxx=gcc@12.2.1'
+      when: '%cxx'
+    - spec: '%fortran=gcc@12.2.1'
+      when: '%fortran'
+    - spec: '%hpcx-mpi@2.20.0'
+      when: '%mpi'
 
   #############
   # PACKAGES  #
   #############
-
   packages:
     all:
       target: [znver3]
-      compiler: [gcc]
-      providers:
-        blas: [intel-oneapi-mkl]
-        lapack: [intel-oneapi-mkl]
-        mpi: [hpcx-mpi]
 
-    ####
-    # make sure spack doesn't rebuild mpi, blas and lapack libs
-    # without this it will try to build mpich and openblas
+    # Ensure concretizer uses external MPI/BLAS/LAPACK implementation
     mpi:
+      require:
+      - hpcx-mpi
       buildable: false
     blas:
+      require:
+      - "intel-oneapi-mkl"
       buildable: false
     lapack:
+      require:
+      - "intel-oneapi-mkl"
       buildable: false
 
     ####
@@ -77,12 +68,35 @@ spack:
       require: "@3.26.1"
     grpc:
       require: "@1.64.0-full-clone"
-    
-    # spec of spack packages to reuse
 
+    ####
+    # external compiler
+    gcc:
+      externals:
+      - spec: gcc@12.2.1 languages:=c,c++,fortran
+        prefix: /opt/rh/gcc-toolset-12/root/usr
+        extra_attributes:
+          compilers:
+            c: /opt/rh/gcc-toolset-12/root/usr/bin/gcc
+            cxx: /opt/rh/gcc-toolset-12/root/usr/bin/g++
+            fortran: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
+          flags:
+            cflags: -march=native -mtune=native
+            cxxflags: -march=native -mtune=native
+          operating_system: rhel8
+          target: x86_64
+          extra_rpaths: []
+
+    ####
+    # specs of spack packages to reuse
+    bison:
+      buildable: false
+      externals:
+      - spec: bison@3.8.2
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.2.1/bison-3.8.2-ozy3z5u
     intel-oneapi-mkl:
       externals:
-        - spec: intel-oneapi-mkl@2023.2.0 threads=openmp
+        - spec: intel-oneapi-mkl@2023.2.0%gcc@12.2.1
           prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/intel-oneapi-mkl-2023.2.0-7kkfgmz
       buildable: False
     python:
@@ -125,11 +139,25 @@ spack:
       - spec: gmp@6.2.1
         prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/gmp-6.2.1-pwaztmh
       buildable: false
+    flex:
+      externals:
+      - spec: flex@2.6.3
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-8.5.0/flex-2.6.3-xyx4nx4
+      buildable: false
+    doxygen:
+      externals:
+      - spec: doxygen@1.8.20
+        prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.2.1/doxygen-1.8.20-idfxpwl
 
     ####
     # spec of system packages to reuse
 
     # bin
+    gettext:
+      externals:
+        - spec: gettext@0.19.8.1
+          prefix: /usr
+      buildable: false
     git:
       externals:
       - spec: git@2.39.3~tcltk
@@ -143,6 +171,11 @@ spack:
     m4:
       externals:
       - spec: m4@1.4.18
+        prefix: /usr
+      buildable: false
+    xz:
+      externals:
+      - spec: xz@5.2.4
         prefix: /usr
       buildable: false
     # libs
