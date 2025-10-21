@@ -115,11 +115,11 @@ spack:
       externals:
       - spec: pkg-config@1.4.2
         prefix: /usr
-    python:
-      buildable: false
-      externals:
-      - spec: python@3.9.20
-        prefix: /usr
+    # python:
+    #   buildable: false
+    #   externals:
+    #   - spec: python@3.6.8
+    #     prefix: /usr
     tar:
       buildable: false
       externals:
@@ -134,4 +134,20 @@ spack:
       buildable: false
       externals:
       - spec: xz@5.2.5
+        prefix: /usr
+    # Pygeosx dependencies
+    openssl:
+      buildable: false
+      externals:
+      - spec: openssl@1.1.1
+        prefix: /usr
+    tk:
+      buildable: false
+      externals:
+      - spec: tk@8.6.8
+        prefix: /usr
+    tcl:
+      buildable: false
+      externals:
+      - spec: tcl@8.6.8
         prefix: /usr
