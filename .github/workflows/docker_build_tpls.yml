@@ -61,12 +61,6 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.9.1
             TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
-          - name: Pangea 3 (AlmaLinux 8.8, gcc 9.4.0, open-mpi 4.1.2, cuda 11.5.0, openblas 0.3.10)
-            DOCKER_REPOSITORY: geosx/pangea3-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18
-            TPL_DOCKERFILE: docker/TotalEnergies/Pangea3.Dockerfile
-            DOCKER_ROOT_IMAGE: 7g8efcehpff/pangea-almalinux8-gcc9.4-openmpi4.1.2-cuda11.5.0-openblas0.3.18:4
-            HOST_ARCH: ppc64le
-            RUNS_ON: streak2
           - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
             DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
             TPL_DOCKERFILE: docker/Stanford/Dockerfile
@@ -91,12 +85,6 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-
-    - name: Setup QEMU for ${{ matrix.HOST_ARCH }} emulation
-      if: ${{ matrix.HOST_ARCH }}
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: ${{ matrix.HOST_ARCH }}
 
     - name: Print environment
       run: printenv
