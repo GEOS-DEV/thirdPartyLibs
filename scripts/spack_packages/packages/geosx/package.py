@@ -193,7 +193,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('python')
     with when("+pygeosxdeps"):
         depends_on('python@3.10:+shared+pic+tkinter+optimizations')
-        depends_on("py-numpy@1.21.0:1.23.4+blas+lapack")
+        depends_on("py-numpy@1.23.0:")
         depends_on('py-mpi4py')
 
     #
