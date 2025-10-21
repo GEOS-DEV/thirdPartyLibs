@@ -15,8 +15,8 @@ RUN dnf clean all && \
         which \
         gcc-toolset-13 \
         python3.9 \
-        python3-tkinter \
         python3-pip \
+        python3-tkinter \
         zlib-devel \
         tbb \
         blas \
@@ -54,8 +54,7 @@ RUN dnf clean all && \
         autoconf \
         automake \
         m4 \
-        git \
-        openssl
+        git
 
 # Run uberenv
 # Have to create install directory first for uberenv
@@ -68,26 +67,15 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@13.3.1+cuda+pygeosx~uncrustify~openmp cuda_arch=70 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "%gcc@13.3.1+cuda~uncrustify~openmp cuda_arch=70 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-pygeosx-spack.yaml \
-       --project-json=.uberenv_config.json \
+       --project-json=./scripts/pygeosx_configs/pygeosx.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \
 # Remove host-config generated for LvArray
      rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
      cp *.cmake /spack-generated.cmake && \
-# Build pygeosx tpl's
-     mkdir -p ${GEOSX_TPL_DIR}-pygeosx && \
-     ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@13.3.1" \
-       --spack-env-file=${SRC_DIR}/docker/rocky-pygeosx-spack.yaml \
-       --project-json=./scripts/pygeosx_configs/pygeosx.json \
-       --prefix ${GEOSX_TPL_DIR}-pygeosx \
-       -k && \
-# Rename and copy spack-generated host-config to root directory
-     rm lvarray* && \
-     cp *.cmake /spack-generated-pygeosx.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
      rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/

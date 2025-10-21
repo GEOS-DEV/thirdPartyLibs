@@ -16,6 +16,7 @@ RUN dnf clean all && \
         gcc-toolset-13 \
         python3.9 \
         python3-pip \
+        python3-tkinter \
         zlib-devel \
         tbb \
         blas \
