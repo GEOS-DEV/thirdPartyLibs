@@ -29,7 +29,10 @@ RUN dnf clean all && \
         bzip2 \
         gnupg \
         xz \
+        libxcrypt \
         python3-virtualenv
+
+RUN ls -lah /usr/lib | grep xcrypt
 
 # Install clingo for Spack
 RUN python3 -m pip install --upgrade pip && \

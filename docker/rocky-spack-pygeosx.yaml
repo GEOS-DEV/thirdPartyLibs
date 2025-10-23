@@ -151,3 +151,8 @@ spack:
       externals:
       - spec: tcl@8.6.8
         prefix: /usr
+    libxcrypt:
+      buildable: false
+      externals:
+        - spec: libxcrypt@4.4.35
+          prefix: /usr
