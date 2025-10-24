@@ -56,7 +56,9 @@ RUN dnf clean all && \
         autoconf \
         automake \
         m4 \
-        git
+        git \
+        rsync \
+        openssl-devel
 
 # Run uberenv
 # Have to create install directory first for uberenv
@@ -80,7 +82,13 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      cp *.cmake /spack-generated.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
-     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
+     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/ && \
+# Move python packages into the correct view
+     cd gcc-13.3.1 && \
+     rsync -avh py-*/ $(ls | grep -- python-3)/ && \
+     cd $(ls | grep -- python-3)/bin && \
+     ./python -m pip install virtualenv
+
 
 # Extract only TPL's from the previous stage
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain

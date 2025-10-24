@@ -139,7 +139,7 @@ spack:
     openssl:
       buildable: false
       externals:
-      - spec: openssl@1.1.1
+      - spec: openssl@1.1.1k
         prefix: /usr
     tk:
       buildable: false
@@ -154,5 +154,5 @@ spack:
     libxcrypt:
       buildable: false
       externals:
-        - spec: libxcrypt@4.4.35
+        - spec: libxcrypt@4.1.1
           prefix: /usr
