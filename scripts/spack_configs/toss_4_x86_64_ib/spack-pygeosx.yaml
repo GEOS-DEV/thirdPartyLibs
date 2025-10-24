@@ -195,21 +195,6 @@ spack:
       externals:
         - spec: diffutils@3.3
           prefix: /usr/bin
-    # This needs to be the prefix to the pygeosx LC installation
-    # or system install with pygeosx dependencies
-    python:
-      buildable: True
-      externals:
-      - spec: python@3.13.2~shared
-        prefix: /usr/apps/python-3.13.2
-
-    # This needs to be the prefix to the pygeosx LC installation
-    # or system install with pygeosx dependencies
-    py-sphinx:
-      buildable: False
-      externals:
-      - spec: py-sphinx@1.6.3
-        prefix: /usr/apps/python-3.13.2
     autoconf:
       buildable: False
       externals:
@@ -230,3 +215,20 @@ spack:
       externals:
         - spec: gettext@0.19.8.1
           prefix: /usr/bin/
+
+    # pygeosx dependencies
+    openssl:
+      buildable: false
+      externals:
+      - spec: openssl@1.1.1k
+        prefix: /usr
+    tk:
+      buildable: false
+      externals:
+      - spec: tk@8.6.8
+        prefix: /usr
+    tcl:
+      buildable: false
+      externals:
+      - spec: tcl@8.6.8
+        prefix: /usr
