@@ -88,7 +88,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Create symlinks to g++ libraries
      ln -s /usr/bin/g++-${GCC_MAJOR_VERSION} /usr/bin/g++ && \
      ./scripts/uberenv/uberenv.py \
-       --spec "~shared~openmp+docs %clang@${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "~shared~openmp+docs %clang-${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \

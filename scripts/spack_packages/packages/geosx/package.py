@@ -74,6 +74,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             description='Linear algebra interface.',
             values=('trilinos', 'hypre', 'petsc'),
             multi=False)
+    variant('grpc', default=False, description='Enable gRPC.')
     variant('pygeosx', default=True, description='Enable pygeosx.')
 
     # SPHINX_END_VARIANTS
@@ -183,8 +184,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     with when("+hypre"):
         depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +openmp", when="+openmp")
 
@@ -212,6 +213,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # Other
     #
     depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
+    depends_on('grpc', when='+grpc')
 
     # SPHINX_END_DEPENDS
 
@@ -646,6 +648,17 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             else:
                 cfg.write(cmake_cache_option('ENABLE_MATHPRESSO', False))
                 cfg.write(cmake_cache_option('ENABLE_XML_UPDATES', False))
+
+            if '+grpc' in spec:
+                cfg.write(cmake_cache_option('ENABLE_GRPC', True))
+                cfg.write(cmake_cache_entry('GRPC_DIR', spec['grpc'].prefix))
+                cfg.write(cmake_cache_entry('OPENSSL_DIR', spec['openssl'].prefix))
+                cfg.write(cmake_cache_entry('ABSL_DIR', spec['abseil-cpp'].prefix))
+                cfg.write(cmake_cache_entry('RE2_DIR', spec['re2'].prefix))
+                cfg.write(cmake_cache_entry('C-ARES_DIR', spec['c-ares'].prefix))
+                cfg.write(cmake_cache_entry('PROTOBUF_DIR', spec['protobuf'].prefix))
+            else:
+                cfg.write(cmake_cache_option('ENABLE_GRPC', False))
 
             if '+shared' in spec:
                 cfg.write(cmake_cache_option('GEOS_BUILD_SHARED_LIBS', True))
