@@ -111,7 +111,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
-       --spec "%gcc@${GCC_MAJOR_VERSION} ~pygeosx +docs" \
+       --spec "~pygeosx +docs %gcc-${GCC_MAJOR_VERSION}" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=${SRC_DIR}/.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
@@ -122,7 +122,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      cp *.cmake /spack-generated.cmake && \
 # Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
-     rm -rf bin/ build_stage/ misc_cache/ spack/ spack-env/ .spack-db/
+     rm -rf bin/ build_stage/ builtin_spack_packages_repo/ misc_cache/ spack/ spack_env/ .spack-db/
 
 # Last step is setting everything for a complete slave that will build GEOSX.
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
