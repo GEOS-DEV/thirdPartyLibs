@@ -1,5 +1,6 @@
 from spack.package import *
 import subprocess
+from spack_repo.builtin.build_systems.cmake import CMakePackage
 
 class Mathpresso(CMakePackage):
     """MathPresso is a mathematical expression parser and JIT compiler."""

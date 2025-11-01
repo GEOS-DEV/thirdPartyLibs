@@ -12,11 +12,12 @@
 import os
 import sys
 
-from spack import *
-from spack.build_environment import dso_suffix
-from spack.error import NoHeadersError
-from spack.operating_systems.mac_os import macos_version
-from spack.pkg.builtin.kokkos import Kokkos
+from spack.package import *
+
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
+from spack_repo.builtin.build_systems.rocm import ROCmPackage
+from spack_repo.builtin.packages.kokkos.package import Kokkos
 
 # Trilinos is complicated to build, as an inspiration a couple of links to
 # other repositories which build it:
@@ -312,11 +313,12 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     conflicts('gotype=all', when='@12.15:')
 
     # CUDA without wrapper requires clang
-    for _compiler in spack.compilers.supported_compilers():
-        if _compiler != 'clang':
-            conflicts('+cuda', when='~wrapper %' + _compiler,
-                      msg='trilinos~wrapper+cuda can only be built with the '
-                      'Clang compiler')
+    requires(
+        "%clang",
+        when="+cuda~wrapper",
+        msg="trilinos~wrapper+cuda can only be built with the Clang compiler",
+    )
+
     conflicts('+cuda_rdc', when='~cuda')
     conflicts('+rocm_rdc', when='~rocm')
     conflicts('+wrapper', when='~cuda')
@@ -335,6 +337,10 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     conflicts('+stokhos', when='%xl_r')
 
     # ###################### Dependencies ##########################
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
+    depends_on("fortran", type="build", when="+fortran")
+
 
     depends_on('adios2', when='+adios2')
     depends_on('blas')
