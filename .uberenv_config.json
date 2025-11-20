@@ -4,8 +4,8 @@
 "package_final_phase": "lvarray_hostconfig",
 "package_source_dir": "../..",
 "spack_url": "https://github.com/spack/spack",
-"spack_commit": "734c5db2121b01c373eed6538e452f18887e9e44",
+"spack_commit": "0c2be44e4ece21eb091ad5de4c97716b7c6d4c87",
 "spack_configs_path": "scripts/spack_configs",
 "spack_packages_path": "scripts/spack_packages/packages",
-"spack_packages_commit": "b60f8f462f51738052be4e22454eaa53a0abb0ef"
+"spack_packages_commit": "119680aeee8ea802c6111b7167583bddef97e82f"
 }
