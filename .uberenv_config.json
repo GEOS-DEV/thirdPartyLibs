@@ -7,5 +7,5 @@
 "spack_commit": "0c2be44e4ece21eb091ad5de4c97716b7c6d4c87",
 "spack_configs_path": "scripts/spack_configs",
 "spack_packages_path": "scripts/spack_packages/packages",
-"spack_packages_commit": "119680aeee8ea802c6111b7167583bddef97e82f"
+"spack_packages_commit": "1830a47cbe35539b238ac7cc9495ca5ee1c9acee"
 }
