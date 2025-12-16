@@ -61,24 +61,24 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.9.1
             TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
             RUNS_ON: Runner_4core_16GB
-          - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
-            DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
-            TPL_DOCKERFILE: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
-            SPEC: "%gcc@10.1.0~pygeosx~openmp"
-            INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/CPU
-            RUNS_ON: ubuntu-latest
-          - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 12.4.0, openblas 0.3.10, zlib 1.2.11)
-            DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11
-            TPL_DOCKERFILE: docker/Stanford/Dockerfile
-            DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
-            SPEC: "%gcc@10.1.0~pygeosx~openmp cuda_arch=70 ^cuda@12.4.0+allow-unsupported-compilers"
-            INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
-            RUNS_ON: ubuntu-latest
+          # - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
+          #   DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
+          #   TPL_DOCKERFILE: docker/Stanford/Dockerfile
+          #   DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
+          #   SPEC: "~pygeosx~openmp %gcc@10.1.0"
+          #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/CPU
+          #   RUNS_ON: ubuntu-latest
+          # - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 12.4.0, openblas 0.3.10, zlib 1.2.11)
+          #   DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11
+          #   TPL_DOCKERFILE: docker/Stanford/Dockerfile
+          #   DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
+          #   SPEC: "~pygeosx~openmp cuda_arch=70 %gcc@10.1.0 ^cuda@12.4.0+allow-unsupported-compilers"
+          #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
+          #   RUNS_ON: ubuntu-latest
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: true
         lfs: true
