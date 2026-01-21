@@ -88,7 +88,7 @@ function launch_jobs() {
   # Note: The max. time allowed on the debug queue is 1h. If we need more, switch to pbatch
   case "$machine" in
     dane)
-      ALLOC_CMD="salloc -N 1 --exclusive -t 60 -A vortex -ppdebug"
+      ALLOC_CMD="salloc -N 1 --exclusive -t 180 -A vortex"
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12                 "+docs %gcc-12 ${COMMON}"        "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-13                 "+docs %gcc-13 ${COMMON}"        "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane llvm-14               "+docs %clang-14 ${COMMON}"      "${ALLOC_CMD}" "$@" &
