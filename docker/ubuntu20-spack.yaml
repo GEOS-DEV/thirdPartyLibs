@@ -1,0 +1,163 @@
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage::
+    - $spack/../build_stage
+
+  # Regular TPLs do not need views
+  view: false
+
+  # Include shared variants and versions
+  include:
+  - ../defaults.yaml
+  - ../versions.yaml
+
+  # Ubuntu 20.04 clang/cuda image only has clang/llvm 10.x available.
+  # Keep this environment llvm10-only to avoid concretizer conflicts with llvm@15.
+  toolchains:
+    clang-10:
+      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@9.4.0'
+        when: '%fortran'
+      - spec: '%openmpi'
+        when: '%mpi'
+
+  packages:
+    all:
+      target: [x86_64]
+
+    mpi:
+      require:
+      - openmpi
+
+    blas:
+      require:
+      - "netlib-lapack"
+    lapack:
+      require:
+      - "netlib-lapack"
+
+    llvm:
+      externals:
+      - spec: llvm@10.0.0+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
+
+    gcc:
+      externals:
+      - spec: gcc@9.4.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-9
+            cxx: /usr/bin/g++-9
+            fortran: /usr/bin/gfortran-9
+
+    # CUDA comes from the nvidia base image.
+    cuda:
+      buildable: False
+      externals:
+      - spec: cuda@11.8.0 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+
+    # Use system OpenMPI, but tag it as llvm@10-built so it can satisfy %clang-10 DAGs.
+    # (Spack does not validate the actual compiler used for system packages.)
+    openmpi:
+      externals:
+      - spec: openmpi@4.0.3 %llvm@10.0.0
+        prefix: /usr
+
+    autoconf:
+      version: [2.71]
+      buildable: false
+      externals:
+      - spec: autoconf@2.71
+        prefix: /usr
+    automake:
+      version: [1.16.5]
+      buildable: false
+      externals:
+      - spec: automake@1.16.5
+        prefix: /usr
+    cmake:
+      version: [3.28.3]
+      buildable: false
+      externals:
+      - spec: cmake@3.28.3
+        prefix: /usr/local
+
+    findutils:
+      version: [4.7.0]
+      buildable: false
+      externals:
+      - spec: findutils@4.7.0
+        prefix: /usr
+    m4:
+      buildable: false
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+    mpfr:
+      buildable: false
+      externals:
+      - spec: mpfr@6.0.2
+        prefix: /usr
+
+    netlib-lapack:
+      buildable: false
+      externals:
+      - spec: netlib-lapack@3.10.0
+        prefix: /usr
+    netlib-blas:
+      buildable: false
+      externals:
+      - spec: netlib-blas@3.10.0
+        prefix: /usr
+
+    perl:
+      buildable: false
+      externals:
+      - spec: perl@5.30.0
+        prefix: /usr
+    pkg-config:
+      buildable: false
+      externals:
+      - spec: pkg-config@0.29.1
+        prefix: /usr
+    python:
+      buildable: false
+      externals:
+      - spec: python@3.8.10
+        prefix: /usr
+    tar:
+      buildable: false
+      externals:
+      - spec: tar@1.30
+        prefix: /usr
+    unzip:
+      buildable: false
+      externals:
+      - spec: unzip@6.0
+        prefix: /usr
+    xz:
+      buildable: false
+      externals:
+      - spec: xz@5.2.4
+        prefix: /usr
+    zlib:
+      buildable: false
+      externals:
+      - spec: zlib@1.2.11
+        prefix: /usr
+
