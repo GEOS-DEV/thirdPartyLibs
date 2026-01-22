@@ -146,7 +146,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # IO
     #
-    depends_on('hdf5@1.12.1')
+    depends_on('hdf5@1.14.6')
     depends_on('silo@4.12.0~fortran~shared~python build_system=cmake')
 
     depends_on('conduit~test~fortran~hdf5_compat+shared')
