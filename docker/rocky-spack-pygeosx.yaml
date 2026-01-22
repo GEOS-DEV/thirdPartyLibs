@@ -17,62 +17,44 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  toolchains:
-    gcc-13:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%c=gcc@13.3.1'
-        when: '%c'
-      - spec: '%cxx=gcc@13.3.1'
-        when: '%cxx'
-      - spec: '%fortran=gcc@13.3.1'
-        when: '%fortran'
-      - spec: '%openmpi@4.1.1'
-        when: '%mpi'
-    clang-17:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%[virtuals=c]llvm@17.0.6+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@17.0.6+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13.3.1'
-        when: '%fortran'
-      - spec: '%openmpi@4.1.1'
-        when: '%mpi'
+  compilers::
+  - compiler:
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: rocky8
+      paths:
+        cc: /usr/bin/clang
+        cxx: /usr/bin/clang++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      spec: clang@17.0.6
+      target: x86_64
+  - compiler:
+      extra_rpaths: []
+      flags:
+        cflags: -pthread
+        cxxflags: -pthread
+      modules: []
+      operating_system: rocky8
+      paths:
+        cc: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
+        cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
+        f77: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+        fc: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+      spec: gcc@13.3.1
+      target: x86_64
 
   packages:
     all:
       target: [x86_64]
-
-    mpi:
-      require:
-      - openmpi
-
-    blas:
-      require:
-      - "netlib-lapack"
-    lapack:
-      require:
-      - "netlib-lapack"
-
-    llvm:
-      externals:
-      - spec: llvm@17.0.6+clang~flang~lld~lldb
-        prefix: /usr
-        extra_attributes:
-          compilers:
-            c: /usr/bin/clang
-            cxx: /usr/bin/clang++
-    gcc:
-      externals:
-      - spec: gcc@13.3.1 languages:='c,c++,fortran'
-        prefix: /opt/rh/gcc-toolset-13/root/usr
-        extra_attributes:
-          compilers:
-            c: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
-            cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
-            fortran: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+      compiler: [gcc, clang]
+      providers:
+        blas: [netlib-lapack]
+        lapack: [netlib-lapack]
+        mpi: [openmpi]
 
     autoconf:
       version: [2.71]
@@ -95,15 +77,19 @@ spack:
     cuda:
       buildable: False
       externals:
-      - spec: cuda@12.9.1 +allow-unsupported-compilers %gcc@13.3.1
+      - spec: cuda@12.9.1%gcc@13.3.1 +allow-unsupported-compilers
         prefix: /usr/local/cuda
-      - spec: cuda@12.9.1 +allow-unsupported-compilers %llvm@17.0.6
+      - spec: cuda@12.9.1%clang@17.0.6 +allow-unsupported-compilers
         prefix: /usr/local/cuda
     m4:
       buildable: false
       externals:
       - spec: m4@1.4.18
         prefix: /usr
+
+    # Spack may grab for mpi & we don't want to use them
+    mpi:
+      buildable: false
 
     netlib-lapack:
       buildable: false
@@ -129,11 +115,11 @@ spack:
       externals:
       - spec: pkg-config@1.4.2
         prefix: /usr
-    python:
-      buildable: false
-      externals:
-      - spec: python@3.9.20
-        prefix: /usr
+    # python:
+    #   buildable: false
+    #   externals:
+    #   - spec: python@3.6.8
+    #     prefix: /usr
     tar:
       buildable: false
       externals:
@@ -149,3 +135,24 @@ spack:
       externals:
       - spec: xz@5.2.5
         prefix: /usr
+    # Pygeosx dependencies
+    openssl:
+      buildable: false
+      externals:
+      - spec: openssl@1.1.1k
+        prefix: /usr
+    tk:
+      buildable: false
+      externals:
+      - spec: tk@8.6.8
+        prefix: /usr
+    tcl:
+      buildable: false
+      externals:
+      - spec: tcl@8.6.8
+        prefix: /usr
+    libxcrypt:
+      buildable: false
+      externals:
+        - spec: libxcrypt@4.1.1
+          prefix: /usr

@@ -229,10 +229,10 @@ spack:
     # This needs to be the prefix to the pygeosx LC installation
     # or system install with pygeosx dependencies
     python:
-      buildable: False
+      buildable: True
       externals:
-      - spec: python@3.10.8
-        prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+      - spec: python@3.13.2~shared
+        prefix: /usr/apps/python-3.13.2
 
     # This needs to be the prefix to the pygeosx LC installation
     # or system install with pygeosx dependencies
@@ -240,7 +240,7 @@ spack:
       buildable: False
       externals:
       - spec: py-sphinx@1.6.3
-        prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+        prefix: /usr/apps/python-3.13.2
     autoconf:
       buildable: False
       externals:

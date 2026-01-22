@@ -78,6 +78,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             multi=False)
     variant('grpc', default=False, description='Enable gRPC.')
     variant('pygeosx', default=True, description='Enable pygeosx.')
+    variant('pygeosxdeps', default=False, description='Build pygeosx dependencies.')
 
     # SPHINX_END_VARIANTS
 
@@ -198,7 +199,11 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # Python
     #
     depends_on('python')
-
+    with when("+pygeosxdeps"):
+        depends_on('python@3.10:+shared+pic+tkinter+optimizations+ssl')
+        depends_on("py-numpy@1.23.0:")
+        depends_on('py-mpi4py')
+        depends_on('py-virtualenv')
 
     #
     # Dev tools
