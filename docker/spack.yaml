@@ -25,7 +25,7 @@ spack:
         when: '%cxx'
       - spec: '%[virtuals=fortran]gcc@11.4.0'
         when: '%fortran'
-      - spec: '%openmpi %llvm@15.0.7'
+      - spec: '%openmpi'
         when: '%mpi'
     clang-10:
       - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb'
@@ -34,7 +34,7 @@ spack:
         when: '%cxx'
       - spec: '%[virtuals=fortran]gcc@9.4.0'
         when: '%fortran'
-      - spec: '%openmpi %llvm@10.0.0'
+      - spec: '%openmpi'
         when: '%mpi'
     gcc-9:
       - spec: cxxflags='-pthread'
@@ -194,12 +194,6 @@ spack:
         prefix: /usr
     openmpi:
       externals:
-      - spec: openmpi %llvm@15.0.7
-        prefix: /usr
-        modules: [mpi]
-      - spec: openmpi %llvm@10.0.0
-        prefix: /usr
-        modules: [mpi]
       - spec: openmpi %gcc@9.4.0
         prefix: /usr
       - spec: openmpi %gcc@10.5.0
