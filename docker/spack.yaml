@@ -14,8 +14,8 @@ spack:
 
   # Include shared variants and versions
   include:
-  - ../defaults.yaml
-  - ../versions.yaml
+  - ../scripts/spack_configs/defaults.yaml
+  - ../scripts/spack_configs/versions.yaml
 
   toolchains:
     clang-15:
