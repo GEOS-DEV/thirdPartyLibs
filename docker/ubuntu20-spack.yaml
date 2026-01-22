@@ -21,9 +21,9 @@ spack:
   # Keep this environment llvm10-only to avoid concretizer conflicts with llvm@15.
   toolchains:
     clang-10:
-      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb'
+      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb'
+      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%cxx'
       - spec: '%[virtuals=fortran]gcc@9.4.0'
         when: '%fortran'
@@ -47,7 +47,7 @@ spack:
 
     llvm:
       externals:
-      - spec: llvm@10.0.0+clang~flang~lld~lldb
+      - spec: llvm@10.0.0+clang~flang~lld~lldb openmp=project
         prefix: /usr
         extra_attributes:
           compilers:
