@@ -47,7 +47,7 @@ spack:
 
     mpi:
       require:
-      - openmpi
+      - openmpi@4.1.1
 
     blas:
       require:
@@ -114,6 +114,7 @@ spack:
       - spec: netlib-blas@3.8.0
         prefix: /usr
     openmpi:
+      buildable: false
       externals:
       - spec: openmpi@4.1.1
         prefix: /usr/lib64/openmpi

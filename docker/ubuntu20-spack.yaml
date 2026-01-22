@@ -36,7 +36,7 @@ spack:
 
     mpi:
       require:
-      - openmpi
+      - openmpi@4.0.3
 
     blas:
       require:
@@ -74,6 +74,7 @@ spack:
     # Use system OpenMPI, but tag it as llvm@10-built so it can satisfy %clang-10 DAGs.
     # (Spack does not validate the actual compiler used for system packages.)
     openmpi:
+      buildable: false
       externals:
       - spec: openmpi@4.0.3 %llvm@10.0.0
         prefix: /usr

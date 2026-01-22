@@ -28,9 +28,9 @@ spack:
       - spec: '%openmpi'
         when: '%mpi'
     clang-10:
-      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb'
+      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb'
+      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%cxx'
       - spec: '%[virtuals=fortran]gcc@9.4.0'
         when: '%fortran'
@@ -87,7 +87,7 @@ spack:
 
     mpi:
       require:
-      - openmpi
+      - openmpi@4.1.2
 
     blas:
       require:
@@ -98,7 +98,7 @@ spack:
 
     llvm:
       externals:
-      - spec: llvm@10.0.0+clang~flang~lld~lldb
+      - spec: llvm@10.0.0+clang~flang~lld~lldb openmp=project
         prefix: /usr
         extra_attributes:
           compilers:
@@ -193,14 +193,23 @@ spack:
       - spec: netlib-blas@3.10.0
         prefix: /usr
     openmpi:
+      buildable: false
       externals:
-      - spec: openmpi %gcc@9.4.0
+      # Ubuntu 22.04 (apt) provides OpenMPI 4.1.2. We treat it as external for all toolchains
+      # to prevent Spack from building OpenMPI (which may otherwise drift to v5).
+      - spec: openmpi@4.1.2 %clang@15.0.7
         prefix: /usr
-      - spec: openmpi %gcc@10.5.0
+        modules: [mpi]
+      - spec: openmpi@4.1.2 %clang@10.0.0
         prefix: /usr
-      - spec: openmpi %gcc@11.4.0
+        modules: [mpi]
+      - spec: openmpi@4.1.2 %gcc@9.4.0
         prefix: /usr
-      - spec: openmpi %gcc@12.3.0
+      - spec: openmpi@4.1.2 %gcc@10.5.0
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@11.4.0
+        prefix: /usr
+      - spec: openmpi@4.1.2 %gcc@12.3.0
         prefix: /usr
     perl:
       buildable: false

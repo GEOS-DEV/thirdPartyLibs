@@ -91,6 +91,7 @@ spack:
       buildable: false
 
     openmpi:
+      buildable: false
       externals:
       # Pecan CPU/GPU
       - spec: openmpi@4.0.1%gcc@8.2.0
