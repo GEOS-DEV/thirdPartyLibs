@@ -19,8 +19,8 @@ spack:
 
   toolchains:
     gcc-13:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
       - spec: '%c=gcc@13.3.1'
         when: '%c'
       - spec: '%cxx=gcc@13.3.1'
@@ -33,8 +33,8 @@ spack:
       # Force clang to use gcc-toolset-13 headers/libs instead of the system GCC (8.x),
       # otherwise some dependencies (notably hypre+cuda) can pick up libstdc++ headers from GCC 8.x
       # and fail with errors like "this declaration may not have extern \"C\" linkage".
-      - spec: cxxflags='-pthread --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr'
-      - spec: cflags='-pthread --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr'
+      - spec: cxxflags='-fPIC -pthread --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr'
+      - spec: cflags='-fPIC -pthread --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr'
       - spec: '%[virtuals=c]llvm@17.0.6+clang~flang~lld~lldb'
         when: '%c'
       - spec: '%[virtuals=cxx]llvm@17.0.6+clang~flang~lld~lldb'

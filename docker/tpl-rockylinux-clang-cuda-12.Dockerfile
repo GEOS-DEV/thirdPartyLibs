@@ -54,6 +54,19 @@ RUN dnf -y install \
         m4 \
         git
 
+# Create clang wrappers that always use gcc-toolset-13 for libstdc++ headers/libs.
+# This is critical for CUDA builds where NVCC invokes the host compiler via -ccbin.
+RUN printf '%s\n' '#!/usr/bin/env bash' \
+      'exec /usr/bin/clang --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr "$@"' \
+      > /usr/local/bin/clang-gcc13 && \
+    chmod +x /usr/local/bin/clang-gcc13 && \
+    printf '%s\n' '#!/usr/bin/env bash' \
+      'exec /usr/bin/clang++ --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr "$@"' \
+      > /usr/local/bin/clang++-gcc13 && \
+    chmod +x /usr/local/bin/clang++-gcc13 && \
+    /usr/local/bin/clang-gcc13 --version && \
+    /usr/local/bin/clang++-gcc13 --version
+
 # RUN uberenv
 # 1. We wrap this in 'scl enable gcc-toolset-13' so the build finds GCC 13 headers.
 # 2. We pass --gcc-toolchain to Clang via CXXFLAGS to prevent the 'extern C' linkage error.
@@ -63,13 +76,6 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      scl enable gcc-toolset-13 ' \
-     # Create clang wrappers that always use gcc-toolset-13 for libstdc++ headers/libs.
-     # This is critical for CUDA builds where NVCC invokes the host compiler via -ccbin
-     # and does not reliably forward --gcc-toolchain from CXXFLAGS/CMAKE_CXX_FLAGS.
-     printf "%s\n" "#!/usr/bin/env bash" "exec /usr/bin/clang --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr \"\\$@\"" > /usr/local/bin/clang-gcc13 && \
-     chmod +x /usr/local/bin/clang-gcc13 && \
-     printf "%s\n" "#!/usr/bin/env bash" "exec /usr/bin/clang++ --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr \"\\$@\"" > /usr/local/bin/clang++-gcc13 && \
-     chmod +x /usr/local/bin/clang++-gcc13 && \
      export CXXFLAGS="--gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr" && \
      export CFLAGS="--gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr" && \
      ./scripts/uberenv/uberenv.py \
