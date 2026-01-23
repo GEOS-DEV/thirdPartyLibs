@@ -66,15 +66,9 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      # Create clang wrappers that always use gcc-toolset-13 for libstdc++ headers/libs.
      # This is critical for CUDA builds where NVCC invokes the host compiler via -ccbin
      # and does not reliably forward --gcc-toolchain from CXXFLAGS/CMAKE_CXX_FLAGS.
-     cat > /usr/local/bin/clang-gcc13 <<\"EOF\" && \
-#!/usr/bin/env bash
-exec /usr/bin/clang --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr \"$@\"
-EOF
+     printf "%s\n" "#!/usr/bin/env bash" "exec /usr/bin/clang --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr \"\\$@\"" > /usr/local/bin/clang-gcc13 && \
      chmod +x /usr/local/bin/clang-gcc13 && \
-     cat > /usr/local/bin/clang++-gcc13 <<\"EOF\" && \
-#!/usr/bin/env bash
-exec /usr/bin/clang++ --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr \"$@\"
-EOF
+     printf "%s\n" "#!/usr/bin/env bash" "exec /usr/bin/clang++ --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr \"\\$@\"" > /usr/local/bin/clang++-gcc13 && \
      chmod +x /usr/local/bin/clang++-gcc13 && \
      export CXXFLAGS="--gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr" && \
      export CFLAGS="--gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr" && \
