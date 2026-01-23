@@ -30,11 +30,8 @@ spack:
       - spec: '%openmpi@4.1.1'
         when: '%mpi'
     clang-17:
-      # Force clang to use gcc-toolset-13 headers/libs instead of the system GCC (8.x),
-      # otherwise some dependencies (notably hypre+cuda) can pick up libstdc++ headers from GCC 8.x
-      # and fail with errors like "this declaration may not have extern \"C\" linkage".
-      - spec: cxxflags='-fPIC -pthread --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr'
-      - spec: cflags='-fPIC -pthread --gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr'
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
       - spec: '%[virtuals=c]llvm@17.0.6+clang~flang~lld~lldb'
         when: '%c'
       - spec: '%[virtuals=cxx]llvm@17.0.6+clang~flang~lld~lldb'

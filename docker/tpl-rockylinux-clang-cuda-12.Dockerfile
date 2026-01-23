@@ -68,16 +68,18 @@ RUN printf '%s\n' '#!/usr/bin/env bash' \
     /usr/local/bin/clang++-gcc13 --version
 
 # RUN uberenv
+# Have to create install directory first for uberenv
+# -k flag is to ignore SSL errors
 # 1. We wrap this in 'scl enable gcc-toolset-13' so the build finds GCC 13 headers.
-# 2. We pass --gcc-toolchain to Clang via CXXFLAGS to prevent the 'extern C' linkage error.
+# 2. gcc-toolchain selection is handled by the clang wrapper scripts + Spack llvm external compiler paths.
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+# Create symlink to openmpi include directory
      ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include && \
+# Create symlinks to blas/lapack libraries
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
      scl enable gcc-toolset-13 ' \
-     export CXXFLAGS="--gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr" && \
-     export CFLAGS="--gcc-toolchain=/opt/rh/gcc-toolset-13/root/usr" && \
      ./scripts/uberenv/uberenv.py \
        --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %clang-17 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
@@ -86,6 +88,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
        -k ' && \
      rm -f lvarray* && \
      cp *.cmake /spack-generated.cmake && \
+# Remove extraneous spack files
      cd ${GEOSX_TPL_DIR} && \
      rm -rf bin/ build_stage/ builtin_spack_packages_repo/ misc_cache/ spack/ spack_env/ .spack-db/
 
@@ -94,8 +97,11 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
+
+# Extract the generated host-config
 COPY --from=tpl_toolchain /spack-generated.cmake /
 
+# Install required packages using dnf
 RUN dnf clean all && \
     rm -rf /var/cache/dnf && \
     dnf -y install \
@@ -107,9 +113,12 @@ RUN dnf clean all && \
         graphviz \
         ninja-build \
         git && \
+# Regenerate symlink to openmpi include directory
     ln -s /usr/include/openmpi-x86_64 /usr/lib64/openmpi/include && \
+# Regenerate symlinks to blas/lapack libraries
     ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
     ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so
 
+# Run the installation script
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
