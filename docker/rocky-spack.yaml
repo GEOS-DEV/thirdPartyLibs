@@ -65,8 +65,10 @@ spack:
         prefix: /usr
         extra_attributes:
           compilers:
-            c: /usr/bin/clang
-            cxx: /usr/bin/clang++
+            # Use wrappers that bake in --gcc-toolchain for gcc-toolset-13, so NVCC's -ccbin
+            # doesn't accidentally pick GCC 8 headers when compiling CUDA sources.
+            c: /usr/local/bin/clang-gcc13
+            cxx: /usr/local/bin/clang++-gcc13
     gcc:
       externals:
       - spec: gcc@13.3.1 languages:='c,c++,fortran'
