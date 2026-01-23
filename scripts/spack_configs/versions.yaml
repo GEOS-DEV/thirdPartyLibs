@@ -49,7 +49,3 @@ packages:
   # master - 04/12/20
   uncrustify:
     require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
-
-  # master - 04/26/20
-  superlu-dist:
-    require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
