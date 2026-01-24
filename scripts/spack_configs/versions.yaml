@@ -18,9 +18,9 @@ packages:
   blt:
     require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
-  # master - 01/20/26
+  # master - 01/23/26
   hypre:
-    require: "@git.89b60a212f06bcc4d30a59f3961bcd8a937415f3=master"
+    require: "@git.804c217767f8e5371c6db34328e5945e40fbcb5c=master"
 
   # v2025.0.3.0
   chai:
