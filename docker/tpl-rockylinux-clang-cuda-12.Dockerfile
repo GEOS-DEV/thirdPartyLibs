@@ -98,6 +98,11 @@ ARG SRC_DIR
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
+# The generated host-config may reference these wrappers as compilers, so they
+# must exist in the final image (not just the build stage).
+COPY --from=tpl_toolchain /usr/local/bin/clang-gcc13 /usr/local/bin/clang-gcc13
+COPY --from=tpl_toolchain /usr/local/bin/clang++-gcc13 /usr/local/bin/clang++-gcc13
+
 # Extract the generated host-config
 COPY --from=tpl_toolchain /spack-generated.cmake /
 
