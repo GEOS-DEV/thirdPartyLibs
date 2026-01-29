@@ -63,7 +63,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
        --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %clang-10  ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
-       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+      --spack-env-file=${SRC_DIR}/docker/ubuntu20-clang-cuda-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

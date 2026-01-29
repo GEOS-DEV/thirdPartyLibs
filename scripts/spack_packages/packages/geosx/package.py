@@ -9,8 +9,6 @@ import warnings
 import socket
 import os
 
-import llnl.util.tty as tty
-
 from os import environ as env
 from os.path import join as pjoin
 
@@ -148,8 +146,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # IO
     #
-    depends_on('hdf5@1.12.1')
-    depends_on('silo@4.11.1-bsd~fortran~shared~python')
+    depends_on('hdf5@1.14.6')
+    depends_on('silo@4.12.0~fortran~shared~python build_system=cmake')
 
     depends_on('conduit~test~fortran~hdf5_compat+shared')
 
@@ -167,7 +165,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
     depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
 
-    depends_on("superlu-dist +int64  fflags='-fPIC'")
+    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC'")
     depends_on("superlu-dist~openmp", when="~openmp")
     depends_on("superlu-dist+openmp", when="+openmp")
 
@@ -185,9 +183,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
-        depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
+        depends_on("hypre +superlu-dist+mixedint+mpi~shared+pic", when='~cuda~rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared+pic", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared+pic", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +openmp", when="+openmp")
 

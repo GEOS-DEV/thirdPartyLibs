@@ -18,9 +18,9 @@ packages:
   blt:
     require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
 
-  # master - 06/27/25
+  # master - 01/23/26
   hypre:
-    require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
+    require: "@git.804c217767f8e5371c6db34328e5945e40fbcb5c=master"
 
   # v2025.0.3.0
   chai:
@@ -49,7 +49,3 @@ packages:
   # master - 04/12/20
   uncrustify:
     require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
-
-  # master - 04/26/20
-  superlu-dist:
-    require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"

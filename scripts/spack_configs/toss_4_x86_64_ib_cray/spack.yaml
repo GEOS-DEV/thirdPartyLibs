@@ -135,16 +135,6 @@ spack:
         - perftools-base/25.09.0
         - xpmem/2.6.5
 
-    gcc-runtime:
-      buildable: False
-      externals:
-      - spec: gcc-runtime@13.3.1
-        prefix: /usr/tce/packages/gcc/gcc-13.3.1/lib/gcc/x86_64-redhat-linux/13
-      - spec: gcc-runtime@12.1.1
-        prefix: /usr/tce/packages/gcc/gcc-12.1.1/lib/gcc/x86_64-redhat-linux/12
-      - spec: gcc-runtime@11.2.1
-        prefix: /usr/tce/packages/gcc/gcc-11.2.1/lib/gcc/x86_64-redhat-linux/11
-
     # Lock down which MPI we are using
     cray-mpich:
       buildable: false
