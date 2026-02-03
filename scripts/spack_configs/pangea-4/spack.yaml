@@ -65,7 +65,7 @@ spack:
     ####
     # packages necessary on pangea4 when +grpc configuration is requested
     protobuf:
-      require: "@3.26.1"
+      require: "@21.1"
     grpc:
       require: "@1.64.0-full-clone"
 
@@ -73,7 +73,7 @@ spack:
     # external compiler
     gcc:
       externals:
-      - spec: gcc@12.2.1 languages:=c,c++,fortran
+      - spec: gcc@12.2.1 languages=c,c++,fortran +binutils
         prefix: /opt/rh/gcc-toolset-12/root/usr
         extra_attributes:
           compilers:
@@ -86,6 +86,7 @@ spack:
           operating_system: rhel8
           target: x86_64
           extra_rpaths: []
+      buildable: false
 
     ####
     # specs of spack packages to reuse
@@ -98,7 +99,7 @@ spack:
       externals:
         - spec: intel-oneapi-mkl@2023.2.0%gcc@12.2.1
           prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/intel-oneapi-mkl-2023.2.0-7kkfgmz
-      buildable: False
+      buildable: false
     python:
       externals:
       - spec: python@3.11.6
@@ -116,7 +117,7 @@ spack:
       buildable: false
     pugixml:
       externals:
-      - spec: pugixml@1.13
+      - spec: pugixml@1.13~ipo+pic~shared
         prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.1/pugixml-1.13-3lpqjua
       buildable: false
     perl:
@@ -148,6 +149,7 @@ spack:
       externals:
       - spec: doxygen@1.8.20
         prefix: /lustre/p4scratch/data_local/sw/RHEL8/spack-0.21.0/opt/gcc-12.2.1/doxygen-1.8.20-idfxpwl
+      buildable: false
 
     ####
     # spec of system packages to reuse
@@ -179,11 +181,6 @@ spack:
         prefix: /usr
       buildable: false
     # libs
-    gcc-runtime:
-      externals:
-      - spec: gcc-runtime@12.2.1
-        prefix: /opt/rh/gcc-toolset-12/root/usr
-      buildable: false
     glibc:
       externals:
       - spec: glibc@2.28
