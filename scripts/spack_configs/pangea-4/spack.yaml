@@ -65,9 +65,9 @@ spack:
     ####
     # packages necessary on pangea4 when +grpc configuration is requested
     protobuf:
-      require: "@21.1"
+      require: "@26.1"
     grpc:
-      require: "@1.64.0-full-clone"
+      require: "@1.65.5-full-clone"
 
     ####
     # external compiler
