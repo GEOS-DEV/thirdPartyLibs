@@ -18,7 +18,7 @@
 #
 # python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang-14"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang-19"
+# python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang-19 ^doxygen%gcc ^caliper%clang-19 ^conduit%clang-19"
 #
 # python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=90 %gcc-12 ^cuda@12.6.0+allow-unsupported-compilers"
 #
@@ -221,16 +221,19 @@ spack:
     python:
       buildable: False
       externals:
-      - spec: python@3.10.8
-        prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+      # - spec: python@3.10.8
+      #   prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+      - spec: python@3.9.12
+        prefix: /usr/tce/packages/python/python-3.9.12
+
 
     # This needs to be the prefix to the pygeosx LC installation
     # or system install with pygeosx dependencies
-    py-sphinx:
-      buildable: False
-      externals:
-      - spec: py-sphinx@1.6.3
-        prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+    # py-sphinx:
+    #   buildable: False
+    #   externals:
+    #   - spec: py-sphinx@1.6.3
+    #     prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
     autoconf:
       buildable: False
       externals:

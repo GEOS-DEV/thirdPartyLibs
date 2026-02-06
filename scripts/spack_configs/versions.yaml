@@ -14,37 +14,30 @@
 # This file lists the package versions for geos's dependencies
 #
 packages:
-  # v0.6.2
   blt:
-    require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
+    require: "@0.7.1"
 
   # master - 01/23/26
   hypre:
     require: "@git.804c217767f8e5371c6db34328e5945e40fbcb5c=master"
 
-  # v2025.0.3.0
   chai:
-    require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
+    require: "@2025.12.0"
 
-  # v2025.0.3.0
   umpire:
-    require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
+    require: "@2025.12.0"
 
-  # v2025.0.3.0
   raja:
-    require: "@git.1d70abf171474d331f1409908bdf1b1c3fe19222=develop"
+    require: "@2025.12.0"
 
-  # v2025.0.3.0
   camp:
-    require: "@git.ee0a3069a7ae72da8bcea63c06260fad34901d43=main"
+    require: "@git.a8caefa9f4c811b1a114b4ed2c9b681d40f12325=main"
 
-  # v2.12.0
   caliper:
-    require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
+    require: "@2.14.0"
 
-  # v0.9.2
   conduit:
-    require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
+    require: "@0.9.5"
 
   # master - 04/12/20
   uncrustify:
