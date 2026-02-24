@@ -20,7 +20,11 @@ packages:
 
   # master - 01/23/26
   hypre:
+<<<<<<< Updated upstream
     require: "@git.8b0093306228fef1b92384d9face7fbe5a63b460=master"
+=======
+    require: "@git.94958704510ded75a0db8286b9a623da1fa1ee41=master"
+>>>>>>> Stashed changes
 
   # v2025.0.3.0
   chai:

@@ -221,8 +221,16 @@ spack:
     python:
       buildable: False
       externals:
+<<<<<<< Updated upstream
       - spec: python@3.10.8
         prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+=======
+      # - spec: python@3.10.8
+      #   prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+      - spec: python@3.14.3
+        prefix: /usr/tce/packages/python/python-3.14.3
+
+>>>>>>> Stashed changes
 
     # This needs to be the prefix to the pygeosx LC installation
     # or system install with pygeosx dependencies
