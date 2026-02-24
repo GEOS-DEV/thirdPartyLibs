@@ -532,7 +532,20 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
             for tpl, cmake_name, enable in io_tpls:
                 if enable:
-                    cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), spec[tpl].prefix))
+                    dep_spec = None
+                    if tpl == 'zlib':
+                        # Spack may concretize zlib-api to zlib-ng instead of zlib.
+                        for candidate in ('zlib', 'zlib-ng', 'zlib-api'):
+                            try:
+                                dep_spec = spec[candidate]
+                                break
+                            except KeyError:
+                                pass
+                        if dep_spec is None:
+                            raise KeyError("No zlib provider (zlib/zlib-ng/zlib-api) found in {0}".format(spec))
+                    else:
+                        dep_spec = spec[tpl]
+                    cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), dep_spec.prefix))
                 else:
                     cfg.write(cmake_cache_option('ENABLE_{}'.format(cmake_name), False))
 
