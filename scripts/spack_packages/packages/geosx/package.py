@@ -111,7 +111,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    depends_on('raja ~examples~exercises~shared')
+    depends_on('raja @2025.12.0 ~examples~exercises~shared')
     depends_on("raja~openmp", when="~openmp")
     depends_on("raja+openmp", when="+openmp")
 

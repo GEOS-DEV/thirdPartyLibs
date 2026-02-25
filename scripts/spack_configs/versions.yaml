@@ -31,10 +31,6 @@ packages:
     require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
 
   # v2025.0.3.0
-  raja:
-    require: "@git.1d70abf171474d331f1409908bdf1b1c3fe19222=develop"
-
-  # v2025.0.3.0
   camp:
     require: "@git.ee0a3069a7ae72da8bcea63c06260fad34901d43=main"
 
