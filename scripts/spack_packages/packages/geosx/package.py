@@ -119,7 +119,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("umpire~openmp", when="~openmp")
     depends_on("umpire+openmp", when="+openmp")
 
-    depends_on('chai +raja~examples~shared')
+    depends_on('chai @2025.12.0 +raja~examples~shared')
     depends_on("chai~openmp", when="~openmp")
     depends_on("chai+openmp", when="+openmp")
 

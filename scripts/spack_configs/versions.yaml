@@ -23,10 +23,6 @@ packages:
     require: "@git.8b0093306228fef1b92384d9face7fbe5a63b460=master"
 
   # v2025.0.3.0
-  chai:
-    require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
-
-  # v2025.0.3.0
   umpire:
     require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
 
