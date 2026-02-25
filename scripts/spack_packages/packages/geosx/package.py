@@ -76,6 +76,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             multi=False)
     variant('grpc', default=False, description='Enable gRPC.')
     variant('pygeosx', default=True, description='Enable pygeosx.')
+    variant('cxxstd', default='17', description='CXX standard.')
 
     # SPHINX_END_VARIANTS
 
@@ -156,7 +157,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('pugixml@1.13 ~shared')
 
-    depends_on('fmt@10.0.0 cxxstd=14')
+    depends_on('fmt@11')
+    for _fmt_cxxstd in ('14', '17', '20'):
+        depends_on(f'fmt@11 cxxstd={_fmt_cxxstd}', when=f'cxxstd={_fmt_cxxstd}')
     depends_on('vtk@9.4.2', when='+vtk')
 
     #
@@ -355,7 +358,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write("# CMake Standard\n")
             cfg.write("#{0}\n\n".format("-" * 80))
 
-            cfg.write(cmake_cache_string("BLT_CXX_STD", "c++17"))
+            cfg.write(cmake_cache_string("BLT_CXX_STD", f"c++{spec.variants['cxxstd'].value}"))
 
             cfg.write("#{0}\n".format("-" * 80))
             cfg.write("# MPI\n")
@@ -439,7 +442,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_entry('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))
@@ -484,7 +487,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+rocm' in spec:
                 cfg.write(cmake_cache_option('ENABLE_HIP', True))
-                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', spec.variants['cxxstd'].value))
                 cfg.write(cmake_cache_entry('CMAKE_HIP_COMPILER', spec['hip'].prefix.bin.hipcc))
 
                 if not spec.satisfies('amdgpu_target=none'):
@@ -767,7 +770,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_entry('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))
