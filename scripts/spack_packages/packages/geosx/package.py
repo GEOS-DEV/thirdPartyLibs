@@ -99,7 +99,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('cmake@3.24:', type='build')
 
-    depends_on('blt')
+    depends_on('blt@0.7.1')
 
     #
     # Virtual packages

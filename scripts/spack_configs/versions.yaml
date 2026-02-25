@@ -14,10 +14,6 @@
 # This file lists the package versions for geos's dependencies
 #
 packages:
-  # v0.6.2
-  blt:
-    require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
-
   # master - 01/23/26
   hypre:
     require: "@git.8b0093306228fef1b92384d9face7fbe5a63b460=master"
