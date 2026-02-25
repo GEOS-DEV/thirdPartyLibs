@@ -153,7 +153,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('conduit~test~fortran~hdf5_compat+shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper@2.14.0 ~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
