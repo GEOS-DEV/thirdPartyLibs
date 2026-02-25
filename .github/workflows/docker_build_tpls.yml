@@ -72,7 +72,7 @@ jobs:
           #   DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11
           #   TPL_DOCKERFILE: docker/Stanford/Dockerfile
           #   DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
-          #   SPEC: "~pygeosx~openmp cuda_arch=70 %gcc@10.1.0 ^cuda@12.4.0+allow-unsupported-compilers"
+          #   SPEC: "~pygeosx~openmp cuda_arch=86 %gcc@10.1.0 ^cuda@12.4.0+allow-unsupported-compilers"
           #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
           #   RUNS_ON: ubuntu-latest
 
