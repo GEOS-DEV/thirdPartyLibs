@@ -111,20 +111,14 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    depends_on('raja @2025.12.0 ~examples~exercises~shared')
-    depends_on("raja~openmp", when="~openmp")
-    depends_on("raja+openmp", when="+openmp")
-
-    depends_on('umpire +c~examples+fortran~device_alloc~shared')
-    depends_on("umpire~openmp", when="~openmp")
-    depends_on("umpire+openmp", when="+openmp")
-
-    depends_on('chai @2025.12.0 +raja~examples~shared')
-    depends_on("chai~openmp", when="~openmp")
-    depends_on("chai+openmp", when="+openmp")
-
-    depends_on('camp')
-
+    raja_suite_version="2025.12.0"
+    depends_on(f"raja @{raja_suite_version} ~examples~exercises~shared")
+    depends_on(f"chai @{raja_suite_version} +raja~examples~shared")
+    depends_on(f"camp @{raja_suite_version}")
+    depends_on(f"umpire @{raja_suite_version} +c~examples+fortran~device_alloc~shared")
+    with when('+openmp'):
+        for pkg in ('raja', 'chai', 'umpire'):
+            depends_on(f"{pkg}+openmp", when="+openmp")
     #
     # GPUs
     #

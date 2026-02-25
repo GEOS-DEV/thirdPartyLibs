@@ -22,14 +22,6 @@ packages:
   hypre:
     require: "@git.8b0093306228fef1b92384d9face7fbe5a63b460=master"
 
-  # v2025.0.3.0
-  umpire:
-    require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
-
-  # v2025.0.3.0
-  camp:
-    require: "@git.ee0a3069a7ae72da8bcea63c06260fad34901d43=main"
-
   # v0.9.2
   conduit:
     require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
