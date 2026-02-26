@@ -1120,8 +1120,7 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.4.2.tar.gz" )
-
+    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-v9.6.0.tar.gz" )
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
     # Depending on the platform, the install directory could be 'lib' or 'lib64'.
