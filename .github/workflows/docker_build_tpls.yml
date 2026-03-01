@@ -93,6 +93,15 @@ jobs:
     - name: Print environment
       run: printenv
 
+    - name: Inject CA certificate into Docker build
+      if: matrix.RUNS_ON == 'streak2'
+      run: |
+        # 1. Copy the host's CA bundle into the Docker build context
+        cp /etc/pki/tls/certs/ca-bundle.crt ./ca-bundle.crt
+
+        # 2. Inject the COPY and update-ca-trust commands right before dnf runs
+        sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' ${{ matrix.TPL_DOCKERFILE }}
+
     - name: Run the docker build docker script
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
