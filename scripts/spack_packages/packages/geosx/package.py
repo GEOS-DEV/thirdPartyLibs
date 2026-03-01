@@ -181,11 +181,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
-        depends_on("hypre +superlu-dist+mixedint+mpi~shared+pic", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared+pic", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared+pic", when='+rocm')
+        depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
-        depends_on("hypre +openmp", when="+openmp")
+        depends_on("hypre +pic", when="~shared")
+        depends_on("hypre +shared", when="+shared")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
