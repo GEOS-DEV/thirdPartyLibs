@@ -1,7 +1,7 @@
 # This is a Spack Environment file for Pine (Spack 1.0.2) 
 # Run command from the top-level of the repository:
 # ./scripts/uberenv/uberenv.py                                  \
-#    --spec "~openmp~pygeosx~docs"                              \
+#    --spec "~openmp~pygeosx~docs %gcc-11"                              \
 #    --spack-env-file=scripts/spack_configs/pine/spack.yaml     \
 #    --project-json=.uberenv_config.json                        \
 #    --prefix ${GEOS_TPL_DIR}
@@ -78,11 +78,12 @@ spack:
           extra_rpaths: []
       buildable: false
 
-    gcc-runtime:
-      buildable: false
-      externals:
-      - spec: gcc-runtime@11.4.1
-        prefix: /usr/lib/gcc/x86_64-redhat-linux/11
+    # libgcc_s.so.1 is missing in this directory so removing it for now
+    #gcc-runtime:
+    #  buildable: false
+    #  externals:
+    #  - spec: gcc-runtime@11.4.1
+    #    prefix: /usr/lib/gcc/x86_64-redhat-linux/11
 
     gmp:
       externals:
