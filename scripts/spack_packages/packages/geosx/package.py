@@ -177,6 +177,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     with when("+trilinos"):
         trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra+zoltan'
         depends_on("trilinos@16.1.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages)
+        depends_on("trilinos fflags='-fsecond-underscore'", when="platform=darwin")
         depends_on("trilinos~openmp", when="~openmp")
         depends_on("trilinos+openmp", when="+openmp")
 
@@ -213,6 +214,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
     depends_on('grpc', when='+grpc')
+    depends_on('addr2line', when='+addr2line')
 
     # SPHINX_END_DEPENDS
 
@@ -647,7 +649,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write('# addr2line\n')
                 cfg.write('#{0}\n\n'.format('-' * 80))
                 cfg.write(cmake_cache_option('ENABLE_ADDR2LINE', True))
-                cfg.write(cmake_cache_entry('ADDR2LINE_EXEC ', '/usr/bin/addr2line'))
+                cfg.write(cmake_cache_entry('ADDR2LINE_EXEC', os.path.join(spec['addr2line'].prefix.bin, 'addr2line')))
 
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Other\n')
@@ -842,6 +844,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write('# addr2line\n')
                 cfg.write('#{0}\n\n'.format('-' * 80))
                 cfg.write(cmake_cache_option('ENABLE_ADDR2LINE', True))
+                cfg.write(cmake_cache_entry('ADDR2LINE_EXEC', os.path.join(spec['addr2line'].prefix.bin, 'addr2line')))
 
     def cmake_args(self):
         pass
