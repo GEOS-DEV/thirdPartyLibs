@@ -78,12 +78,12 @@ spack:
           extra_rpaths: []
       buildable: false
 
-    # libgcc_s.so.1 is missing in this directory so removing it for now
-    #gcc-runtime:
-    #  buildable: false
-    #  externals:
-    #  - spec: gcc-runtime@11.4.1
-    #    prefix: /usr/lib/gcc/x86_64-redhat-linux/11
+    # libgcc_s.so.1 is missing in /usr/lib/gcc/x86_64-redhat-linux/11 so removing it for now
+    # gcc-runtime:
+    #   buildable: false
+    #   externals:
+    #   - spec: gcc-runtime@11.4.1
+    #     prefix: /usr/lib/gcc/x86_64-redhat-linux/11
 
     gmp:
       externals:
