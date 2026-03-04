@@ -52,7 +52,7 @@ echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DI
 ssh -t "${USER}@${MACHINE}.llnl.gov" "
   source /etc/profile &&
   cd '${PWD}' &&
-  ${GET_A_NODE} srun bash -c '
+  ${GET_A_NODE} bash -c '
     echo \"Start time: \$(date)\"
     ./scripts/uberenv/uberenv.py \
       --spec ${SPEC} \
