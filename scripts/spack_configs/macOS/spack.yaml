@@ -31,6 +31,13 @@ spack:
         operating_system: sequoia
         target: aarch64
         modules: []
+        environment:
+          set:
+            PATH: /usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
+            AR: /usr/bin/ar
+            RANLIB: /usr/bin/ranlib
+            CMAKE_AR: /usr/bin/ar
+            CMAKE_RANLIB: /usr/bin/ranlib
         extra_rpaths: []
     - compiler:
         spec: apple-clang@17.0.0
@@ -45,6 +52,13 @@ spack:
         operating_system: sequoia
         target: aarch64
         modules: []
+        environment:
+          set:
+            PATH: /usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
+            AR: /usr/bin/ar
+            RANLIB: /usr/bin/ranlib
+            CMAKE_AR: /usr/bin/ar
+            CMAKE_RANLIB: /usr/bin/ranlib
         extra_rpaths: []
 
   packages:
@@ -56,6 +70,9 @@ spack:
         blas: [openblas]
         lapack: [openblas]
       variants: "~openmp"
+
+    geosx:
+      variants: "+addr2line"
 
     openblas:
       buildable: False
