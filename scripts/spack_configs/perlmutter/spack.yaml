@@ -113,7 +113,7 @@ spack:
               CXX: /opt/cray/pe/bin/CC
               FC: /opt/cray/pe/bin/ftn
               F77: /opt/cray/pe/bin/ftn
-              CRAY_CPU_TARGET: zen3
+              CRAY_CPU_TARGET: x86-64
               MAKEINFO: /usr/bin/true
           extra_rpaths:
             - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
