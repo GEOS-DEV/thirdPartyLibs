@@ -44,6 +44,15 @@ spack:
       when: '%fortran'
     - spec: '^cray-mpich@9.0.1'
       when: '%mpi'
+    cce-20:
+    - spec: '%c=cce@20.0.0'
+      when: '%c'
+    - spec: '%cxx=cce@20.0.0'
+      when: '%cxx'
+    - spec: '%fortran=cce@20.0.0'
+      when: '%fortran'
+    - spec: '^cray-mpich@9.0.1'
+      when: '%mpi'
 
   packages:
     all:
@@ -82,6 +91,22 @@ spack:
             - /opt/cray/libfabric/1.22.0/lib64
       buildable: false
 
+    cce:
+      require: "@20.0.0"
+      externals:
+      - spec: cce@20.0.0 languages=c,c++,fortran
+        prefix: /opt/cray/pe/cce/20.0.0
+        extra_attributes:
+          compilers:
+            c: /opt/cray/pe/cce/20.0.0/bin/cc
+            cxx: /opt/cray/pe/cce/20.0.0/bin/CC
+            fortran: /opt/cray/pe/cce/20.0.0/bin/ftn
+          extra_rpaths:
+            - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
+            - /opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
+            - /opt/cray/libfabric/1.22.0/lib64
+      buildable: false
+
     # MPI
     cray-mpich:
       require: "@9.0.1"
@@ -92,6 +117,13 @@ spack:
         extra_attributes:
           extra_rpaths:
             - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
+            - /opt/cray/pe/mpich/9.0.1/gtl/lib
+            - /opt/cray/libfabric/1.22.0/lib64
+      - spec: cray-mpich@9.0.1 %cce@20.0.0
+        prefix: /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0
+        extra_attributes:
+          extra_rpaths:
+            - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
             - /opt/cray/pe/mpich/9.0.1/gtl/lib
             - /opt/cray/libfabric/1.22.0/lib64
 
@@ -110,6 +142,8 @@ spack:
       externals:
       - spec: cray-libsci@25.09.0 %gcc@14.3.0
         prefix: /opt/cray/pe/libsci/25.09.0/GNU/12.3/x86_64
+      - spec: cray-libsci@25.09.0 %cce@20.0.0
+        prefix: /opt/cray/pe/libsci/25.09.0/CRAYCLANG/20.0/x86_64
 
     # CUDA
     cuda:
