@@ -37,22 +37,14 @@ spack:
   toolchains:
     gcc-14:
     - spec: '%c=gcc@14.3.0'
-      when: '%c'
     - spec: '%cxx=gcc@14.3.0'
-      when: '%cxx'
     - spec: '%fortran=gcc@14.3.0'
-      when: '%fortran'
     - spec: '%cray-mpich@9.0.1'
-      when: '%mpi'
     cce-20:
     - spec: '%c=cce@20.0.0'
-      when: '%c'
     - spec: '%cxx=cce@20.0.0'
-      when: '%cxx'
     - spec: '%fortran=cce@20.0.0'
-      when: '%fortran'
     - spec: '%cray-mpich@9.0.1'
-      when: '%mpi'
 
   packages:
     all:
@@ -84,12 +76,16 @@ spack:
         prefix: /opt/cray/pe/gcc-native/14
         extra_attributes:
           compilers:
-            c: /opt/cray/pe/gcc-native/14/bin/gcc
-            cxx: /opt/cray/pe/gcc-native/14/bin/g++
-            fortran: /opt/cray/pe/gcc-native/14/bin/gfortran
+            c: /opt/cray/pe/bin/cc
+            cxx: /opt/cray/pe/bin/CC
+            fortran: /opt/cray/pe/bin/ftn
           environment:
             set:
+              CRAY_CPU_TARGET: milan
               MAKEINFO: /usr/bin/true
+              CC: /opt/cray/pe/bin/cc
+              CXX: /opt/cray/pe/bin/CC
+              FC: /opt/cray/pe/bin/ftn
           extra_rpaths:
             - /usr/lib64
             - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
@@ -109,13 +105,14 @@ spack:
             fortran: /opt/cray/pe/bin/ftn
           environment:
             set:
+              CRAY_CPU_TARGET: milan
+              MAKEINFO: /usr/bin/true
               CC: /opt/cray/pe/bin/cc
               CXX: /opt/cray/pe/bin/CC
               FC: /opt/cray/pe/bin/ftn
               F77: /opt/cray/pe/bin/ftn
-              CRAY_CPU_TARGET: x86-64
-              MAKEINFO: /usr/bin/true
           extra_rpaths:
+            - /usr/lib64
             - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
             - /opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
             - /opt/cray/libfabric/1.22.0/lib64
@@ -131,6 +128,7 @@ spack:
         prefix: /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3
         extra_attributes:
           extra_rpaths:
+            - /usr/lib64
             - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
             - /opt/cray/pe/mpich/9.0.1/gtl/lib
             - /opt/cray/libfabric/1.22.0/lib64
@@ -138,6 +136,7 @@ spack:
         prefix: /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0
         extra_attributes:
           extra_rpaths:
+            - /usr/lib64
             - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
             - /opt/cray/pe/mpich/9.0.1/gtl/lib
             - /opt/cray/libfabric/1.22.0/lib64
