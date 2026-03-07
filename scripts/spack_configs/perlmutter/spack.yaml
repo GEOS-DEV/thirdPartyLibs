@@ -42,7 +42,7 @@ spack:
       when: '%cxx'
     - spec: '%fortran=gcc@14.3.0'
       when: '%fortran'
-    - spec: '^cray-mpich@9.0.1'
+    - spec: '%cray-mpich@9.0.1'
       when: '%mpi'
     cce-20:
     - spec: '%c=cce@20.0.0'
@@ -51,7 +51,7 @@ spack:
       when: '%cxx'
     - spec: '%fortran=cce@20.0.0'
       when: '%fortran'
-    - spec: '^cray-mpich@9.0.1'
+    - spec: '%cray-mpich@9.0.1'
       when: '%mpi'
 
   packages:
