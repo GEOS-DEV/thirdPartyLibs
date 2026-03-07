@@ -104,15 +104,15 @@ spack:
         prefix: /opt/cray/pe/cce/20.0.0
         extra_attributes:
           compilers:
-            c: /opt/cray/pe/cce/20.0.0/bin/cc
-            cxx: /opt/cray/pe/cce/20.0.0/bin/CC
-            fortran: /opt/cray/pe/cce/20.0.0/bin/ftn
+            c: /opt/cray/pe/bin/cc
+            cxx: /opt/cray/pe/bin/CC
+            fortran: /opt/cray/pe/bin/ftn
           environment:
             set:
-              CC: /opt/cray/pe/cce/20.0.0/bin/cc
-              CXX: /opt/cray/pe/cce/20.0.0/bin/CC
-              FC: /opt/cray/pe/cce/20.0.0/bin/ftn
-              F77: /opt/cray/pe/cce/20.0.0/bin/ftn
+              CC: /opt/cray/pe/bin/cc
+              CXX: /opt/cray/pe/bin/CC
+              FC: /opt/cray/pe/bin/ftn
+              F77: /opt/cray/pe/bin/ftn
               CRAY_CPU_TARGET: zen3
               MAKEINFO: /usr/bin/true
           extra_rpaths:
@@ -169,6 +169,12 @@ spack:
         prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9
 
     # System level packages
+    cmake:
+      require: "@3.30.2"
+      buildable: false
+      externals:
+      - spec: cmake@3.30.2
+        prefix: /global/common/software/nersc9/cmake/3.30.2
     texinfo:
       buildable: false
       externals:
@@ -179,11 +185,6 @@ spack:
       externals:
         - spec: papi@7.2.0.2
           prefix: /opt/cray/pe/papi/7.2.0.2
-    cmake:
-      buildable: false
-      externals:
-      - spec: cmake@3.30.2
-        prefix: /global/common/software/nersc9/cmake/3.30.2
     python:
       buildable: false
       externals:
