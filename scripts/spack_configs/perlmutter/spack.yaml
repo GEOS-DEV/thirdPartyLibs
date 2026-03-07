@@ -87,6 +87,9 @@ spack:
             c: /opt/cray/pe/gcc-native/14/bin/gcc
             cxx: /opt/cray/pe/gcc-native/14/bin/g++
             fortran: /opt/cray/pe/gcc-native/14/bin/gfortran
+          environment:
+            set:
+              MAKEINFO: /usr/bin/true
           extra_rpaths:
             - /usr/lib64
             - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
@@ -111,6 +114,7 @@ spack:
               FC: /opt/cray/pe/cce/20.0.0/bin/ftn
               F77: /opt/cray/pe/cce/20.0.0/bin/ftn
               CRAY_CPU_TARGET: zen3
+              MAKEINFO: /usr/bin/true
           extra_rpaths:
             - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
             - /opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
