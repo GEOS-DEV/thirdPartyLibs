@@ -37,22 +37,14 @@ spack:
   toolchains:
     gcc-14:
     - spec: '%c=gcc@14.3.0'
-      when: '%c'
     - spec: '%cxx=gcc@14.3.0'
-      when: '%cxx'
     - spec: '%fortran=gcc@14.3.0'
-      when: '%fortran'
-    - spec: '%cray-mpich@9.0.1'
-      when: '%mpi'
+    - spec: 'cray-mpich@9.0.1 %gcc@14.3.0'
     cce-20:
     - spec: '%c=cce@20.0.0'
-      when: '%c'
     - spec: '%cxx=cce@20.0.0'
-      when: '%cxx'
     - spec: '%fortran=cce@20.0.0'
-      when: '%fortran'
-    - spec: '%cray-mpich@9.0.1'
-      when: '%mpi'
+    - spec: 'cray-mpich@9.0.1 %cce@20.0.0'
 
   packages:
     all:
@@ -101,10 +93,18 @@ spack:
             c: /opt/cray/pe/cce/20.0.0/bin/cc
             cxx: /opt/cray/pe/cce/20.0.0/bin/CC
             fortran: /opt/cray/pe/cce/20.0.0/bin/ftn
+          environment:
+            set:
+              CC: /opt/cray/pe/cce/20.0.0/bin/cc
+              CXX: /opt/cray/pe/cce/20.0.0/bin/CC
+              FC: /opt/cray/pe/cce/20.0.0/bin/ftn
+              F77: /opt/cray/pe/cce/20.0.0/bin/ftn
+              CRAY_CPU_TARGET: zen3
           extra_rpaths:
             - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
             - /opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
             - /opt/cray/libfabric/1.22.0/lib64
+            - /opt/cray/pe/mpich/9.0.1/gtl/lib
       buildable: false
 
     # MPI
@@ -154,6 +154,11 @@ spack:
         prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9
 
     # System level packages
+    texinfo:
+      buildable: false
+      externals:
+      - spec: texinfo@7.0
+        prefix: /usr
     papi:
       buildable: false
       externals:
