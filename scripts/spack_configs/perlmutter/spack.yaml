@@ -66,6 +66,7 @@ spack:
 
     # Compilers
     gcc:
+      require: "@14.3.0"
       externals:
       - spec: gcc@14.3.0 languages=c,c++,fortran
         prefix: /opt/cray/pe/gcc-native/14
@@ -74,17 +75,37 @@ spack:
             c: /opt/cray/pe/gcc-native/14/bin/gcc
             cxx: /opt/cray/pe/gcc-native/14/bin/g++
             fortran: /opt/cray/pe/gcc-native/14/bin/gfortran
+          extra_rpaths:
+            - /usr/lib64
+            - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
+            - /opt/cray/pe/mpich/9.0.1/gtl/lib
+            - /opt/cray/libfabric/1.22.0/lib64
       buildable: false
 
     # MPI
     cray-mpich:
+      require: "@9.0.1"
       buildable: false
       externals:
       - spec: cray-mpich@9.0.1 %gcc@14.3.0
         prefix: /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3
+        extra_attributes:
+          extra_rpaths:
+            - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
+            - /opt/cray/pe/mpich/9.0.1/gtl/lib
+            - /opt/cray/libfabric/1.22.0/lib64
+
+    # libfabric
+    libfabric:
+      require: "@1.22.0"
+      buildable: false
+      externals:
+      - spec: libfabric@1.22.0
+        prefix: /opt/cray/libfabric/1.22.0
 
     # BLAS/LAPACK
     cray-libsci:
+      require: "@25.09.0"
       buildable: false
       externals:
       - spec: cray-libsci@25.09.0 %gcc@14.3.0
@@ -92,6 +113,7 @@ spack:
 
     # CUDA
     cuda:
+      require: "@12.9"
       buildable: false
       externals:
       - spec: cuda@12.9
