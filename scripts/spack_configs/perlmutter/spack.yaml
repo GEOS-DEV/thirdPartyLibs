@@ -1,0 +1,165 @@
+#------------------------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# Copyright (c) 2018-2020 Lawrence Livermore National Security LLC
+# Copyright (c) 2018-2020 The Board of Trustees of the Leland Stanford Junior University
+# Copyright (c) 2018-2020 TotalEnergies
+# Copyright (c) 2019-     GEOSX Contributors
+# All rights reserved
+#
+# See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS files for details.
+#------------------------------------------------------------------------------------------------------------
+
+# Uberenv command to build geos dependencies on Perlmutter:
+#
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=80 %gcc@14.3.0" --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml
+#
+
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage: $spack/../build_stage
+    build_jobs: 128
+
+  # Regular TPLs do not need views
+  view: false
+
+  # Include shared variants and versions
+  include:
+  - ../defaults.yaml
+  - ../versions.yaml
+
+  toolchains:
+    gcc-14:
+    - spec: '%c=gcc@14.3.0'
+      when: '%c'
+    - spec: '%cxx=gcc@14.3.0'
+      when: '%cxx'
+    - spec: '%fortran=gcc@14.3.0'
+      when: '%fortran'
+    - spec: '^cray-mpich@9.0.1'
+      when: '%mpi'
+
+  packages:
+    all:
+      target: [zen3]
+
+    mpi:
+      require:
+      - cray-mpich
+
+    zlib-api:
+      require:
+      - zlib
+
+    blas:
+      require:
+      - "cray-libsci"
+    lapack:
+      require:
+      - "cray-libsci"
+
+    # Compilers
+    gcc:
+      externals:
+      - spec: gcc@14.3.0 languages=c,c++,fortran
+        prefix: /opt/cray/pe/gcc-native/14
+        extra_attributes:
+          compilers:
+            c: /opt/cray/pe/gcc-native/14/bin/gcc
+            cxx: /opt/cray/pe/gcc-native/14/bin/g++
+            fortran: /opt/cray/pe/gcc-native/14/bin/gfortran
+      buildable: false
+
+    # MPI
+    cray-mpich:
+      buildable: false
+      externals:
+      - spec: cray-mpich@9.0.1 %gcc@14.3.0
+        prefix: /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3
+
+    # BLAS/LAPACK
+    cray-libsci:
+      buildable: false
+      externals:
+      - spec: cray-libsci@25.09.0 %gcc@14.3.0
+        prefix: /opt/cray/pe/libsci/25.09.0/GNU/12.3/x86_64
+
+    # CUDA
+    cuda:
+      buildable: false
+      externals:
+      - spec: cuda@12.9
+        prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9
+
+    # System level packages
+    papi:
+      buildable: false
+      externals:
+        - spec: papi@7.2.0.2
+          prefix: /opt/cray/pe/papi/7.2.0.2
+    cmake:
+      buildable: false
+      externals:
+      - spec: cmake@3.30.2
+        prefix: /global/common/software/nersc9/cmake/3.30.2
+    python:
+      buildable: false
+      externals:
+      - spec: python@3.11.7
+        prefix: /opt/cray/pe/python/3.11.7
+    zlib:
+      buildable: false
+      externals:
+      - spec: zlib@1.2.11
+        prefix: /usr
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.12.1
+        prefix: /usr
+    m4:
+      buildable: false
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+    perl:
+      buildable: false
+      externals:
+      - spec: perl@5.34.0
+        prefix: /usr
+    pkg-config:
+      buildable: false
+      externals:
+      - spec: pkg-config@0.29.2
+        prefix: /usr
+    diffutils:
+      buildable: false
+      externals:
+      - spec: diffutils@3.7
+        prefix: /usr
+    autoconf:
+      buildable: false
+      externals:
+      - spec: autoconf@2.69
+        prefix: /usr
+    automake:
+      buildable: false
+      externals:
+      - spec: automake@1.16.5
+        prefix: /usr
+    libtool:
+      buildable: false
+      externals:
+      - spec: libtool@2.4.6
+        prefix: /usr
+    gettext:
+      buildable: false
+      externals:
+      - spec: gettext@0.21
+        prefix: /usr
