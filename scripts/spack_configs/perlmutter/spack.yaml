@@ -33,47 +33,49 @@ spack:
   include:
   - ../defaults.yaml
   - ../versions.yaml
-toolchains:
-  gcc-14:
-  - spec: '%c=gcc@14.3.0'
-    when: '%c'
-  - spec: '%cxx=gcc@14.3.0'
-    when: '%cxx'
-  - spec: '%fortran=gcc@14.3.0'
-    when: '%fortran'
-  - spec: '%cray-mpich@9.0.1'
-    when: '%mpi'
-  cce-20:
-  - spec: '%c=cce@20.0.0'
-    when: '%c'
-  - spec: '%cxx=cce@20.0.0'
-    when: '%cxx'
-  - spec: '%fortran=cce@20.0.0'
-    when: '%fortran'
-  - spec: '%cray-mpich@9.0.1'
-    when: '%mpi'
 
-packages:
-  all:
-    target: [zen3]
+  toolchains:
+    gcc-14:
+    - spec: '%c=gcc@14.3.0'
+      when: '%c'
+    - spec: '%cxx=gcc@14.3.0'
+      when: '%cxx'
+    - spec: '%fortran=gcc@14.3.0'
+      when: '%fortran'
+    - spec: '%cray-mpich@9.0.1'
+      when: '%mpi'
+    cce-20:
+    - spec: '%c=cce@20.0.0'
+      when: '%c'
+    - spec: '%cxx=cce@20.0.0'
+      when: '%cxx'
+    - spec: '%fortran=cce@20.0.0'
+      when: '%fortran'
+    - spec: '%cray-mpich@9.0.1'
+      when: '%mpi'
 
-  mpi:
-    require:
-    - cray-mpich
-    buildable: false
+  packages:
+    all:
+      target: [zen3]
 
-  zlib-api:
-    require:
-    - zlib
+    mpi:
+      require:
+      - cray-mpich
+      buildable: false
 
-  blas:
-    require:
-    - "cray-libsci"
-    buildable: false
-  lapack:
-    require:
-    - "cray-libsci"
-    buildable: false
+    zlib-api:
+      require:
+      - zlib
+
+    blas:
+      require:
+      - "cray-libsci"
+      buildable: false
+    lapack:
+      require:
+      - "cray-libsci"
+      buildable: false
+
     # Compilers
     gcc:
       require: "@14.3.0"
