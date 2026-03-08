@@ -12,7 +12,7 @@
 
 # Uberenv command to build geos dependencies on Perlmutter:
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=80 %gcc@14.3.0" --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=80 %%cce-20" --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml
 #
 
 spack:
@@ -93,16 +93,27 @@ spack:
             fortran: /opt/cray/pe/craype/2.7.35/bin/ftn
           environment:
             set:
-              CRAY_CPU_TARGET: milan
               MAKEINFO: /usr/bin/true
               CC: /opt/cray/pe/craype/2.7.35/bin/cc
               CXX: /opt/cray/pe/craype/2.7.35/bin/CC
               FC: /opt/cray/pe/craype/2.7.35/bin/ftn
+              NVCC_APPEND_FLAGS: "-allow-unsupported-compiler"
           extra_rpaths:
             - /usr/lib64
             - /opt/cray/pe/mpich/9.0.1/ofi/gnu/12.3/lib
             - /opt/cray/pe/mpich/9.0.1/gtl/lib
             - /opt/cray/libfabric/1.22.0/lib64
+        modules:
+        - PrgEnv-gnu/8.6.0
+        - craype/2.7.35
+        - craype-network-ofi
+        - craype-x86-milan
+        - cray-mpich/9.0.1
+        - cray-libsci/25.09.0
+        - cray-dsmml/0.3.1
+        - cce/20.0.0
+        - libfabric/1.22.0
+        - xpmem/2.11.5-1.3_g73ade43320bc
       buildable: false
 
     cce:
@@ -117,18 +128,30 @@ spack:
             fortran: /opt/cray/pe/craype/2.7.35/bin/ftn
           environment:
             set:
-              CRAY_CPU_TARGET: milan
               MAKEINFO: /usr/bin/true
               CC: /opt/cray/pe/craype/2.7.35/bin/cc
               CXX: /opt/cray/pe/craype/2.7.35/bin/CC
               FC: /opt/cray/pe/craype/2.7.35/bin/ftn
               F77: /opt/cray/pe/craype/2.7.35/bin/ftn
+              NVCC_APPEND_FLAGS: "-allow-unsupported-compiler"
           extra_rpaths:
             - /usr/lib64
             - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
             - /opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
             - /opt/cray/libfabric/1.22.0/lib64
             - /opt/cray/pe/mpich/9.0.1/gtl/lib
+            - /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9/lib64
+        modules:
+        - PrgEnv-cray/8.6.0
+        - craype/2.7.35
+        - craype-network-ofi
+        - craype-x86-milan
+        - cray-mpich/9.0.1
+        - cray-libsci/25.09.0
+        - cray-dsmml/0.3.1
+        - cce/20.0.0
+        - libfabric/1.22.0
+        - xpmem/2.11.5-1.3_g73ade43320bc
       buildable: false
 
     # MPI
@@ -178,6 +201,8 @@ spack:
       externals:
       - spec: cuda@12.9+allow-unsupported-compilers
         prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9
+        modules:
+        - cudatoolkit/12.9
 
     # System level packages
     cmake:
@@ -186,6 +211,11 @@ spack:
       externals:
       - spec: cmake@3.30.2
         prefix: /global/common/software/nersc9/cmake/3.30.2
+    ncurses:
+      buildable: false
+      externals:
+      - spec: ncurses@6
+        prefix: /usr
     texinfo:
       buildable: false
       externals:
