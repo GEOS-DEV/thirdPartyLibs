@@ -76,6 +76,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             multi=False)
     variant('grpc', default=False, description='Enable gRPC.')
     variant('pygeosx', default=True, description='Enable pygeosx.')
+    variant('superlu-dist', default=True, description='Build with SuperLU_DIST support.')
     variant('cxxstd', default='17', description='CXX standard.')
 
     # SPHINX_END_VARIANTS
@@ -162,10 +163,11 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
     depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
 
-    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC'")
-    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC -ef'", when="%cce")
-    depends_on("superlu-dist~openmp", when="~openmp")
-    depends_on("superlu-dist+openmp", when="+openmp")
+    with when("+superlu-dist"):
+        depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC'")
+        depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC -ef'", when="%cce")
+        depends_on("superlu-dist~openmp", when="~openmp")
+        depends_on("superlu-dist+openmp", when="+openmp")
 
     # -Wno-error=implicit-function-declaration needed for 'METIS_PartMeshDual' error
     depends_on("scotch@7.0.8 ~compression +mpi +esmumps +int64 determinism=FULL ~shared ~metis build_system=cmake cflags='-fPIC' cxxflags='-fPIC'", when='+scotch')
@@ -181,9 +183,13 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
-        depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
+        depends_on("hypre +mixedint+mpi")
+        depends_on("hypre +superlu-dist", when="+superlu-dist")
+        depends_on("hypre ~superlu-dist", when="~superlu-dist")
+
+        depends_on("hypre +cuda+umpire+unified-memory", when="+cuda")
+        depends_on("hypre +rocm+umpire+unified-memory", when="+rocm")
+
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +pic", when="~shared")
         depends_on("hypre +shared", when="+shared")
@@ -575,7 +581,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 ('metis', 'METIS', True),
                 ('parmetis', 'PARMETIS', True),
                 ('scotch', 'SCOTCH', '+scotch' in spec),
-                ('superlu-dist', 'SUPERLU_DIST', True),
+                ('superlu-dist', 'SUPERLU_DIST', '+superlu-dist' in spec),
                 ('suite-sparse', 'SUITESPARSE', True),
                 ('trilinos', 'TRILINOS', '+trilinos' in spec),
                 ('hypre', 'HYPRE', '+hypre' in spec),
