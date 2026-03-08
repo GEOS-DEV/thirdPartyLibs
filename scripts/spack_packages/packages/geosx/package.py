@@ -78,6 +78,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('pygeosx', default=True, description='Enable pygeosx.')
     variant('superlu-dist', default=True, description='Build with SuperLU_DIST support.')
     variant('unified-memory', default=True, description='Enable unified memory support.')
+    variant('gpu-aware-mpi', default=False, description='Enable GPU-aware MPI support.')
     variant('cxxstd', default='17', description='CXX standard.')
 
     # SPHINX_END_VARIANTS
@@ -187,6 +188,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("hypre +mixedint+mpi")
         depends_on("hypre +superlu-dist", when="+superlu-dist")
         depends_on("hypre ~superlu-dist", when="~superlu-dist")
+        depends_on("hypre +gpu-aware-mpi", when="+gpu-aware-mpi")
+        depends_on("hypre ~gpu-aware-mpi", when="~gpu-aware-mpi")
 
         with when("+cuda"):
             depends_on("hypre +cuda+umpire")
