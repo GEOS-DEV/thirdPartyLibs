@@ -173,10 +173,10 @@ spack:
 
     # CUDA
     cuda:
-      require: "@12.9"
+      require: "@12.9+allow-unsupported-compilers"
       buildable: false
       externals:
-      - spec: cuda@12.9
+      - spec: cuda@12.9+allow-unsupported-compilers
         prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9
 
     # System level packages
