@@ -9,13 +9,14 @@ import warnings
 import socket
 import os
 
+import llnl.util.tty as tty
+
 from os import environ as env
 from os.path import join as pjoin
 
 from spack_repo.builtin.build_systems.cmake import CMakePackage
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.cached_cmake import (
-    CachedCMakePackage,
     cmake_cache_option,
     cmake_cache_path,
     cmake_cache_string,
@@ -23,6 +24,13 @@ from spack_repo.builtin.build_systems.cached_cmake import (
 
 # Tested specs are located at scripts/spack_configs/<$SYS_TYPE>/spack.yaml (e.g. %clang@10.0.1)
 # WARNING: +petsc variant is yet to be tested.
+
+
+def cmake_cache_entry(name, value, comment=""):
+    """Generate a string for a cmake cache variable."""
+
+    return 'set(%s "%s" CACHE PATH "%s")\n\n' % (name, value, comment)
+
 
 def cmake_cache_list(name, value, comment=""):
     """Generate a list for a cmake cache variable"""
@@ -82,7 +90,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('cmake@3.24:', type='build')
 
-    depends_on('blt')
+    depends_on('blt@0.7.1')
 
     #
     # Virtual packages
@@ -94,20 +102,14 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    depends_on("raja ~examples~exercises~shared")
-    depends_on("raja~openmp", when="~openmp")
-    depends_on("raja+openmp", when="+openmp")
-
-    depends_on("umpire +c~examples+fortran~device_alloc~shared")
-    depends_on("umpire~openmp", when="~openmp")
-    depends_on("umpire+openmp", when="+openmp")
-
-    depends_on("chai +raja~examples~shared")
-    depends_on("chai~openmp", when="~openmp")
-    depends_on("chai+openmp", when="+openmp")
-
-    depends_on('camp')
-
+    raja_suite_version="2025.12.0"
+    depends_on(f"raja @{raja_suite_version} ~examples~exercises~shared")
+    depends_on(f"chai @{raja_suite_version} +raja~examples~shared")
+    depends_on(f"camp @{raja_suite_version}")
+    depends_on(f"umpire @{raja_suite_version} +c~examples+fortran~device_alloc~shared")
+    with when('+openmp'):
+        for pkg in ('raja', 'chai', 'umpire'):
+            depends_on(f"{pkg}+openmp", when="+openmp")
     #
     # GPUs
     #
@@ -130,17 +132,19 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # IO
     #
-    depends_on('hdf5@1.12.1')
-    depends_on('silo@4.11.1-bsd~fortran~shared~python')
+    depends_on('hdf5@1.14.6')
+    depends_on('silo@4.12.0~fortran~shared~python build_system=cmake')
 
-    depends_on('conduit~test~fortran~hdf5_compat+shared')
+    depends_on('conduit@0.9.5 ~test~fortran~hdf5_compat+shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper@2.14.0 ~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
     depends_on('fmt@11')
+    for _fmt_cxxstd in ('14', '17', '20'):
+        depends_on(f'fmt@11 cxxstd={_fmt_cxxstd}', when=f'cxxstd={_fmt_cxxstd}')
     depends_on('vtk@9.4.2', when='+vtk')
 
     #
@@ -149,7 +153,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("parmetis@4.0.3+int64+shared cflags='-fPIC' cxxflags='-fPIC'")
     depends_on("metis +int64+shared cflags='-fPIC' cxxflags='-fPIC'")
 
-    depends_on("superlu-dist +int64  fflags='-fPIC'")
+    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC'")
+    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC -ef'", when="%cce")
     depends_on("superlu-dist~openmp", when="~openmp")
     depends_on("superlu-dist+openmp", when="+openmp")
 
@@ -167,12 +172,14 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
-        depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
+        depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +openmp", when="+openmp")
         depends_on("hypre +caliper", when="+caliper")
+        depends_on("hypre +pic", when="~shared")
+        depends_on("hypre +shared", when="+shared")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
@@ -212,12 +219,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # Only phases necessary for building dependencies and generate host configs
     phases = ['geos_hostconfig', 'lvarray_hostconfig']
     #phases = ['hostconfig', 'cmake', 'build', 'install']
-
-    # This method is called to finalize dependencies
-    def dependencies(self):
-        super().dependencies()
-        # Add a conditional dependency on fmt with the cxxstd variant
-        self.depends_on(f"fmt@11 cxxstd=c++{self.spec.variants['cxxstd'].value}")
 
     @run_after('build')
     @on_package_attributes(run_tests=True)
@@ -523,7 +524,20 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
             for tpl, cmake_name, enable in io_tpls:
                 if enable:
-                    cfg.write(cmake_cache_path('{}_DIR'.format(cmake_name), spec[tpl].prefix))
+                    dep_spec = None
+                    if tpl == 'zlib':
+                        # Spack may concretize zlib-api to zlib-ng instead of zlib.
+                        for candidate in ('zlib', 'zlib-ng', 'zlib-api'):
+                            try:
+                                dep_spec = spec[candidate]
+                                break
+                            except KeyError:
+                                pass
+                        if dep_spec is None:
+                            raise KeyError("No zlib provider (zlib/zlib-ng/zlib-api) found in {0}".format(spec))
+                    else:
+                        dep_spec = spec[tpl]
+                    cfg.write(cmake_cache_path('{}_DIR'.format(cmake_name), dep_spec.prefix))
                 else:
                     cfg.write(cmake_cache_option('ENABLE_{}'.format(cmake_name), False))
 

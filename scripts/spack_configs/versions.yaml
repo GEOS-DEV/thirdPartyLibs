@@ -14,42 +14,10 @@
 # This file lists the package versions for geos's dependencies
 #
 packages:
-  # v0.7.1 + CUDA CMP0146 fix
-  blt:
-    require: "@git.fe075e596c5fde30acbe4e05f40baaf0a258ff54=develop"
-
-  # master - 06/27/25
+  # master - 01/23/26
   hypre:
-    require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c=master"
-
-  # v2025.09.1
-  chai:
-    require: "@git.51e66b8a5a6caac41aa329c8643180b8e2b33e5f=develop"
-
-  # v2025.09.0
-  umpire:
-    require: "@git.6b0ea9edbbbc741c8a429768d946549cd3bd7d33=develop"
-
-  # v2025.09.0
-  raja:
-    require: "@git.ca756788dbdd43fec2a3840389126ae94a905d5f=develop"
-
-  # v2025.09.2
-  camp:
-    require: "@git.4070ce93a802849d61037310a87c50cc24c9e498=main"
-
-  # v2.12.0
-  caliper:
-    require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
-
-  # v0.9.2
-  conduit:
-    require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
+    require: "@develop"
 
   # master - 04/12/20
   uncrustify:
     require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
-
-  # master - 04/26/20
-  superlu-dist:
-    require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"

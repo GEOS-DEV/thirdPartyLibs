@@ -33,27 +33,27 @@ spack:
         when: '%cxx'
       - spec: '%[virtuals=fortran]gcc@11.4.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi'
         when: '%mpi'
     clang-10:
-      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb'
+      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb'
+      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@9.5.0'
+      - spec: '%[virtuals=fortran]gcc@9.4.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi'
         when: '%mpi'
     gcc-9:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
-      - spec: '%c=gcc@9.5.0'
+      - spec: '%c=gcc@9.4.0'
         when: '%c'
-      - spec: '%cxx=gcc@9.5.0'
+      - spec: '%cxx=gcc@9.4.0'
         when: '%cxx'
-      - spec: '%fortran=gcc@9.5.0'
+      - spec: '%fortran=gcc@9.4.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi %gcc@9.4.0'
         when: '%mpi'
     gcc-10:
       - spec: cxxflags='-pthread'
@@ -64,7 +64,7 @@ spack:
         when: '%cxx'
       - spec: '%fortran=gcc@10.5.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi %gcc@10.5.0'
         when: '%mpi'
     gcc-11:
       - spec: cxxflags='-pthread'
@@ -75,7 +75,7 @@ spack:
         when: '%cxx'
       - spec: '%fortran=gcc@11.4.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi %gcc@11.4.0'
         when: '%mpi'
     gcc-12:
       - spec: cxxflags='-pthread'
@@ -86,7 +86,7 @@ spack:
         when: '%cxx'
       - spec: '%fortran=gcc@12.3.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi %gcc@12.3.0'
         when: '%mpi'
     gcc-13:
       - spec: cxxflags='-pthread'
@@ -107,7 +107,7 @@ spack:
     # Require
     mpi:
       require:
-      - openmpi
+      - openmpi@4.1.2
     blas:
       require:
       - "netlib-lapack"
@@ -118,7 +118,7 @@ spack:
     # Compiler packages
     llvm:
       externals:
-      - spec: llvm@10.0.0+clang~flang~lld~lldb
+      - spec: llvm@10.0.0+clang~flang~lld~lldb openmp=project
         prefix: /usr
         extra_attributes:
           compilers:
@@ -141,7 +141,7 @@ spack:
             cxx: /usr/bin/amdclang++
     gcc:
       externals:
-      - spec: gcc@9.5.0 languages:='c,c++,fortran'
+      - spec: gcc@9.4.0 languages:='c,c++,fortran'
         prefix: /usr
         extra_attributes:
           compilers:
@@ -176,26 +176,6 @@ spack:
             c: /usr/bin/gcc-13
             cxx: /usr/bin/g++-13
             fortran: /usr/bin/gfortran-13
-
-    # MPI
-    openmpi:
-      externals:
-      - spec: openmpi@4.1.2 %llvm
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-        modules: [mpi]
-      - spec: openmpi@4.1.2 %llvm-amdgpu@6.4.3
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-      - spec: openmpi@4.1.2 %gcc@9.5.0
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-      - spec: openmpi@4.1.2 %gcc@10.5.0
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-      - spec: openmpi@4.1.2 %gcc@11.4.0
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-      - spec: openmpi@4.1.2 %gcc@12.3.0
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-      - spec: openmpi@4.1.2 %gcc@13.3.0
-        prefix: /usr/lib/x86_64-linux-gnu/openmpi
-
     # CUDA packages
     cuda:
       buildable: False
@@ -318,8 +298,34 @@ spack:
     netlib-lapack:
       buildable: false
       externals:
-      - spec: netlib-lapack@3.12.0
+      - spec: netlib-lapack@3.10.0
         prefix: /usr
+    netlib-blas:
+      buildable: false
+      externals:
+      - spec: netlib-blas@3.10.0
+        prefix: /usr
+    openmpi:
+      buildable: false
+      externals:
+      - spec: openmpi@4.1.2 %llvm@10.0.0
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+        modules: [mpi]
+      - spec: openmpi@4.1.2 %llvm@15.0.7
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+        modules: [mpi]
+      - spec: openmpi@4.1.2 %llvm-amdgpu@6.4.3
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+      - spec: openmpi@4.1.2 %gcc@9.4.0
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+      - spec: openmpi@4.1.2 %gcc@10.5.0
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+      - spec: openmpi@4.1.2 %gcc@11.4.0
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+      - spec: openmpi@4.1.2 %gcc@12.3.0
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
+      - spec: openmpi@4.1.2 %gcc@13.3.0
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
     perl:
       buildable: false
       externals:
@@ -407,10 +413,7 @@ spack:
       - spec: gmp@6.3.0
         prefix: /usr
     pugixml:
-      buildable: false
-      externals:
-      - spec: pugixml@1.13.0
-        prefix: /usr
+      buildable: true
     gmake:
       buildable: false
       externals:

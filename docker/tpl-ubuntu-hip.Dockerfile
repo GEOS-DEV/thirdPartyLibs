@@ -61,6 +61,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         rocsparse-dev \
         rocsolver-dev \
         rocblas-dev \
+        hipblas-dev \
+        hipsparse-dev \
+        hipfft-dev \
+        hipsolver-dev \
+        hiprand-dev \
         rocprim-dev \
         rocrand-dev \
         rocthrust-dev \
@@ -73,8 +78,10 @@ RUN python3 -m pip install clingo --break-system-packages
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
-# OpenMPI hack for Ubuntu
-RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi
+# OpenMPI hack for Ubuntu and expose ROCm LLVM as the expected clang path.
+RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi && \
+    ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang /usr/bin/clang && \
+    ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ /usr/bin/clang++
 
 # MPI environment variables
 ENV CC=/usr/bin/amdclang \
