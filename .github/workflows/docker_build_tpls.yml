@@ -109,8 +109,8 @@ jobs:
         # 2. Inject distro-specific trust-store setup into the Dockerfile.
         if grep -q 'RUN dnf clean all' "${{ matrix.TPL_DOCKERFILE }}"; then
           sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${{ matrix.TPL_DOCKERFILE }}"
-        elif grep -q '# Install system packages' "${{ matrix.TPL_DOCKERFILE }}"; then
-          sed -i '/# Install system packages/i COPY ca-bundle.crt /usr/local/share/ca-certificates/host-ca.crt\nRUN update-ca-certificates' "${{ matrix.TPL_DOCKERFILE }}"
+        elif grep -q 'apt-get update' "${{ matrix.TPL_DOCKERFILE }}"; then
+          perl -0pi -e 's/(RUN .*?apt-get update)/COPY ca-bundle.crt \/usr\/local\/share\/ca-certificates\/host-ca.crt\nRUN update-ca-certificates\n\n$1/s' "${{ matrix.TPL_DOCKERFILE }}"
         else
           echo "Could not find a CA-injection hook in ${{ matrix.TPL_DOCKERFILE }}"
           exit 1
