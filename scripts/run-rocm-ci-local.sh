@@ -14,7 +14,9 @@ Options:
                             Default: geosx/ubuntu24.04-amdclang19.0.0-rocm6.4.3
   --install-dir-root DIR    Install root inside the image. Default: /opt/GEOS
   --docker-root-image IMG   Base image. Default: rocm/dev-ubuntu-24.04:6.4.3
-  --spack-build-jobs N      Pass SPACK_BUILD_JOBS to the Docker build.
+  --amdgpu-target TARGET    AMD GPU target passed into the build. Default: gfx942
+  --spack-build-jobs N      Pass SPACK_BUILD_JOBS to the Docker build. Default: 2
+  --target STAGE            Stop the build at a specific Docker stage.
   --ca-bundle PATH          Inject this CA bundle into the Docker build.
   --no-ca-inject            Disable CA injection even if a host CA bundle is found.
   --no-cache                Build with --no-cache.
@@ -30,7 +32,9 @@ docker_repository="geosx/ubuntu24.04-amdclang19.0.0-rocm6.4.3"
 docker_tag="local"
 install_dir_root="/opt/GEOS"
 docker_root_image="rocm/dev-ubuntu-24.04:6.4.3"
-spack_build_jobs=""
+amdgpu_target="gfx942"
+spack_build_jobs="2"
+docker_target=""
 ca_bundle=""
 inject_ca="auto"
 no_cache=0
@@ -54,8 +58,16 @@ while [[ $# -gt 0 ]]; do
       docker_root_image="$2"
       shift 2
       ;;
+    --amdgpu-target)
+      amdgpu_target="$2"
+      shift 2
+      ;;
     --spack-build-jobs)
       spack_build_jobs="$2"
+      shift 2
+      ;;
+    --target)
+      docker_target="$2"
       shift 2
       ;;
     --ca-bundle)
@@ -151,6 +163,7 @@ docker_args=(
   build
   --progress=plain
   --build-arg "DOCKER_ROOT_IMAGE=${docker_root_image}"
+  --build-arg "AMDGPU_TARGET=${amdgpu_target}"
   --build-arg "INSTALL_DIR=${install_dir}"
   --tag "${docker_repository}:${docker_tag}"
   --file "$tmp_dockerfile"
@@ -164,6 +177,10 @@ if [[ -n "$spack_build_jobs" ]]; then
   docker_args+=(--build-arg "SPACK_BUILD_JOBS=${spack_build_jobs}")
 fi
 
+if [[ -n "$docker_target" ]]; then
+  docker_args+=(--target "${docker_target}")
+fi
+
 if [[ $no_cache -eq 1 ]]; then
   docker_args+=(--no-cache)
 fi
@@ -174,6 +191,13 @@ echo "Repository: ${docker_repository}"
 echo "Tag: ${docker_tag}"
 echo "Install dir: ${install_dir}"
 echo "Dockerfile: ${tmp_dockerfile}"
+echo "AMDGPU target: ${amdgpu_target}"
+echo "Spack build jobs: ${spack_build_jobs}"
+if [[ -n "$docker_target" ]]; then
+  echo "Build target: ${docker_target}"
+else
+  echo "Build target: final image"
+fi
 if [[ "$inject_ca" == "yes" ]]; then
   echo "Injected CA bundle: ${ca_bundle}"
 else
