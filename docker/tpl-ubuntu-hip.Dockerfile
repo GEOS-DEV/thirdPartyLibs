@@ -124,17 +124,9 @@ RUN apt-get update && \
 # --spack-debug to debug build
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
-     sed \
-       -e '/^    # ROCM_TOOLCHAIN_BEGIN$/,/^    # ROCM_TOOLCHAIN_END$/ s/^\([[:space:]]*\)# /\1/' \
-       -e '/^    # ROCM_LLVM_BEGIN$/,/^    # ROCM_LLVM_END$/ s/^\([[:space:]]*\)# /\1/' \
-       -e '/^    # ROCM_PACKAGES_BEGIN$/,/^    # ROCM_PACKAGES_END$/ s/^\([[:space:]]*\)# /\1/' \
-       -e '/^      # ROCM_OPENMPI_BEGIN$/,/^      # ROCM_OPENMPI_END$/ s/^\([[:space:]]*\)# /\1/' \
-       ${SRC_DIR}/docker/spack.yaml | \
-       sed '/^[[:space:]]*ROCM_TOOLCHAIN_BEGIN$/d;/^[[:space:]]*ROCM_TOOLCHAIN_END$/d;/^[[:space:]]*ROCM_LLVM_BEGIN$/d;/^[[:space:]]*ROCM_LLVM_END$/d;/^[[:space:]]*ROCM_PACKAGES_BEGIN$/d;/^[[:space:]]*ROCM_PACKAGES_END$/d;/^[[:space:]]*ROCM_OPENMPI_BEGIN$/d;/^[[:space:]]*ROCM_OPENMPI_END$/d' > /tmp/spack-rocm.yaml && \
-     test -f /tmp/spack-rocm.yaml && \
      ./scripts/uberenv/uberenv.py \
        --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
-       --spack-env-file=/tmp/spack-rocm.yaml \
+       --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

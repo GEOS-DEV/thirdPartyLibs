@@ -90,6 +90,15 @@ spack:
         when: '%fortran'
       - spec: '%openmpi@4.1.2 %gcc@13.3.0'
         when: '%mpi'
+    amdclang-19:
+      - spec: '%c=llvm-amdgpu@6.4.3'
+        when: '%c'
+      - spec: '%cxx=llvm-amdgpu@6.4.3'
+        when: '%cxx'
+      - spec: '%fortran=gcc@13.3.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2 %llvm-amdgpu@6.4.3'
+        when: '%mpi'
 
   packages:
     all:
@@ -102,12 +111,10 @@ spack:
         cxx: [llvm, gcc]
         fortran: [gcc]
 
-    # Require
     mpi:
       require:
       - openmpi@4.1.2
 
-    # Compiler packages
     llvm:
       externals:
       - spec: llvm@10.0.0+clang~flang~lld~lldb openmp=project
@@ -122,6 +129,15 @@ spack:
           compilers:
             c: /usr/bin/clang-15
             cxx: /usr/bin/clang++-15
+    llvm-amdgpu:
+      buildable: false
+      externals:
+      - spec: llvm-amdgpu@6.4.3
+        prefix: /opt/rocm-6.4.3/lib/llvm
+        extra_attributes:
+          compilers:
+            c: /usr/bin/amdclang
+            cxx: /usr/bin/amdclang++
     gcc:
       externals:
       - spec: gcc@9.4.0 languages:='c,c++,fortran'
@@ -159,14 +175,132 @@ spack:
             c: /usr/bin/gcc-13
             cxx: /usr/bin/g++-13
             fortran: /usr/bin/gfortran-13
-    # CUDA packages
     cuda:
       buildable: False
       externals:
       - spec: cuda@11.8.0 +allow-unsupported-compilers
         prefix: /usr/local/cuda
+    hip:
+      buildable: false
+      externals:
+      - spec: hip@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocprim:
+      buildable: false
+      externals:
+      - spec: rocprim@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocsparse:
+      buildable: false
+      externals:
+      - spec: rocsparse@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    roctracer:
+      buildable: false
+      externals:
+      - spec: roctracer@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocblas:
+      buildable: false
+      externals:
+      - spec: rocblas@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocrand:
+      buildable: false
+      externals:
+      - spec: rocrand@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocsolver:
+      buildable: false
+      externals:
+      - spec: rocsolver@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocthrust:
+      buildable: false
+      externals:
+      - spec: rocthrust@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipblas:
+      buildable: false
+      externals:
+      - spec: hipblas@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipsparse:
+      buildable: false
+      externals:
+      - spec: hipsparse@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipfft:
+      buildable: false
+      externals:
+      - spec: hipfft@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipsolver:
+      buildable: false
+      externals:
+      - spec: hipsolver@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hiprand:
+      buildable: false
+      externals:
+      - spec: hiprand@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocm-device-libs:
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hsa-rocr-dev:
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
 
-    # System packages
     autoconf:
       version: [2.71]
       buildable: false
@@ -220,6 +354,8 @@ spack:
       - spec: openmpi@4.1.2 %llvm@15.0.7
         prefix: /usr/lib/x86_64-linux-gnu/openmpi
         modules: [mpi]
+      - spec: openmpi@4.1.2 %llvm-amdgpu@6.4.3
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
       - spec: openmpi@4.1.2 %gcc@9.4.0
         prefix: /usr/lib/x86_64-linux-gnu/openmpi
       - spec: openmpi@4.1.2 %gcc@10.5.0
