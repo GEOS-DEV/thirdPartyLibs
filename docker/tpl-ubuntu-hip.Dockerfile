@@ -118,9 +118,119 @@ RUN apt-get update && \
 # --spack-debug to debug build
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+     python3 - <<'PY' && \
+from pathlib import Path
+
+base = Path("/tmp/thirdPartyLibs/docker/spack.yaml").read_text()
+replacements = {
+    "# __ROCM_TOOLCHAIN__": """    amdclang-19:
+      - spec: '%[virtuals=c]llvm-amdgpu@6.4.3'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm-amdgpu@6.4.3'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@13.3.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2'
+        when: '%mpi'""",
+    "# __ROCM_COMPILERS__": """    llvm-amdgpu:
+      buildable: false
+      externals:
+      - spec: llvm-amdgpu@6.4.3
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/amdclang
+            cxx: /usr/bin/amdclang++""",
+    "# __ROCM_PACKAGES__": """    hip:
+      buildable: false
+      externals:
+      - spec: hip@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocprim:
+      buildable: false
+      externals:
+      - spec: rocprim@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocsparse:
+      buildable: false
+      externals:
+      - spec: rocsparse@6.4.3
+        prefix: /opt/rocm-6.4.3
+    roctracer:
+      buildable: false
+      externals:
+      - spec: roctracer@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocblas:
+      buildable: false
+      externals:
+      - spec: rocblas@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocrand:
+      buildable: false
+      externals:
+      - spec: rocrand@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocsolver:
+      buildable: false
+      externals:
+      - spec: rocsolver@6.4.3
+        prefix: /opt/rocm-6.4.3
+    rocthrust:
+      buildable: false
+      externals:
+      - spec: rocthrust@6.4.3
+        prefix: /opt/rocm-6.4.3
+    hipblas:
+      buildable: false
+      externals:
+      - spec: hipblas@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hipsparse:
+      buildable: false
+      externals:
+      - spec: hipsparse@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hipfft:
+      buildable: false
+      externals:
+      - spec: hipfft@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hipsolver:
+      buildable: false
+      externals:
+      - spec: hipsolver@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    hiprand:
+      buildable: false
+      externals:
+      - spec: hiprand@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+    rocm-device-libs:
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@6.4.3
+        prefix: /opt/rocm-6.4.3
+    hsa-rocr-dev:
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@6.4.3
+        prefix: /opt/rocm-6.4.3""",
+    "# __ROCM_OPENMPI_EXTERNAL__": """      - spec: openmpi@4.1.2 %llvm-amdgpu@6.4.3
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi""",
+}
+
+for marker, replacement in replacements.items():
+    if marker not in base:
+        raise SystemExit(f"missing marker: {marker}")
+    base = base.replace(marker, replacement)
+
+Path("/tmp/spack-rocm.yaml").write_text(base)
+PY
+     test -f /tmp/spack-rocm.yaml && \
      ./scripts/uberenv/uberenv.py \
        --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
-       --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
+       --spack-env-file=/tmp/spack-rocm.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

@@ -90,6 +90,7 @@ spack:
         when: '%fortran'
       - spec: '%openmpi@4.1.2'
         when: '%mpi'
+    # __ROCM_TOOLCHAIN__
 
   packages:
     all:
@@ -121,6 +122,7 @@ spack:
           compilers:
             c: /usr/bin/clang-15
             cxx: /usr/bin/clang++-15
+    # __ROCM_COMPILERS__
     gcc:
       externals:
       - spec: gcc@9.4.0 languages:='c,c++,fortran'
@@ -164,6 +166,7 @@ spack:
       externals:
       - spec: cuda@11.8.0 +allow-unsupported-compilers
         prefix: /usr/local/cuda
+    # __ROCM_PACKAGES__
 
     # System packages
     autoconf:
@@ -219,6 +222,7 @@ spack:
       - spec: openmpi@4.1.2 %llvm@15.0.7
         prefix: /usr/lib/x86_64-linux-gnu/openmpi
         modules: [mpi]
+      # __ROCM_OPENMPI_EXTERNAL__
       - spec: openmpi@4.1.2 %gcc@9.4.0
         prefix: /usr/lib/x86_64-linux-gnu/openmpi
       - spec: openmpi@4.1.2 %gcc@10.5.0
