@@ -18,22 +18,22 @@ spack:
 
   toolchains:
     clang-15:
-      - spec: '%[virtuals=c]llvm@15.0.7+clang~flang~lld~lldb'
+      - spec: '%c=llvm@15.0.7+clang~flang~lld~lldb'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@15.0.7+clang~flang~lld~lldb'
+      - spec: '%cxx=llvm@15.0.7+clang~flang~lld~lldb'
         when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@11.4.0'
+      - spec: '%fortran=gcc@11.4.0'
         when: '%fortran'
-      - spec: '%openmpi'
+      - spec: '%openmpi@4.1.2 %llvm@15.0.7'
         when: '%mpi'
     clang-10:
-      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
+      - spec: '%c=llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
+      - spec: '%cxx=llvm@10.0.0+clang~flang~lld~lldb openmp=project'
         when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@9.4.0'
+      - spec: '%fortran=gcc@9.4.0'
         when: '%fortran'
-      - spec: '%openmpi'
+      - spec: '%openmpi@4.1.2 %llvm@10.0.0'
         when: '%mpi'
     gcc-9:
       - spec: cxxflags='-pthread'
@@ -88,24 +88,33 @@ spack:
         when: '%cxx'
       - spec: '%fortran=gcc@13.3.0'
         when: '%fortran'
-      - spec: '%openmpi@4.1.2'
+      - spec: '%openmpi@4.1.2 %gcc@13.3.0'
         when: '%mpi'
-    # __ROCM_TOOLCHAIN__
+    amdclang-19:
+      - spec: '%c=llvm-amdgpu@6.4.3'
+        when: '%c'
+      - spec: '%cxx=llvm-amdgpu@6.4.3'
+        when: '%cxx'
+      - spec: '%fortran=gcc@13.3.0'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.2 %llvm-amdgpu@6.4.3'
+        when: '%mpi'
 
   packages:
     all:
       target: [x86_64]
+      providers:
+        mpi: [openmpi]
+        blas: [netlib-lapack]
+        lapack: [netlib-lapack]
+        c: [llvm, gcc]
+        cxx: [llvm, gcc]
+        fortran: [gcc]
 
     # Require
     mpi:
       require:
       - openmpi@4.1.2
-    blas:
-      require:
-      - "netlib-lapack"
-    lapack:
-      require:
-      - "netlib-lapack"
 
     # Compiler packages
     llvm:
@@ -122,7 +131,15 @@ spack:
           compilers:
             c: /usr/bin/clang-15
             cxx: /usr/bin/clang++-15
-    # __ROCM_COMPILERS__
+    llvm-amdgpu:
+      buildable: false
+      externals:
+      - spec: llvm-amdgpu@6.4.3
+        prefix: /opt/rocm-6.4.3/lib/llvm
+        extra_attributes:
+          compilers:
+            c: /usr/bin/amdclang
+            cxx: /usr/bin/amdclang++
     gcc:
       externals:
       - spec: gcc@9.4.0 languages:='c,c++,fortran'
@@ -166,7 +183,126 @@ spack:
       externals:
       - spec: cuda@11.8.0 +allow-unsupported-compilers
         prefix: /usr/local/cuda
-    # __ROCM_PACKAGES__
+    hip:
+      buildable: false
+      externals:
+      - spec: hip@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocprim:
+      buildable: false
+      externals:
+      - spec: rocprim@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocsparse:
+      buildable: false
+      externals:
+      - spec: rocsparse@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    roctracer:
+      buildable: false
+      externals:
+      - spec: roctracer@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocblas:
+      buildable: false
+      externals:
+      - spec: rocblas@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocrand:
+      buildable: false
+      externals:
+      - spec: rocrand@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocsolver:
+      buildable: false
+      externals:
+      - spec: rocsolver@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocthrust:
+      buildable: false
+      externals:
+      - spec: rocthrust@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipblas:
+      buildable: false
+      externals:
+      - spec: hipblas@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipsparse:
+      buildable: false
+      externals:
+      - spec: hipsparse@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipfft:
+      buildable: false
+      externals:
+      - spec: hipfft@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hipsolver:
+      buildable: false
+      externals:
+      - spec: hipsolver@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hiprand:
+      buildable: false
+      externals:
+      - spec: hiprand@6.4.3 +rocm
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    rocm-device-libs:
+      buildable: false
+      externals:
+      - spec: rocm-device-libs@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
+    hsa-rocr-dev:
+      buildable: false
+      externals:
+      - spec: hsa-rocr-dev@6.4.3
+        prefix: /opt/rocm-6.4.3
+      require:
+      - when: "%llvm-amdgpu@6.4.3"
+        spec: "@6.4.3"
 
     # System packages
     autoconf:
@@ -222,7 +358,8 @@ spack:
       - spec: openmpi@4.1.2 %llvm@15.0.7
         prefix: /usr/lib/x86_64-linux-gnu/openmpi
         modules: [mpi]
-      # __ROCM_OPENMPI_EXTERNAL__
+      - spec: openmpi@4.1.2 %llvm-amdgpu@6.4.3
+        prefix: /usr/lib/x86_64-linux-gnu/openmpi
       - spec: openmpi@4.1.2 %gcc@9.4.0
         prefix: /usr/lib/x86_64-linux-gnu/openmpi
       - spec: openmpi@4.1.2 %gcc@10.5.0
