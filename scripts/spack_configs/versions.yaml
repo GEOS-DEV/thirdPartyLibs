@@ -14,9 +14,9 @@
 # This file lists the package versions for geos's dependencies
 #
 packages:
-  # master - 01/23/26
+  # master - 02/23/26
   hypre:
-    require: "@develop"
+    require: "@git.7e403d172640473c07e8391f6a9fb69cd824d48a=master"
 
   # master - 04/12/20
   uncrustify:
