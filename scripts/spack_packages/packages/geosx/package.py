@@ -150,8 +150,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Math
     #
-    depends_on("parmetis@4.0.3+int64+shared cflags='-fPIC' cxxflags='-fPIC'")
-    depends_on("metis +int64+shared cflags='-fPIC' cxxflags='-fPIC'")
+    depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
+    depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
 
     depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC'")
     depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC -ef'", when="%cce")
@@ -176,7 +176,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
         depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
-        depends_on("hypre +openmp", when="+openmp")
         depends_on("hypre +caliper", when="+caliper")
         depends_on("hypre +pic", when="~shared")
         depends_on("hypre +shared", when="+shared")
