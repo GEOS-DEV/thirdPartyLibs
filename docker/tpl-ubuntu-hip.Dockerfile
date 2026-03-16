@@ -82,11 +82,16 @@ RUN python3 -m pip install clingo --break-system-packages
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 # OpenMPI hack for Ubuntu and provide amdclang wrappers with the GCC 13 system toolchain.
+# clang++ inside the ROCm LLVM bin is also wrapped so that spack's cached_cmake.py,
+# which hardcodes CMAKE_HIP_COMPILER to that path, gets the correct --gcc-toolchain.
 RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi && \
     printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang --gcc-toolchain=/usr \"\$@\"" > /usr/local/bin/amdclang-gcc13 && \
     chmod +x /usr/local/bin/amdclang-gcc13 && \
     printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ --gcc-toolchain=/usr \"\$@\"" > /usr/local/bin/amdclang++-gcc13 && \
     chmod +x /usr/local/bin/amdclang++-gcc13 && \
+    rm -f /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ && \
+    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ --gcc-toolchain=/usr \"\$@\"" > /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ && \
+    chmod +x /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang /usr/bin/clang && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ /usr/bin/clang++
 

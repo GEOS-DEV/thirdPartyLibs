@@ -138,10 +138,6 @@ spack:
           compilers:
             c: /usr/local/bin/amdclang-gcc13
             cxx: /usr/local/bin/amdclang++-gcc13
-          flags:
-            cflags: --gcc-toolchain=/usr
-            cxxflags: --gcc-toolchain=/usr
-            cppflags: --gcc-toolchain=/usr
           environment:
             set:
               BISON: bison
