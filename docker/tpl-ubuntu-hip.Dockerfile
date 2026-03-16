@@ -227,6 +227,7 @@ for marker, replacement in replacements.items():
 
 Path("/tmp/spack-rocm.yaml").write_text(base)
 PY
+     && \
      test -f /tmp/spack-rocm.yaml && \
      ./scripts/uberenv/uberenv.py \
        --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
