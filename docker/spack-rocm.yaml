@@ -136,8 +136,8 @@ spack:
         prefix: /opt/rocm-6.4.3/lib/llvm
         extra_attributes:
           compilers:
-            c: /usr/bin/amdclang
-            cxx: /usr/bin/amdclang++
+            c: /usr/local/bin/amdclang-gcc-toolchain
+            cxx: /usr/local/bin/amdclang++-gcc-toolchain
     gcc:
       externals:
       - spec: gcc@9.4.0 languages:='c,c++,fortran'
