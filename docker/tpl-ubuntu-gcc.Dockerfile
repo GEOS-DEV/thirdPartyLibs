@@ -64,6 +64,11 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     libmpfr-dev \
     lbzip2 \
     bzip2 \
+    gettext \
+    bison \
+    flex \
+    help2man \
+    libtool \
     gnupg \
     virtualenv
 
@@ -73,15 +78,17 @@ RUN python3 -m pip install --upgrade pip && \
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
+# OpenMPI hack for Ubuntu
+RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi
+
+# MPI environment variables
 ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
     CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
-# The multi-line definition of arguments does not seem happy
-# when a variable uses the value of another variable previously defined on the same line.
-ENV OMPI_CC=$CC \
-    OMPI_CXX=$CXX
+    MPIEXEC=/usr/bin/mpirun \
+    OMPI_CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
+    OMPI_CXX=/usr/bin/g++-$GCC_MAJOR_VERSION
 
 # This stage is dedicated to TPLs uniquely.
 # A multi-stage build patern will allow to extract what we need for the GEOSX build.
@@ -96,6 +103,9 @@ ARG GCC_MAJOR_VERSION
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
     make \
+    autopoint \
+    autotools-dev \
+    automake \
     bc \
     file \
 # GEOS patches some tpl. Remove when it's not the case anymore.
