@@ -136,8 +136,27 @@ spack:
         prefix: /opt/rocm-6.4.3/lib/llvm
         extra_attributes:
           compilers:
-            c: /usr/local/bin/amdclang-gcc-toolchain
-            cxx: /usr/local/bin/amdclang++-gcc-toolchain
+            c: /usr/local/bin/amdclang-gcc13
+            cxx: /usr/local/bin/amdclang++-gcc13
+          flags:
+            cflags: --gcc-toolchain=/usr
+            cxxflags: --gcc-toolchain=/usr
+            cppflags: --gcc-toolchain=/usr
+          environment:
+            set:
+              BISON: bison
+              FLEX: flex
+              CC: /usr/local/bin/amdclang-gcc13
+              CXX: /usr/local/bin/amdclang++-gcc13
+              FC: /usr/bin/gfortran-13
+              F77: /usr/bin/gfortran-13
+              MPICC: /usr/bin/mpicc
+              MPICXX: /usr/bin/mpicxx
+              MPIEXEC: /usr/bin/mpirun
+              OMPI_CC: /usr/local/bin/amdclang-gcc13
+              OMPI_CXX: /usr/local/bin/amdclang++-gcc13
+              HIPCXX: /usr/local/bin/amdclang++-gcc13
+              CMAKE_HIP_COMPILER: /usr/local/bin/amdclang++-gcc13
     gcc:
       externals:
       - spec: gcc@9.4.0 languages:='c,c++,fortran'

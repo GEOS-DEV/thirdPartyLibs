@@ -28,6 +28,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         wget \
         gnupg \
         ca-certificates \
+        gcc-13 \
+        g++-13 \
+        gfortran-13 \
         libtbb12 \
         libtbbmalloc2 \
         libblas-dev \
@@ -78,25 +81,14 @@ RUN python3 -m pip install clingo --break-system-packages
 # Install CMake
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
-# OpenMPI hack for Ubuntu and provide amdclang wrappers with the system GCC toolchain.
+# OpenMPI hack for Ubuntu and provide amdclang wrappers with the GCC 13 system toolchain.
 RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi && \
-    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang --gcc-toolchain=/usr \"\$@\"" > /usr/local/bin/amdclang-gcc-toolchain && \
-    chmod +x /usr/local/bin/amdclang-gcc-toolchain && \
-    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ --gcc-toolchain=/usr \"\$@\"" > /usr/local/bin/amdclang++-gcc-toolchain && \
-    chmod +x /usr/local/bin/amdclang++-gcc-toolchain && \
+    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang --gcc-toolchain=/usr \"\$@\"" > /usr/local/bin/amdclang-gcc13 && \
+    chmod +x /usr/local/bin/amdclang-gcc13 && \
+    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ --gcc-toolchain=/usr \"\$@\"" > /usr/local/bin/amdclang++-gcc13 && \
+    chmod +x /usr/local/bin/amdclang++-gcc13 && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang /usr/bin/clang && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ /usr/bin/clang++
-
-# MPI environment variables
-ENV CC=/usr/local/bin/amdclang-gcc-toolchain \
-    CXX=/usr/local/bin/amdclang++-gcc-toolchain \
-    MPICC=/usr/bin/mpicc \
-    MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun \
-    OMPI_CC=/usr/local/bin/amdclang-gcc-toolchain \
-    OMPI_CXX=/usr/local/bin/amdclang++-gcc-toolchain \
-    HIPCXX=/usr/local/bin/amdclang++-gcc-toolchain \
-    CMAKE_HIP_COMPILER=/usr/local/bin/amdclang++-gcc-toolchain
 
 # Installing TPLs
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
