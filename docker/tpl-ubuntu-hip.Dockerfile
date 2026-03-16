@@ -47,8 +47,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         pkg-config \
         xz-utils \
         gettext \
-        bison \
-        flex \
         bzip2 \
         help2man \
         libtool \
