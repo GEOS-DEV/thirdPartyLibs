@@ -68,7 +68,6 @@ spack:
       require: "@26.1"
     grpc:
       require: "@1.65.5-full-clone"
-
     ####
     # external compiler
     gcc:
