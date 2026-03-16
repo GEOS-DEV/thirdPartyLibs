@@ -80,6 +80,12 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 # OpenMPI hack for Ubuntu and expose ROCm LLVM as the expected clang path.
 RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi && \
+    mv /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang.real && \
+    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang.real --gcc-toolchain=/usr \"\$@\"" > /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang && \
+    chmod +x /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang && \
+    mv /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++.real && \
+    printf '%s\n' '#!/bin/sh' "exec /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++.real --gcc-toolchain=/usr \"\$@\"" > /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ && \
+    chmod +x /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/amdclang++ && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang /usr/bin/clang && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ /usr/bin/clang++
 
