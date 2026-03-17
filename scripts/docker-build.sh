@@ -7,8 +7,12 @@ echo .git > .dockerignore
 
 # Get uberenv submodule
 git submodule update --init --force scripts/uberenv
-# Remove the .git gitdir pointer so BuildKit treats uberenv files as regular files in the build context
+# BuildKit's git-aware context builder treats submodules as gitlinks (empty dirs).
+# Fix: remove the .git pointer, strip the gitlink from the index, and re-add the
+# files as regular tracked entries so BuildKit includes them in the build context.
 rm -f scripts/uberenv/.git
+git rm --cached scripts/uberenv 2>/dev/null || true
+git add -f scripts/uberenv/
 
 
 # This script will build an image from TPL_DOCKERFILE
