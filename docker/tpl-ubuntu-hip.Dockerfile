@@ -126,7 +126,7 @@ RUN apt-get update && \
 # filesystem before running.
 RUN --mount=src=.,dst=/tmp/src \
      mkdir -p ${SRC_DIR}/scripts ${GEOSX_TPL_DIR} && \
-     cp -r /tmp/src/scripts/uberenv    ${SRC_DIR}/scripts/ && \
+     cp -r /tmp/src/docker/_uberenv_bundle ${SRC_DIR}/scripts/uberenv && \
      cp -r /tmp/src/scripts/spack_packages ${SRC_DIR}/scripts/ && \
      cp -r /tmp/src/scripts/spack_configs  ${SRC_DIR}/scripts/ && \
      cp    /tmp/src/.uberenv_config.json   ${SRC_DIR}/ && \
