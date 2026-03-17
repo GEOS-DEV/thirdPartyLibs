@@ -117,8 +117,21 @@ RUN apt-get update && \
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
 # --spack-debug to debug build
-RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
-     mkdir -p ${GEOSX_TPL_DIR} && \
+#
+# NOTE: We use a read-only mount (no `readwrite`) because Docker 29.x's
+# built-in BuildKit has a bug where `--mount=src=.,readwrite` mounts an
+# empty directory instead of exposing the build context.  We work around
+# it by mounting the context read-only at /tmp/src and copying only the
+# small set of files uberenv actually needs into the writable container
+# filesystem before running.
+RUN --mount=src=.,dst=/tmp/src \
+     mkdir -p ${SRC_DIR}/scripts ${GEOSX_TPL_DIR} && \
+     cp -r /tmp/src/scripts/uberenv    ${SRC_DIR}/scripts/ && \
+     cp -r /tmp/src/scripts/spack_packages ${SRC_DIR}/scripts/ && \
+     cp -r /tmp/src/scripts/spack_configs  ${SRC_DIR}/scripts/ && \
+     cp    /tmp/src/.uberenv_config.json   ${SRC_DIR}/ && \
+     cp -r /tmp/src/docker                 ${SRC_DIR}/ && \
+     cd ${SRC_DIR} && \
      ( while true; do \
          sleep 60; \
          echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
