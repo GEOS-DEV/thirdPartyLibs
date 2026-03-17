@@ -119,12 +119,27 @@ RUN apt-get update && \
 # --spack-debug to debug build
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+     ( while true; do \
+         sleep 60; \
+         echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
+         find ${GEOSX_TPL_DIR}/build_stage -maxdepth 3 -name spack-build-out.txt -printf '%T@ %p\n' 2>/dev/null | \
+           sort -nr | head -n 1 | \
+           while read -r _ path; do \
+             echo "[heartbeat] recent build log: ${path}"; \
+             tail -n 5 "${path}" 2>/dev/null || true; \
+           done; \
+       done ) & \
+     hb=$!; \
      ./scripts/uberenv/uberenv.py \
        --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
        --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
-       -k && \
+       -k; \
+     rc=$?; \
+     kill ${hb} 2>/dev/null || true; \
+     wait ${hb} 2>/dev/null || true; \
+     test ${rc} -eq 0 && \
 # Remove host-config generated for LvArray
      rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
