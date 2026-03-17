@@ -1,11 +1,12 @@
 #!/bin/bash
+set -e
 env
 
 # We save memory for the docker context
 echo .git > .dockerignore
 
 # Get uberenv submodule
-git submodule update --init scripts/uberenv
+git submodule update --init --force scripts/uberenv
 
 
 # This script will build an image from TPL_DOCKERFILE
