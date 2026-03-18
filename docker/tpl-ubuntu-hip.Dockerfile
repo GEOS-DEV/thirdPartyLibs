@@ -135,12 +135,23 @@ RUN mkdir -p ${GEOSX_TPL_DIR} && \
        ( while true; do \
            sleep 60; \
            echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
-           find ${GEOSX_TPL_DIR}/build_stage -maxdepth 3 -name spack-build-out.txt -printf '%T@ %p\n' 2>/dev/null | \
-             sort -nr | head -n 1 | \
+           find ${GEOSX_TPL_DIR}/build_stage -maxdepth 2 -mindepth 2 -type d -printf '%T@ %p\n' 2>/dev/null | \
+             sort -nr | head -n 3 | \
              while read -r _ path; do \
-               echo "[heartbeat] recent build log: ${path}"; \
-               tail -n 5 "${path}" 2>/dev/null || true; \
+               echo "[heartbeat] recent stage dir: ${path}"; \
              done; \
+           find ${GEOSX_TPL_DIR}/build_stage -maxdepth 4 \( -name spack-build-out.txt -o -name spack-build-env.txt -o -name spack-configure-args.txt \) -printf '%T@ %p\n' 2>/dev/null | \
+             sort -nr | head -n 3 | \
+             while read -r _ path; do \
+               echo "[heartbeat] recent stage file: ${path}"; \
+               tail -n 5 "${path}" 2>/dev/null || true; \
+               printf '\n'; \
+             done; \
+           ps -eo pid,ppid,etime,%cpu,%mem,cmd 2>/dev/null | \
+             grep -E 'spack|python3|curl|wget|git|cmake|ninja|make|amdclang|gfortran|gcc|g\\+\\+' | \
+             grep -v grep | \
+             tail -n 20 | \
+             cut -c1-240 || true; \
          done ) & \
        hb=$!; \
        sh ./scripts/uberenv/uberenv.py \
@@ -148,6 +159,7 @@ RUN mkdir -p ${GEOSX_TPL_DIR} && \
          --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
          --project-json=.uberenv_config.json \
          --prefix ${GEOSX_TPL_DIR} \
+         -j ${SPACK_BUILD_JOBS} \
          -k; \
        rc=$?; \
        kill ${hb} 2>/dev/null || true; \
