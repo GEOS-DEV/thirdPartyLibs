@@ -79,6 +79,13 @@ jobs:
           #   SPEC: "~pygeosx~openmp cuda_arch=86 %gcc@10.1.0 ^cuda@12.4.0+allow-unsupported-compilers"
           #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
           #   RUNS_ON: ubuntu-latest
+          - name: Ubuntu (24.04, amdclang 19 + rocm 6.4.3)
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-amdclang19.0.0-rocm6.4.3
+            TPL_DOCKERFILE: docker/tpl-ubuntu-hip.Dockerfile
+            DOCKER_ROOT_IMAGE: rocm/dev-ubuntu-24.04:6.4.3
+            RUNS_ON: streak2
+            NPROC: 8
+            DOCKER_RUN_ARGS: "--cpus=8 --memory=128g -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
 
     steps:
     - name: Checkout
@@ -88,7 +95,7 @@ jobs:
         lfs: true
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - name: Print environment
       run: printenv
@@ -99,8 +106,15 @@ jobs:
         # 1. Copy the host's CA bundle into the Docker build context
         cp /etc/pki/tls/certs/ca-bundle.crt ./ca-bundle.crt
 
-        # 2. Inject the COPY and update-ca-trust commands right before dnf runs
-        sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' ${{ matrix.TPL_DOCKERFILE }}
+        # 2. Inject distro-specific trust-store setup into the Dockerfile.
+        if grep -q 'RUN dnf clean all' "${{ matrix.TPL_DOCKERFILE }}"; then
+          sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${{ matrix.TPL_DOCKERFILE }}"
+        elif grep -q 'apt-get update' "${{ matrix.TPL_DOCKERFILE }}"; then
+          perl -0pi -e 's/(RUN .*?apt-get update)/COPY ca-bundle.crt \/usr\/local\/share\/ca-certificates\/host-ca.crt\nRUN update-ca-certificates\n\n$1/s' "${{ matrix.TPL_DOCKERFILE }}"
+        else
+          echo "Could not find a CA-injection hook in ${{ matrix.TPL_DOCKERFILE }}"
+          exit 1
+        fi
 
     - name: Run the docker build docker script
       env:

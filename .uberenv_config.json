@@ -9,5 +9,6 @@
 "spack_commit": "2e2169d5282d166f63e3ee4db8d4446c43cefa8a",
 "spack_commit_note": "v1.1.1 (Jan 14th 2026)",
 "spack_packages_commit": "3dd98680871078353a28ee508fa76c7554f918fa",
-"spack_packages_note": "Feb 25th 2026"
+"spack_packages_note": "Feb 25th 2026",
+"spack_setup_clingo": 0
 }

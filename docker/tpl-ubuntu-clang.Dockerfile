@@ -39,6 +39,14 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     libmpfr-dev \
     lbzip2 \
     bzip2 \
+    flex \
+    bison \
+    gettext \
+    help2man \
+    libtool \
+    autopoint \
+    autotools-dev \
+    automake \
     gnupg \
     virtualenv
 
@@ -69,16 +77,17 @@ RUN apt-get install -y --no-install-recommends \
     ca-certificates \
     git
 
-# Add MPI environment path info
-ENV CC=/usr/bin/gcc-$GCC_MAJOR_VERSION \
-    CXX=/usr/bin/g++-$GCC_MAJOR_VERSION \
+# OpenMPI hack for Ubuntu
+RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi
+
+# MPI environment variables
+ENV CC=/usr/bin/clang-$CLANG_MAJOR_VERSION \
+    CXX=/usr/bin/clang++-$CLANG_MAJOR_VERSION \
     MPICC=/usr/bin/mpicc \
     MPICXX=/usr/bin/mpicxx \
-    MPIEXEC=/usr/bin/mpirun
-# The multi-line definition of arguments does not seem happy
-# when a variable uses the value of another variable previously defined on the same line.
-ENV OMPI_CC=$CC \
-    OMPI_CXX=$CXX
+    MPIEXEC=/usr/bin/mpirun \
+    OMPI_CC=/usr/bin/clang-$CLANG_MAJOR_VERSION \
+    OMPI_CXX=/usr/bin/clang++-$CLANG_MAJOR_VERSION
 
 # Run uberenv
 # Have to create install directory first for uberenv
