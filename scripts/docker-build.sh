@@ -8,6 +8,14 @@ echo .git > .dockerignore
 # Get uberenv submodule
 git submodule update --init --force scripts/uberenv
 
+uberenv_context_dir="$(mktemp -d "${TMPDIR:-/tmp}/uberenv-context.XXXXXX")"
+cleanup() {
+  rm -rf "${uberenv_context_dir}"
+}
+trap cleanup EXIT
+
+cp -r scripts/uberenv/. "${uberenv_context_dir}/"
+rm -f "${uberenv_context_dir}/.git"
 
 # This script will build an image from TPL_DOCKERFILE
 # with (optional) DOCKER_COMPILER_BUILD_ARG build arguments.
@@ -22,7 +30,7 @@ INSTALL_DIR=${INSTALL_DIR_ROOT}/GEOS_TPL-${DOCKER_TAG}-${COMMIT:0:7}
 echo "Installation directory is ${INSTALL_DIR}"
 
 docker build --progress=plain ${DOCKER_COMPILER_BUILD_ARG} \
---build-context uberenv=./scripts/uberenv \
+--build-context uberenv="${uberenv_context_dir}" \
 --build-arg HOST_CONFIG=${HOST_CONFIG} \
 --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE} \
 --build-arg INSTALL_DIR=${INSTALL_DIR} \

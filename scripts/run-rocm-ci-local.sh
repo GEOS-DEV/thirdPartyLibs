@@ -156,13 +156,18 @@ if [[ ! -f scripts/uberenv/uberenv.py ]]; then
   fi
 fi
 
+uberenv_context_dir="$tmp_dir/uberenv-context"
+mkdir -p "$uberenv_context_dir"
+cp -r scripts/uberenv/. "$uberenv_context_dir/"
+rm -f "$uberenv_context_dir/.git"
+
 commit_sha="$(git rev-parse HEAD)"
 install_dir="${install_dir_root}/GEOS_TPL-${docker_tag}-${commit_sha:0:7}"
 
 docker_args=(
   build
   --progress=plain
-  --build-context "uberenv=${repo_root}/scripts/uberenv"
+  --build-context "uberenv=${uberenv_context_dir}"
   --build-arg "DOCKER_ROOT_IMAGE=${docker_root_image}"
   --build-arg "AMDGPU_TARGET=${amdgpu_target}"
   --build-arg "INSTALL_DIR=${install_dir}"

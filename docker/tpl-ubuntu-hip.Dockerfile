@@ -118,41 +118,42 @@ RUN apt-get update && \
 # -k flag is to ignore SSL errors
 # --spack-debug to debug build
 #
-# NOTE: We use a read-only mount (no `readwrite`) because Docker 29.x's
-# built-in BuildKit has a bug where `--mount=src=.,readwrite` mounts an
-# empty directory instead of exposing the build context. We also mount the
-# uberenv submodule as a separate named context, because BuildKit's git-aware
-# handling of the main repo context drops submodule contents.
-RUN --mount=src=.,dst=/tmp/src \
-     --mount=from=uberenv,target=/tmp/uberenv \
-     mkdir -p ${SRC_DIR}/scripts/uberenv ${GEOSX_TPL_DIR} && \
-     cp -r /tmp/uberenv/. ${SRC_DIR}/scripts/uberenv/ && \
-     cp -r /tmp/src/scripts/spack_packages ${SRC_DIR}/scripts/ && \
-     cp -r /tmp/src/scripts/spack_configs  ${SRC_DIR}/scripts/ && \
-     cp    /tmp/src/.uberenv_config.json   ${SRC_DIR}/ && \
-     cp -r /tmp/src/docker                 ${SRC_DIR}/ && \
+# NOTE: We copy files into the image instead of relying on read-write
+# BuildKit mounts because Docker 29.x's built-in BuildKit has two issues on
+# our runners: `--mount=src=.,readwrite` can expose an empty main context, and
+# `--mount=from=<named-context>` can expose an empty uberenv context at exec
+# time. Using COPY keeps both contexts stable.
+COPY --from=uberenv . ${SRC_DIR}/scripts/uberenv/
+COPY scripts/spack_packages ${SRC_DIR}/scripts/spack_packages
+COPY scripts/spack_configs ${SRC_DIR}/scripts/spack_configs
+COPY .uberenv_config.json ${SRC_DIR}/
+COPY docker ${SRC_DIR}/docker
+
+RUN mkdir -p ${GEOSX_TPL_DIR} && \
      cd ${SRC_DIR} && \
-     ( while true; do \
-         sleep 60; \
-         echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
-         find ${GEOSX_TPL_DIR}/build_stage -maxdepth 3 -name spack-build-out.txt -printf '%T@ %p\n' 2>/dev/null | \
-           sort -nr | head -n 1 | \
-           while read -r _ path; do \
-             echo "[heartbeat] recent build log: ${path}"; \
-             tail -n 5 "${path}" 2>/dev/null || true; \
-           done; \
-       done ) & \
-     hb=$!; \
-     ./scripts/uberenv/uberenv.py \
-       --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
-       --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
-       --project-json=.uberenv_config.json \
-       --prefix ${GEOSX_TPL_DIR} \
-       -k; \
-     rc=$?; \
-     kill ${hb} 2>/dev/null || true; \
-     wait ${hb} 2>/dev/null || true; \
-     test ${rc} -eq 0 && \
+     { \
+       ( while true; do \
+           sleep 60; \
+           echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
+           find ${GEOSX_TPL_DIR}/build_stage -maxdepth 3 -name spack-build-out.txt -printf '%T@ %p\n' 2>/dev/null | \
+             sort -nr | head -n 1 | \
+             while read -r _ path; do \
+               echo "[heartbeat] recent build log: ${path}"; \
+               tail -n 5 "${path}" 2>/dev/null || true; \
+             done; \
+         done ) & \
+       hb=$!; \
+       sh ./scripts/uberenv/uberenv.py \
+         --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
+         --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
+         --project-json=.uberenv_config.json \
+         --prefix ${GEOSX_TPL_DIR} \
+         -k; \
+       rc=$?; \
+       kill ${hb} 2>/dev/null || true; \
+       wait ${hb} 2>/dev/null || true; \
+       test ${rc} -eq 0; \
+     } && \
 # Remove host-config generated for LvArray
      rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
