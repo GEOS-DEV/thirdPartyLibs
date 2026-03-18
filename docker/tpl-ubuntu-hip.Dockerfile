@@ -120,13 +120,13 @@ RUN apt-get update && \
 #
 # NOTE: We use a read-only mount (no `readwrite`) because Docker 29.x's
 # built-in BuildKit has a bug where `--mount=src=.,readwrite` mounts an
-# empty directory instead of exposing the build context.  We work around
-# it by mounting the context read-only at /tmp/src and copying only the
-# small set of files uberenv actually needs into the writable container
-# filesystem before running.
+# empty directory instead of exposing the build context. We also mount the
+# uberenv submodule as a separate named context, because BuildKit's git-aware
+# handling of the main repo context drops submodule contents.
 RUN --mount=src=.,dst=/tmp/src \
-     mkdir -p ${SRC_DIR}/scripts ${GEOSX_TPL_DIR} && \
-     cp -r /tmp/src/docker/_uberenv_bundle ${SRC_DIR}/scripts/uberenv && \
+     --mount=from=uberenv,target=/tmp/uberenv \
+     mkdir -p ${SRC_DIR}/scripts/uberenv ${GEOSX_TPL_DIR} && \
+     cp -r /tmp/uberenv/. ${SRC_DIR}/scripts/uberenv/ && \
      cp -r /tmp/src/scripts/spack_packages ${SRC_DIR}/scripts/ && \
      cp -r /tmp/src/scripts/spack_configs  ${SRC_DIR}/scripts/ && \
      cp    /tmp/src/.uberenv_config.json   ${SRC_DIR}/ && \

@@ -7,11 +7,6 @@ echo .git > .dockerignore
 
 # Get uberenv submodule
 git submodule update --init --force scripts/uberenv
-# BuildKit's git-aware context builder treats submodules as gitlinks and sends
-# only an empty directory placeholder for them.  Work around this by copying
-# uberenv into a plain (non-submodule) path that BuildKit will include in full.
-rm -rf docker/_uberenv_bundle
-cp -r scripts/uberenv docker/_uberenv_bundle
 
 
 # This script will build an image from TPL_DOCKERFILE
@@ -27,6 +22,7 @@ INSTALL_DIR=${INSTALL_DIR_ROOT}/GEOS_TPL-${DOCKER_TAG}-${COMMIT:0:7}
 echo "Installation directory is ${INSTALL_DIR}"
 
 docker build --progress=plain ${DOCKER_COMPILER_BUILD_ARG} \
+--build-context uberenv=./scripts/uberenv \
 --build-arg HOST_CONFIG=${HOST_CONFIG} \
 --build-arg DOCKER_ROOT_IMAGE=${DOCKER_ROOT_IMAGE} \
 --build-arg INSTALL_DIR=${INSTALL_DIR} \

@@ -162,6 +162,7 @@ install_dir="${install_dir_root}/GEOS_TPL-${docker_tag}-${commit_sha:0:7}"
 docker_args=(
   build
   --progress=plain
+  --build-context "uberenv=${repo_root}/scripts/uberenv"
   --build-arg "DOCKER_ROOT_IMAGE=${docker_root_image}"
   --build-arg "AMDGPU_TARGET=${amdgpu_target}"
   --build-arg "INSTALL_DIR=${install_dir}"
