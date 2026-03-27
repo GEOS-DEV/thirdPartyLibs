@@ -33,6 +33,8 @@ class Hypredrive(CMakePackage):
     variant("compression", default=False, description="Enable lossless compression backends")
 
     depends_on("c", type="build")
+    depends_on("cxx", type="build", when="+caliper")
+
     depends_on("cmake@3.23:", type="build")
     depends_on("mpi")
     depends_on("hypre@2.20.0: +mpi")
