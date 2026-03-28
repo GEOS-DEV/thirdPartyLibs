@@ -38,6 +38,10 @@ spack:
       require:
       - openmpi@4.0.3
 
+    zlib-api:
+      require:
+      - zlib
+
     blas:
       require:
       - "netlib-lapack"
@@ -161,4 +165,3 @@ spack:
       externals:
       - spec: zlib@1.2.11
         prefix: /usr
-

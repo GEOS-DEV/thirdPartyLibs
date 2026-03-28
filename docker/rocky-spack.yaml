@@ -44,6 +44,8 @@ spack:
   packages:
     all:
       target: [x86_64]
+      providers:
+        zlib-api: [zlib]
 
     mpi:
       require:
@@ -149,4 +151,9 @@ spack:
       buildable: false
       externals:
       - spec: xz@5.2.5
+        prefix: /usr
+    zlib:
+      buildable: false
+      externals:
+      - spec: zlib@1.2.11
         prefix: /usr
