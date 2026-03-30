@@ -56,11 +56,15 @@ jobs:
           - name: Rockylinux (8, gcc 13.3, cuda 12.9.1)
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13-cuda12.9.1
             TPL_DOCKERFILE: docker/tpl-rockylinux-gcc-cuda-12.Dockerfile
-            RUNS_ON: Runner_4core_16GB
+            RUNS_ON: streak2
+            NPROC: 8
+            DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
           - name: Rockylinux (8, clang 17.0.6, cuda 12.9.1)
             DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.9.1
             TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
-            RUNS_ON: Runner_4core_16GB
+            RUNS_ON: streak2
+            NPROC: 8
+            DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
           # - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
           #   DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
           #   TPL_DOCKERFILE: docker/Stanford/Dockerfile
@@ -88,6 +92,15 @@ jobs:
 
     - name: Print environment
       run: printenv
+
+    - name: Inject CA certificate into Docker build
+      if: matrix.RUNS_ON == 'streak2'
+      run: |
+        # 1. Copy the host's CA bundle into the Docker build context
+        cp /etc/pki/tls/certs/ca-bundle.crt ./ca-bundle.crt
+
+        # 2. Inject the COPY and update-ca-trust commands right before dnf runs
+        sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' ${{ matrix.TPL_DOCKERFILE }}
 
     - name: Run the docker build docker script
       env:

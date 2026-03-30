@@ -15,6 +15,7 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 ################################
 # BLT
 ################################
+set( CXX_STANDARD 17 )
 set( BLT_CXX_STD c++17 CACHE STRING "" FORCE )
 
 if (DEFINED BLT_SOURCE_DIR)
@@ -235,7 +236,7 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-0.9.2.tar.gz")
+set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.9.5-src-with-blt.tar.gz")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -282,7 +283,7 @@ ExternalProject_Add( conduit
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D BLT_CXX_STD:STRING=c++14
+                                -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 )
 
 list(APPEND build_list conduit )
@@ -334,7 +335,7 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2025.03.0.tar.gz")
+set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2025.12.0.tar.gz")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -374,7 +375,7 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2025.03.0.tar.gz")
+set(CHAI_URL "${TPL_MIRROR_DIR}/chai-2025.12.0.tar.gz")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -448,7 +449,7 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.12.0.tar.gz")
+    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.14.0.tar.gz")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -1204,7 +1205,7 @@ ExternalProject_Add( fmt
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                -D CMAKE_CXX_STANDARD=14
+                                -D CMAKE_CXX_STANDARD=${CXX_STANDARD}
                                 -D CMAKE_CXX_VISIBILITY_PRESET:STRING=default
                                 -D CMAKE_VISIBILITY_INLINES_HIDDEN:BOOL=OFF
                                 -D FMT_TEST:BOOL=OFF )
