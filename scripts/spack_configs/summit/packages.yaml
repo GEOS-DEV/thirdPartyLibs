@@ -6,6 +6,7 @@ packages:
       mpi: [spectrum-mpi]
       blas: [openblas]
       lapack: [openblas]
+      zlib-api: [zlib]
 
   openblas:
     buildable: False

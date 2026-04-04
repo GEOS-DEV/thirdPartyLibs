@@ -42,6 +42,7 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
+ARG SPEC
 
 RUN dnf -y install \
         tbb-devel \
@@ -79,9 +80,11 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # Create symlinks to blas/lapack libraries
      ln -s /usr/lib64/libblas.so.3 /usr/lib64/libblas.so && \
      ln -s /usr/lib64/liblapack.so.3 /usr/lib64/liblapack.so && \
+     GEOSX_SPEC="${SPEC}" && \
+     if [ -z "${GEOSX_SPEC}" ] || [ "${GEOSX_SPEC}" = "undefined" ]; then GEOSX_SPEC="+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-17 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"; fi && \
      scl enable gcc-toolset-13 ' \
      ./scripts/uberenv/uberenv.py \
-       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-17 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "'"${GEOSX_SPEC}"'" \
        --spack-env-file=${SRC_DIR}/docker/rocky-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \

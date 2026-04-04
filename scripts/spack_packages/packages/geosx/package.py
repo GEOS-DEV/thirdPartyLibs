@@ -66,6 +66,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('vtk', default=True, description='Build VTK support.')
     variant('trilinos', default=True, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
+    variant('hypredrive', default=False, description='Build hypredrive support.')
     variant('petsc', default=False, description='Build PETSc support.')
     variant('scotch', default=True, description='Build Scotch support.')
     variant('uncrustify', default=True, description='Build Uncrustify support.')
@@ -187,6 +188,11 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +pic", when="~shared")
         depends_on("hypre +shared", when="+shared")
+
+    with when("+hypredrive"):
+        depends_on("hypredrive +pic", when="~shared")
+        depends_on("hypredrive +shared", when="+shared")
+        depends_on("hypredrive +caliper", when="+caliper")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
@@ -579,6 +585,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 ('suite-sparse', 'SUITESPARSE', True),
                 ('trilinos', 'TRILINOS', '+trilinos' in spec),
                 ('hypre', 'HYPRE', '+hypre' in spec),
+                ('hypredrive', 'HYPREDRV', '+hypredrive' in spec),
                 ('petsc', 'PETSC', '+petsc' in spec)
             )
             # yapf: enable
@@ -588,6 +595,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             for tpl, cmake_name, enable in math_tpls:
                 if enable:
+                    if tpl == 'hypredrive':
+                        cfg.write(cmake_cache_option('ENABLE_HYPREDRV', True))
                     cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), spec[tpl].prefix))
 
                     if tpl == 'hypre' and '+cuda' in spec:
