@@ -89,6 +89,10 @@ spack:
       require:
       - openmpi@4.1.2
 
+    zlib-api:
+      require:
+      - zlib
+
     blas:
       require:
       - "netlib-lapack"

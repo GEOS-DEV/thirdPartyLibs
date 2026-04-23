@@ -53,6 +53,7 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
+ARG SPEC
 
 ARG GCC_MAJOR_VERSION
 
@@ -87,8 +88,10 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
 # Create symlinks to g++ libraries
      ln -s /usr/bin/g++-${GCC_MAJOR_VERSION} /usr/bin/g++ && \
+     GEOSX_SPEC="${SPEC}" && \
+     if [ -z "${GEOSX_SPEC}" ] || [ "${GEOSX_SPEC}" = "undefined" ]; then GEOSX_SPEC="~shared~openmp+docs %clang-${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi"; fi && \
      ./scripts/uberenv/uberenv.py \
-       --spec "~shared~openmp+docs %clang-${CLANG_MAJOR_VERSION} ^caliper~gotcha~sampler~libunwind~libdw~papi" \
+       --spec "${GEOSX_SPEC}" \
        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
