@@ -47,6 +47,7 @@ RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
+ARG SPEC
 
 RUN apt-get install -y --no-install-recommends \
     libtbb-dev \
@@ -61,9 +62,11 @@ RUN apt-get install -y --no-install-recommends \
 # -k flag is to ignore SSL errors
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      mkdir -p ${GEOSX_TPL_DIR} && \
+     GEOSX_SPEC="${SPEC}" && \
+     if [ -z "${GEOSX_SPEC}" ] || [ "${GEOSX_SPEC}" = "undefined" ]; then GEOSX_SPEC="+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-10 ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"; fi && \
      ./scripts/uberenv/uberenv.py \
-       --spec "+cuda~uncrustify~openmp~pygeosx cuda_arch=70 %clang-10  ^cuda@11.8.0+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi" \
-       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+       --spec "${GEOSX_SPEC}" \
+       --spack-env-file=${SRC_DIR}/docker/ubuntu20-clang-cuda-spack.yaml \
        --project-json=.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

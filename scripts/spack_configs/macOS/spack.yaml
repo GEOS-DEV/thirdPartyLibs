@@ -26,9 +26,6 @@ spack:
           f77: /opt/homebrew/bin/gfortran 
           fc: /opt/homebrew/bin/gfortran  
         flags:
-          cflags:
-          cxxflags:
-          fflags:
           cppflags: -I/opt/homebrew/opt/openblas/include
           ldflags: -L/opt/homebrew/opt/openblas/lib
         operating_system: sequoia
@@ -45,9 +42,6 @@ spack:
         flags:
           cppflags: -I/opt/homebrew/opt/openblas/include
           ldflags: -L/opt/homebrew/opt/openblas/lib
-          cflags:
-          cxxflags:
-          fflags:
         operating_system: sequoia
         target: aarch64
         modules: []
@@ -61,6 +55,8 @@ spack:
         mpi: [openmpi]
         blas: [openblas]
         lapack: [openblas]
+        zlib-api: [zlib]
+      variants: "~openmp"
 
     openblas:
       buildable: False
@@ -134,7 +130,7 @@ spack:
       buildable: False
       externals:
         - spec: addr2line@2.43.1
-          prefix: /opt/homebrew/opt/binutils     
+          prefix: /opt/homebrew/opt/binutils
 
     zlib:
       buildable: False
@@ -145,5 +141,5 @@ spack:
     python:
       buildable: false
       externals:
-        - spec: python@3.13.2
-          prefix: /opt/homebrew/opt/python@3.13
+        - spec: python@3.14.3
+          prefix: /opt/homebrew/opt/python@3.14

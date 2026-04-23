@@ -9,8 +9,6 @@ import warnings
 import socket
 import os
 
-import llnl.util.tty as tty
-
 from os import environ as env
 from os.path import join as pjoin
 
@@ -68,6 +66,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('vtk', default=True, description='Build VTK support.')
     variant('trilinos', default=True, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
+    variant('hypredrive', default=False, description='Build hypredrive support.')
     variant('petsc', default=False, description='Build PETSc support.')
     variant('scotch', default=True, description='Build Scotch support.')
     variant('uncrustify', default=True, description='Build Uncrustify support.')
@@ -78,6 +77,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             multi=False)
     variant('grpc', default=False, description='Enable gRPC.')
     variant('pygeosx', default=True, description='Enable pygeosx.')
+    variant('cxxstd', default='17', description='CXX standard.')
 
     # SPHINX_END_VARIANTS
 
@@ -100,7 +100,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('cmake@3.24:', type='build')
 
-    depends_on('blt')
+    depends_on('blt@0.7.1')
 
     #
     # Virtual packages
@@ -112,20 +112,14 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    depends_on('raja ~examples~exercises~shared')
-    depends_on("raja~openmp", when="~openmp")
-    depends_on("raja+openmp", when="+openmp")
-
-    depends_on('umpire +c~examples+fortran~device_alloc~shared')
-    depends_on("umpire~openmp", when="~openmp")
-    depends_on("umpire+openmp", when="+openmp")
-
-    depends_on('chai +raja~examples~shared')
-    depends_on("chai~openmp", when="~openmp")
-    depends_on("chai+openmp", when="+openmp")
-
-    depends_on('camp')
-
+    raja_suite_version="2025.12.0"
+    depends_on(f"raja @{raja_suite_version} ~examples~exercises~shared")
+    depends_on(f"chai @{raja_suite_version} +raja~examples~shared")
+    depends_on(f"camp @{raja_suite_version}")
+    depends_on(f"umpire @{raja_suite_version} +c~examples+fortran~device_alloc~shared")
+    with when('+openmp'):
+        for pkg in ('raja', 'chai', 'umpire'):
+            depends_on(f"{pkg}+openmp", when="+openmp")
     #
     # GPUs
     #
@@ -148,17 +142,19 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # IO
     #
-    depends_on('hdf5@1.12.1')
-    depends_on('silo@4.11.1-bsd~fortran~shared~python')
+    depends_on('hdf5@1.14.6')
+    depends_on('silo@4.12.0~fortran~shared~python build_system=cmake')
 
-    depends_on('conduit~test~fortran~hdf5_compat+shared')
+    depends_on('conduit@0.9.5 ~test~fortran~hdf5_compat+shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper@2.14.0 ~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
-    depends_on('fmt@10.0.0 cxxstd=14')
+    depends_on('fmt@11')
+    for _fmt_cxxstd in ('14', '17', '20'):
+        depends_on(f'fmt@11 cxxstd={_fmt_cxxstd}', when=f'cxxstd={_fmt_cxxstd}')
     depends_on('vtk@9.4.2', when='+vtk')
 
     #
@@ -167,7 +163,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("parmetis@4.0.3+int64~shared cflags='-fPIC' cxxflags='-fPIC'")
     depends_on("metis +int64~shared cflags='-fPIC' cxxflags='-fPIC'")
 
-    depends_on("superlu-dist +int64  fflags='-fPIC'")
+    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC'")
+    depends_on("superlu-dist@9.2.1 +int64 fflags='-fPIC -ef'", when="%cce")
     depends_on("superlu-dist~openmp", when="~openmp")
     depends_on("superlu-dist+openmp", when="+openmp")
 
@@ -185,11 +182,17 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
-        depends_on("hypre +superlu-dist+mixedint+mpi~shared cflags='-fPIC' cxxflags='-fPIC'", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory~shared cflags='-fPIC' cxxflags='-fPIC'", when='+rocm')
+        depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
-        depends_on("hypre +openmp", when="+openmp")
+        depends_on("hypre +pic", when="~shared")
+        depends_on("hypre +shared", when="+shared")
+
+    with when("+hypredrive"):
+        depends_on("hypredrive +pic", when="~shared")
+        depends_on("hypredrive +shared", when="+shared")
+        depends_on("hypredrive +caliper", when="+caliper")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
@@ -357,7 +360,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write("# CMake Standard\n")
             cfg.write("#{0}\n\n".format("-" * 80))
 
-            cfg.write(cmake_cache_string("BLT_CXX_STD", "c++17"))
+            cfg.write(cmake_cache_string("BLT_CXX_STD", f"c++{spec.variants['cxxstd'].value}"))
 
             cfg.write("#{0}\n".format("-" * 80))
             cfg.write("# MPI\n")
@@ -441,7 +444,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_entry('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))
@@ -486,7 +489,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+rocm' in spec:
                 cfg.write(cmake_cache_option('ENABLE_HIP', True))
-                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', spec.variants['cxxstd'].value))
                 cfg.write(cmake_cache_entry('CMAKE_HIP_COMPILER', spec['hip'].prefix.bin.hipcc))
 
                 if not spec.satisfies('amdgpu_target=none'):
@@ -534,7 +537,20 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
             for tpl, cmake_name, enable in io_tpls:
                 if enable:
-                    cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), spec[tpl].prefix))
+                    dep_spec = None
+                    if tpl == 'zlib':
+                        # Spack may concretize zlib-api to zlib-ng instead of zlib.
+                        for candidate in ('zlib', 'zlib-ng', 'zlib-api'):
+                            try:
+                                dep_spec = spec[candidate]
+                                break
+                            except KeyError:
+                                pass
+                        if dep_spec is None:
+                            raise KeyError("No zlib provider (zlib/zlib-ng/zlib-api) found in {0}".format(spec))
+                    else:
+                        dep_spec = spec[tpl]
+                    cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), dep_spec.prefix))
                 else:
                     cfg.write(cmake_cache_option('ENABLE_{}'.format(cmake_name), False))
 
@@ -569,6 +585,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 ('suite-sparse', 'SUITESPARSE', True),
                 ('trilinos', 'TRILINOS', '+trilinos' in spec),
                 ('hypre', 'HYPRE', '+hypre' in spec),
+                ('hypredrive', 'HYPREDRV', '+hypredrive' in spec),
                 ('petsc', 'PETSC', '+petsc' in spec)
             )
             # yapf: enable
@@ -578,6 +595,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             for tpl, cmake_name, enable in math_tpls:
                 if enable:
+                    if tpl == 'hypredrive':
+                        cfg.write(cmake_cache_option('ENABLE_HYPREDRV', True))
                     cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), spec[tpl].prefix))
 
                     if tpl == 'hypre' and '+cuda' in spec:
@@ -756,7 +775,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             if '+cuda' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CUDA', True))
-                cfg.write(cmake_cache_entry('CMAKE_CUDA_STANDARD', 17))
+                cfg.write(cmake_cache_string('CMAKE_CUDA_STANDARD', spec.variants['cxxstd'].value))
 
                 cudatoolkitdir = spec['cuda'].prefix
                 cfg.write(cmake_cache_entry('CUDA_TOOLKIT_ROOT_DIR', cudatoolkitdir))

@@ -21,10 +21,16 @@ class Grpc(CMakePackage):
     # $ mv grpc grpc-1.64.0-full-clone
     # $ tar cfvz grpc-1.64.0-full-clone.tar.gz grpc-1.64.0-full-clone
     # $ sha256sum grpc-1.64.0-full-clone.tar.gz
-    # $ spack checksum grpc-1.64.0-full-clone.tar.gz
-    # Then place the tar-ball in a mirror directory under grpc subdirectory and 
-    # pass the --mirror path-to-mirror-directory option to uberenv.py command.
+    # Then place the tar-ball in the mirror directory under grpc subdirectory:
+    # $ export SPACK_MIRROR=/workrd/SCR/NUM/GEOS_environment/spack/mirror
+    # $ cp grpc-1.64.0-full-clone.tar.gz $SPACK_MIRROR/grpc/
+    # And also into the $SPACK_MIRROR/_source-cache/archive directory using the first two
+    # charachers of the SHA for naming the subfolder and full SHA for naming the file:
+    # $ mkdir $SPACK_MIRROR/_source-cache/archive/a0/
+    # $ cp grpc-1.64.0-full-clone.tar.gz $SPACK_MIRROR/_source-cache/archive/a0/a03fa383b885b325277580f9db50bad8608503a68720ebc2eb09474c23c46a36.tar.gz 
+    # Finally pass the --mirror $SPACK_MIRROR option to uberenv.py command.
     version("1.64.0-full-clone", sha256="a03fa383b885b325277580f9db50bad8608503a68720ebc2eb09474c23c46a36")
+    version("1.65.5-full-clone", sha256="1d0b1432f1984177e9eb52226b77db953c81b60e3f4419d2141cac28fe07a906")
 
     depends_on("c", type="build")
     depends_on("cxx", type="build")
