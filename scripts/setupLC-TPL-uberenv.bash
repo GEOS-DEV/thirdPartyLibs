@@ -104,7 +104,7 @@ function launch_jobs() {
       ;;
 
     tuo|tuolumne)
-      ALLOC_CMD="flux run -N 1 -x -n 96 -t 60m --bank=vortex"
+      ALLOC_CMD="salloc -N 1 --exclusive -p pdebug -t 60 -A vortex"
       "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne cce-20-rocm-6.4.3  "+rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942 %%cce-20 ${COMMON}" "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" tuolumne llvm-amdgpu-6.4.3  "+rocm~pygeosx~trilinos~petsc~docs amdgpu_target=gfx942 %%llvm-amdgpu_6_4_3 ${COMMON}" "${ALLOC_CMD}" "$@" &
       ;;
