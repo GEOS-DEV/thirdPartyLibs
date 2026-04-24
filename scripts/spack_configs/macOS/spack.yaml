@@ -69,6 +69,7 @@ spack:
         mpi: [openmpi]
         blas: [openblas]
         lapack: [openblas]
+        zlib-api: [zlib]
       variants: "~openmp"
 
     geosx:

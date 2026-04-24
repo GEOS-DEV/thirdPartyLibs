@@ -6,6 +6,7 @@ packages:
       mpi: [openmpi]
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
+      zlib-api: [zlib]
 
   openmpi:
     buildable: False

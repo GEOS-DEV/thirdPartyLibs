@@ -43,6 +43,13 @@ jobs:
             TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
             DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
             RUNS_ON: ubuntu-latest
+          - name: Ubuntu (22.04, gcc 12.3.0, open-mpi 4.1.2, +hypredrive)
+            DOCKER_ROOT_IMAGE: ubuntu:22.04
+            DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc12-hypredrive
+            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
+            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
+            SPEC: "~pygeosx +docs +hypredrive %gcc-12"
+            RUNS_ON: ubuntu-latest
           - name: Ubuntu (22.04, clang 15.0.7 + gcc 11.4.0, open-mpi 4.1.2)
             DOCKER_ROOT_IMAGE: ubuntu:22.04
             DOCKER_REPOSITORY: geosx/ubuntu22.04-clang15

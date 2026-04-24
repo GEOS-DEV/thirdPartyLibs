@@ -53,6 +53,11 @@ spack:
       require:
       - hpcx-mpi
       buildable: false
+
+    zlib-api:
+      require:
+      - zlib
+
     blas:
       require:
       - "intel-oneapi-mkl"
