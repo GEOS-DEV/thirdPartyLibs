@@ -89,6 +89,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('addr2line', default=True,
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
+    variant('cpptrace', default=False, description='Build cpptrace support.')
 
     variant('cuda_stack_size', default="0", description="Defines the adjusted cuda stack \
         size limit if required. Zero or negative keep default behavior")
@@ -208,6 +209,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # Dev tools
     #
     depends_on('uncrustify', when='+uncrustify')
+    depends_on('cpptrace', when='+cpptrace')
 
     #
     # Documentation
@@ -652,6 +654,15 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             if '+uncrustify' in spec:
                 cfg.write(
                     cmake_cache_entry('UNCRUSTIFY_EXECUTABLE', os.path.join(spec['uncrustify'].prefix.bin, 'uncrustify')))
+            
+            if '+cpptrace' in spec:
+                cfg.write(cmake_cache_option('ENABLE_CPPTRACE', True))
+                cfg.write(cmake_cache_entry('CPPTRACE_DIR', spec['cpptrace'].prefix))
+                if spec['cpptrace'].satisfies('symbols=libdwarf'):
+                    cfg.write(cmake_cache_entry('ZSTD_DIR', spec['zstd'].prefix))
+                    cfg.write(cmake_cache_entry('LIBDWARF_DIR', spec['libdwarf'].prefix))
+            else:
+                cfg.write(cmake_cache_option('ENABLE_CPPTRACE', False))
 
             if '+addr2line' in spec:
                 cfg.write('#{0}\n'.format('-' * 80))
