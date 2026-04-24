@@ -73,7 +73,7 @@ spack:
       variants: "~openmp"
 
     geosx:
-      variants: "+addr2line"
+      variants: "+addr2line~openmp"
 
     openblas:
       buildable: False
