@@ -656,6 +656,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             if '+cpptrace' in spec:
                 cfg.write(cmake_cache_option('ENABLE_CPPTRACE', True))
                 cfg.write(cmake_cache_entry('CPPTRACE_DIR', spec['cpptrace'].prefix))
+                if spec['cpptrace'].satisfies('symbols=libdwarf'):
+                    cfg.write(cmake_cache_entry('ZSTD_DIR', spec['zstd'].prefix))
+                    cfg.write(cmake_cache_entry('LIBDWARF_DIR', spec['libdwarf'].prefix))
             else:
                 cfg.write(cmake_cache_option('ENABLE_CPPTRACE', False))
 
