@@ -7,6 +7,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# The TPL images now build on top of the base images produced by
+# https://github.com/GEOS-DEV/docker_base_images, so each matrix entry only
+# needs to point at one of those tags. Update DOCKER_BASE_IMAGE_SHA below to
+# bump the toolchain across every row in lockstep.
+env:
+  DOCKER_BASE_IMAGE_SHA: d282d3a74396f9d7f499b9808a1f06fdef4d4a7f
+
 jobs:
   build_images:
     name: ${{ matrix.name }}
@@ -19,73 +26,169 @@ jobs:
 
       matrix:
         include:
-          - name: Ubuntu (20.04, gcc 9.4.0, open-mpi 4.0.3)
-            DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc9
-            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
-            DOCKER_ROOT_IMAGE: ubuntu:20.04
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=9"
+          # ---------- Ubuntu 24.04, host (no CUDA) ----------
+          - name: Ubuntu 24.04 - gcc 12
             RUNS_ON: ubuntu-latest
-          - name: Ubuntu (20.04, gcc 10.5.0, open-mpi 4.0.3) - github codespaces
-            DOCKER_REPOSITORY: geosx/ubuntu20.04-gcc10
-            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
-            DOCKER_ROOT_IMAGE: mcr.microsoft.com/devcontainers/base:ubuntu-20.04
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=10"
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-gcc12
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc12
+            GCC_VERSION: 12
+            SPEC: "~pygeosx +docs %gcc-12"
+
+          - name: Ubuntu 24.04 - gcc 13
             RUNS_ON: ubuntu-latest
-          - name: Ubuntu (22.04, gcc 11.4.0, open-mpi 4.1.2)
-            DOCKER_ROOT_IMAGE: ubuntu:22.04
-            DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc11
-            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=11"
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-gcc13
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13
+            GCC_VERSION: 13
+            SPEC: "~pygeosx +docs %gcc-13"
+
+          - name: Ubuntu 24.04 - clang 19
             RUNS_ON: ubuntu-latest
-          - name: Ubuntu (22.04, gcc 12.3.0, open-mpi 4.1.2)
-            DOCKER_ROOT_IMAGE: ubuntu:22.04
-            DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc12
-            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang19
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang19
+            GCC_VERSION: 13
+            CLANG_VERSION: 19
+            SPEC: "~shared~openmp +docs %clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Ubuntu 24.04 - clang 22
             RUNS_ON: ubuntu-latest
-          - name: Ubuntu (22.04, gcc 12.3.0, open-mpi 4.1.2, +hypredrive)
-            DOCKER_ROOT_IMAGE: ubuntu:22.04
-            DOCKER_REPOSITORY: geosx/ubuntu22.04-gcc12-hypredrive
-            TPL_DOCKERFILE: docker/tpl-ubuntu-gcc.Dockerfile
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg GCC_MAJOR_VERSION=12"
-            SPEC: "~pygeosx +docs +hypredrive %gcc-12"
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang22
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang22
+            GCC_VERSION: 13
+            CLANG_VERSION: 22
+            SPEC: "~shared~openmp +docs %clang-22 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          # ---------- Rocky Linux 8 / 9, host (no CUDA) ----------
+          - name: Rocky Linux 8 - gcc 12
             RUNS_ON: ubuntu-latest
-          - name: Ubuntu (22.04, clang 15.0.7 + gcc 11.4.0, open-mpi 4.1.2)
-            DOCKER_ROOT_IMAGE: ubuntu:22.04
-            DOCKER_REPOSITORY: geosx/ubuntu22.04-clang15
-            TPL_DOCKERFILE: docker/tpl-ubuntu-clang.Dockerfile
-            DOCKER_COMPILER_BUILD_ARG: "--build-arg CLANG_MAJOR_VERSION=15 --build-arg GCC_MAJOR_VERSION=11"
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-gcc12
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux8-gcc12
+            GCC_VERSION: 12
+            SPEC: "~pygeosx +docs %gcc-12"
+
+          - name: Rocky Linux 8 - gcc 13
             RUNS_ON: ubuntu-latest
-          - name: Ubuntu (20.04, clang 10.0.0 + gcc 9.4.0, open-mpi 4.0.3, cuda-11.8.89)
-            DOCKER_REPOSITORY: geosx/ubuntu20.04-clang10.0.0-cuda11.8.89
-            TPL_DOCKERFILE: docker/tpl-ubuntu-clang-cuda.Dockerfile
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-gcc13
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
+            GCC_VERSION: 13
+            SPEC: "~pygeosx +docs %gcc-13"
+
+          - name: Rocky Linux 8 - clang 19
             RUNS_ON: ubuntu-latest
-          - name: Rockylinux (8, gcc 13.3, cuda 12.9.1)
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-clang19
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux8-clang19
+            GCC_VERSION: 13
+            CLANG_VERSION: 19
+            SPEC: "~shared~openmp +docs %clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Rocky Linux 9 - clang 22
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 9-clang22
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux9-clang22
+            GCC_VERSION: 15
+            CLANG_VERSION: 22
+            SPEC: "~shared~openmp +docs %clang-22 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          # ---------- Ubuntu 24.04 + CUDA ----------
+          - name: Ubuntu 24.04 - gcc 13 + CUDA 12.9.1
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-gcc13-cuda12.9.1
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13-cuda12.9.1
+            GCC_VERSION: 13
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Ubuntu 24.04 - gcc 15 + CUDA 13.2.1
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-gcc15-cuda13.2.1
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc15-cuda13.2.1
+            GCC_VERSION: 15
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-15 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Ubuntu 24.04 - clang 19 + CUDA 12.9.1
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang19-cuda12.9.1
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang19-cuda12.9.1
+            GCC_VERSION: 13
+            CLANG_VERSION: 19
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Ubuntu 24.04 - clang 20 + CUDA 13.2.1
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang20-cuda13.2.1
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang20-cuda13.2.1
+            GCC_VERSION: 15
+            CLANG_VERSION: 20
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-20 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          # ---------- Rocky Linux + CUDA ----------
+          - name: Rocky Linux 8 - gcc 13 + CUDA 12.9.1
+            RUNS_ON: streak2
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-gcc13-cuda12.9.1
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13-cuda12.9.1
-            TPL_DOCKERFILE: docker/tpl-rockylinux-gcc-cuda-12.Dockerfile
-            RUNS_ON: streak2
             NPROC: 8
+            GCC_VERSION: 13
             DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
-          - name: Rockylinux (8, clang 17.0.6, cuda 12.9.1)
-            DOCKER_REPOSITORY: geosx/rockylinux8-clang17-cuda12.9.1
-            TPL_DOCKERFILE: docker/tpl-rockylinux-clang-cuda-12.Dockerfile
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Rocky Linux 9 - gcc 15 + CUDA 13.2.1
             RUNS_ON: streak2
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 9-gcc15-cuda13.2.1
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux9-gcc15-cuda13.2.1
             NPROC: 8
+            GCC_VERSION: 15
             DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
-          # - name: Sherlock CPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, openblas 0.3.10, zlib 1.2.11)
-          #   DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-openblas0.3.10-zlib1.2.11
-          #   TPL_DOCKERFILE: docker/Stanford/Dockerfile
-          #   DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
-          #   SPEC: "~pygeosx~openmp %gcc@10.1.0"
-          #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/CPU
-          #   RUNS_ON: ubuntu-latest
-          # - name: Sherlock GPU (centos 7.9.2009, gcc 10.1.0, open-mpi 4.1.2, cuda 12.4.0, openblas 0.3.10, zlib 1.2.11)
-          #   DOCKER_REPOSITORY: geosx/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11
-          #   TPL_DOCKERFILE: docker/Stanford/Dockerfile
-          #   DOCKER_ROOT_IMAGE: matteofrigo5/sherlock-gcc10.1.0-openmpi4.1.2-cuda12.4.0-openblas0.3.10-zlib1.2.11-cmake3.31.4-no-geosx:0.0.1
-          #   SPEC: "~pygeosx~openmp cuda_arch=86 %gcc@10.1.0 ^cuda@12.4.0+allow-unsupported-compilers"
-          #   INSTALL_DIR_ROOT: /oak/stanford/groups/tchelepi/geos-sherlock/GPU
-          #   RUNS_ON: ubuntu-latest
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-15 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Rocky Linux 8 - clang 19 + CUDA 12.9.1
+            RUNS_ON: streak2
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-clang19-cuda12.9.1
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux8-clang19-cuda12.9.1
+            NPROC: 8
+            GCC_VERSION: 13
+            CLANG_VERSION: 19
+            DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+
+          - name: Rocky Linux 9 - clang 20 + CUDA 13.2.1
+            RUNS_ON: streak2
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 9-clang20-cuda13.2.1
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux9-clang20-cuda13.2.1
+            NPROC: 8
+            GCC_VERSION: 15
+            CLANG_VERSION: 20
+            DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-20 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
     steps:
     - name: Checkout
@@ -100,6 +203,11 @@ jobs:
     - name: Print environment
       run: printenv
 
+    - name: Compose DOCKER_BASE_IMAGE
+      id: base
+      run: |
+        echo "DOCKER_BASE_IMAGE=${{ matrix.DOCKER_BASE_IMAGE_REPO }}:${{ matrix.DOCKER_BASE_IMAGE_TAG }}-${DOCKER_BASE_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
+
     - name: Inject CA certificate into Docker build
       if: matrix.RUNS_ON == 'streak2'
       run: |
@@ -113,11 +221,12 @@ jobs:
       env:
         TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
-        DOCKER_COMPILER_BUILD_ARG: ${{ matrix.DOCKER_COMPILER_BUILD_ARG }}
+        DOCKER_BASE_IMAGE: ${{ steps.base.outputs.DOCKER_BASE_IMAGE }}
+        GCC_VERSION: ${{ matrix.GCC_VERSION }}
+        CLANG_VERSION: ${{ matrix.CLANG_VERSION }}
         INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
-        HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake'}}
+        HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake' }}
         SPEC: ${{ matrix.SPEC || 'undefined' }}
-        DOCKER_ROOT_IMAGE: ${{ matrix.DOCKER_ROOT_IMAGE || 'undefined' }}
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}

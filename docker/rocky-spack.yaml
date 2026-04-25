@@ -17,28 +17,84 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
+  # ---------------------------------------------------------------------------
+  # Toolchains
+  #
+  # Aligned with the geosx/rockylinux:* base images produced by
+  # https://github.com/GEOS-DEV/docker_base_images. Each base image installs
+  # exactly one of these toolchains; the matrix in
+  # .github/workflows/docker_build_tpls.yml picks the matching '%<name>'
+  # selector via the SPEC build-arg.
+  # ---------------------------------------------------------------------------
   toolchains:
+    gcc-12:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%c=gcc@12'
+        when: '%c'
+      - spec: '%cxx=gcc@12'
+        when: '%cxx'
+      - spec: '%fortran=gcc@12'
+        when: '%fortran'
+      - spec: '%openmpi'
+        when: '%mpi'
     gcc-13:
       - spec: cxxflags='-fPIC -pthread'
       - spec: cflags='-fPIC -pthread'
-      - spec: '%c=gcc@13.3.1'
+      - spec: '%c=gcc@13'
         when: '%c'
-      - spec: '%cxx=gcc@13.3.1'
+      - spec: '%cxx=gcc@13'
         when: '%cxx'
-      - spec: '%fortran=gcc@13.3.1'
+      - spec: '%fortran=gcc@13'
         when: '%fortran'
-      - spec: '%openmpi@4.1.1'
+      - spec: '%openmpi'
         when: '%mpi'
-    clang-17:
+    gcc-15:
       - spec: cxxflags='-fPIC -pthread'
       - spec: cflags='-fPIC -pthread'
-      - spec: '%[virtuals=c]llvm@17.0.6+clang~flang~lld~lldb'
+      - spec: '%c=gcc@15'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@17.0.6+clang~flang~lld~lldb'
+      - spec: '%cxx=gcc@15'
         when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13.3.1'
+      - spec: '%fortran=gcc@15'
         when: '%fortran'
-      - spec: '%openmpi@4.1.1'
+      - spec: '%openmpi'
+        when: '%mpi'
+    # clang base images install gfortran from a paired GCC toolset: the
+    # docker_base_images matrix uses GCC_VERSION=13 for Rocky 8 clang19/clang19-cuda
+    # and GCC_VERSION=15 for Rocky 9 clang22 and the clang20-cuda combos.
+    clang-19:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%[virtuals=c]llvm@19+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@19+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@13'
+        when: '%fortran'
+      - spec: '%openmpi'
+        when: '%mpi'
+    clang-20:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%[virtuals=c]llvm@20+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@20+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@15'
+        when: '%fortran'
+      - spec: '%openmpi'
+        when: '%mpi'
+    clang-22:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%[virtuals=c]llvm@22+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@22+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@15'
+        when: '%fortran'
+      - spec: '%openmpi'
         when: '%mpi'
 
   packages:
@@ -47,9 +103,12 @@ spack:
       providers:
         zlib-api: [zlib]
 
+    # Rocky 8 ships OpenMPI 4.1.1; Rocky 9 ships 4.1.5. Same install prefix on
+    # both. We declare both externals; Spack resolves whichever matches the
+    # toolchain pin in the SPEC.
     mpi:
       require:
-      - openmpi@4.1.1
+      - openmpi
 
     blas:
       require:
@@ -58,26 +117,77 @@ spack:
       require:
       - "netlib-lapack"
 
+    # ---- Compilers ----
+    # On the Rocky+clang base images the TPL Dockerfile creates wrappers at
+    # /usr/local/bin/clang{,++}-gcc<GCC_VERSION> that bake in --gcc-toolchain.
+    # Pointing the spack llvm external at those wrappers keeps NVCC's `-ccbin`
+    # paired with the matched libstdc++.
     llvm:
       externals:
-      - spec: llvm@17.0.6+clang~flang~lld~lldb
+      - spec: llvm@19+clang~flang~lld~lldb
         prefix: /usr
         extra_attributes:
           compilers:
-            # Use wrappers that bake in --gcc-toolchain for gcc-toolset-13, so NVCC's -ccbin
-            # doesn't accidentally pick GCC 8 headers when compiling CUDA sources.
             c: /usr/local/bin/clang-gcc13
             cxx: /usr/local/bin/clang++-gcc13
+      - spec: llvm@20+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/local/bin/clang-gcc15
+            cxx: /usr/local/bin/clang++-gcc15
+      - spec: llvm@22+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/local/bin/clang-gcc15
+            cxx: /usr/local/bin/clang++-gcc15
+
     gcc:
       externals:
-      - spec: gcc@13.3.1 languages:='c,c++,fortran'
+      - spec: gcc@12 languages:='c,c++,fortran'
+        prefix: /opt/rh/gcc-toolset-12/root/usr
+        extra_attributes:
+          compilers:
+            c: /opt/rh/gcc-toolset-12/root/usr/bin/gcc
+            cxx: /opt/rh/gcc-toolset-12/root/usr/bin/g++
+            fortran: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
+      - spec: gcc@13 languages:='c,c++,fortran'
         prefix: /opt/rh/gcc-toolset-13/root/usr
         extra_attributes:
           compilers:
             c: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
             cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
             fortran: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+      - spec: gcc@15 languages:='c,c++,fortran'
+        prefix: /opt/rh/gcc-toolset-15/root/usr
+        extra_attributes:
+          compilers:
+            c: /opt/rh/gcc-toolset-15/root/usr/bin/gcc
+            cxx: /opt/rh/gcc-toolset-15/root/usr/bin/g++
+            fortran: /opt/rh/gcc-toolset-15/root/usr/bin/gfortran
 
+    # OpenMPI: same install prefix on every Rocky version, version differs.
+    # Spack picks whichever matches the toolchain pin (we don't %-pin here
+    # because the toolchains intentionally use bare `%openmpi`).
+    openmpi:
+      buildable: false
+      externals:
+      - spec: openmpi@4.1.1
+        prefix: /usr/lib64/openmpi
+      - spec: openmpi@4.1.5
+        prefix: /usr/lib64/openmpi
+
+    # ---- CUDA ----
+    cuda:
+      buildable: False
+      externals:
+      - spec: cuda@12.9.1 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+      - spec: cuda@13.2.1 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+
+    # ---- System tools provided by the base image ----
     autoconf:
       version: [2.71]
       buildable: false
@@ -91,22 +201,16 @@ spack:
       - spec: automake@1.16.5
         prefix: /usr
     cmake:
-      version: [3.28.6]
+      version: [3.31.9]
       buildable: false
       externals:
-      - spec: cmake@3.28.6
+      - spec: cmake@3.31.9
         prefix: /usr/local
-    cuda:
-      buildable: False
-      externals:
-      - spec: cuda@12.9.1 +allow-unsupported-compilers
-        prefix: /usr/local/cuda
     m4:
       buildable: false
       externals:
       - spec: m4@1.4.18
         prefix: /usr
-
     netlib-lapack:
       buildable: false
       externals:
@@ -117,11 +221,6 @@ spack:
       externals:
       - spec: netlib-blas@3.8.0
         prefix: /usr
-    openmpi:
-      buildable: false
-      externals:
-      - spec: openmpi@4.1.1
-        prefix: /usr/lib64/openmpi
     perl:
       buildable: false
       externals:
@@ -136,6 +235,8 @@ spack:
       buildable: false
       externals:
       - spec: python@3.6.8
+        prefix: /usr
+      - spec: python@3.9.18
         prefix: /usr
     tar:
       buildable: false
