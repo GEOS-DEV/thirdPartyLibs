@@ -65,6 +65,20 @@ ENV MPICC=/usr/bin/mpicc \
 ENV OMPI_CC=${CC} \
     OMPI_CXX=${CXX}
 
+# Ubuntu OpenMPI defaults wrappers to gcc/g++. For clang-based base images we
+# retarget the wrappers to clang/clang++ so mpi wrapper compilers are aligned
+# with the image toolchain contract.
+RUN if echo "${CC}" | grep -q "clang"; then \
+        for f in /usr/share/openmpi/mpicc-wrapper-data.txt /usr/share/openmpi/mpicc.openmpi-wrapper-data.txt; do \
+            if [ -f "${f}" ]; then sed -i "s|^compiler=.*$|compiler=${CC}|" "${f}" ; fi ; \
+        done && \
+        for f in /usr/share/openmpi/mpic++-wrapper-data.txt /usr/share/openmpi/mpic++.openmpi-wrapper-data.txt /usr/share/openmpi/mpicxx-wrapper-data.txt /usr/share/openmpi/mpicxx.openmpi-wrapper-data.txt /usr/share/openmpi/mpiCC-wrapper-data.txt /usr/share/openmpi/mpiCC.openmpi-wrapper-data.txt; do \
+            if [ -f "${f}" ]; then sed -i "s|^compiler=.*$|compiler=${CXX}|" "${f}" ; fi ; \
+        done && \
+        mpicc --showme:command && \
+        mpic++ --showme:command ; \
+    fi
+
 # ----- TPL build stage -----
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR

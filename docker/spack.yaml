@@ -49,6 +49,17 @@ spack:
         when: '%fortran'
       - spec: '%openmpi %gcc@13'
         when: '%mpi'
+    gcc-14:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@14'
+        when: '%c'
+      - spec: '%cxx=gcc@14'
+        when: '%cxx'
+      - spec: '%fortran=gcc@14'
+        when: '%fortran'
+      - spec: '%openmpi %gcc@14'
+        when: '%mpi'
     gcc-15:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
@@ -60,37 +71,29 @@ spack:
         when: '%fortran'
       - spec: '%openmpi %gcc@15'
         when: '%mpi'
-    # clang base images install gfortran from a paired GCC version: the
-    # docker_base_images matrix uses GCC_VERSION=13 for clang-19/22 and
-    # GCC_VERSION=15 for clang-20.
+    # clang base images install gfortran from a paired GCC version.
+    # Ubuntu 24.04 clang-19/20/22 images currently pair with GCC 13.
     clang-19:
-      - spec: '%[virtuals=c]llvm@19+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@19+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13'
-        when: '%fortran'
-      - spec: '%openmpi'
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c,cxx=clang@19'
+      - spec: '%fortran=gcc@13'
+      - spec: '%openmpi %clang@19'
         when: '%mpi'
     clang-20:
-      - spec: '%[virtuals=c]llvm@20+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@20+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@15'
-        when: '%fortran'
-      - spec: '%openmpi'
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c,cxx=clang@20'
+      - spec: '%fortran=gcc@13'
+      - spec: '%openmpi %clang@20'
         when: '%mpi'
     clang-22:
-      - spec: '%[virtuals=c]llvm@22+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@22+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13'
-        when: '%fortran'
-      - spec: '%openmpi'
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c,cxx=clang@22'
+      - spec: '%fortran=gcc@13'
+      - spec: '%openmpi %clang@22'
         when: '%mpi'
-
   packages:
     all:
       target: [x86_64]
@@ -151,6 +154,13 @@ spack:
             c: /usr/bin/gcc-13
             cxx: /usr/bin/g++-13
             fortran: /usr/bin/gfortran-13
+      - spec: gcc@14 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-14
+            cxx: /usr/bin/g++-14
+            fortran: /usr/bin/gfortran-14
       - spec: gcc@15 languages:='c,c++,fortran'
         prefix: /usr
         extra_attributes:
@@ -172,6 +182,8 @@ spack:
       - spec: openmpi@4.1.6 %gcc@12
         prefix: /usr
       - spec: openmpi@4.1.6 %gcc@13
+        prefix: /usr
+      - spec: openmpi@4.1.6 %gcc@14
         prefix: /usr
       - spec: openmpi@4.1.6 %gcc@15
         prefix: /usr
