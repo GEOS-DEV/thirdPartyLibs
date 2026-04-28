@@ -12,7 +12,7 @@ concurrency:
 # needs to point at one of those tags. Update DOCKER_BASE_IMAGE_SHA below to
 # bump the toolchain across every row in lockstep.
 env:
-  DOCKER_BASE_IMAGE_SHA: d282d3a74396f9d7f499b9808a1f06fdef4d4a7f
+  DOCKER_BASE_IMAGE_SHA: 47ddae2621f6fc0c2da8bf36305d3fd3730a7db7
 
 jobs:
   build_images:
@@ -55,15 +55,15 @@ jobs:
             CLANG_VERSION: 19
             SPEC: "~shared~openmp +docs %clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
-          - name: Ubuntu 24.04 - clang 22
+          - name: Ubuntu 24.04 - clang 20
             RUNS_ON: ubuntu-latest
             TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
-            DOCKER_BASE_IMAGE_TAG: 24.04-clang22
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang20
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
-            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang22
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang20
             GCC_VERSION: 13
-            CLANG_VERSION: 22
-            SPEC: "~shared~openmp +docs %clang-22 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            CLANG_VERSION: 20
+            SPEC: "~shared~openmp +docs %clang-20 ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           # ---------- Rocky Linux 8 / 9, host (no CUDA) ----------
           - name: Rocky Linux 8 - gcc 12
@@ -114,14 +114,14 @@ jobs:
             GCC_VERSION: 13
             SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
-          - name: Ubuntu 24.04 - gcc 15 + CUDA 13.2.1
+          - name: Ubuntu 24.04 - gcc 14 + CUDA 13.2.1
             RUNS_ON: ubuntu-latest
             TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
-            DOCKER_BASE_IMAGE_TAG: 24.04-gcc15-cuda13.2.1
+            DOCKER_BASE_IMAGE_TAG: 24.04-gcc14-cuda13.2.1
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
-            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc15-cuda13.2.1
-            GCC_VERSION: 15
-            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-15 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc14-cuda13.2.1
+            GCC_VERSION: 14
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-14 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Ubuntu 24.04 - clang 19 + CUDA 12.9.1
             RUNS_ON: ubuntu-latest

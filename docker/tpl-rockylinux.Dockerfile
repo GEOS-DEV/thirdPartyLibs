@@ -48,8 +48,9 @@ RUN dnf clean all && \
         mpfr-devel \
         bzip2 \
         gnupg2 \
-        xz \
-        python3-virtualenv && \
+        xz && \
+    (dnf -y install python3-virtualenv || \
+     python3 -m pip install --no-cache-dir virtualenv) && \
     dnf clean all && rm -rf /var/cache/dnf /var/lib/dnf
 
 # Install clingo for Spack
