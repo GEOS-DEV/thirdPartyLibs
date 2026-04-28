@@ -4,7 +4,7 @@
 # images produced by https://github.com/GEOS-DEV/docker_base_images. Those images
 # already provide:
 #   * the toolchain (gcc or clang) under /opt/compiler/bin/, with CC/CXX/FC set
-#   * cmake (under /usr/local) and doxygen
+#   * cmake (under /usr/local)
 #   * the upstream NVIDIA CUDA toolkit when DOCKER_BASE_IMAGE is a CUDA variant
 #
 # This file is intentionally agnostic of compiler vendor and CUDA-or-not: those
@@ -37,6 +37,7 @@ RUN apt-get update && \
         libtbb12 \
         libgfortran5 \
         zlib1g-dev \
+        doxygen \
         openmpi-bin \
         libopenmpi-dev \
         python3 \
@@ -108,9 +109,16 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
         echo "ERROR: SPEC build-arg must be supplied" >&2 ; \
         exit 1 ; \
     fi && \
+    GEOSX_SPACK_ENV_FILE=${SRC_DIR}/docker/spack.yaml && \
+    if echo "${CC:-}" | grep -q "clang"; then \
+        GEOSX_SPACK_ENV_FILE=/tmp/geosx-spack.yaml && \
+        cp ${SRC_DIR}/docker/spack.yaml ${GEOSX_SPACK_ENV_FILE} && \
+        sed -i -E "s/gcc@([0-9]+) languages:='c,c\\+\\+,fortran'/gcc@\\1 languages:='fortran'/g" ${GEOSX_SPACK_ENV_FILE} && \
+        sed -i -E '/c: \/usr\/bin\/gcc-[0-9]+/d; /cxx: \/usr\/bin\/g\+\+-[0-9]+/d' ${GEOSX_SPACK_ENV_FILE} ; \
+    fi && \
     ./scripts/uberenv/uberenv.py \
         --spec "${GEOSX_SPEC}" \
-        --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+        --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
         --project-json=${SRC_DIR}/.uberenv_config.json \
         --prefix ${GEOSX_TPL_DIR} \
         -k && \

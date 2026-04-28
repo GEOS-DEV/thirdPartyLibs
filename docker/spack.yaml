@@ -76,23 +76,35 @@ spack:
     clang-19:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
-      - spec: '%c,cxx=clang@19'
-      - spec: '%fortran=gcc@13'
-      - spec: '%openmpi %clang@19'
+      - spec: '%[virtuals=c]llvm@19+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@19+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@13'
+        when: '%fortran'
+      - spec: '%openmpi'
         when: '%mpi'
     clang-20:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
-      - spec: '%c,cxx=clang@20'
-      - spec: '%fortran=gcc@13'
-      - spec: '%openmpi %clang@20'
+      - spec: '%[virtuals=c]llvm@20+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@20+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@13'
+        when: '%fortran'
+      - spec: '%openmpi'
         when: '%mpi'
     clang-22:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
-      - spec: '%c,cxx=clang@22'
-      - spec: '%fortran=gcc@13'
-      - spec: '%openmpi %clang@22'
+      - spec: '%[virtuals=c]llvm@22+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@22+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@13'
+        when: '%fortran'
+      - spec: '%openmpi'
         when: '%mpi'
   packages:
     all:
@@ -186,6 +198,12 @@ spack:
       - spec: openmpi@4.1.6 %gcc@14
         prefix: /usr
       - spec: openmpi@4.1.6 %gcc@15
+        prefix: /usr
+
+    doxygen:
+      buildable: false
+      externals:
+      - spec: doxygen@1.8.20
         prefix: /usr
 
     # ---- CUDA: declared so that the +cuda matrix rows can resolve `^cuda@<v>`.

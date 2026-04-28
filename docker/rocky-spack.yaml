@@ -60,9 +60,8 @@ spack:
         when: '%fortran'
       - spec: '%openmpi'
         when: '%mpi'
-    # clang base images install gfortran from a paired GCC toolset: the
-    # docker_base_images matrix uses GCC_VERSION=13 for Rocky 8 clang19/clang19-cuda
-    # and GCC_VERSION=15 for Rocky 9 clang22 and the clang20-cuda combos.
+    # clang base images provide clang/clang++ as CC/CXX and gfortran from the
+    # paired GCC version.
     clang-19:
       - spec: cxxflags='-fPIC -pthread'
       - spec: cflags='-fPIC -pthread'
@@ -118,30 +117,27 @@ spack:
       - "netlib-lapack"
 
     # ---- Compilers ----
-    # On the Rocky+clang base images the TPL Dockerfile creates wrappers at
-    # /usr/local/bin/clang{,++}-gcc<GCC_VERSION> that bake in --gcc-toolchain.
-    # Pointing the spack llvm external at those wrappers keeps NVCC's `-ccbin`
-    # paired with the matched libstdc++.
+    # Point Spack directly at the clang/clang++ binaries from the base image.
     llvm:
       externals:
       - spec: llvm@19+clang~flang~lld~lldb
         prefix: /usr
         extra_attributes:
           compilers:
-            c: /usr/local/bin/clang-gcc13
-            cxx: /usr/local/bin/clang++-gcc13
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
       - spec: llvm@20+clang~flang~lld~lldb
         prefix: /usr
         extra_attributes:
           compilers:
-            c: /usr/local/bin/clang-gcc15
-            cxx: /usr/local/bin/clang++-gcc15
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
       - spec: llvm@22+clang~flang~lld~lldb
         prefix: /usr
         extra_attributes:
           compilers:
-            c: /usr/local/bin/clang-gcc15
-            cxx: /usr/local/bin/clang++-gcc15
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
 
     gcc:
       externals:
@@ -177,6 +173,12 @@ spack:
         prefix: /usr/lib64/openmpi
       - spec: openmpi@4.1.5
         prefix: /usr/lib64/openmpi
+
+    doxygen:
+      buildable: false
+      externals:
+      - spec: doxygen@1.8.20
+        prefix: /usr
 
     # ---- CUDA ----
     cuda:
