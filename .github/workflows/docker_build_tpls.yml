@@ -34,7 +34,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc12
             GCC_VERSION: 12
-            SPEC: "~pygeosx +docs %gcc-12"
+            SPEC: "~pygeosx +docs %%gcc-12"
 
           - name: Ubuntu 24.04 - gcc 13
             RUNS_ON: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13
             GCC_VERSION: 13
-            SPEC: "~pygeosx +docs %gcc-13"
+            SPEC: "~pygeosx +docs %%gcc-13"
 
           - name: Ubuntu 24.04 - clang 19
             RUNS_ON: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/ubuntu24.04-clang19
             GCC_VERSION: 13
             CLANG_VERSION: 19
-            SPEC: "~shared~openmp +docs %clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "~shared~openmp +docs %%clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Ubuntu 24.04 - clang 20
             RUNS_ON: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/ubuntu24.04-clang20
             GCC_VERSION: 13
             CLANG_VERSION: 20
-            SPEC: "~shared~openmp +docs %clang-20 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "~shared~openmp +docs %%clang-20 ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           # ---------- Rocky Linux 8 / 9, host (no CUDA) ----------
           - name: Rocky Linux 8 - gcc 12
@@ -73,7 +73,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc12
             GCC_VERSION: 12
-            SPEC: "~pygeosx +docs %gcc-12"
+            SPEC: "~pygeosx +docs %%gcc-12"
 
           - name: Rocky Linux 8 - gcc 13
             RUNS_ON: ubuntu-latest
@@ -82,7 +82,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
             GCC_VERSION: 13
-            SPEC: "~pygeosx +docs %gcc-13"
+            SPEC: "~pygeosx +docs %%gcc-13"
 
           - name: Rocky Linux 8 - clang 19
             RUNS_ON: ubuntu-latest
@@ -92,7 +92,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux8-clang19
             GCC_VERSION: 13
             CLANG_VERSION: 19
-            SPEC: "~shared~openmp +docs %clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "~shared~openmp +docs %%clang-19 ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Rocky Linux 9 - clang 22
             RUNS_ON: ubuntu-latest
@@ -102,7 +102,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux9-clang22
             GCC_VERSION: 15
             CLANG_VERSION: 22
-            SPEC: "~shared~openmp +docs %clang-22 ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "~shared~openmp +docs %%clang-22 ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           # ---------- Ubuntu 24.04 + CUDA ----------
           - name: Ubuntu 24.04 - gcc 13 + CUDA 12.9.1
@@ -112,7 +112,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13-cuda12.9.1
             GCC_VERSION: 13
-            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Ubuntu 24.04 - gcc 14 + CUDA 13.2.1
             RUNS_ON: ubuntu-latest
@@ -121,7 +121,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc14-cuda13.2.1
             GCC_VERSION: 14
-            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-14 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %%gcc-14 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Ubuntu 24.04 - clang 19 + CUDA 12.9.1
             RUNS_ON: ubuntu-latest
@@ -131,7 +131,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/ubuntu24.04-clang19-cuda12.9.1
             GCC_VERSION: 13
             CLANG_VERSION: 19
-            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %%clang-19 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Ubuntu 24.04 - clang 20 + CUDA 13.2.1
             RUNS_ON: ubuntu-latest
@@ -141,7 +141,7 @@ jobs:
             DOCKER_REPOSITORY: geosx/ubuntu24.04-clang20-cuda13.2.1
             GCC_VERSION: 15
             CLANG_VERSION: 20
-            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-20 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %%clang-20 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           # ---------- Rocky Linux + CUDA ----------
           - name: Rocky Linux 8 - gcc 13 + CUDA 12.9.1
@@ -153,7 +153,7 @@ jobs:
             NPROC: 8
             GCC_VERSION: 13
             DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
-            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Rocky Linux 9 - gcc 15 + CUDA 13.2.1
             RUNS_ON: streak2
@@ -164,7 +164,7 @@ jobs:
             NPROC: 8
             GCC_VERSION: 15
             DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
-            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %gcc-15 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx lai=hypre cuda_arch=86 %%gcc-15 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Rocky Linux 8 - clang 19 + CUDA 12.9.1
             RUNS_ON: streak2
@@ -176,7 +176,7 @@ jobs:
             GCC_VERSION: 13
             CLANG_VERSION: 19
             DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
-            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %%clang-19 ^cuda@12.9.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
           - name: Rocky Linux 9 - clang 20 + CUDA 13.2.1
             RUNS_ON: streak2
@@ -188,7 +188,7 @@ jobs:
             GCC_VERSION: 15
             CLANG_VERSION: 20
             DOCKER_RUN_ARGS: "--cpus=8 --memory=128g --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all -v /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro -v /etc/pki/tls/certs/ca-bundle.crt:/certs/ca-bundle.crt:ro"
-            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %clang-20 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
+            SPEC: "+cuda~uncrustify~openmp~pygeosx cuda_arch=86 %%clang-20 ^cuda@13.2.1+allow-unsupported-compilers ^caliper~gotcha~sampler~libunwind~libdw~papi"
 
     steps:
     - name: Checkout
