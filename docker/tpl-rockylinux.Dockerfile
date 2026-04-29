@@ -43,7 +43,7 @@ RUN dnf clean all && \
         mpfr-devel \
         bzip2 \
         gnupg2 \
-        perl-open \
+        perl \
         xz && \
     (dnf -y install python3-virtualenv || \
      python3 -m pip install --no-cache-dir virtualenv) && \
