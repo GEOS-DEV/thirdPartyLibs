@@ -50,7 +50,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
             GCC_VERSION: 13
-            SPEC: "~pygeosx +docs %gcc-13"
+            SPEC: "~pygeosx ~docs %gcc-13"
 
     steps:
     - name: Checkout
