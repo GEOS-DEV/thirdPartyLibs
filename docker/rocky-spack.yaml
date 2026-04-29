@@ -169,9 +169,9 @@ spack:
     openmpi:
       buildable: false
       externals:
-      - spec: openmpi@4.1.1
+      - spec: openmpi@4.1.1 os=rocky8
         prefix: /usr/lib64/openmpi
-      - spec: openmpi@4.1.5
+      - spec: openmpi@4.1.5 os=rocky9
         prefix: /usr/lib64/openmpi
 
     doxygen:
@@ -236,9 +236,9 @@ spack:
     python:
       buildable: false
       externals:
-      - spec: python@3.6.8
+      - spec: python@3.6.8 platform=linux os=rocky8 target=x86_64
         prefix: /usr
-      - spec: python@3.9.18
+      - spec: python@3.9.18 platform=linux os=rocky9 target=x86_64
         prefix: /usr
     tar:
       buildable: false
