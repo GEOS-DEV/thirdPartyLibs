@@ -109,10 +109,10 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
         echo "ERROR: SPEC build-arg must be supplied" >&2 ; \
         exit 1 ; \
     fi && \
-    GEOSX_SPACK_ENV_FILE=${SRC_DIR}/docker/spack.yaml && \
+    GEOSX_SPACK_ENV_FILE=${SRC_DIR}/docker/ubuntu-spack.yaml && \
     if echo "${CC:-}" | grep -q "clang"; then \
         GEOSX_SPACK_ENV_FILE=/tmp/geosx-spack.yaml && \
-        cp ${SRC_DIR}/docker/spack.yaml ${GEOSX_SPACK_ENV_FILE} && \
+        cp ${SRC_DIR}/docker/ubuntu-spack.yaml ${GEOSX_SPACK_ENV_FILE} && \
         sed -i -E "s/gcc@([0-9]+) languages:='c,c\\+\\+,fortran'/gcc@\\1 languages:='fortran'/g" ${GEOSX_SPACK_ENV_FILE} && \
         sed -i -E '/c: \/usr\/bin\/gcc-[0-9]+/d; /cxx: \/usr\/bin\/g\+\+-[0-9]+/d' ${GEOSX_SPACK_ENV_FILE} ; \
     fi && \
