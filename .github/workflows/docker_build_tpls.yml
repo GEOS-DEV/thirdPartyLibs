@@ -10,7 +10,7 @@ concurrency:
 # TPL images build on top of the base images produced by
 # https://github.com/GEOS-DEV/docker_base_images.
 env:
-  DOCKER_BASE_IMAGE_SHA: 47ddae2621f6fc0c2da8bf36305d3fd3730a7db7
+  DOCKER_BASE_IMAGE_SHA: 3fd2acfba977cf3369ecec55e27cd35b7258cf31
 
 jobs:
   build_images:
@@ -50,7 +50,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
             GCC_VERSION: 13
-            SPEC: "~pygeosx ~docs ~vtk ~trilinos %gcc-13"
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %gcc-13"
 
     steps:
     - name: Checkout
