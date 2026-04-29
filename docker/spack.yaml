@@ -17,68 +17,90 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
+  # ---------------------------------------------------------------------------
+  # Toolchains
+  #
+  # Aligned with the geosx/ubuntu:* base images produced by
+  # https://github.com/GEOS-DEV/docker_base_images. Each base image installs
+  # exactly one of these toolchains; the matrix in
+  # .github/workflows/docker_build_tpls.yml picks the matching '%<name>'
+  # selector via the SPEC build-arg.
+  # ---------------------------------------------------------------------------
   toolchains:
-    clang-15:
-      - spec: '%[virtuals=c]llvm@15.0.7+clang~flang~lld~lldb'
+    clang-19:
+      - spec: '%[virtuals=c]llvm@19+clang~flang~lld~lldb'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@15.0.7+clang~flang~lld~lldb'
+      - spec: '%[virtuals=cxx]llvm@19+clang~flang~lld~lldb'
         when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@11.4.0'
+      - spec: '%[virtuals=fortran]gcc@13'
         when: '%fortran'
       - spec: '%openmpi'
         when: '%mpi'
-    clang-10:
-      - spec: '%[virtuals=c]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
+    clang-20:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%[virtuals=c]llvm@20+clang~flang~lld~lldb'
         when: '%c'
-      - spec: '%[virtuals=cxx]llvm@10.0.0+clang~flang~lld~lldb openmp=project'
+      - spec: '%[virtuals=cxx]llvm@20+clang~flang~lld~lldb'
         when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@9.4.0'
+      - spec: '%[virtuals=fortran]gcc@13'
         when: '%fortran'
       - spec: '%openmpi'
         when: '%mpi'
-    gcc-9:
+    clang-22:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
-      - spec: '%c=gcc@9.4.0'
+      - spec: '%[virtuals=c]llvm@22+clang~flang~lld~lldb'
         when: '%c'
-      - spec: '%cxx=gcc@9.4.0'
+      - spec: '%[virtuals=cxx]llvm@22+clang~flang~lld~lldb'
         when: '%cxx'
-      - spec: '%fortran=gcc@9.4.0'
+      - spec: '%[virtuals=fortran]gcc@13'
         when: '%fortran'
-      - spec: '%openmpi %gcc@9.4.0'
-        when: '%mpi'
-    gcc-10:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%c=gcc@10.5.0'
-        when: '%c'
-      - spec: '%cxx=gcc@10.5.0'
-        when: '%cxx'
-      - spec: '%fortran=gcc@10.5.0'
-        when: '%fortran'
-      - spec: '%openmpi %gcc@10.5.0'
-        when: '%mpi'
-    gcc-11:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%c=gcc@11.4.0'
-        when: '%c'
-      - spec: '%cxx=gcc@11.4.0'
-        when: '%cxx'
-      - spec: '%fortran=gcc@11.4.0'
-        when: '%fortran'
-      - spec: '%openmpi %gcc@11.4.0'
+      - spec: '%openmpi'
         when: '%mpi'
     gcc-12:
       - spec: cxxflags='-pthread'
       - spec: cflags='-pthread'
-      - spec: '%c=gcc@12.3.0'
+      - spec: '%c=gcc@12'
         when: '%c'
-      - spec: '%cxx=gcc@12.3.0'
+      - spec: '%cxx=gcc@12'
         when: '%cxx'
-      - spec: '%fortran=gcc@12.3.0'
+      - spec: '%fortran=gcc@12'
         when: '%fortran'
-      - spec: '%openmpi %gcc@12.3.0'
+      - spec: '%openmpi %gcc@12'
+        when: '%mpi'
+    gcc-13:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@13'
+        when: '%c'
+      - spec: '%cxx=gcc@13'
+        when: '%cxx'
+      - spec: '%fortran=gcc@13'
+        when: '%fortran'
+      - spec: '%openmpi %gcc@13'
+        when: '%mpi'
+    gcc-14:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@14'
+        when: '%c'
+      - spec: '%cxx=gcc@14'
+        when: '%cxx'
+      - spec: '%fortran=gcc@14'
+        when: '%fortran'
+      - spec: '%openmpi %gcc@14'
+        when: '%mpi'
+    gcc-15:
+      - spec: cxxflags='-pthread'
+      - spec: cflags='-pthread'
+      - spec: '%c=gcc@15'
+        when: '%c'
+      - spec: '%cxx=gcc@15'
+        when: '%cxx'
+      - spec: '%fortran=gcc@15'
+        when: '%fortran'
+      - spec: '%openmpi %gcc@15'
         when: '%mpi'
 
   packages:
@@ -87,7 +109,7 @@ spack:
 
     mpi:
       require:
-      - openmpi@4.1.2
+      - openmpi@4.1.6
 
     zlib-api:
       require:
@@ -100,51 +122,65 @@ spack:
       require:
       - "netlib-lapack"
 
+    # ---- Compilers (point at the actual binaries in /usr/bin) ----
     llvm:
       externals:
-      - spec: llvm@10.0.0+clang~flang~lld~lldb openmp=project
+      - spec: llvm@19+clang~flang~lld~lldb
         prefix: /usr
         extra_attributes:
           compilers:
-            c: /usr/bin/clang
-            cxx: /usr/bin/clang++
-      - spec: llvm@15.0.7+clang~flang~lld~lldb
+            c: /usr/bin/clang-19
+            cxx: /usr/bin/clang++-19
+      - spec: llvm@20+clang~flang~lld~lldb
         prefix: /usr
         extra_attributes:
           compilers:
-            c: /usr/bin/clang-15
-            cxx: /usr/bin/clang++-15
+            c: /usr/bin/clang-20
+            cxx: /usr/bin/clang++-20
+      - spec: llvm@22+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang-22
+            cxx: /usr/bin/clang++-22
 
     gcc:
       externals:
-      - spec: gcc@9.4.0 languages:='c,c++,fortran'
-        prefix: /usr
-        extra_attributes:
-          compilers:
-            c: /usr/bin/gcc-9
-            cxx: /usr/bin/g++-9
-            fortran: /usr/bin/gfortran-9
-      - spec: gcc@10.5.0 languages:='c,c++,fortran'
-        prefix: /usr
-        extra_attributes:
-          compilers:
-            c: /usr/bin/gcc-10
-            cxx: /usr/bin/g++-10
-            fortran: /usr/bin/gfortran-10
-      - spec: gcc@11.4.0 languages:='c,c++,fortran'
-        prefix: /usr
-        extra_attributes:
-          compilers:
-            c: /usr/bin/gcc-11
-            cxx: /usr/bin/g++-11
-            fortran: /usr/bin/gfortran-11
-      - spec: gcc@12.3.0 languages:='c,c++,fortran'
+      - spec: gcc@12 languages:='c,c++,fortran'
         prefix: /usr
         extra_attributes:
           compilers:
             c: /usr/bin/gcc-12
             cxx: /usr/bin/g++-12
             fortran: /usr/bin/gfortran-12
+      - spec: gcc@13 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-13
+            cxx: /usr/bin/g++-13
+            fortran: /usr/bin/gfortran-13
+      - spec: gcc@14 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-14
+            cxx: /usr/bin/g++-14
+            fortran: /usr/bin/gfortran-14
+      - spec: gcc@15 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc-15
+            cxx: /usr/bin/g++-15
+            fortran: /usr/bin/gfortran-15
+
+
+    doxygen:
+      buildable: false
+      externals:
+      - spec: doxygen@1.8.20
+        prefix: /usr
 
     autoconf:
       version: [2.71]
@@ -159,21 +195,24 @@ spack:
       - spec: automake@1.16.5
         prefix: /usr
     cmake:
-      version: [3.28.3]
+      version: [3.31.9]
       buildable: false
       externals:
-      - spec: cmake@3.28.3
+      - spec: cmake@3.31.9
         prefix: /usr/local
     cuda:
       buildable: False
       externals:
-      - spec: cuda@11.8.0 +allow-unsupported-compilers
+      - spec: cuda@12.9.1 +allow-unsupported-compilers
         prefix: /usr/local/cuda
+      - spec: cuda@13.2.1 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+
     findutils:
-      version: [4.7.0]
+      version: [4.9.0]
       buildable: false
       externals:
-      - spec: findutils@4.7.0
+      - spec: findutils@4.9.0
         prefix: /usr
     m4:
       buildable: false
@@ -183,42 +222,40 @@ spack:
     mpfr:
       buildable: false
       externals:
-      - spec: mpfr@6.0.2
+      - spec: mpfr@4.2.0
         prefix: /usr
-
     netlib-lapack:
       buildable: false
       externals:
-      - spec: netlib-lapack@3.10.0
+      - spec: netlib-lapack@3.12.0
         prefix: /usr
     netlib-blas:
       buildable: false
       externals:
-      - spec: netlib-blas@3.10.0
+      - spec: netlib-blas@3.12.0
         prefix: /usr
+    # ---- OpenMPI: same prefix for every compiler binding (Ubuntu 24.04 ships one)
     openmpi:
       buildable: false
       externals:
-      # Ubuntu 22.04 (apt) provides OpenMPI 4.1.2. We treat it as external for all toolchains
-      # to prevent Spack from building OpenMPI (which may otherwise drift to v5).
-      - spec: openmpi@4.1.2 %clang@15.0.7
+      - spec: openmpi@4.1.6 %clang@19
         prefix: /usr
-        modules: [mpi]
-      - spec: openmpi@4.1.2 %clang@10.0.0
+      - spec: openmpi@4.1.6 %clang@20
         prefix: /usr
-        modules: [mpi]
-      - spec: openmpi@4.1.2 %gcc@9.4.0
+      - spec: openmpi@4.1.6 %clang@22
         prefix: /usr
-      - spec: openmpi@4.1.2 %gcc@10.5.0
+      - spec: openmpi@4.1.6 %gcc@12
         prefix: /usr
-      - spec: openmpi@4.1.2 %gcc@11.4.0
+      - spec: openmpi@4.1.6 %gcc@13
         prefix: /usr
-      - spec: openmpi@4.1.2 %gcc@12.3.0
+      - spec: openmpi@4.1.6 %gcc@14
+        prefix: /usr
+      - spec: openmpi@4.1.6 %gcc@15
         prefix: /usr
     perl:
       buildable: false
       externals:
-      - spec: perl@5.34.0
+      - spec: perl@5.38.2
         prefix: /usr
     pkg-config:
       buildable: false
@@ -228,22 +265,22 @@ spack:
     py-sphinx:
       buildable: false
       externals:
-      - spec: py-sphinx@4.3.2
+      - spec: py-sphinx@7.4.7
         prefix: /usr
     python:
       buildable: false
       externals:
-      - spec: python@3.10.12
+      - spec: python@3.12.3
         prefix: /usr
     readline:
       buildable: false
       externals:
-      - spec: readline@8.0
+      - spec: readline@8.2
         prefix: /usr
     tar:
       buildable: false
       externals:
-      - spec: tar@1.34
+      - spec: tar@1.35
         prefix: /usr
     unzip:
       buildable: false
@@ -253,10 +290,10 @@ spack:
     xz:
       buildable: false
       externals:
-      - spec: xz@5.2.5
+      - spec: xz@5.6.1
         prefix: /usr
     zlib:
       buildable: false
       externals:
-      - spec: zlib@1.2.11
+      - spec: zlib@1.3
         prefix: /usr
