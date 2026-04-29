@@ -42,6 +42,16 @@ jobs:
             GCC_VERSION: 13
             SPEC: "~pygeosx +docs %gcc-13"
 
+          # First Rocky non-CUDA row re-enabled for incremental validation.
+          - name: Rocky Linux 8 - gcc 13
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-gcc13
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
+            GCC_VERSION: 13
+            SPEC: "~pygeosx +docs %gcc-13"
+
     steps:
     - name: Checkout
       uses: actions/checkout@v6
