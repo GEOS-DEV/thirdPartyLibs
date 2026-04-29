@@ -31,7 +31,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc12
             GCC_VERSION: 12
-            SPEC: "~pygeosx +docs %gcc-12"
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %gcc-12"
 
           - name: Ubuntu 24.04 - gcc 13
             RUNS_ON: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13
             GCC_VERSION: 13
-            SPEC: "~pygeosx +docs %gcc-13"
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %gcc-13"
 
           # First Rocky non-CUDA row re-enabled for incremental validation.
           - name: Rocky Linux 8 - gcc 13
@@ -50,7 +50,7 @@ jobs:
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
             GCC_VERSION: 13
-            SPEC: "~pygeosx ~docs %gcc-13"
+            SPEC: "~pygeosx ~docs ~vtk ~trilinos %gcc-13"
 
     steps:
     - name: Checkout

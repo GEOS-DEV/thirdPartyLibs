@@ -135,8 +135,8 @@ spack:
     python:
       buildable: false
       externals:
-      - spec: python@3.6.8
-        prefix: /usr
+      - spec: python@3.12
+        prefix: /usr/local
     tar:
       buildable: false
       externals:
