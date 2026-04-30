@@ -67,7 +67,6 @@ jobs:
             DOCKER_BASE_IMAGE_TAG: 8-gcc12
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc12
-            GCC_VERSION: 12
             SPEC: "~pygeosx ~docs ~vtk ~trilinos %gcc-12"
 
           - name: Rocky Linux 8 - gcc 13
@@ -76,7 +75,6 @@ jobs:
             DOCKER_BASE_IMAGE_TAG: 8-gcc13
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
-            GCC_VERSION: 13
             SPEC: "~pygeosx ~docs ~vtk ~trilinos %gcc-13"
 
           - name: Rocky Linux 8 - clang 19
@@ -85,7 +83,6 @@ jobs:
             DOCKER_BASE_IMAGE_TAG: 8-clang19
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux8-clang19
-            CLANG_VERSION: 19
             SPEC: "~pygeosx ~docs ~vtk ~trilinos %clang-19"
 
           - name: Rocky Linux 9 - clang 22
@@ -94,7 +91,6 @@ jobs:
             DOCKER_BASE_IMAGE_TAG: 9-clang22
             DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
             DOCKER_REPOSITORY: geosx/rockylinux9-clang22
-            CLANG_VERSION: 22
             SPEC: "~pygeosx ~docs ~vtk ~trilinos %clang-22"
 
     steps:

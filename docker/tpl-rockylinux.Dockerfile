@@ -20,8 +20,6 @@ ARG SRC_DIR
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
-ARG GCC_VERSION
-
 # Packages needed both for the TPL build and for the downstream GEOS build.
 # Some Rocky 8 vs 9 differences are handled by the base image already
 # (curl vs curl-minimal, etc.); here we only add things the base images
@@ -108,10 +106,9 @@ RUN dnf -y install \
 # Run uberenv. The SPEC is supplied by the matrix because the spack toolchain
 # tag depends on the compiler+version baked into the base image.
 #
-# GCC toolset rows wrap the build in `scl enable gcc-toolset-${GCC_VERSION}` so
-# direct compiler invocations resolve to that toolset. Clang rows filter the
-# shared Rocky Spack config to the clang/GCC toolset externals present in the
-# selected base image.
+# The matrix selects exactly one compiler toolchain through SPEC. Validate the
+# expected external compiler paths before Spack starts so missing compilers fail
+# directly instead of being discovered or built by Spack.
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
     mkdir -p ${GEOSX_TPL_DIR} && \
     GEOSX_SPEC="${SPEC}" && \
@@ -120,43 +117,27 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
         exit 1 ; \
     fi && \
     GEOSX_SPACK_ENV_FILE=${SRC_DIR}/docker/rocky-spack.yaml && \
-    if echo "${CC:-}" | grep -q "clang"; then \
-        GEOSX_SPACK_ENV_FILE=/tmp/geosx-rocky-spack.yaml && \
-        cp ${SRC_DIR}/docker/rocky-spack.yaml ${GEOSX_SPACK_ENV_FILE} && \
-        CLANG_MAJOR="$(${CC} --version | sed -nE '1s/.*version ([0-9]+).*/\1/p')" && \
-        printf '%s\n' \
-            'import os' \
-            'import re' \
-            'import sys' \
-            'path, clang_major = sys.argv[1], sys.argv[2]' \
-            'lines = open(path, encoding="utf-8").read().splitlines(keepends=True)' \
-            'out = []' \
-            'i = 0' \
-            'while i < len(lines):' \
-            '    line = lines[i]' \
-            '    if re.match(r"^      - spec: (gcc|llvm)@", line):' \
-            '        block = [line]' \
-            '        i += 1' \
-            '        while i < len(lines) and not re.match(r"^(      - spec: |    [A-Za-z0-9_-]+:)", lines[i]):' \
-            '            block.append(lines[i])' \
-            '            i += 1' \
-            '        text = "".join(block)' \
-            '        llvm_match = re.search(r"- spec: llvm@([0-9]+)", text)' \
-            '        gcc_prefix = re.search(r"prefix: (/opt/rh/gcc-toolset-[0-9]+/root/usr)", text)' \
-            '        if llvm_match and llvm_match.group(1) != clang_major:' \
-            '            continue' \
-            '        if gcc_prefix and not os.path.isdir(gcc_prefix.group(1)):' \
-            '            continue' \
-            '        out.extend(block)' \
-            '        continue' \
-            '    out.append(line)' \
-            '    i += 1' \
-            'open(path, "w", encoding="utf-8").writelines(out)' \
-            > /tmp/filter-rocky-spack.py && \
-        /usr/bin/python3 /tmp/filter-rocky-spack.py "${GEOSX_SPACK_ENV_FILE}" "${CLANG_MAJOR}" ; \
-    fi && \
-    if [ -n "${GCC_VERSION}" ] && [ -d "/opt/rh/gcc-toolset-${GCC_VERSION}" ] && ! echo "${CC:-}" | grep -q "clang"; then \
-        scl enable "gcc-toolset-${GCC_VERSION}" " \
+    require_exe() { for exe in "$@"; do if [ ! -x "${exe}" ]; then echo "ERROR: required compiler path is missing or not executable: ${exe}" >&2 ; exit 1 ; fi ; done ; } && \
+    ROCKY_GCC_TOOLSET="" && \
+    case "${GEOSX_SPEC}" in \
+        *"%gcc-12"*) \
+            ROCKY_GCC_TOOLSET=12 ; \
+            require_exe /opt/rh/gcc-toolset-12/root/usr/bin/gcc /opt/rh/gcc-toolset-12/root/usr/bin/g++ /opt/rh/gcc-toolset-12/root/usr/bin/gfortran ;; \
+        *"%gcc-13"*) \
+            ROCKY_GCC_TOOLSET=13 ; \
+            require_exe /opt/rh/gcc-toolset-13/root/usr/bin/gcc /opt/rh/gcc-toolset-13/root/usr/bin/g++ /opt/rh/gcc-toolset-13/root/usr/bin/gfortran ;; \
+        *"%clang-17"*) \
+            require_exe /usr/local/bin/clang-gcc13 /usr/local/bin/clang++-gcc13 /opt/rh/gcc-toolset-13/root/usr/bin/gcc /opt/rh/gcc-toolset-13/root/usr/bin/g++ /opt/rh/gcc-toolset-13/root/usr/bin/gfortran ;; \
+        *"%clang-19"*) \
+            require_exe /usr/bin/clang /usr/bin/clang++ /opt/rh/gcc-toolset-14/root/usr/bin/gcc /opt/rh/gcc-toolset-14/root/usr/bin/g++ /opt/rh/gcc-toolset-14/root/usr/bin/gfortran ;; \
+        *"%clang-22"*) \
+            require_exe /usr/bin/clang /usr/bin/clang++ /opt/rh/gcc-toolset-15/root/usr/bin/gcc /opt/rh/gcc-toolset-15/root/usr/bin/g++ /opt/rh/gcc-toolset-15/root/usr/bin/gfortran ;; \
+        *) \
+            echo "ERROR: unsupported Rocky compiler selector in SPEC: ${GEOSX_SPEC}" >&2 ; \
+            exit 1 ;; \
+    esac && \
+    if [ -n "${ROCKY_GCC_TOOLSET}" ]; then \
+        scl enable "gcc-toolset-${ROCKY_GCC_TOOLSET}" " \
             ./scripts/uberenv/uberenv.py \
                 --spec '${GEOSX_SPEC}' \
                 --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
