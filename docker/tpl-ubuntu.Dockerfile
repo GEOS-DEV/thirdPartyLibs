@@ -20,6 +20,7 @@ ARG BLD_DIR=$TMP_DIR/build
 ARG DOCKER_BASE_IMAGE=ubuntu:24.04
 FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
+ARG CLANG_VERSION
 
 # Install directory provided as a docker build argument; forwarded via ENV
 # (GEOSX_TPL_DIR is part of the image contract consumed by GEOS).
@@ -66,10 +67,28 @@ ENV MPICC=/usr/bin/mpicc \
 ENV OMPI_CC=${CC} \
     OMPI_CXX=${CXX}
 
-# Ubuntu OpenMPI defaults wrappers to gcc/g++. For clang-based base images we
-# retarget the wrappers to clang/clang++ so mpi wrapper compilers are aligned
-# with the image toolchain contract.
+# For clang-based base images:
+#   1) install a matching OpenMP runtime (libomp)
+#   2) retarget OpenMPI wrappers to clang/clang++
 RUN if echo "${CC}" | grep -q "clang"; then \
+        CLANG_MAJOR="${CLANG_VERSION:-}" ; \
+        if [ -z "${CLANG_MAJOR}" ]; then \
+            CLANG_MAJOR="$(echo "${CC:-}" | sed -nE 's|.*clang-([0-9]+).*|\\1|p')" ; \
+        fi ; \
+        if [ -z "${CLANG_MAJOR}" ] && command -v clang >/dev/null 2>&1; then \
+            CLANG_MAJOR="$(clang --version | sed -nE '1s/.*version ([0-9]+).*/\\1/p')" ; \
+        fi ; \
+        apt-get update ; \
+        if [ -n "${CLANG_MAJOR}" ]; then \
+            DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
+            apt-get install -y --no-install-recommends "libomp-${CLANG_MAJOR}-dev" || \
+            (apt-get update && DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
+             apt-get install -y --no-install-recommends libomp-dev) ; \
+        else \
+            DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
+            apt-get install -y --no-install-recommends libomp-dev ; \
+        fi ; \
+        apt-get clean && rm -rf /var/lib/apt/lists/* && \
         for f in /usr/share/openmpi/mpicc-wrapper-data.txt /usr/share/openmpi/mpicc.openmpi-wrapper-data.txt; do \
             if [ -f "${f}" ]; then sed -i "s|^compiler=.*$|compiler=${CC}|" "${f}" ; fi ; \
         done && \
