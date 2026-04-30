@@ -97,6 +97,8 @@ RUN apt-get update && \
         git \
         autoconf \
         automake \
+        libtool \
+        libtool-bin \
         m4 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
