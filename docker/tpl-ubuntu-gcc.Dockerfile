@@ -115,7 +115,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
      if [ -z "${GEOSX_SPEC}" ] || [ "${GEOSX_SPEC}" = "undefined" ]; then GEOSX_SPEC="~pygeosx +docs %gcc-${GCC_MAJOR_VERSION}"; fi && \
      ./scripts/uberenv/uberenv.py \
        --spec "${GEOSX_SPEC}" \
-       --spack-env-file=${SRC_DIR}/docker/spack.yaml \
+       --spack-env-file=${SRC_DIR}/docker/ubuntu-spack.yaml \
        --project-json=${SRC_DIR}/.uberenv_config.json \
        --prefix ${GEOSX_TPL_DIR} \
        -k && \

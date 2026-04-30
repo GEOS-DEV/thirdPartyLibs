@@ -33,7 +33,10 @@ RUN dnf clean all && \
         python3-virtualenv
 
 # Install clingo for Spack
-RUN python3 -m pip install --upgrade pip && \
+RUN (python3 -m pip --version >/dev/null 2>&1 || \
+     python3 -m ensurepip --upgrade || \
+     (dnf -y install python3.12-pip || dnf -y install python3-pip)) && \
+    python3 -m pip install --upgrade pip && \
     python3 -m pip install clingo
 
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
