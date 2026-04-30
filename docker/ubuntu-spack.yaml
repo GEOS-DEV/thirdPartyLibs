@@ -124,6 +124,7 @@ spack:
 
     # ---- Compilers (point at the actual binaries in /usr/bin) ----
     llvm:
+      buildable: false
       externals:
       - spec: llvm@19+clang~flang~lld~lldb
         prefix: /usr
@@ -145,6 +146,7 @@ spack:
             cxx: /usr/bin/clang++-22
 
     gcc:
+      buildable: false
       externals:
       - spec: gcc@12 languages:='c,c++,fortran'
         prefix: /usr

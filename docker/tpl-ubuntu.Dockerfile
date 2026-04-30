@@ -38,7 +38,6 @@ RUN apt-get update && \
         libtbb12 \
         libgfortran5 \
         zlib1g-dev \
-        doxygen \
         openmpi-bin \
         libopenmpi-dev \
         python3 \
