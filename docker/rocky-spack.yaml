@@ -51,6 +51,28 @@ spack:
         when: '%fortran'
       - spec: '%openmpi@4.1.1'
         when: '%mpi'
+    clang-19:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%[virtuals=c]llvm@19+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@19+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@8'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.1'
+        when: '%mpi'
+    clang-22:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%[virtuals=c]llvm@22+clang~flang~lld~lldb'
+        when: '%c'
+      - spec: '%[virtuals=cxx]llvm@22+clang~flang~lld~lldb'
+        when: '%cxx'
+      - spec: '%[virtuals=fortran]gcc@11'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.1'
+        when: '%mpi'
 
   packages:
     all:
@@ -79,8 +101,34 @@ spack:
             # doesn't accidentally pick GCC 8 headers when compiling CUDA sources.
             c: /usr/local/bin/clang-gcc13
             cxx: /usr/local/bin/clang++-gcc13
+      - spec: llvm@19+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
+      - spec: llvm@22+clang~flang~lld~lldb
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
     gcc:
       externals:
+      - spec: gcc@8 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc
+            cxx: /usr/bin/g++
+            fortran: /usr/bin/gfortran
+      - spec: gcc@11 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc
+            cxx: /usr/bin/g++
+            fortran: /usr/bin/gfortran
       - spec: gcc@12.2.1 languages:='c,c++,fortran'
         prefix: /opt/rh/gcc-toolset-12/root/usr
         extra_attributes:

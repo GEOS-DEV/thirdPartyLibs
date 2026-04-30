@@ -42,6 +42,24 @@ jobs:
             GCC_VERSION: 13
             SPEC: "~pygeosx +docs ~vtk ~trilinos %gcc-13"
 
+          - name: Ubuntu 24.04 - clang 19
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang19
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang19
+            CLANG_VERSION: 19
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %clang-19"
+
+          - name: Ubuntu 24.04 - clang 20
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-clang20
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-clang20
+            CLANG_VERSION: 20
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %clang-20"
+
           # First Rocky non-CUDA row re-enabled for incremental validation.
           - name: Rocky Linux 8 - gcc 12
             RUNS_ON: ubuntu-latest
@@ -60,6 +78,24 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13
             GCC_VERSION: 13
             SPEC: "~pygeosx +docs ~vtk ~trilinos %gcc-13"
+
+          - name: Rocky Linux 8 - clang 19
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 8-clang19
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux8-clang19
+            CLANG_VERSION: 19
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %clang-19"
+
+          - name: Rocky Linux 9 - clang 22
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 9-clang22
+            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+            DOCKER_REPOSITORY: geosx/rockylinux9-clang22
+            CLANG_VERSION: 22
+            SPEC: "~pygeosx +docs ~vtk ~trilinos %clang-22"
 
     steps:
     - name: Checkout
