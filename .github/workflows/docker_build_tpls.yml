@@ -10,7 +10,7 @@ concurrency:
 # TPL images build on top of the base images produced by
 # https://github.com/GEOS-DEV/docker_base_images.
 env:
-  DOCKER_BASE_IMAGE_SHA: 3fd2acfba977cf3369ecec55e27cd35b7258cf31
+  DOCKER_BASE_IMAGE_SHA: 1c3c049b3f629d9d44838656fd306b2a0c04c9e8
 
 jobs:
   build_images:
