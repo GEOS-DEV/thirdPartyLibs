@@ -33,7 +33,7 @@ jobs:
             GCC_VERSION: 12
             SPEC: "~pygeosx ~docs ~vtk ~trilinos %gcc-12"
 
-          - name: Ubuntu 24.04 - gcc 13 (docs canary)
+          - name: Ubuntu 24.04 - gcc 13 (docs)
             RUNS_ON: ubuntu-latest
             TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
             DOCKER_BASE_IMAGE_TAG: 24.04-gcc13
