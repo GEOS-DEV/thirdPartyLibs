@@ -34,13 +34,11 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
         ca-certificates \
-        curl \
         libtbb12 \
         libgfortran5 \
         zlib1g-dev \
         openmpi-bin \
         libopenmpi-dev \
-        python3 \
         python3-pip \
         python3-sphinx \
         python3-dev \
@@ -108,7 +106,6 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
         libtbb-dev \
-        make \
         bc \
         file \
         patch \
@@ -158,11 +155,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         openssh-client \
         git \
-        texlive \
-        texlive-latex-extra \
         graphviz \
         libxml2-utils \
-        ghostscript \
         ninja-build \
         python3-mpi4py \
         python3-scipy \

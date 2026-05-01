@@ -166,12 +166,8 @@ COPY --from=tpl_toolchain /spack-generated.cmake /
 RUN dnf -y install \
         openssh-clients \
         ca-certificates \
-        curl \
-        python3 \
-        texlive \
         graphviz \
-        ninja-build \
-        git && \
+        ninja-build && \
     dnf clean all && rm -rf /var/cache/dnf /var/lib/dnf && \
     if [ -d /usr/include/openmpi-x86_64 ] && [ ! -e /usr/lib64/openmpi/include ]; then \
         mkdir -p /usr/lib64/openmpi && \
