@@ -142,8 +142,12 @@ class SuperluDist(CMakePackage, CudaPackage, ROCmPackage):
             if spec.satisfies("^cuda@13:"):
                 append_define("CMAKE_CXX_STANDARD", "17")
                 append_define("CMAKE_CUDA_STANDARD", "17")
-            elif spec.satisfies("^cuda@12.9: %clang platform=linux os=rocky8"):
+            elif spec.satisfies("^cuda@12.9: platform=linux os=rocky8") and "cxx=clang" in str(
+                spec
+            ):
                 # TODO: Try removing this override when SuperLU_DIST is updated.
+                # Spack's compiler-as-dependency model prints this compiler as
+                # "%c,cxx=clang@19"; the older "%clang" constraint does not match.
                 # CUDA 12.9 rejects GCC 14 libstdc++ variable templates when the
                 # Rocky 8 clang build compiles CUDA translation units as C++11.
                 append_define("CMAKE_CXX_STANDARD", "14")
