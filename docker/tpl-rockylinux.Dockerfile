@@ -126,6 +126,9 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
         *"%gcc-13"*) \
             ROCKY_GCC_TOOLSET=13 ; \
             require_exe /opt/rh/gcc-toolset-13/root/usr/bin/gcc /opt/rh/gcc-toolset-13/root/usr/bin/g++ /opt/rh/gcc-toolset-13/root/usr/bin/gfortran ;; \
+        *"%gcc-15"*) \
+            ROCKY_GCC_TOOLSET=15 ; \
+            require_exe /opt/rh/gcc-toolset-15/root/usr/bin/gcc /opt/rh/gcc-toolset-15/root/usr/bin/g++ /opt/rh/gcc-toolset-15/root/usr/bin/gfortran ;; \
         *"%clang-17"*) \
             require_exe /usr/local/bin/clang-gcc13 /usr/local/bin/clang++-gcc13 /opt/rh/gcc-toolset-13/root/usr/bin/gcc /opt/rh/gcc-toolset-13/root/usr/bin/g++ /opt/rh/gcc-toolset-13/root/usr/bin/gfortran ;; \
         *"%clang-19"*) \

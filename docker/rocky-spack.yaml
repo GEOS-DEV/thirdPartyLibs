@@ -40,6 +40,17 @@ spack:
         when: '%fortran'
       - spec: '%openmpi@4.1.1'
         when: '%mpi'
+    gcc-15:
+      - spec: cxxflags='-fPIC -pthread'
+      - spec: cflags='-fPIC -pthread'
+      - spec: '%c=gcc@15.2.1'
+        when: '%c'
+      - spec: '%cxx=gcc@15.2.1'
+        when: '%cxx'
+      - spec: '%fortran=gcc@15.2.1'
+        when: '%fortran'
+      - spec: '%openmpi@4.1.1'
+        when: '%mpi'
     clang-17:
       - spec: cxxflags='-fPIC -pthread'
       - spec: cflags='-fPIC -pthread'
@@ -182,6 +193,8 @@ spack:
       buildable: False
       externals:
       - spec: cuda@12.9.1 +allow-unsupported-compilers
+        prefix: /usr/local/cuda
+      - spec: cuda@13.2.1 +allow-unsupported-compilers
         prefix: /usr/local/cuda
     m4:
       buildable: false
