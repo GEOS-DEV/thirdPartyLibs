@@ -141,13 +141,15 @@ jobs:
             DOCKER_REPOSITORY: geosx/rockylinux8-gcc13-cuda12.9.1
             SPEC: "+cuda cuda_arch=86 ~openmp ~pygeosx ~docs ~vtk ~trilinos %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers"
 
-          - name: Rocky Linux 8 - clang 19 + CUDA 12.9.1
-            RUNS_ON: streak2
-            TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
-            DOCKER_BASE_IMAGE_TAG: 8-clang19-cuda12.9.1
-            DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
-            DOCKER_REPOSITORY: geosx/rockylinux8-clang19-cuda12.9.1
-            SPEC: "+cuda cuda_arch=86 ~openmp ~pygeosx ~docs ~vtk ~trilinos %clang-19 ^cuda@12.9.1+allow-unsupported-compilers"
+          # Rocky8 clang19 CUDA 12.9.1 is blocked by SuperLU_DIST using
+          # C++11 with CUDA 12.9 + clang19 + GCC 14 libstdc++.
+          # - name: Rocky Linux 8 - clang 19 + CUDA 12.9.1
+          #   RUNS_ON: streak2
+          #   TPL_DOCKERFILE: docker/tpl-rockylinux.Dockerfile
+          #   DOCKER_BASE_IMAGE_TAG: 8-clang19-cuda12.9.1
+          #   DOCKER_BASE_IMAGE_REPO: geosx/rockylinux
+          #   DOCKER_REPOSITORY: geosx/rockylinux8-clang19-cuda12.9.1
+          #   SPEC: "+cuda cuda_arch=86 ~openmp ~pygeosx ~docs ~vtk ~trilinos %clang-19 ^cuda@12.9.1+allow-unsupported-compilers"
 
           # - name: Rocky Linux 9 - gcc 15 + CUDA 13.2.1
           #   RUNS_ON: streak2
