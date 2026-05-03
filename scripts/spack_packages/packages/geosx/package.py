@@ -464,9 +464,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                             cmake_cuda_flags += ' -Xcompiler ' + compilerArg
 
                 if not spec.satisfies('cuda_arch=none'):
-                    cuda_arch = spec.variants['cuda_arch'].value
-                    cmake_cuda_flags += ' -arch sm_{0}'.format(cuda_arch[0])
-                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', cuda_arch[0]))
+                    cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
+                    for cuda_arch in cuda_arches:
+                        cmake_cuda_flags += (
+                            ' -gencode arch=compute_{0},code=sm_{0}'.format(cuda_arch)
+                        )
+                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
 
@@ -795,9 +798,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                             cmake_cuda_flags += ' -Xcompiler ' + compilerArg
 
                 if not spec.satisfies('cuda_arch=none'):
-                    cuda_arch = spec.variants['cuda_arch'].value
-                    cmake_cuda_flags += ' -arch sm_{0}'.format(cuda_arch[0])
-                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', cuda_arch[0]))
+                    cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
+                    for cuda_arch in cuda_arches:
+                        cmake_cuda_flags += (
+                            ' -gencode arch=compute_{0},code=sm_{0}'.format(cuda_arch)
+                        )
+                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
 
