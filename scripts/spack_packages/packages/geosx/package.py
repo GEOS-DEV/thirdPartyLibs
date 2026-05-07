@@ -465,10 +465,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
                 if not spec.satisfies('cuda_arch=none'):
                     cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
-                    for cuda_arch in cuda_arches:
-                        cmake_cuda_flags += (
-                            ' -gencode arch=compute_{0},code=sm_{0}'.format(cuda_arch)
-                        )
                     cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
@@ -799,10 +795,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
                 if not spec.satisfies('cuda_arch=none'):
                     cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
-                    for cuda_arch in cuda_arches:
-                        cmake_cuda_flags += (
-                            ' -gencode arch=compute_{0},code=sm_{0}'.format(cuda_arch)
-                        )
                     cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
