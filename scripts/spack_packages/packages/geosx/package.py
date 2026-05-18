@@ -152,9 +152,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('pugixml@1.13 ~shared')
 
-    depends_on('fmt@11')
+    depends_on('fmt@12.1.0')
     for _fmt_cxxstd in ('14', '17', '20'):
-        depends_on(f'fmt@11 cxxstd={_fmt_cxxstd}', when=f'cxxstd={_fmt_cxxstd}')
+        depends_on(f'fmt@12.1.0 cxxstd={_fmt_cxxstd}', when=f'cxxstd={_fmt_cxxstd}')
     depends_on('vtk@9.4.2', when='+vtk')
 
     #
