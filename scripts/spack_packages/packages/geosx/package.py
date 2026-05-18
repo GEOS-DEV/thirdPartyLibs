@@ -112,11 +112,14 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    raja_suite_version="2025.12.0"
-    depends_on(f"raja @{raja_suite_version} ~examples~exercises~shared")
-    depends_on(f"chai @{raja_suite_version} +raja~examples~shared")
-    depends_on(f"camp @{raja_suite_version}")
-    depends_on(f"umpire @{raja_suite_version} +c~examples+fortran~device_alloc~shared")
+    raja_version = "2026.04.14"
+    chai_version = "2025.12.0"
+    camp_version = "2026.05.18"
+    umpire_version = "2026.03.31"
+    depends_on(f"raja @{raja_version} ~examples~exercises~shared")
+    depends_on(f"chai @{chai_version} +raja~examples~shared")
+    depends_on(f"camp @{camp_version}")
+    depends_on(f"umpire @{umpire_version} +c~examples+fortran~device_alloc~shared")
     with when('+openmp'):
         for pkg in ('raja', 'chai', 'umpire'):
             depends_on(f"{pkg}+openmp", when="+openmp")
