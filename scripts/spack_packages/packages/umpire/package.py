@@ -10,3 +10,8 @@ class Umpire(BuiltinUmpire):
     )
 
     depends_on("fmt@12.1.0", when="@2026.03.31")
+
+    def cmake_args(self):
+        args = super().cmake_args()
+        args.append(self.define("CMAKE_CXX_STANDARD", 20))
+        return args
