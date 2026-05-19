@@ -13,5 +13,8 @@ class Umpire(BuiltinUmpire):
 
     def cmake_args(self):
         args = super().cmake_args()
+        args.append(self.define("BLT_CXX_STD", "c++20"))
         args.append(self.define("CMAKE_CXX_STANDARD", 20))
+        args.append(self.define("CMAKE_CUDA_STANDARD", 20))
+        args.append(self.define("CMAKE_HIP_STANDARD", 20))
         return args
