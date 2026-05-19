@@ -115,7 +115,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    raja_version = "2026.04.14"
+    raja_version = "2026.05.19"
     chai_version = "2025.12.0"
     camp_version = "2026.05.18"
     umpire_version = "2026.03.31"
