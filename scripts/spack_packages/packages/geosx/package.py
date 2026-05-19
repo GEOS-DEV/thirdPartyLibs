@@ -120,7 +120,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     camp_version = "2026.05.18"
     umpire_version = "2026.03.31"
     depends_on(f"chai @{chai_version} +raja~examples~shared")
-    depends_on(f"raja @{raja_version} cxxstd=20 ~examples~exercises~shared")
+    depends_on(f"raja @{raja_version} ~examples~exercises~shared")
     depends_on(f"camp @{camp_version}")
     depends_on(f"umpire @{umpire_version} +c~examples+fortran~device_alloc~shared")
     with when('+openmp'):
