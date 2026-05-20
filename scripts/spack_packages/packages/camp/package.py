@@ -1,17 +1,13 @@
-import os
-
 from spack.package import *
-from spack_repo.builtin.packages.chai.package import Chai as BuiltinChai
+from spack_repo.builtin.packages.camp.package import Camp as BuiltinCamp
 
-class Chai(BuiltinChai):
+
+class Camp(BuiltinCamp):
     version(
-        "2026.04.13",
-        commit="c4de793a61596a6787afb07ed0dd1dfee349f34f",
+        "2026.05.18",
+        commit="47a3682c3d5ff43b542ad7e29569eb5e157f918e",
         submodules=False,
     )
-
-    # Bypass llnl_link_helpers failure
-    depends_on("fortran")
 
     def cmake_args(self):
         args = super().cmake_args()

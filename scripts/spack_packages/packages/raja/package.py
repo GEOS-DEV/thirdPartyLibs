@@ -1,17 +1,13 @@
-import os
-
 from spack.package import *
-from spack_repo.builtin.packages.chai.package import Chai as BuiltinChai
+from spack_repo.builtin.packages.raja.package import Raja as BuiltinRaja
 
-class Chai(BuiltinChai):
+
+class Raja(BuiltinRaja):
     version(
-        "2026.04.13",
-        commit="c4de793a61596a6787afb07ed0dd1dfee349f34f",
+        "2026.05.19",
+        commit="d9a03fd56f7fb81540aeacbf082eb35dbb840b9c",
         submodules=False,
     )
-
-    # Bypass llnl_link_helpers failure
-    depends_on("fortran")
 
     def cmake_args(self):
         args = super().cmake_args()

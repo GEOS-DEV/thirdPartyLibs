@@ -1,17 +1,15 @@
-import os
-
 from spack.package import *
-from spack_repo.builtin.packages.chai.package import Chai as BuiltinChai
+from spack_repo.builtin.packages.umpire.package import Umpire as BuiltinUmpire
 
-class Chai(BuiltinChai):
+
+class Umpire(BuiltinUmpire):
     version(
-        "2026.04.13",
-        commit="c4de793a61596a6787afb07ed0dd1dfee349f34f",
+        "2026.03.31",
+        commit="5ff0d696d84f1048faf72085743630fcf33c0928",
         submodules=False,
     )
 
-    # Bypass llnl_link_helpers failure
-    depends_on("fortran")
+    depends_on("fmt@12.1.0", when="@2026.03.31")
 
     def cmake_args(self):
         args = super().cmake_args()
