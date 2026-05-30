@@ -415,6 +415,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     #    patch('xlf_seacas.patch', when='@12.10.1:12.12.1 %' + _compiler)
     #    patch('xlf_tpetra.patch', when='@12.12.1 %' + _compiler)
     patch('fix_clang_errors_12_18_1.patch', when='@12.18.1%clang')
+    patch('fix_ml_metis_idx_t.patch', when='@16.1.0 +ml ^metis+int64')
     #patch('cray_secas_12_12_1.patch', when='@12.12.1%cce')
     patch('cray_secas.patch', when='@12.14.1:%cce')
 
