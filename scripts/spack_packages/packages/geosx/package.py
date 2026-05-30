@@ -63,6 +63,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('openmp', default=True, description='Build with OpenMP support.')
     variant('shared', default=True, description='Build Shared Libs.')
     variant('caliper', default=True, description='Build Caliper support.')
+    variant('adios2', default=True, description='Build ADIOS2 support.')
     variant('vtk', default=True, description='Build VTK support.')
     variant('trilinos', default=True, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
@@ -143,6 +144,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # IO
     #
     depends_on('hdf5@1.14.6')
+    adios2_spec = (
+        'adios2@2.12.1+mpi+hdf5+shared+pic+zfp+sz3~mgard'
+        '~python~fortran~sst~dataman~dataspaces~campaign~aws~libcatalyst'
+        '~xrootd~kokkos~cuda~rocm~sycl~libpressio~blosc2~bzip2~png~sz'
+    )
+    depends_on(adios2_spec, when='+adios2')
     depends_on('silo@4.12.0~fortran~shared~python build_system=cmake')
 
     depends_on('conduit@0.9.5 ~test~fortran~hdf5_compat+shared')
@@ -519,6 +526,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             io_tpls = (
                 ('zlib', 'ZLIB', True),
                 ('hdf5', 'HDF5', True),
+                ('adios2', 'ADIOS2', '+adios2' in spec),
                 ('conduit', 'CONDUIT', True),
                 ('silo', 'SILO', True),
                 ('pugixml', 'PUGIXML', True),
@@ -551,6 +559,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                             raise KeyError("No zlib provider (zlib/zlib-ng/zlib-api) found in {0}".format(spec))
                     else:
                         dep_spec = spec[tpl]
+                    if tpl == 'adios2':
+                        cfg.write(cmake_cache_option('ENABLE_ADIOS2', True))
                     cfg.write(cmake_cache_entry('{}_DIR'.format(cmake_name), dep_spec.prefix))
                 else:
                     cfg.write(cmake_cache_option('ENABLE_{}'.format(cmake_name), False))

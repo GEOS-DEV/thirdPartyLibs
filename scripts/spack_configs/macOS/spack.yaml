@@ -110,7 +110,7 @@ spack:
       buildable: false
       externals:
       - spec: perl@5.34.1
-        prefix: /opt/homebrew/opt/perl
+        prefix: /usr
     pkg-config:
       buildable: false
       externals:
