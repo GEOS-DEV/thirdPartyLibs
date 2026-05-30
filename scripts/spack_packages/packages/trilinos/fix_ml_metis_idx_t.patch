@@ -189,3 +189,40 @@ diff -Naur a/packages/ml/src/Coarsen/ml_agg_VBMETIS.c b/packages/ml/src/Coarsen/
  #      endif
        }
  #else
+diff -Naur a/packages/ml/src/Operator/ml_op_utils.c b/packages/ml/src/Operator/ml_op_utils.c
+--- a/packages/ml/src/Operator/ml_op_utils.c	2025-03-19 14:59:00
++++ b/packages/ml/src/Operator/ml_op_utils.c	2026-05-30 15:11:07
+@@ -461,3 +461,4 @@
+-  indextype *vtxdist = NULL, *tpwts = NULL, *adjncy = NULL, *xadj = NULL, *node_wt = NULL;
++  indextype *vtxdist = NULL, *adjncy = NULL, *xadj = NULL, *node_wt = NULL;
+   int *map = NULL, *bindx = NULL, *blks = NULL, nprocs, myid, j, ii, jj;
++  int *vtxdist_int = NULL, *tpwts_int = NULL;
+   int allocated = 0, row_length, itemp1, itemp2, Nrows;
+@@ -741,7 +742,13 @@
+-    tpwts   = (indextype *) ML_allocate(sizeof(indextype)*ML_max(*nblks,nprocs));
+     vtxdist = (indextype *) ML_allocate(sizeof(indextype)*(nprocs+1));
++    vtxdist_int = (int *) ML_allocate(sizeof(int)*nprocs);
++    tpwts_int = (int *) ML_allocate(sizeof(int)*nprocs);
+     for (ii = 0; ii <= nprocs; ii++) vtxdist[ii] = 0;
+-    vtxdist[myid] = n;
+-    ML_gsum_vec_int(&vtxdist,&tpwts,nprocs,matrix->comm);
+-
++    for (ii = 0; ii < nprocs; ii++) vtxdist_int[ii] = 0;
++    vtxdist_int[myid] = n;
++    ML_gsum_vec_int(&vtxdist_int,&tpwts_int,nprocs,matrix->comm);
++    for (ii = 0; ii < nprocs; ii++) vtxdist[ii] = (indextype) vtxdist_int[ii];
++    ML_free(vtxdist_int);
++    ML_free(tpwts_int);
++    vtxdist_int = NULL;
++    tpwts_int = NULL;
+     itemp1 = 0;
+@@ -865,8 +873,9 @@
+   if (bindx   != NULL) ML_free(bindx);
+   if (blks    != NULL) ML_free(blks);
+   if (vtxdist != NULL) ML_free(vtxdist);
+-  if (tpwts   != NULL) ML_free(tpwts);
++  if (vtxdist_int != NULL) ML_free(vtxdist_int);
++  if (tpwts_int   != NULL) ML_free(tpwts_int);
+   if (adjncy  != NULL) ML_free(adjncy);
+   if (xadj    != NULL) ML_free(xadj);
+   if (node_wt != NULL) ML_free(node_wt);
