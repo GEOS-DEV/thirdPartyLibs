@@ -47,6 +47,7 @@ class Hypredrive(CMakePackage):
     def cmake_args(self):
         spec = self.spec
         from_variant = self.define_from_variant
+        pic_enabled = "+pic" in spec or "+shared" in spec
 
         args = [
             from_variant("BUILD_SHARED_LIBS", "shared"),
@@ -54,7 +55,7 @@ class Hypredrive(CMakePackage):
             from_variant("HYPREDRV_ENABLE_HWLOC", "hwloc"),
             from_variant("HYPREDRV_ENABLE_CALIPER", "caliper"),
             from_variant("HYPREDRV_ENABLE_COMPRESSION", "compression"),
-            from_variant("CMAKE_POSITION_INDEPENDENT_CODE", "pic"),
+            self.define("CMAKE_POSITION_INDEPENDENT_CODE", pic_enabled),
             self.define("HYPRE_ROOT", spec["hypre"].prefix),
             self.define("HYPREDRV_ENABLE_TESTING", self.run_tests),
             self.define("HYPREDRV_ENABLE_COVERAGE", False),
