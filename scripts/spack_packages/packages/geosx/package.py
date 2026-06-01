@@ -67,7 +67,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('vtk', default=True, description='Build VTK support.')
     variant('trilinos', default=True, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
-    variant('hypredrive', default=False, description='Build hypredrive support.')
+    variant('hypredrive', default=True, description='Build hypredrive support.')
     variant('petsc', default=False, description='Build PETSc support.')
     variant('scotch', default=True, description='Build Scotch support.')
     variant('uncrustify', default=True, description='Build Uncrustify support.')
