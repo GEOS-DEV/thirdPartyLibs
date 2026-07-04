@@ -66,6 +66,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('vtk', default=True, description='Build VTK support.')
     variant('trilinos', default=True, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
+    variant('hypre-unified-memory', default=True, description='Enable HYPRE unified memory for GPU builds.')
     variant('hypredrive', default=False, description='Build hypredrive support.')
     variant('petsc', default=False, description='Build PETSc support.')
     variant('scotch', default=True, description='Build Scotch support.')
@@ -184,8 +185,10 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     with when("+hypre"):
         depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda+hypre-unified-memory')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+cuda~hypre-unified-memory')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm+hypre-unified-memory')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+rocm~hypre-unified-memory')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +pic", when="~shared")
         depends_on("hypre +shared", when="+shared")

@@ -98,11 +98,11 @@ function launch_jobs() {
 
     matrix)
       ALLOC_CMD="srun -N 1 --exclusive -t 60 -A vortex"
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-12-cuda-12.6  "+cuda ~uncrustify cuda_arch=90 %%gcc-12 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9  "+cuda ~uncrustify cuda_arch=90 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9-hypredrive  "+cuda ~uncrustify +hypredrive cuda_arch=90 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix llvm-14-cuda-12.6 "+cuda ~uncrustify cuda_arch=90 %%clang-14 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
-      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix llvm-19-cuda-12.9 "+cuda ~uncrustify cuda_arch=90 %%clang-19 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-12-cuda-12.6  "+cuda ~uncrustify ~hypre-unified-memory cuda_arch=90 %%gcc-12 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9  "+cuda ~uncrustify ~hypre-unified-memory cuda_arch=90 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9-hypredrive  "+cuda ~uncrustify ~hypre-unified-memory +hypredrive cuda_arch=90 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix llvm-14-cuda-12.6 "+cuda ~uncrustify ~hypre-unified-memory cuda_arch=90 %%clang-14 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
+      "${UBERENV_HELPER}" "$INSTALL_DIR" matrix llvm-19-cuda-12.9 "+cuda ~uncrustify ~hypre-unified-memory cuda_arch=90 %%clang-19 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
       ;;
 
     tuo|tuolumne)

@@ -20,13 +20,13 @@
 #
 # python3 ./scripts/uberenv/uberenv.py --spec="+docs %clang-19"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=90 %gcc-12 ^cuda@12.6.0+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify~hypre-unified-memory cuda_arch=90 %gcc-12 ^cuda@12.6.0+allow-unsupported-compilers"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=90 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify~hypre-unified-memory cuda_arch=90 %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=90 %clang-14 ^cuda@12.6.0+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify~hypre-unified-memory cuda_arch=90 %clang-14 ^cuda@12.6.0+allow-unsupported-compilers"
 #
-# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify cuda_arch=90 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers"
+# python3 ./scripts/uberenv/uberenv.py --spec="+cuda~uncrustify~hypre-unified-memory cuda_arch=90 %clang-19 ^cuda@12.9.1+allow-unsupported-compilers"
 #
 
 spack:
