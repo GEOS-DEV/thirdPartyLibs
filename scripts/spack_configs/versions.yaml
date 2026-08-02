@@ -16,11 +16,11 @@
 packages:
   # master - 08/01/26
   hypre:
-    require: "@git.857d6e2a8e7ab7d1fc592ac0f1f014774699d0ba=master"
+    require: "@git.8df038ce669c623cd403ab77f3b4850fbb622dc9=master"
 
   # master - 08/01/26
   hypredrive:
-    require: "@git.e3dad076604b5041a8ba74ac2e48647522dda15d=master"
+    require: "@git.21a2e3abe2a6f5cd0c6db89ff419f851c3f6c13f=master"
 
   # master - 04/12/20
   uncrustify:
