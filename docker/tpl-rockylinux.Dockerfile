@@ -41,7 +41,8 @@ RUN dnf clean all && \
         bzip2 \
         gnupg2 \
         perl \
-        xz && \
+        xz \
+        xz-devel && \
     (dnf -y install python3-virtualenv || \
      /usr/bin/python3 -m pip install --no-cache-dir virtualenv) && \
     dnf clean all && rm -rf /var/cache/dnf /var/lib/dnf
