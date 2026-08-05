@@ -666,11 +666,6 @@ if (ENABLE_TRILINOS)
                                  -D TPL_MKL_LIBRARIES:STRING=${MKL_LIBRARIES})
     endif()
 
-    if ( ENABLE_ESSL )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D HAVE_dggsvd3:BOOL=ON)
-    endif()
-
     if ( DEFINED OpenMP_Fortran_FLAGS )
         set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
                                  -D OpenMP_Fortran_FLAGS:STRING=${OpenMP_Fortran_FLAGS})

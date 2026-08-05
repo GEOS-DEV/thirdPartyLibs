@@ -356,9 +356,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             debug_flags = "-g"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
-            if "%clang arch=linux-rhel7-ppc64le" in spec:
-                cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", "-Wl,--no-toc-optimize"))
-
             cfg.write("#{0}\n".format("-" * 80))
             cfg.write("# CMake Standard\n")
             cfg.write("#{0}\n\n".format("-" * 80))
@@ -375,16 +372,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
             hostname = socket.gethostname().rstrip('1234567890')
 
-            if sys_type in ('linux-rhel7-ppc64le', 'linux-rhel8-ppc64le', 'blueos_3_ppc64le_ib_p9') \
-               and hostname != 'p3dev':
-                cfg.write(cmake_cache_option('ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC', True))
-                if hostname in ('lassen', 'rzansel'):
-                    cfg.write(cmake_cache_entry('MPIEXEC', 'lrun'))
-                    cfg.write(cmake_cache_entry('MPIEXEC_NUMPROC_FLAG', '-n'))
-                else:
-                    cfg.write(cmake_cache_entry('MPIEXEC', 'jsrun'))
-                    cfg.write(cmake_cache_list('MPIEXEC_NUMPROC_FLAG', ['-g1', '--bind', 'rs', '-n']))
-            elif sys_type in ('toss_4_x86_64_ib_cray'):
+            if sys_type in ('toss_4_x86_64_ib_cray'):
                 cfg.write(cmake_cache_entry('MPIEXEC', 'srun'))
                 cfg.write(cmake_cache_entry('MPIEXEC_NUMPROC_FLAG', '-n'))
             else:
@@ -469,10 +457,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                     cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
-
-                # System specific flags
-                if sys_type in ('linux-rhel7-ppc64le', 'linux-rhel8-ppc64le', 'blueos_3_ppc64le_ib_p9'):
-                    cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS_RELEASE', '-O3 -DNDEBUG -Xcompiler -DNDEBUG -Xcompiler -O3 -Xcompiler -mcpu=powerpc64le -Xcompiler -mtune=powerpc64le'))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS_RELWITHDEBINFO', '-g -lineinfo ${CMAKE_CUDA_FLAGS_RELEASE}'))
 
@@ -568,12 +552,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write(cmake_cache_option('ENABLE_MKL', True))
                 cfg.write(cmake_cache_entry('MKL_INCLUDE_DIRS', spec['intel-mkl'].prefix.include))
                 cfg.write(cmake_cache_list('MKL_LIBRARIES', spec['intel-mkl'].libs))
-            elif spec["blas"].name == "essl":
-                cfg.write(cmake_cache_option('ENABLE_ESSL', True))
-                cfg.write(cmake_cache_entry('ESSL_INCLUDE_DIRS', spec['essl'].prefix.include))
-                cfg.write(cmake_cache_list('ESSL_LIBRARIES', spec['blas'].libs))
-
-                cfg.write(cmake_cache_option('FORTRAN_MANGLE_NO_UNDERSCORE', True))
             else:
                 cfg.write(cmake_cache_list('BLAS_LIBRARIES', spec['blas'].libs))
                 cfg.write(cmake_cache_list('LAPACK_LIBRARIES', spec['lapack'].libs))
@@ -689,9 +667,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write(cmake_cache_option('GEOS_BUILD_SHARED_LIBS', False))
 
             # ATS
-            # Lassen
-            if sys_type in ('blueos_3_ppc64le_ib_p9'):
-                cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--ats jsrun_omp --ats jsrun_bind=packed'))
             # Dane/Matrix
             if sys_type in ('toss_4_x86_64_ib'):
                 cfg.write(cmake_cache_string('ATS_ARGUMENTS', '--machine slurm112'))
@@ -768,9 +743,6 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
             debug_flags = "-g"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
-
-            if "%clang arch=linux-rhel7-ppc64le" in spec:
-                cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", "-Wl,--no-toc-optimize"))
 
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Cuda\n')
