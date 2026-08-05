@@ -64,7 +64,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('shared', default=True, description='Build Shared Libs.')
     variant('caliper', default=True, description='Build Caliper support.')
     variant('vtk', default=True, description='Build VTK support.')
-    variant('trilinos', default=True, description='Build Trilinos support.')
+    variant('trilinos', default=False, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
     variant('hypredrive', default=True, description='Build hypredrive support.')
     variant('petsc', default=False, description='Build PETSc support.')

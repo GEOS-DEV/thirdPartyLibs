@@ -47,7 +47,7 @@ option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_HYPRE "" ON )
-option( ENABLE_TRILINOS "" ON )
+option( ENABLE_TRILINOS "" OFF )
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
