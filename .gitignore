@@ -4,6 +4,7 @@
 .project
 .pydevproject
 .vscode/
+spack/
 spack-*.txt
 __pycache__
 uberenv_*
