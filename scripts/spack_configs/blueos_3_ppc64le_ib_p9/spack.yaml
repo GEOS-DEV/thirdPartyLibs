@@ -86,6 +86,11 @@ spack:
     mpi:
       require:
       - spectrum-mpi
+
+    zlib-api:
+      require:
+      - zlib
+
     blas:
       require:
       - essl

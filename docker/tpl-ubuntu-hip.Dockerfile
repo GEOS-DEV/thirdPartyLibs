@@ -1,18 +1,30 @@
-# NOTE: see docker/tpl-ubuntu-gcc.Dockerfile for detailed comments
+# TPL build Dockerfile for ROCm/HIP images.
+#
+# Unlike docker/tpl-ubuntu.Dockerfile, this file does NOT layer on one of the
+# geosx/ubuntu:* images from https://github.com/GEOS-DEV/docker_base_images.
+# AMD's own rocm/dev-ubuntu-* image already ships the amdclang toolchain and the
+# ROCm math libraries, so DOCKER_BASE_IMAGE points straight at it and the
+# toolchain bits the geosx base images would normally provide (compiler, cmake)
+# are installed here instead.
+#
+# The matrix in .github/workflows/docker_build_tpls.yml selects the base image,
+# the spack toolchain (SPEC) and the AMD GPU target.
+
+# Temporary local variables dedicated to the TPL build
 ARG TMP_DIR=/tmp
 ARG SRC_DIR=$TMP_DIR/thirdPartyLibs
 ARG BLD_DIR=$TMP_DIR/build
 
-# Base image is set by workflow via DOCKER_ROOT_IMAGE
-ARG DOCKER_ROOT_IMAGE=rocm/dev-ubuntu-24.04:6.4.3
-
-FROM ${DOCKER_ROOT_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
+ARG DOCKER_BASE_IMAGE=rocm/dev-ubuntu-24.04:6.4.3
+FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
+# Install directory provided as a docker build argument; forwarded via ENV
+# (GEOSX_TPL_DIR is part of the image contract consumed by GEOS).
 ARG INSTALL_DIR
 ENV GEOSX_TPL_DIR=$INSTALL_DIR
 
-# Parameters
+# ROCm parameters
 ARG AMDGPU_TARGET=gfx942
 ARG ROCM_VERSION=6.4.3
 
@@ -23,7 +35,8 @@ ENV SPACK_BUILD_JOBS=${SPACK_BUILD_JOBS}
 RUN ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
     apt-get update
 
-# Install system packages
+# Packages needed both for the TPL build and for the downstream GEOS build,
+# plus the ROCm math libraries GEOS links against.
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         wget \
         gnupg \
@@ -73,10 +86,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git && \
     rm -rf /var/lib/apt/lists/*
 
-# Install clingo for Spack (use pip without upgrading pip to avoid Debian conflict)
+# Install clingo for Spack. Do not upgrade Ubuntu's Debian-managed pip in
+# place; Ubuntu 24.04's pip package cannot be uninstalled by pip.
 RUN python3 -m pip install clingo --break-system-packages
 
-# Install CMake
+# The ROCm base image does not ship cmake, so install it here (the geosx base
+# images used by the other TPL Dockerfiles provide it already).
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-cmake.sh
 
 # OpenMPI hack for Ubuntu and provide amdclang wrappers with the GCC 13 system toolchain.
@@ -93,10 +108,12 @@ RUN ln -s /usr/bin /usr/lib/x86_64-linux-gnu/openmpi && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang /usr/bin/clang && \
     ln -s /opt/rocm-${ROCM_VERSION}/lib/llvm/bin/clang++ /usr/bin/clang++
 
-# Installing TPLs
+# ----- TPL build stage -----
 FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
+ARG AMDGPU_TARGET
+ARG SPEC
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -113,70 +130,67 @@ RUN apt-get update && \
       git && \
     rm -rf /var/lib/apt/lists/*
 
-# Run uberenv
-# Have to create install directory first for uberenv
-# -k flag is to ignore SSL errors
-# --spack-debug to debug build
+# Run uberenv. The SPEC is supplied by the matrix, as for the other TPL images.
+# Have to create install directory first for uberenv.
+# -k flag is to ignore SSL errors.
 #
-# NOTE: We copy files into the image instead of relying on read-write
-# BuildKit mounts because Docker 29.x's built-in BuildKit has two issues on
-# our runners: `--mount=src=.,readwrite` can expose an empty main context, and
-# `--mount=from=<named-context>` can expose an empty uberenv context at exec
-# time. Using COPY keeps both contexts stable.
-COPY --from=uberenv . ${SRC_DIR}/scripts/uberenv/
-COPY scripts/spack_packages ${SRC_DIR}/scripts/spack_packages
-COPY scripts/spack_configs ${SRC_DIR}/scripts/spack_configs
-COPY .uberenv_config.json ${SRC_DIR}/
-COPY docker ${SRC_DIR}/docker
+# A background heartbeat prints progress every minute: the ROCm TPL build runs
+# for hours and spack is otherwise silent, which makes a stalled build
+# indistinguishable from a slow one in CI logs.
+RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
+    mkdir -p ${GEOSX_TPL_DIR} && \
+    GEOSX_SPEC="${SPEC}" && \
+    if [ -z "${GEOSX_SPEC}" ] || [ "${GEOSX_SPEC}" = "undefined" ]; then \
+        echo "ERROR: SPEC build-arg must be supplied" >&2 ; \
+        exit 1 ; \
+    fi && \
+    { \
+      ( while true; do \
+          sleep 60; \
+          echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
+          find ${GEOSX_TPL_DIR}/build_stage -maxdepth 2 -mindepth 2 -type d -printf '%T@ %p\n' 2>/dev/null | \
+            sort -nr | head -n 3 | \
+            while read -r _ path; do \
+              echo "[heartbeat] recent stage dir: ${path}"; \
+            done; \
+          find ${GEOSX_TPL_DIR}/build_stage -maxdepth 4 \( -name spack-build-out.txt -o -name spack-build-env.txt -o -name spack-configure-args.txt \) -printf '%T@ %p\n' 2>/dev/null | \
+            sort -nr | head -n 3 | \
+            while read -r _ path; do \
+              echo "[heartbeat] recent stage file: ${path}"; \
+              tail -n 5 "${path}" 2>/dev/null || true; \
+              printf '\n'; \
+            done; \
+          ps -eo pid,ppid,etime,%cpu,%mem,cmd 2>/dev/null | \
+            grep -E 'spack|python3|curl|wget|git|cmake|ninja|make|amdclang|gfortran|gcc|g\\+\\+' | \
+            grep -v grep | \
+            tail -n 20 | \
+            cut -c1-240 || true; \
+        done ) & \
+      hb=$!; \
+      ./scripts/uberenv/uberenv.py \
+        --spec "${GEOSX_SPEC}" \
+        --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
+        --project-json=${SRC_DIR}/.uberenv_config.json \
+        --prefix ${GEOSX_TPL_DIR} \
+        -j ${SPACK_BUILD_JOBS} \
+        -k; \
+      rc=$?; \
+      kill ${hb} 2>/dev/null || true; \
+      wait ${hb} 2>/dev/null || true; \
+      test ${rc} -eq 0; \
+    } && \
+    rm -f lvarray* && \
+    cp *.cmake /spack-generated.cmake && \
+    cd ${GEOSX_TPL_DIR} && \
+    rm -rf bin/ build_stage/ builtin_spack_packages_repo/ misc_cache/ spack/ spack_env/ .spack-db/
 
-RUN mkdir -p ${GEOSX_TPL_DIR} && \
-     cd ${SRC_DIR} && \
-     { \
-       ( while true; do \
-           sleep 60; \
-           echo "[heartbeat] $(date -Iseconds) uberenv/spack still running"; \
-           find ${GEOSX_TPL_DIR}/build_stage -maxdepth 2 -mindepth 2 -type d -printf '%T@ %p\n' 2>/dev/null | \
-             sort -nr | head -n 3 | \
-             while read -r _ path; do \
-               echo "[heartbeat] recent stage dir: ${path}"; \
-             done; \
-           find ${GEOSX_TPL_DIR}/build_stage -maxdepth 4 \( -name spack-build-out.txt -o -name spack-build-env.txt -o -name spack-configure-args.txt \) -printf '%T@ %p\n' 2>/dev/null | \
-             sort -nr | head -n 3 | \
-             while read -r _ path; do \
-               echo "[heartbeat] recent stage file: ${path}"; \
-               tail -n 5 "${path}" 2>/dev/null || true; \
-               printf '\n'; \
-             done; \
-           ps -eo pid,ppid,etime,%cpu,%mem,cmd 2>/dev/null | \
-             grep -E 'spack|python3|curl|wget|git|cmake|ninja|make|amdclang|gfortran|gcc|g\\+\\+' | \
-             grep -v grep | \
-             tail -n 20 | \
-             cut -c1-240 || true; \
-         done ) & \
-       hb=$!; \
-       sh ./scripts/uberenv/uberenv.py \
-         --spec "+rocm~uncrustify~openmp~pygeosx~trilinos~petsc amdgpu_target=${AMDGPU_TARGET} %amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw" \
-         --spack-env-file=${SRC_DIR}/docker/spack-rocm.yaml \
-         --project-json=.uberenv_config.json \
-         --prefix ${GEOSX_TPL_DIR} \
-         -j ${SPACK_BUILD_JOBS} \
-         -k; \
-       rc=$?; \
-       kill ${hb} 2>/dev/null || true; \
-       wait ${hb} 2>/dev/null || true; \
-       test ${rc} -eq 0; \
-     } && \
-# Remove host-config generated for LvArray
-     rm lvarray* && \
-# Rename and copy spack-generated host-config to root directory
-     cp *.cmake /spack-generated.cmake && \
-# Remove extraneous spack files
-     cd ${GEOSX_TPL_DIR} && \
-     rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
-
-# Extract only TPLs from previous stage
+# ----- Final GEOS-build image -----
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
+# ARGs are scoped per stage, so the ROCm ones must be redeclared here for the
+# ENV defaults at the bottom of this stage to interpolate.
+ARG AMDGPU_TARGET
+ARG ROCM_VERSION
 
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
@@ -206,6 +220,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     python3-pytest && \
     rm -rf /var/lib/apt/lists/*
 
+# Install sccache to speed up downstream GEOS builds
 RUN --mount=src=.,dst=$SRC_DIR $SRC_DIR/docker/install-sccache.sh
 ENV SCCACHE=/opt/sccache/bin/sccache
 

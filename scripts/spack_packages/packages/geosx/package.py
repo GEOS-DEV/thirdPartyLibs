@@ -57,6 +57,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     variant('vtk', default=True, description='Build VTK support.')
     variant('trilinos', default=True, description='Build Trilinos support.')
     variant('hypre', default=True, description='Build HYPRE support.')
+    variant('hypredrive', default=True, description='Build hypredrive support.')
     variant('petsc', default=False, description='Build PETSc support.')
     variant('scotch', default=True, description='Build Scotch support.')
     variant('uncrustify', default=True, description='Build Uncrustify support.')
@@ -168,17 +169,24 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     with when("+trilinos"):
         trilinos_packages = '+aztec+stratimikos~amesos2~anasazi~belos~ifpack2~muelu~sacado+thyra+zoltan'
         depends_on("trilinos@16.1.0 cflags='-fPIC' cxxflags='-fPIC -include cstdint' fflags='-fPIC'" + trilinos_packages)
+        depends_on("trilinos fflags='-fsecond-underscore'", when="platform=darwin")
         depends_on("trilinos~openmp", when="~openmp")
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
         depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
-        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+cuda')
-        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire+unified-memory", when='+rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+rocm')
         depends_on("hypre ~openmp", when="~openmp")
         depends_on("hypre +caliper", when="+caliper")
         depends_on("hypre +pic", when="~shared")
         depends_on("hypre +shared", when="+shared")
+
+    with when("+hypredrive"):
+        depends_on("hypredrive +superlu-dist")
+        depends_on("hypredrive +pic", when="~shared")
+        depends_on("hypredrive +shared", when="+shared")
+        depends_on("hypredrive +caliper", when="+caliper")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
@@ -205,6 +213,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
     depends_on('grpc', when='+grpc')
+    depends_on('addr2line', when='+addr2line')
 
     # SPHINX_END_DEPENDS
 
@@ -448,9 +457,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                             cmake_cuda_flags += ' -Xcompiler ' + compilerArg
 
                 if not spec.satisfies('cuda_arch=none'):
-                    cuda_arch = spec.variants['cuda_arch'].value
-                    cmake_cuda_flags += ' -arch sm_{0}'.format(cuda_arch[0])
-                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', cuda_arch[0]))
+                    cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
+                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
 
@@ -571,6 +579,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 ('suite-sparse', 'SUITESPARSE', True),
                 ('trilinos', 'TRILINOS', '+trilinos' in spec),
                 ('hypre', 'HYPRE', '+hypre' in spec),
+                ('hypredrive', 'HYPREDRV', '+hypredrive' in spec),
                 ('petsc', 'PETSC', '+petsc' in spec)
             )
             # yapf: enable
@@ -580,6 +589,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write('#{0}\n\n'.format('-' * 80))
             for tpl, cmake_name, enable in math_tpls:
                 if enable:
+                    if tpl == 'hypredrive':
+                        cfg.write(cmake_cache_option('ENABLE_HYPREDRV', True))
                     cfg.write(cmake_cache_path('{}_DIR'.format(cmake_name), spec[tpl].prefix))
 
                     if tpl == 'hypre' and '+cuda' in spec:
@@ -639,7 +650,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write('# addr2line\n')
                 cfg.write('#{0}\n\n'.format('-' * 80))
                 cfg.write(cmake_cache_option('ENABLE_ADDR2LINE', True))
-                cfg.write(cmake_cache_path('ADDR2LINE_EXEC ', '/usr/bin/addr2line'))
+                cfg.write(cmake_cache_path('ADDR2LINE_EXEC', os.path.join(spec['addr2line'].prefix.bin, 'addr2line')))
 
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Other\n')
@@ -776,9 +787,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                             cmake_cuda_flags += ' -Xcompiler ' + compilerArg
 
                 if not spec.satisfies('cuda_arch=none'):
-                    cuda_arch = spec.variants['cuda_arch'].value
-                    cmake_cuda_flags += ' -arch sm_{0}'.format(cuda_arch[0])
-                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', cuda_arch[0]))
+                    cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
+                    cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
 
@@ -834,6 +844,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write('# addr2line\n')
                 cfg.write('#{0}\n\n'.format('-' * 80))
                 cfg.write(cmake_cache_option('ENABLE_ADDR2LINE', True))
+                cfg.write(cmake_cache_path('ADDR2LINE_EXEC', os.path.join(spec['addr2line'].prefix.bin, 'addr2line')))
 
     def cmake_args(self):
         pass
