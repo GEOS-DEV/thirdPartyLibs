@@ -1,4 +1,5 @@
 /build*
+!/build.sh
 /install*
 .cproject
 .project

@@ -231,6 +231,8 @@ spack:
       externals:
       - spec: py-sphinx@1.6.3
         prefix: /usr/gapps/GEOSX/thirdPartyLibs/python/quartz-gcc-python/python/
+        dependencies:
+        - spec: python@3.10.8
     autoconf:
       buildable: False
       externals:
