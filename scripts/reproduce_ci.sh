@@ -207,6 +207,8 @@ build() {
     return
   fi
 
+  # extra_env is expanded, and bash only honours literal VAR=value words as
+  # assignments, so it has to go through env rather than the prefix list.
   if ! TPL_DOCKERFILE=${dockerfile} \
     DOCKER_REPOSITORY=${repository} \
     DOCKER_BASE_IMAGE="${base_image}" \
@@ -220,7 +222,7 @@ build() {
     DOCKER_TAG=${DOCKER_TAG} \
     DOCKER_BUILDER=${builder} \
     DOCKER_LOAD=1 \
-    ${extra_env} \
+    env ${extra_env} \
     bash -x scripts/docker-build.sh; then
     printf 'FAILED: %s (builder retained: %s)\n' "${name}" "${builder}" >&2
     failed=1
