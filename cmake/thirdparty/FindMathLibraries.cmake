@@ -12,15 +12,6 @@ if( ENABLE_MKL )
     set( BLAS_LIBRARIES "${MKL_LIBRARIES}" CACHE STRING "" FORCE )
     set( LAPACK_LIBRARIES "${MKL_LIBRARIES}" CACHE STRING "" FORCE) 
 
-elseif( ENABLE_ESSL )
-    if ( NOT DEFINED ESSL_INCLUDE_DIRS )
-        message( FATAL_ERROR "ESSL is enabled but ESSL_INCLUDE_DIRS is not defined." )
-    elseif ( NOT DEFINED ESSL_LIBRARIES )
-        message( FATAL_ERROR "ESSL is enabled but ESSL_LIBRARIES is not defined." )
-    endif()
-
-    set( BLAS_LIBRARIES "${ESSL_LIBRARIES}" CACHE STRING "" FORCE )
-    set( LAPACK_LIBRARIES "${ESSL_LIBRARIES}" CACHE STRING "" FORCE )
 endif()
 
 if( NOT DEFINED BLAS_LIBRARIES )

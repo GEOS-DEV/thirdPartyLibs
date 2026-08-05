@@ -31,6 +31,8 @@ spack:
     test_stage: $spack/../test_stage
     build_stage: $spack/../build_stage
     build_jobs: 96
+    # Rewritten installer, default since spack v1.2.0. Set to 'old' to fall back.
+    installer: new
 
   # Regular TPLs do not need views
   view: false
