@@ -2,8 +2,29 @@
 set -e
 env
 
-# We save memory for the docker context
-echo .git > .dockerignore
+# Keep the docker context to the sources the TPL build actually needs.
+#
+# In CI this is a fresh checkout and only .git matters. Run locally via
+# scripts/reproduce_ci.sh, however, the working tree usually also holds build
+# and install trees, which added ~27GB to every job's context, and stray
+# host-configs left at the repo root by earlier local builds. Those last ones
+# are not merely wasteful: the TPL Dockerfiles finish with
+# `cp *.cmake /spack-generated.cmake`, so any root-level *.cmake beyond the one
+# uberenv just generated makes cp treat the destination as a directory and the
+# build fails after the whole TPL stack has been compiled. No tracked file at
+# the repo root matches these patterns.
+cat > .dockerignore <<'DOCKERIGNORE'
+.git
+build
+build-*
+install
+install-*
+*_tpls
+.rocm-ci-local.*
+*.cmake
+*.log
+__pycache__
+DOCKERIGNORE
 
 # Get uberenv submodule
 git submodule update --init --force scripts/uberenv
