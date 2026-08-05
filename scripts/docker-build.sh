@@ -31,7 +31,12 @@ EXTRA_BUILD_ARGS=()
 if [ -n "${GCC_VERSION}" ];   then EXTRA_BUILD_ARGS+=(--build-arg "GCC_VERSION=${GCC_VERSION}");     fi
 if [ -n "${CLANG_VERSION}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "CLANG_VERSION=${CLANG_VERSION}"); fi
 
+BUILDER_ARGS=()
+if [ -n "${DOCKER_BUILDER:-}" ]; then BUILDER_ARGS+=(--builder "${DOCKER_BUILDER}"); fi
+if [ "${DOCKER_LOAD:-0}" = 1 ]; then BUILDER_ARGS+=(--load); fi
+
 docker build --progress=plain \
+    "${BUILDER_ARGS[@]}" \
     --build-arg HOST_CONFIG=${HOST_CONFIG} \
     --build-arg DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE} \
     --build-arg INSTALL_DIR=${INSTALL_DIR} \
