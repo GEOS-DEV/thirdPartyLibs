@@ -329,13 +329,13 @@ spack:
       - spec: automake@1.16.5
         prefix: /usr
     cmake:
-      version: [3.28.3]
+      version: [3.28.6]
       buildable: false
       externals:
       - spec: cmake@3.28.6
         prefix: /usr/local
     findutils:
-      version: [4.7.0]
+      version: [4.9.0]
       buildable: false
       externals:
       - spec: findutils@4.9.0
