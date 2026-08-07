@@ -211,3 +211,11 @@ spack:
       - spec: zlib@1.2.11
         prefix: /usr
       buildable: false
+    zstd:
+      externals:
+      - spec: zstd@1.4.4
+        prefix: /usr
+      buildable: false
+    libdwarf:
+      require: "@0.12.0"
+      buildable: true

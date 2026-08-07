@@ -1212,6 +1212,64 @@ ExternalProject_Add( fmt
 
 list(APPEND build_list fmt)
 
+################################
+# CPPTRACE
+################################
+
+if( ENABLE_CPPTRACE )
+    set( CPPTRACE_DIR "${CMAKE_INSTALL_PREFIX}/cpptrace" )
+    set( CPPTRACE_URL "${TPL_MIRROR_DIR}/cpptrace-v1.0.0.tar.gz" )
+
+    set( CPPTRACE_SYMBOLS_BACKEND "libbacktrace" CACHE STRING
+         "Symbol resolution back-end for cpptrace (libbacktrace | libdwarf | addr2line)" )
+    set_property( CACHE CPPTRACE_SYMBOLS_BACKEND PROPERTY STRINGS libbacktrace libdwarf addr2line )
+
+    message( STATUS "Building CPPTRACE found at ${CPPTRACE_URL}" )
+    message( STATUS "CPPTRACE_SYMBOLS_BACKEND = ${CPPTRACE_SYMBOLS_BACKEND}" )
+
+    if( CPPTRACE_SYMBOLS_BACKEND STREQUAL "libbacktrace" )
+        set( _cpptrace_backend_args -D CPPTRACE_GET_SYMBOLS_WITH_LIBBACKTRACE:BOOL=ON
+                                    -D CPPTRACE_GET_SYMBOLS_WITH_LIBDWARF:BOOL=OFF
+                                    -D CPPTRACE_GET_SYMBOLS_WITH_ADDR2LINE:BOOL=OFF )
+    elseif( CPPTRACE_SYMBOLS_BACKEND STREQUAL "libdwarf" )
+        set( _cpptrace_backend_args -D CPPTRACE_GET_SYMBOLS_WITH_LIBBACKTRACE:BOOL=OFF
+                                    -D CPPTRACE_GET_SYMBOLS_WITH_LIBDWARF:BOOL=ON
+                                    -D CPPTRACE_GET_SYMBOLS_WITH_ADDR2LINE:BOOL=OFF
+                                    -D CPPTRACE_USE_EXTERNAL_LIBDWARF:BOOL=ON
+                                    -D CPPTRACE_USE_EXTERNAL_ZSTD:BOOL=ON )
+    elseif( CPPTRACE_SYMBOLS_BACKEND STREQUAL "addr2line" )
+        set( _cpptrace_backend_args -D CPPTRACE_GET_SYMBOLS_WITH_LIBBACKTRACE:BOOL=OFF
+                                    -D CPPTRACE_GET_SYMBOLS_WITH_LIBDWARF:BOOL=OFF
+                                    -D CPPTRACE_GET_SYMBOLS_WITH_ADDR2LINE:BOOL=ON )
+    else()
+        message( FATAL_ERROR
+                 "CPPTRACE_SYMBOLS_BACKEND='${CPPTRACE_SYMBOLS_BACKEND}' is not a valid value. "
+                 "Use libbacktrace, libdwarf, or addr2line" )
+    endif()
+
+    ExternalProject_Add( cpptrace
+                         PREFIX ${PROJECT_BINARY_DIR}/cpptrace
+                         URL ${CPPTRACE_URL}
+                         INSTALL_DIR ${CPPTRACE_DIR}
+                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
+                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                    -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
+                                    -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+                                    -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
+                                    -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} 
+                                    ${_cpptrace_backend_args} )
+
+    list(APPEND build_list cpptrace )
+
+endif( ENABLE_CPPTRACE )
+
 
 ################################
 # Create target that builds all dependencies
