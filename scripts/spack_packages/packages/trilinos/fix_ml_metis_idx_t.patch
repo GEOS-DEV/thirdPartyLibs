@@ -1,0 +1,228 @@
+diff -Naur a/packages/ml/src/Coarsen/ml_agg_METIS.c b/packages/ml/src/Coarsen/ml_agg_METIS.c
+--- a/packages/ml/src/Coarsen/ml_agg_METIS.c	2025-03-19 14:59:00
++++ b/packages/ml/src/Coarsen/ml_agg_METIS.c	2026-05-30 14:31:46
+@@ -82,7 +82,7 @@
+                                           int graph_decomposition[],
+                                           int mypid);
+ */
+-static int ML_LocalReorder_with_METIS( int Nrows, int xadj[], int adjncy[] ,
++static int ML_LocalReorder_with_METIS( int Nrows, indextype xadj[], indextype adjncy[] ,
+                                          int Nparts, indextype part[], int level,
+                                          ML_Comm *comm );
+ 
+@@ -441,7 +441,7 @@
+ */
+ /* ------------------------------------------------------------------------ */
+ 
+-static int ML_LocalReorder_with_METIS( int Nrows, int xadj[], int adjncy[] ,
++static int ML_LocalReorder_with_METIS( int Nrows, indextype xadj[], indextype adjncy[] ,
+                                        int Nparts, indextype part[], int level,
+                                        ML_Comm *comm )
+ {
+@@ -451,7 +451,11 @@
+   int MaxNnzRow;
+   indextype * xadj2 = NULL, * adjncy2 = NULL;
+   indextype * perm = NULL, * iperm = NULL;
++#if defined(HAVE_ML_METIS) && (METIS_VER_MAJOR >= 5)
++  indextype options[METIS_NOPTIONS];
++#else
+   indextype options[8];
++#endif
+   size_t used_mem;
+   int bandwidth_orig, bandwidth_perm;
+   int mypid = comm->ML_mypid;
+@@ -616,7 +620,11 @@
+     exit( EXIT_FAILURE );
+   }
+ 
++#if defined(HAVE_ML_METIS) && (METIS_VER_MAJOR >= 5)
++  METIS_SetDefaultOptions(options);
++#else
+   options[0] = 0; /* default values */
++#endif
+   /* those are instead possible non-default values. No idea about how
+      to pick them up...
+   options[0] = 1;
+@@ -663,7 +671,14 @@
+ 
+   i = 0; /* offset, C or FORTRAN */
+ #ifdef HAVE_ML_METIS
++# if METIS_VER_MAJOR < 5
+   METIS_NodeND( &Nparts, xadj2, adjncy2, &i, options, perm, iperm );
++# else
++  {
++    indextype metis_nparts = (indextype) Nparts;
++    METIS_NodeND( &metis_nparts, xadj2, adjncy2, NULL, options, perm, iperm );
++  }
++# endif
+ #else
+   fprintf( stderr,
+            "*ERR*ML* This function has been compiled without -DHAVE_ML_METIS\n"
+@@ -750,7 +765,8 @@
+ 
+   int i, j,jj,  count, count2, count_start;
+   int Nrows, Nrows_global,NrowsMETIS, N_nonzeros, N_bdry_nodes;
+-  int *wgtflag=NULL, numflag;
++  indextype *wgtflag=NULL;
++  int numflag;
+   indextype *xadj=NULL, *adjncy=NULL;
+ #ifdef HAVE_ML_METIS
+   indextype *vwgt=NULL, *adjwgt=NULL;
+@@ -970,8 +986,12 @@
+         vsize = NULL;
+         tpwgts = NULL;
+         ubvec = NULL;
+-        METIS_PartGraphRecursive (&NrowsMETIS, &numBalancingConstraints, xadj, adjncy,
+-                  vwgt, vsize, adjwgt, &N_parts, tpwgts, ubvec, options, &edgecut, part);
++        {
++          indextype metis_nrows = (indextype) NrowsMETIS;
++          indextype metis_nparts = (indextype) N_parts;
++          METIS_PartGraphRecursive (&metis_nrows, &numBalancingConstraints, xadj, adjncy,
++                    vwgt, vsize, adjwgt, &metis_nparts, tpwgts, ubvec, options, &edgecut, part);
++        }
+ #       endif
+       } else {
+ 
+@@ -990,8 +1010,12 @@
+         vsize = NULL;
+         tpwgts = NULL;
+         ubvec = NULL;
+-        METIS_PartGraphKway (&NrowsMETIS, &numBalancingConstraints, xadj, adjncy,
+-                  vwgt, vsize, adjwgt, &N_parts, tpwgts, ubvec, options, &edgecut, part);
++        {
++          indextype metis_nrows = (indextype) NrowsMETIS;
++          indextype metis_nparts = (indextype) N_parts;
++          METIS_PartGraphKway (&metis_nrows, &numBalancingConstraints, xadj, adjncy,
++                    vwgt, vsize, adjwgt, &metis_nparts, tpwgts, ubvec, options, &edgecut, part);
++        }
+ #       endif
+       }
+ #else
+diff -Naur a/packages/ml/src/Coarsen/ml_agg_ParMETIS.c b/packages/ml/src/Coarsen/ml_agg_ParMETIS.c
+--- a/packages/ml/src/Coarsen/ml_agg_ParMETIS.c	2025-03-19 14:59:00
++++ b/packages/ml/src/Coarsen/ml_agg_ParMETIS.c	2026-05-30 14:31:56
+@@ -472,7 +472,7 @@
+ 
+   int i, j,jj,  count;
+   int Nrows;
+-  int *wgtflag=NULL, numflag, *options=NULL, edgecut;
++  indextype *wgtflag=NULL, numflag, *options=NULL, edgecut;
+   indextype *xadj=NULL, *adjncy=NULL;
+ #if defined(ML_MPI)
+ #if defined(HAVE_ML_PARMETIS)
+@@ -490,7 +490,7 @@
+   int mypid = Amatrix->comm->ML_mypid;
+   int * offsets = NULL;
+   indextype * vtxdist = NULL;
+-  int ncon = 1;
++  indextype ncon = 1;
+   float * tpwgts = NULL;
+   float ubvec; /* size = ncon */
+   int * proc_with_parmetis = NULL;
+@@ -670,7 +670,7 @@
+     /* set parameters for ParMETIS */
+ 
+     wgtflag = (indextype *) ML_allocate (4*sizeof(indextype));
+-    options = (int *)     ML_allocate (4*sizeof(int));
++    options = (indextype *) ML_allocate (4*sizeof(indextype));
+ 
+     wgtflag[0] = 0;    /* no weights */
+     numflag    = 0;    /* C style */
+@@ -734,10 +734,13 @@
+ 
+ #if defined(HAVE_ML_PARMETIS)  && defined(ML_MPI)
+       /* never tested right now... */
+-      ParMETIS_V3_PartKway (vtxdist, xadj, adjncy, vwgt, adjwgt,
+-			    wgtflag, &numflag, &ncon, &N_parts, tpwgts,
+-			    &ubvec,options,
+-			    &edgecut, part, &ParMETISComm);
++      {
++        indextype metis_nparts = (indextype) N_parts;
++        ParMETIS_V3_PartKway (vtxdist, xadj, adjncy, vwgt, adjwgt,
++                              wgtflag, &numflag, &ncon, &metis_nparts, tpwgts,
++                              &ubvec, options,
++                              &edgecut, part, &ParMETISComm);
++      }
+ #else
+       if( Amatrix->comm->ML_mypid == 0 ) {
+ 	fprintf( stderr,
+diff -Naur a/packages/ml/src/Coarsen/ml_agg_VBMETIS.c b/packages/ml/src/Coarsen/ml_agg_VBMETIS.c
+--- a/packages/ml/src/Coarsen/ml_agg_VBMETIS.c	2025-03-19 14:59:00
++++ b/packages/ml/src/Coarsen/ml_agg_VBMETIS.c	2026-05-30 14:31:46
+@@ -2081,7 +2081,8 @@
+ 
+   int i, j,jj,  count, count2;
+   int Nrows, Nrows_global,NrowsMETIS, N_nonzeros, N_bdry_nodes;
+-  int *wgtflag=NULL, numflag;
++  indextype *wgtflag=NULL;
++  int numflag;
+   indextype *xadj=NULL, *adjncy=NULL;
+ #ifdef HAVE_ML_METIS
+   indextype *vwgt=NULL, *adjwgt=NULL;
+@@ -2325,8 +2326,12 @@
+         vsize = NULL;
+         tpwgts = NULL;
+         ubvec = NULL;
+-        METIS_PartGraphRecursive (&NrowsMETIS, &numBalancingConstraints, xadj, adjncy,
+-                  vwgt, vsize, adjwgt, &N_parts, tpwgts, ubvec, options, &edgecut, part);
++        {
++          indextype metis_nrows = (indextype) NrowsMETIS;
++          indextype metis_nparts = (indextype) N_parts;
++          METIS_PartGraphRecursive (&metis_nrows, &numBalancingConstraints, xadj, adjncy,
++                    vwgt, vsize, adjwgt, &metis_nparts, tpwgts, ubvec, options, &edgecut, part);
++        }
+ #       endif
+       } else {
+ 
+@@ -2345,8 +2350,12 @@
+         vsize = NULL;
+         tpwgts = NULL;
+         ubvec = NULL;
+-        METIS_PartGraphKway (&NrowsMETIS, &numBalancingConstraints, xadj, adjncy,
+-                  vwgt, vsize, adjwgt, &N_parts, tpwgts, ubvec, options, &edgecut, part);
++        {
++          indextype metis_nrows = (indextype) NrowsMETIS;
++          indextype metis_nparts = (indextype) N_parts;
++          METIS_PartGraphKway (&metis_nrows, &numBalancingConstraints, xadj, adjncy,
++                    vwgt, vsize, adjwgt, &metis_nparts, tpwgts, ubvec, options, &edgecut, part);
++        }
+ #      endif
+       }
+ #else
+diff -Naur a/packages/ml/src/Operator/ml_op_utils.c b/packages/ml/src/Operator/ml_op_utils.c
+--- a/packages/ml/src/Operator/ml_op_utils.c	2025-03-19 14:59:00
++++ b/packages/ml/src/Operator/ml_op_utils.c	2026-05-30 15:11:07
+@@ -461,3 +461,4 @@
+-  indextype *vtxdist = NULL, *tpwts = NULL, *adjncy = NULL, *xadj = NULL, *node_wt = NULL;
++  indextype *vtxdist = NULL, *adjncy = NULL, *xadj = NULL, *node_wt = NULL;
+   int *map = NULL, *bindx = NULL, *blks = NULL, nprocs, myid, j, ii, jj;
++  int *vtxdist_int = NULL, *tpwts_int = NULL;
+   int allocated = 0, row_length, itemp1, itemp2, Nrows;
+@@ -741,7 +742,13 @@
+-    tpwts   = (indextype *) ML_allocate(sizeof(indextype)*ML_max(*nblks,nprocs));
+     vtxdist = (indextype *) ML_allocate(sizeof(indextype)*(nprocs+1));
++    vtxdist_int = (int *) ML_allocate(sizeof(int)*nprocs);
++    tpwts_int = (int *) ML_allocate(sizeof(int)*nprocs);
+     for (ii = 0; ii <= nprocs; ii++) vtxdist[ii] = 0;
+-    vtxdist[myid] = n;
+-    ML_gsum_vec_int(&vtxdist,&tpwts,nprocs,matrix->comm);
+-
++    for (ii = 0; ii < nprocs; ii++) vtxdist_int[ii] = 0;
++    vtxdist_int[myid] = n;
++    ML_gsum_vec_int(&vtxdist_int,&tpwts_int,nprocs,matrix->comm);
++    for (ii = 0; ii < nprocs; ii++) vtxdist[ii] = (indextype) vtxdist_int[ii];
++    ML_free(vtxdist_int);
++    ML_free(tpwts_int);
++    vtxdist_int = NULL;
++    tpwts_int = NULL;
+     itemp1 = 0;
+@@ -865,8 +873,9 @@
+   if (bindx   != NULL) ML_free(bindx);
+   if (blks    != NULL) ML_free(blks);
+   if (vtxdist != NULL) ML_free(vtxdist);
+-  if (tpwts   != NULL) ML_free(tpwts);
++  if (vtxdist_int != NULL) ML_free(vtxdist_int);
++  if (tpwts_int   != NULL) ML_free(tpwts_int);
+   if (adjncy  != NULL) ML_free(adjncy);
+   if (xadj    != NULL) ML_free(xadj);
+   if (node_wt != NULL) ML_free(node_wt);
