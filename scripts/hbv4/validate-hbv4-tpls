@@ -1,0 +1,430 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+export LC_ALL=C
+parallel_hdf5_pattern='Parallel HDF5:[[:space:]]*(yes|on)([[:space:]]|$)'
+
+die() { printf 'validate-hbv4-tpls: ERROR: %s\n' "$*" >&2; exit 1; }
+note() { printf 'validate-hbv4-tpls: %s\n' "$*" >&2; }
+
+usage() {
+  cat >&2 <<'EOF'
+usage: validate-hbv4-tpls --provider openmpi|mpich --scratch DIR
+
+The image must embed this file at /opt/GEOS/bin/validate-hbv4-tpls and embed
+parallel_hdf5_shared.c beside it. DIR must be a writable bind-mounted scratch
+directory supplied by the fresh tester container.
+EOF
+}
+
+provider=
+scratch=
+while (($#)); do
+  case "$1" in
+    --provider) (($# >= 2)) || die '--provider needs a value'; provider=$2; shift 2 ;;
+    --scratch) (($# >= 2)) || die '--scratch needs a value'; scratch=$2; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) die "unknown argument: $1" ;;
+  esac
+done
+
+case "$provider" in
+  openmpi)
+    mpi_prefix=/opt/openmpi/5.0.10
+    mpi_version=5.0.10
+    launcher=mpirun
+    other_prefix=/opt/mpich
+    ;;
+  mpich)
+    mpi_prefix=/opt/mpich/5.0.1
+    mpi_version=5.0.1
+    launcher=mpiexec
+    other_prefix=/opt/openmpi
+    ;;
+  *) die '--provider must be openmpi or mpich' ;;
+esac
+
+[[ -n "$scratch" && -d "$scratch" && -w "$scratch" ]] ||
+  die '--scratch must name an existing writable directory'
+
+# Validate the environment baked into the image before normalizing any MPI
+# variables for the test itself. /opt/mpi symlinks are accepted only when their
+# canonical targets are below the exact versioned provider prefix.
+[[ "${MPI_PROVIDER-}" == "$provider" ]] ||
+  die "image MPI_PROVIDER (${MPI_PROVIDER-unset}) does not match $provider"
+[[ -n "${MPI_HOME-}" && -d "$MPI_HOME" ]] || die 'image MPI_HOME is missing or invalid'
+mpi_home_real=$(readlink -f "$MPI_HOME") || die "cannot resolve image MPI_HOME: $MPI_HOME"
+[[ "$mpi_home_real" == "$mpi_prefix" ]] ||
+  die "image MPI_HOME resolves to $mpi_home_real, expected $mpi_prefix"
+
+validate_image_executable() {
+  local variable=$1 expected_name=$2 value resolved
+  value=${!variable-}
+  [[ -n "$value" && "$value" == /* && -x "$value" ]] ||
+    die "image $variable is not an absolute executable path: ${value:-unset}"
+  [[ "${value##*/}" == "$expected_name" ]] ||
+    die "image $variable must name $expected_name, found ${value##*/}"
+  resolved=$(readlink -f "$value") || die "cannot resolve image $variable: $value"
+  [[ "$resolved" == "$mpi_prefix"/* ]] ||
+    die "image $variable resolves outside $mpi_prefix: $resolved"
+}
+validate_image_executable MPICC mpicc
+validate_image_executable MPICXX mpicxx
+validate_image_executable MPIFC mpifort
+validate_image_executable MPIEXEC "$launcher"
+
+for required_command in mpicc mpicxx mpifort "$launcher"; do
+  command_path=$(command -v "$required_command") || die "$required_command is absent from image PATH"
+  command_real=$(readlink -f "$command_path") || die "cannot resolve PATH command $command_path"
+  [[ "$command_real" == "$mpi_prefix"/* ]] ||
+    die "image PATH selects $required_command outside $mpi_prefix: $command_real"
+done
+
+[[ -n "${LD_LIBRARY_PATH-}" ]] || die 'image LD_LIBRARY_PATH is unset or empty'
+loader_has_provider=0
+IFS=: read -r -a loader_entries <<<"$LD_LIBRARY_PATH"
+for loader_entry in "${loader_entries[@]}"; do
+  [[ -n "$loader_entry" ]] || continue
+  loader_real=$(readlink -m "$loader_entry") || die "cannot normalize loader entry: $loader_entry"
+  [[ "$loader_real" != "$other_prefix" && "$loader_real" != "$other_prefix"/* ]] ||
+    die "image loader path contains the other MPI provider: $loader_entry"
+  if [[ "$loader_real" == "$mpi_prefix"/* ]]; then
+    if [[ -d "$loader_entry" ]]; then
+      loader_has_provider=1
+    fi
+  fi
+done
+[[ "$loader_has_provider" -eq 1 ]] || die "image loader path has no directory below $mpi_prefix"
+
+[[ ! -e "$other_prefix" ]] || die "other MPI provider prefix exists: $other_prefix"
+if command -v dpkg-query >/dev/null 2>&1; then
+  installed_mpi_packages=$(
+    dpkg-query -W -f='${binary:Package}\t${Status}\n' 2>/dev/null |
+      awk -F '\t' '$2 == "install ok installed" {
+        package = $1; sub(/:.*/, "", package)
+        if (package ~ /(openmpi|mpich|mpi-default|mpi4py)/) print package
+      }'
+  ) || die 'failed to query installed Debian packages'
+  [[ -z "$installed_mpi_packages" ]] ||
+    die "Debian MPI packages are installed: ${installed_mpi_packages//$'\n'/, }"
+else
+  note 'dpkg-query unavailable; skipping Debian package database check'
+fi
+
+usr_mpi_artifact=$(find /usr \( -type f -o -type l \) \
+  \( -name 'libmpi*.so*' -o -name 'libmpi*.a' \) -print -quit 2>/dev/null) ||
+  die 'failed to inspect /usr for MPI libraries'
+[[ -z "$usr_mpi_artifact" ]] || die "MPI library artifact exists under /usr: $usr_mpi_artifact"
+for usr_mpi_command in /usr/bin/mpicc /usr/bin/mpicxx /usr/bin/mpifort \
+  /usr/bin/mpirun /usr/bin/mpiexec; do
+  [[ ! -e "$usr_mpi_command" ]] || die "MPI command artifact exists under /usr: $usr_mpi_command"
+done
+
+export MPI_PROVIDER=$provider
+export MPI_HOME=$mpi_prefix
+export MPIEXEC="$mpi_prefix/bin/$launcher"
+export MPICC="$mpi_prefix/bin/mpicc"
+export MPICXX="$mpi_prefix/bin/mpicxx"
+export MPIFC="$mpi_prefix/bin/mpifort"
+export PATH="$mpi_prefix/bin:$PATH"
+if [[ -d "$mpi_prefix/lib64" ]]; then
+  export LD_LIBRARY_PATH="$mpi_prefix/lib:$mpi_prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+else
+  export LD_LIBRARY_PATH="$mpi_prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+
+under_prefix() {
+  local candidate resolved
+  candidate=$(command -v "$1") || die "$1 is not in PATH"
+  resolved=$(readlink -f "$candidate") || die "cannot resolve $candidate"
+  [[ "$resolved" == "$mpi_prefix"/* ]] ||
+    die "$1 resolves outside selected MPI prefix: $resolved"
+}
+under_prefix "$launcher"
+under_prefix mpicc
+under_prefix mpicxx
+under_prefix mpifort
+[[ "$MPI_HOME" == "$mpi_prefix" ]] || die 'MPI_HOME does not select requested MPI'
+
+case ":$PATH:" in
+  *":$other_prefix/"*) die "PATH contains the other MPI provider: $other_prefix" ;;
+esac
+case ":${LD_LIBRARY_PATH:-}:" in
+  *":$other_prefix/"*) die "LD_LIBRARY_PATH contains the other MPI provider: $other_prefix" ;;
+esac
+
+if [[ "$provider" == openmpi ]]; then
+  under_prefix ompi_info
+  ompi_info --version | grep -F "$mpi_version" >/dev/null || die 'OpenMPI version mismatch'
+  ompi_components=$(ompi_info --parsable --param io all)
+  grep -Eq '(^|:)mca:io:ompio:' <<<"$ompi_components" || die 'OpenMPI io/ompio is missing'
+  grep -Eq '(^|:)mca:io:romio341:' <<<"$ompi_components" || die 'OpenMPI io/romio341 is missing'
+else
+  under_prefix mpichversion
+  mpich_details=$(mpichversion)
+  grep -Eq "MPICH Version:[[:space:]]*$mpi_version([[:space:]]|$)" <<<"$mpich_details" ||
+    die 'MPICH version mismatch'
+  "$mpi_prefix/bin/mpiexec" -info 2>&1 | grep -qi hydra || die 'Hydra launcher evidence is missing'
+  grep -Eqi 'romio|--enable-romio' <<<"$mpich_details" || die 'ROMIO evidence is missing from mpichversion'
+fi
+
+tpl_root=${GEOSX_TPL_DIR:-/opt/GEOS}
+[[ -d "$tpl_root" ]] || die "TPL root does not exist: $tpl_root"
+h5pcc=$(command -v h5pcc || true)
+if [[ -z "$h5pcc" ]]; then
+  mapfile -t h5pcc_candidates < <(find "$tpl_root" -type f -name h5pcc -perm -111 -print)
+  [[ ${#h5pcc_candidates[@]} -eq 1 ]] ||
+    die "expected exactly one executable h5pcc below $tpl_root, found ${#h5pcc_candidates[@]}"
+  h5pcc=${h5pcc_candidates[0]}
+fi
+h5pcc=$(readlink -f "$h5pcc") || die "cannot resolve h5pcc: $h5pcc"
+[[ "$h5pcc" == "$tpl_root"/* ]] || die "h5pcc resolves outside the TPL root: $h5pcc"
+hdf5_config=$($h5pcc -showconfig)
+grep -Eiq "$parallel_hdf5_pattern" <<<"$hdf5_config" || die 'h5pcc reports non-parallel HDF5'
+
+# h5pcc supplies -L/-lhdf5 but does not add the HDF5 installation directory
+# to the executable's runtime search path. Expose only that verified prefix for
+# the dynamic test; the exact selected MPI prefix remains independently checked.
+hdf5_prefix=$(CDPATH='' cd -- "$(dirname -- "$h5pcc")/.." && pwd -P) ||
+  die "cannot resolve the HDF5 prefix from $h5pcc"
+hdf5_loader_entries=()
+for candidate in "$hdf5_prefix/lib" "$hdf5_prefix/lib64"; do
+  [[ -d "$candidate" ]] || continue
+  compgen -G "$candidate/libhdf5.so*" >/dev/null || continue
+  hdf5_loader_entries+=("$candidate")
+done
+[[ ${#hdf5_loader_entries[@]} -gt 0 ]] ||
+  die "HDF5 shared library is missing below $hdf5_prefix"
+hdf5_loader_path=$(IFS=:; printf '%s' "${hdf5_loader_entries[*]}")
+export LD_LIBRARY_PATH="$hdf5_loader_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+python_bin=$(command -v python3 || command -v python) || die 'Python is missing'
+evidence_dir=/opt/GEOS/hbv4-build-evidence
+[[ -d "$evidence_dir" ]] || die "embedded build evidence is missing: $evidence_dir"
+[[ -f "$evidence_dir/checksums.sha256" ]] || die 'embedded evidence checksums are missing'
+(
+  cd -- "$evidence_dir"
+  sha256sum --check --strict checksums.sha256
+) || die 'embedded build evidence checksum verification failed'
+
+"$python_bin" - "$evidence_dir" "$provider" "$mpi_version" "$mpi_prefix" <<'PY'
+import json
+import os
+import re
+import sys
+
+directory, provider, version, prefix = sys.argv[1:]
+manifest_path = os.path.join(directory, "manifest.json")
+try:
+    with open(manifest_path, encoding="utf-8") as stream:
+        manifest = json.load(stream)
+except (OSError, ValueError) as error:
+    raise SystemExit("invalid evidence manifest: %s" % error)
+
+expected_archives = {
+    "openmpi": "0acecc4fc218e5debdbcb8a41d182c6b0f1d29393015ed763b2a91d5d7374cc6",
+    "mpich": "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327",
+}
+expected_artifacts = {
+    "compiler_flags": "compiler-flags.txt",
+    "lscpu": "lscpu.txt",
+    "mpi_configure_args": "mpi-configure-args.txt",
+    "mpi_wrapper": "mpi-wrapper-show.txt",
+    "hdf5_config": "hdf5-config.txt",
+    "mpi_provider": "mpi-provider.json",
+    "spack_concretization": "spack-concretization.txt",
+    "spack_build_log": "spack-build.log",
+}
+expected_launcher = {"openmpi": "mpirun", "mpich": "mpiexec"}[provider]
+launcher_requested = str(manifest.get("mpi_launcher_requested", ""))
+launcher_resolved = str(manifest.get("mpi_launcher_resolved", ""))
+checks = (
+    (manifest.get("schema_version") == 1, "schema version"),
+    (manifest.get("provider") == provider, "provider"),
+    (manifest.get("mpi_version") == version, "MPI version"),
+    (manifest.get("mpi_prefix") == prefix, "MPI prefix"),
+    (manifest.get("mpi_source_sha256") == expected_archives[provider], "MPI archive checksum"),
+    (bool(re.fullmatch(r"[0-9a-f]{40}", str(manifest.get("source_sha", "")))), "source SHA"),
+    (bool(re.fullmatch(r"[0-9a-f]{40}", str(manifest.get("tpl_source_sha", "")))), "TPL source SHA"),
+    (manifest.get("source_sha") == manifest.get("tpl_source_sha"), "source/TPL SHA agreement"),
+    (os.path.basename(launcher_requested) == expected_launcher, "requested MPI launcher"),
+    (launcher_resolved.startswith(prefix + os.sep), "MPI launcher prefix"),
+    (os.path.realpath(launcher_requested) == launcher_resolved, "MPI launcher resolution"),
+)
+for valid, label in checks:
+    if not valid:
+        raise SystemExit("evidence manifest mismatch: " + label)
+
+artifacts = manifest.get("artifacts")
+if artifacts != expected_artifacts:
+    raise SystemExit("evidence manifest has missing or unexpected artifact paths")
+for relative in artifacts.values():
+    path = os.path.realpath(os.path.join(directory, relative))
+    if os.path.commonpath((os.path.realpath(directory), path)) != os.path.realpath(directory):
+        raise SystemExit("evidence artifact escapes evidence directory: " + relative)
+    if not os.path.isfile(path):
+        raise SystemExit("evidence artifact is missing: " + relative)
+
+with open(os.path.join(directory, "checksums.sha256"), encoding="utf-8") as stream:
+    listed = {line.split(None, 1)[1].lstrip("*").removeprefix("./").strip() for line in stream if line.strip()}
+actual = {
+    name for name in os.listdir(directory)
+    if name != "checksums.sha256" and os.path.isfile(os.path.join(directory, name))
+}
+if listed != actual:
+    raise SystemExit("checksum index does not cover exactly the embedded evidence files")
+
+provider_record_path = os.path.join(directory, artifacts["mpi_provider"])
+try:
+    with open(provider_record_path, encoding="utf-8") as stream:
+        provider_record = json.load(stream)
+    with open(os.path.join(directory, artifacts["mpi_configure_args"]), encoding="utf-8") as stream:
+        configure_arguments = stream.read()
+    with open(os.path.join(directory, artifacts["compiler_flags"]), encoding="utf-8") as stream:
+        compiler_flags = stream.read().removesuffix("\n")
+    with open(os.path.join(directory, artifacts["spack_concretization"]), encoding="utf-8") as stream:
+        spack_lock = json.load(stream)
+except (OSError, ValueError) as error:
+    raise SystemExit("invalid MPI provider evidence: %s" % error)
+expected_provider_record = {
+    "schema_version": 1,
+    "provider": provider,
+    "version": version,
+    "exact_prefix": prefix,
+    "configure_arguments": configure_arguments,
+    "archive_sha256": manifest["mpi_source_sha256"],
+    "tpl_source_sha": manifest["tpl_source_sha"],
+    "base_digest": manifest.get("base_digest"),
+    "compiler_flags": compiler_flags,
+}
+if provider_record != expected_provider_record:
+    raise SystemExit("mpi-provider.json does not exactly match manifest/artifact evidence")
+if not re.fullmatch(r"[A-Za-z0-9._:/+\-]+@sha256:[0-9a-f]{64}", str(provider_record["base_digest"])):
+    raise SystemExit("MPI provider base image is not an immutable digest")
+if not isinstance(spack_lock, dict):
+    raise SystemExit("Spack lockfile root is not an object")
+concrete_specs = spack_lock.get("concrete_specs")
+if not isinstance(concrete_specs, dict) or not concrete_specs:
+    raise SystemExit("Spack lockfile does not contain concrete specs")
+if not all(isinstance(spec, dict) for spec in concrete_specs.values()):
+    raise SystemExit("Spack lockfile contains an invalid concrete spec")
+source_specs = [spec for spec in concrete_specs.values() if "external" not in spec]
+if not source_specs:
+    raise SystemExit("Spack lockfile does not contain source-built specs")
+source_targets = {
+    spec.get("arch", {}).get("target")
+    for spec in source_specs
+}
+if source_targets != {"x86_64_v4"}:
+    raise SystemExit(
+        "source-built Spack specs do not all target x86_64_v4: %s"
+        % sorted(str(target) for target in source_targets)
+    )
+spec_names = {spec.get("name") for spec in concrete_specs.values()}
+if provider not in spec_names:
+    raise SystemExit("Spack concretization does not contain the selected MPI provider")
+other_provider = "mpich" if provider == "openmpi" else "openmpi"
+if other_provider in spec_names:
+    raise SystemExit("Spack concretization contains the other MPI provider")
+PY
+
+provider_record=/opt/GEOS/mpi-provider.json
+[[ -f "$provider_record" ]] || die "top-level MPI provider record is missing: $provider_record"
+cmp -s "$evidence_dir/mpi-provider.json" "$provider_record" ||
+  die 'top-level MPI provider record differs from checksummed evidence'
+
+require_native_flags() {
+  local evidence_file=$1
+  grep -F -- '-march=native' "$evidence_file" >/dev/null ||
+    die "$evidence_file lacks -march=native"
+  grep -F -- '-mtune=native' "$evidence_file" >/dev/null ||
+    die "$evidence_file lacks -mtune=native"
+  ! grep -F -- '-mcpu=native' "$evidence_file" >/dev/null ||
+    die "$evidence_file contains forbidden -mcpu=native"
+}
+require_native_flags "$evidence_dir/compiler-flags.txt"
+grep -Eq '(^|[[:space:]])(target=zen4|arch=zen4)([[:space:]]|$)' "$evidence_dir/compiler-flags.txt" ||
+  die 'compiler-flags evidence lacks target=zen4'
+require_native_flags "$evidence_dir/mpi-configure-args.txt"
+require_native_flags "$evidence_dir/mpi-wrapper-show.txt"
+require_native_flags "$evidence_dir/spack-build.log"
+grep -Eiq '^Model name:.*AMD EPYC.*9V33X' "$evidence_dir/lscpu.txt" ||
+  die 'embedded builder CPU evidence is not AMD EPYC 9V33X'
+grep -Eq '^CPU\(s\):[[:space:]]*176[[:space:]]*$' "$evidence_dir/lscpu.txt" ||
+  die 'embedded builder CPU evidence does not show 176 CPUs'
+grep -Eiq '^Flags:.*[[:space:]]avx512f([[:space:]]|$)' "$evidence_dir/lscpu.txt" ||
+  die 'embedded builder CPU evidence lacks AVX-512'
+grep -Eiq "$parallel_hdf5_pattern" "$evidence_dir/hdf5-config.txt" ||
+  die 'embedded HDF5 evidence is not parallel-enabled'
+
+script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+source_file=$script_dir/parallel_hdf5_shared.c
+[[ -r "$source_file" ]] || die "embedded test source is missing: $source_file"
+work_dir=$(mktemp -d "$scratch/hbv4-tpl-validation.XXXXXX") || die 'cannot create scratch directory'
+cleanup() { rm -rf -- "$work_dir"; }
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+test_exe=$work_dir/parallel-hdf5-shared
+"$h5pcc" -O2 -Wall -Wextra -Werror "$source_file" -o "$test_exe"
+
+assert_selected_libmpi() {
+  local target=$1 report=$2 library
+  local -a mpi_libraries=()
+  if ! ldd "$target" >"$report" 2>&1; then
+    cat "$report" >&2
+    die "ldd failed for $target"
+  fi
+  if grep -q 'not found' "$report"; then
+    cat "$report" >&2
+    die "unresolved library in $target"
+  fi
+  grep -F "$other_prefix/" "$report" >/dev/null && die "$target links the other MPI provider"
+  mapfile -t mpi_libraries < <(
+    awk '/(^|[[:space:]])libmpi[^[:space:]]*/ {
+           for (i = 1; i <= NF; ++i) if ($i == "=>") print $(i + 1)
+         }' "$report"
+  )
+  [[ ${#mpi_libraries[@]} -gt 0 ]] || die "$target has no dynamic libmpi dependency"
+  for library in "${mpi_libraries[@]}"; do
+    [[ "$library" == /* ]] || die "$target has unresolved libmpi entry: $library"
+    library=$(readlink -f "$library") || die "cannot resolve linked library $library"
+    [[ "$library" == "$mpi_prefix"/* ]] ||
+      die "$target resolves libmpi outside $mpi_prefix: $library"
+  done
+}
+assert_selected_libmpi "$test_exe" "$work_dir/hdf5-test.ldd"
+
+mpi4py_module=$($python_bin - <<'PY'
+import mpi4py
+from mpi4py import MPI
+if mpi4py.__version__ != "4.1.2":
+    raise SystemExit("mpi4py version is %s, expected 4.1.2" % mpi4py.__version__)
+print(MPI.__file__)
+print(MPI.Get_library_version().replace("\n", " "))
+PY
+) || die 'mpi4py import/version/library query failed'
+mpi4py_extension=${mpi4py_module%%$'\n'*}
+[[ -f "$mpi4py_extension" ]] || die "mpi4py MPI extension is not a file: $mpi4py_extension"
+assert_selected_libmpi "$mpi4py_extension" "$work_dir/mpi4py.ldd"
+mpi_library_version=${mpi4py_module#*$'\n'}
+case "$provider:$mpi_library_version" in
+  openmpi:*Open\ MPI*v5.0.10*|openmpi:*Open\ MPI*5.0.10*) ;;
+  mpich:*MPICH*5.0.1*) ;;
+  *) die "mpi4py reports the wrong MPI library: $mpi_library_version" ;;
+esac
+
+mpi_python='from mpi4py import MPI; assert MPI.COMM_WORLD.Get_size() == 4; print(MPI.COMM_WORLD.Get_rank(), MPI.Get_library_version().splitlines()[0])'
+if [[ "$provider" == openmpi ]]; then
+  export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+  for component in ompio romio341; do
+    note "running shared parallel HDF5 verification with OpenMPI io/$component"
+    "$launcher" -n 4 --mca io "$component" "$test_exe" "$work_dir/$component.h5"
+  done
+else
+  note 'running shared parallel HDF5 verification with MPICH ROMIO'
+  "$launcher" -n 4 "$test_exe" "$work_dir/romio.h5"
+fi
+"$launcher" -n 4 "$python_bin" -c "$mpi_python"
+note "$provider $mpi_version, parallel HDF5, and mpi4py 4.1.2 validation passed"

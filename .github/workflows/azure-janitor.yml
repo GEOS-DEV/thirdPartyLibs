@@ -1,0 +1,76 @@
+name: Azure HBv4 janitor
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: azure-hbv4-janitor-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  janitor:
+    name: Reclaim expired HBv4 resources
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: azure-ci
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - name: Require default-branch janitor control code
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          [[ "${GITHUB_REF}" == "refs/heads/${DEFAULT_BRANCH}" ]] || {
+            echo '::error::The Azure janitor may run only from the repository default branch.'
+            exit 1
+          }
+
+      - name: Checkout trusted janitor
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: ci/azure/scripts/janitor-hbv4.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Azure login
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Mint repository runner-administration token
+        id: runner_app_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.AZURE_RUNNER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AZURE_RUNNER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Delete only expired exact-contract resources
+        env:
+          GH_TOKEN: ${{ steps.runner_app_token.outputs.token }}
+          ACTIONS_READ_TOKEN: ${{ github.token }}
+          AZURE_RUNNER_RESOURCE_GROUP: ${{ vars.AZURE_RUNNER_RESOURCE_GROUP }}
+          AZURE_ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+          EVIDENCE_FILE: ${{ runner.temp }}/hbv4-janitor-evidence/actions.jsonl
+        run: ci/azure/scripts/janitor-hbv4.sh
+
+      - name: Upload sanitized janitor evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hbv4-janitor-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/hbv4-janitor-evidence
+          if-no-files-found: warn
+          retention-days: 90

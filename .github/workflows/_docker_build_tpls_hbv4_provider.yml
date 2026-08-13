@@ -1,0 +1,843 @@
+name: HBv4 TPL provider lifecycle
+
+on:
+  workflow_call:
+    inputs:
+      provider:
+        required: true
+        type: string
+      source_sha:
+        required: true
+        type: string
+      control_sha:
+        required: true
+        type: string
+      event_name:
+        required: true
+        type: string
+      event_ref:
+        required: true
+        type: string
+      pr_number:
+        required: false
+        default: ''
+        type: string
+
+permissions: {}
+
+# A provider owns at most one paid VM across all runs. Builder and tester are
+# also sequenced explicitly inside this workflow.
+concurrency:
+  group: hbv4-tpl-${{ github.repository }}-${{ inputs.provider }}
+  cancel-in-progress: false
+
+env:
+  DOCKER_BASE_IMAGE: geosx/ubuntu:24.04-gcc13-1c3c049b3f629d9d44838656fd306b2a0c04c9e8
+  TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+  SPEC: "~pygeosx ~docs %gcc-13"
+
+jobs:
+  provision_builder:
+    name: Provision ${{ inputs.provider }} builder
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    environment: azure-ci
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    outputs:
+      runner_label: ${{ steps.provision.outputs.runner_label }}
+      vm_name: ${{ steps.provision.outputs.vm_name }}
+      runner_id: ${{ steps.provision.outputs.runner_id }}
+      provision_run_attempt: ${{ steps.provision.outputs.provision_run_attempt }}
+    steps:
+      - name: Checkout trusted runner control plane
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.control_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            ci/azure
+            scripts/hbv4/validate-host.sh
+            scripts/hbv4/validate-hbv4-tpls
+            scripts/hbv4/parallel_hdf5_shared.c
+          sparse-checkout-cone-mode: false
+
+      # Match the GEOS lifecycle's token boundary: source authorization uses
+      # the job's read-only GITHUB_TOKEN; the GitHub App minted inside the
+      # provision action is reserved exclusively for runner administration.
+      - name: Reauthorize live source before paid builder provisioning
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ inputs.event_name }}
+          EVENT_REF: ${{ inputs.event_ref }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          case "${EVENT_NAME}" in
+            pull_request_target)
+              [[ "${PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]
+              [[ "${EVENT_REF}" == "refs/pull/${PR_NUMBER}/head" ]]
+              live_pr="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+              jq -e \
+                --arg repository "${GITHUB_REPOSITORY}" \
+                --arg sha "${SOURCE_SHA}" \
+                --argjson number "${PR_NUMBER}" '
+                  .number == $number and .state == "open" and
+                  .head.repo.full_name == $repository and .head.sha == $sha and
+                  any(.labels[]?; .name == "ci: build HBv4 TPL")
+                ' <<< "${live_pr}" >/dev/null || {
+                  echo '::error::Live PR authorization changed before paid builder provisioning.'
+                  exit 1
+                }
+              ;;
+            workflow_dispatch)
+              [[ -z "${PR_NUMBER}" ]]
+              live_commit="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/commits/${SOURCE_SHA}")"
+              [[ "$(jq -r '.sha // empty' <<< "${live_commit}")" == "${SOURCE_SHA}" ]] || {
+                echo '::error::Manual source commit no longer resolves exactly.'
+                exit 1
+              }
+              ;;
+            *) exit 2 ;;
+          esac
+
+      - name: Provision builder JIT runner
+        id: provision
+        uses: ./ci/azure/actions/provision-hbv4-runner
+        with:
+          provider: ${{ inputs.provider }}
+          runner_role: builder
+          event_name: ${{ inputs.event_name }}
+          event_ref: ${{ inputs.event_ref }}
+          source_sha: ${{ inputs.source_sha }}
+          pr_number: ${{ inputs.pr_number }}
+          azure_client_id: ${{ vars.AZURE_CLIENT_ID }}
+          azure_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+          azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          foundation_resource_group: ${{ vars.AZURE_FOUNDATION_RESOURCE_GROUP }}
+          runner_resource_group: ${{ vars.AZURE_RUNNER_RESOURCE_GROUP }}
+          runner_vm_uami_client_id: ${{ vars.AZURE_RUNNER_VM_UAMI_CLIENT_ID }}
+          acr_name: ${{ vars.AZURE_ACR_NAME }}
+          # Match the reviewed earthflow-sim/GEOS procurement contract: the
+          # repository-level Default runner group has stable ID 1.
+          runner_group_id: '1'
+          runner_app_client_id: ${{ vars.AZURE_RUNNER_APP_CLIENT_ID }}
+          runner_app_private_key: ${{ secrets.AZURE_RUNNER_APP_PRIVATE_KEY }}
+
+  build_candidate:
+    name: Build ${{ inputs.provider }} candidate
+    needs: provision_builder
+    if: ${{ needs.provision_builder.result == 'success' && needs.provision_builder.outputs.provision_run_attempt == format('{0}', github.run_attempt) }}
+    runs-on: ${{ needs.provision_builder.outputs.runner_label }}
+    timeout-minutes: 330
+    environment: azure-ci
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    outputs:
+      candidate_repository: ${{ steps.build.outputs.candidate_repository }}
+      candidate_digest: ${{ steps.publish.outputs.candidate_digest }}
+      candidate_digest_reference: ${{ steps.publish.outputs.candidate_digest_reference }}
+      base_digest: ${{ steps.build.outputs.base_digest }}
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 1
+          submodules: recursive
+          lfs: false
+          persist-credentials: false
+
+      - name: Validate fixed HBv4 host contract
+        run: >-
+          /opt/geos-ci/scripts/hbv4/validate-host.sh
+          --instance-type Standard_HB176rs_v4
+          --compiler-flags 'target=zen4 -march=native -mtune=native'
+          --writable-path "${GITHUB_WORKSPACE}"
+
+      - name: Build without cache
+        id: build
+        env:
+          ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+          PROVIDER: ${{ inputs.provider }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          TMPDIR: /mnt/hbv4-local/container-tmp
+          DOCKER_BUILDKIT: '1'
+        run: |
+          set -euo pipefail
+          case "${PROVIDER}" in openmpi|mpich) ;; *) exit 2 ;; esac
+          [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${ACR_NAME}" =~ ^[a-z0-9]{5,50}$ ]]
+
+          docker pull "${DOCKER_BASE_IMAGE}"
+          mapfile -t base_repo_digests < <(docker image inspect \
+            --format '{{range .RepoDigests}}{{println .}}{{end}}' \
+            "${DOCKER_BASE_IMAGE}" | grep '^geosx/ubuntu@sha256:' | sort -u)
+          if (( ${#base_repo_digests[@]} != 1 )) ||
+             ! [[ "${base_repo_digests[0]}" =~ ^geosx/ubuntu@sha256:[0-9a-f]{64}$ ]]; then
+            echo '::error::Pinned base tag did not resolve to exactly one immutable geosx/ubuntu digest.'
+            exit 1
+          fi
+          immutable_base_image="${base_repo_digests[0]}"
+
+          case "${PROVIDER}" in
+            openmpi)
+              mpi_prefix='/opt/openmpi/5.0.10'
+              mpiexec_path='/opt/openmpi/5.0.10/bin/mpirun'
+              ;;
+            mpich)
+              mpi_prefix='/opt/mpich/5.0.1'
+              mpiexec_path='/opt/mpich/5.0.1/bin/mpiexec'
+              ;;
+          esac
+          # Replace source-controlled ignore rules before sending the context to
+          # Docker. Checkout metadata and runner work/temporary artifacts are
+          # never build inputs.
+          printf '%s\n' \
+            '.git' \
+            '.git/**' \
+            '**/.git' \
+            '**/.git/**' \
+            '_work' \
+            '_work/**' \
+            '_temp' \
+            '_temp/**' \
+            'hbv4-evidence' \
+            'hbv4-evidence/**' \
+            > .dockerignore
+
+          candidate_repository="geos/hbv4-tpl-candidates/${PROVIDER}/run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}"
+          candidate_reference="${ACR_NAME}.azurecr.io/${candidate_repository}:candidate"
+          install_dir="/opt/GEOS/GEOS_TPL-hbv4-${PROVIDER}-${SOURCE_SHA:0:12}"
+
+          docker build \
+            --no-cache \
+            --pull \
+            --progress=plain \
+            --build-arg "DOCKER_BASE_IMAGE=${immutable_base_image}" \
+            --build-arg 'GCC_VERSION=13' \
+            --build-arg 'HOST_CONFIG=host-configs/environment.cmake' \
+            --build-arg "INSTALL_DIR=${install_dir}" \
+            --build-arg "SPEC=${SPEC}" \
+            --build-arg "MPI_PROVIDER=${PROVIDER}" \
+            --build-arg "MPI_PREFIX=${mpi_prefix}" \
+            --build-arg "MPIEXEC_PATH=${mpiexec_path}" \
+            --build-arg "SPACK_ENV_FILE=docker/ubuntu-hbv4-${PROVIDER}-spack.yaml" \
+            --build-arg 'HBV4_BUILD=1' \
+            --build-arg "SOURCE_SHA=${SOURCE_SHA}" \
+            --build-arg 'FINAL_IMAGE_VARIANT=hbv4' \
+            --label "org.opencontainers.image.revision=${SOURCE_SHA}" \
+            --label "org.opencontainers.image.base.name=${immutable_base_image}" \
+            --tag "${candidate_reference}" \
+            --file "${TPL_DOCKERFILE}" \
+            .
+
+          {
+            echo "candidate_repository=${candidate_repository}"
+            echo "candidate_reference=${candidate_reference}"
+            echo "base_digest=${immutable_base_image}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Reauthorize live source before registry credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ inputs.event_name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          case "${EVENT_NAME}" in
+            pull_request_target)
+              live_pr="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+              jq -e \
+                --arg repository "${GITHUB_REPOSITORY}" \
+                --arg sha "${SOURCE_SHA}" \
+                --argjson number "${PR_NUMBER}" '
+                  .number == $number and .state == "open" and
+                  .head.repo.full_name == $repository and .head.sha == $sha and
+                  any(.labels[]?; .name == "ci: build HBv4 TPL")
+                ' <<< "${live_pr}" >/dev/null || {
+                echo '::error::PR head/label authorization changed during the build.'
+                exit 1
+              }
+              ;;
+            workflow_dispatch)
+              live_commit="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/commits/${SOURCE_SHA}")"
+              [[ "$(jq -r '.sha // empty' <<< "${live_commit}")" == "${SOURCE_SHA}" ]] || {
+                echo '::error::Manual source commit no longer resolves exactly.'
+                exit 1
+              }
+              ;;
+            *) exit 2 ;;
+          esac
+
+      # Acquire a fresh OIDC session only after the potentially multi-hour
+      # source build. The ACR Docker token is short-lived and must not age while
+      # Spack compiles the TPL graph.
+      - name: Login to Azure for candidate publication
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Publish candidate and capture build evidence
+        id: publish
+        env:
+          ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+          PROVIDER: ${{ inputs.provider }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          CANDIDATE_REPOSITORY: ${{ steps.build.outputs.candidate_repository }}
+          CANDIDATE_REFERENCE: ${{ steps.build.outputs.candidate_reference }}
+          IMMUTABLE_BASE_IMAGE: ${{ steps.build.outputs.base_digest }}
+        run: |
+          set -euo pipefail
+          case "${PROVIDER}" in openmpi|mpich) ;; *) exit 2 ;; esac
+          [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${ACR_NAME}" =~ ^[a-z0-9]{5,50}$ ]]
+          expected_repository="geos/hbv4-tpl-candidates/${PROVIDER}/run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}"
+          [[ "${CANDIDATE_REPOSITORY}" == "${expected_repository}" ]]
+          [[ "${CANDIDATE_REFERENCE}" == "${ACR_NAME}.azurecr.io/${CANDIDATE_REPOSITORY}:candidate" ]]
+          [[ "${IMMUTABLE_BASE_IMAGE}" =~ ^geosx/ubuntu@sha256:[0-9a-f]{64}$ ]]
+
+          # The checked-out source never receives Azure credentials as a build
+          # argument, secret mount, environment variable, or Docker context file.
+          # Refresh the registry session immediately before the only push.
+          az acr login --name "${ACR_NAME}" --only-show-errors >/dev/null
+          docker push "${CANDIDATE_REFERENCE}"
+          candidate_digest="$(az acr repository show \
+            --name "${ACR_NAME}" \
+            --image "${CANDIDATE_REPOSITORY}:candidate" \
+            --query digest --output tsv --only-show-errors)"
+          if ! [[ "${candidate_digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo '::error::ACR did not return a canonical candidate digest.'
+            exit 1
+          fi
+          candidate_digest_reference="${ACR_NAME}.azurecr.io/${CANDIDATE_REPOSITORY}@${candidate_digest}"
+          {
+            echo "candidate_digest=${candidate_digest}"
+            echo "candidate_digest_reference=${candidate_digest_reference}"
+          } >> "${GITHUB_OUTPUT}"
+
+          evidence_dir="${RUNNER_TEMP}/hbv4-evidence"
+          install -d -m 0700 "${evidence_dir}"
+          embedded_evidence="${evidence_dir}/embedded-build-evidence"
+          install -d -m 0700 "${embedded_evidence}"
+          evidence_container="$(docker create "${CANDIDATE_REFERENCE}" /bin/true)"
+          trap 'docker rm -f "${evidence_container}" >/dev/null 2>&1 || true' EXIT
+          docker cp "${evidence_container}:/opt/GEOS/hbv4-build-evidence/." "${embedded_evidence}/"
+          docker rm "${evidence_container}" >/dev/null
+          trap - EXIT
+          (cd "${embedded_evidence}" && sha256sum --check --strict checksums.sha256)
+          docker image inspect "${CANDIDATE_REFERENCE}" | jq '.[0] | {
+            Id, RepoDigests, Architecture, Os, Size,
+            Config:{Labels:.Config.Labels,Entrypoint:.Config.Entrypoint,Cmd:.Config.Cmd}
+          }' > "${evidence_dir}/image-inspect.json"
+          docker run --rm --network none --entrypoint cat "${CANDIDATE_REFERENCE}" \
+            /opt/GEOS/mpi-provider.json 2>&1 | tee "${evidence_dir}/mpi-provider.json"
+          jq -e \
+            --arg provider "${PROVIDER}" \
+            --arg tpl_source_sha "${SOURCE_SHA}" \
+            --arg base_digest "${IMMUTABLE_BASE_IMAGE}" '
+              .provider == $provider and .tpl_source_sha == $tpl_source_sha and
+              .base_digest == $base_digest
+            ' "${evidence_dir}/mpi-provider.json" >/dev/null
+          docker run --rm --network none --entrypoint sha256sum "${CANDIDATE_REFERENCE}" \
+            /opt/GEOS/bin/validate-hbv4-tpls > "${evidence_dir}/embedded-validator.sha256"
+          jq -n \
+            --arg provider "${PROVIDER}" \
+            --arg tpl_source_sha "${SOURCE_SHA}" \
+            --arg base_digest "${IMMUTABLE_BASE_IMAGE}" \
+            --arg candidate_repository "${CANDIDATE_REPOSITORY}" \
+            --arg candidate_digest "${candidate_digest}" \
+            '{provider:$provider,tpl_source_sha:$tpl_source_sha,base_digest:$base_digest,candidate_repository:$candidate_repository,candidate_digest:$candidate_digest,no_cache:true}' \
+            > "${evidence_dir}/build.json"
+
+      - name: Upload sanitized build evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hbv4-${{ inputs.provider }}-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/hbv4-evidence
+          if-no-files-found: warn
+          retention-days: 90
+
+  cleanup_builder:
+    name: Cleanup ${{ inputs.provider }} builder
+    needs: [provision_builder, build_candidate]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: azure-ci
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout trusted cleanup action
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.control_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: ci/azure/actions/cleanup-runner
+          sparse-checkout-cone-mode: false
+
+      - name: Delete and verify builder VM and runner
+        if: ${{ always() }}
+        uses: ./ci/azure/actions/cleanup-runner
+        with:
+          provider: ${{ inputs.provider }}
+          runner_role: builder
+          provision_vm_name: ${{ needs.provision_builder.outputs.vm_name }}
+          provision_runner_id: ${{ needs.provision_builder.outputs.runner_id }}
+          azure_client_id: ${{ vars.AZURE_CLIENT_ID }}
+          azure_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+          azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          runner_resource_group: ${{ vars.AZURE_RUNNER_RESOURCE_GROUP }}
+          runner_app_client_id: ${{ vars.AZURE_RUNNER_APP_CLIENT_ID }}
+          runner_app_private_key: ${{ secrets.AZURE_RUNNER_APP_PRIVATE_KEY }}
+
+  provision_tester:
+    name: Provision fresh ${{ inputs.provider }} tester
+    needs: [build_candidate, cleanup_builder]
+    if: ${{ needs.build_candidate.result == 'success' && needs.cleanup_builder.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    environment: azure-ci
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    outputs:
+      runner_label: ${{ steps.provision.outputs.runner_label }}
+      vm_name: ${{ steps.provision.outputs.vm_name }}
+      runner_id: ${{ steps.provision.outputs.runner_id }}
+      provision_run_attempt: ${{ steps.provision.outputs.provision_run_attempt }}
+    steps:
+      - name: Checkout trusted runner control plane
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.control_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            ci/azure
+            scripts/hbv4/validate-host.sh
+            scripts/hbv4/validate-hbv4-tpls
+            scripts/hbv4/parallel_hdf5_shared.c
+          sparse-checkout-cone-mode: false
+
+      - name: Reauthorize live source before paid tester provisioning
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ inputs.event_name }}
+          EVENT_REF: ${{ inputs.event_ref }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          case "${EVENT_NAME}" in
+            pull_request_target)
+              [[ "${PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]
+              [[ "${EVENT_REF}" == "refs/pull/${PR_NUMBER}/head" ]]
+              live_pr="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+              jq -e \
+                --arg repository "${GITHUB_REPOSITORY}" \
+                --arg sha "${SOURCE_SHA}" \
+                --argjson number "${PR_NUMBER}" '
+                  .number == $number and .state == "open" and
+                  .head.repo.full_name == $repository and .head.sha == $sha and
+                  any(.labels[]?; .name == "ci: build HBv4 TPL")
+                ' <<< "${live_pr}" >/dev/null || {
+                  echo '::error::Live PR authorization changed before paid tester provisioning.'
+                  exit 1
+                }
+              ;;
+            workflow_dispatch)
+              [[ -z "${PR_NUMBER}" ]]
+              live_commit="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/commits/${SOURCE_SHA}")"
+              [[ "$(jq -r '.sha // empty' <<< "${live_commit}")" == "${SOURCE_SHA}" ]] || {
+                echo '::error::Manual source commit no longer resolves exactly.'
+                exit 1
+              }
+              ;;
+            *) exit 2 ;;
+          esac
+
+      - name: Provision tester JIT runner
+        id: provision
+        uses: ./ci/azure/actions/provision-hbv4-runner
+        with:
+          provider: ${{ inputs.provider }}
+          runner_role: tester
+          event_name: ${{ inputs.event_name }}
+          event_ref: ${{ inputs.event_ref }}
+          source_sha: ${{ inputs.source_sha }}
+          pr_number: ${{ inputs.pr_number }}
+          azure_client_id: ${{ vars.AZURE_CLIENT_ID }}
+          azure_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+          azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          foundation_resource_group: ${{ vars.AZURE_FOUNDATION_RESOURCE_GROUP }}
+          runner_resource_group: ${{ vars.AZURE_RUNNER_RESOURCE_GROUP }}
+          runner_vm_uami_client_id: ${{ vars.AZURE_RUNNER_VM_UAMI_CLIENT_ID }}
+          acr_name: ${{ vars.AZURE_ACR_NAME }}
+          # Match the reviewed earthflow-sim/GEOS procurement contract: the
+          # repository-level Default runner group has stable ID 1.
+          runner_group_id: '1'
+          runner_app_client_id: ${{ vars.AZURE_RUNNER_APP_CLIENT_ID }}
+          runner_app_private_key: ${{ secrets.AZURE_RUNNER_APP_PRIVATE_KEY }}
+
+  test_candidate:
+    name: Validate ${{ inputs.provider }} digest offline
+    needs: [build_candidate, provision_tester]
+    if: ${{ needs.build_candidate.result == 'success' && needs.provision_tester.result == 'success' && needs.provision_tester.outputs.provision_run_attempt == format('{0}', github.run_attempt) }}
+    runs-on: ${{ needs.provision_tester.outputs.runner_label }}
+    timeout-minutes: 45
+    environment: azure-ci
+    permissions: {}
+    outputs:
+      tested_digest: ${{ steps.test.outputs.tested_digest }}
+      evidence_sha256: ${{ steps.test.outputs.evidence_sha256 }}
+      validation_log_base64: ${{ steps.test.outputs.validation_log_base64 }}
+      trusted_validator_sha256: ${{ steps.test.outputs.trusted_validator_sha256 }}
+      trusted_source_sha256: ${{ steps.test.outputs.trusted_source_sha256 }}
+    steps:
+      # Deliberately no checkout, artifact action, OIDC permission, or token input.
+      - name: Pull exact digest and run network-disabled validation
+        id: test
+        env:
+          CANDIDATE_DIGEST: ${{ needs.build_candidate.outputs.candidate_digest }}
+          CANDIDATE_DIGEST_REFERENCE: ${{ needs.build_candidate.outputs.candidate_digest_reference }}
+          PROVIDER: ${{ inputs.provider }}
+          TMPDIR: /mnt/hbv4-local/container-tmp
+        run: |
+          set -euo pipefail
+          [[ "${CANDIDATE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "${CANDIDATE_DIGEST_REFERENCE}" == *@"${CANDIDATE_DIGEST}" ]]
+
+          trusted_validator='/opt/geos-ci/scripts/hbv4/validate-hbv4-tpls'
+          trusted_source='/opt/geos-ci/scripts/hbv4/parallel_hdf5_shared.c'
+          trusted_validator_sha256="$(sha256sum "${trusted_validator}" | awk '{print $1}')"
+          trusted_source_sha256="$(sha256sum "${trusted_source}" | awk '{print $1}')"
+          [[ "${trusted_validator_sha256}" =~ ^[0-9a-f]{64}$ ]]
+          [[ "${trusted_source_sha256}" =~ ^[0-9a-f]{64}$ ]]
+          evidence_file="${RUNNER_TEMP}/hbv4-container-validation.log"
+          {
+            printf 'trusted-validator-sha256=%s\n' "${trusted_validator_sha256}"
+            printf 'trusted-parallel-hdf5-source-sha256=%s\n' "${trusted_source_sha256}"
+            /opt/geos-ci/scripts/hbv4/validate-host.sh \
+              --instance-type Standard_HB176rs_v4 \
+              --compiler-flags 'target=zen4 -march=native -mtune=native' \
+              --writable-path "${GITHUB_WORKSPACE}"
+            echo 'trusted-host-validation=success'
+          } 2>&1 | tee "${evidence_file}"
+
+          docker pull "${CANDIDATE_DIGEST_REFERENCE}"
+          if ! docker image inspect \
+              --format '{{range .RepoDigests}}{{println .}}{{end}}' \
+              "${CANDIDATE_DIGEST_REFERENCE}" | \
+              grep -Fx -- "${CANDIDATE_DIGEST_REFERENCE}" >/dev/null; then
+            echo '::error::Docker did not materialize the requested candidate digest.'
+            exit 1
+          fi
+          candidate_registry="${CANDIDATE_DIGEST_REFERENCE%%/*}"
+          [[ "${candidate_registry}" =~ ^[a-z0-9]{5,50}\.azurecr\.io$ ]]
+          # The UAMI remains attached to the host by Azure, but the tester drops
+          # its cached Azure and Docker sessions before executing image content.
+          az account clear
+          docker logout "${candidate_registry}" >/dev/null
+
+          # The mount root is intentionally root-owned. Create test scratch
+          # below the sticky RAID-backed container temporary directory instead.
+          validation_scratch="${TMPDIR}/container-validation-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          install -d -m 0777 "${validation_scratch}"
+          docker run --rm \
+            --user 0:0 \
+            --entrypoint /bin/bash \
+            --workdir /work/hbv4-validation \
+            --read-only \
+            --network none \
+            --security-opt no-new-privileges \
+            --env BASH_ENV= \
+            --env ENV= \
+            --env LD_AUDIT= \
+            --env LD_PRELOAD= \
+            --shm-size 8g \
+            --ulimit memlock=-1:-1 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=8g \
+            --mount "type=bind,src=${validation_scratch},dst=/work/hbv4-validation" \
+            --mount 'type=bind,src=/opt/geos-ci/scripts/hbv4,dst=/trusted-validation,readonly' \
+            "${CANDIDATE_DIGEST_REFERENCE}" \
+            --noprofile --norc /trusted-validation/validate-hbv4-tpls \
+            --provider "${PROVIDER}" \
+            --scratch /work/hbv4-validation 2>&1 | tee -a "${evidence_file}"
+
+          evidence_size="$(wc -c < "${evidence_file}" | tr -d '[:space:]')"
+          if ! [[ "${evidence_size}" =~ ^[1-9][0-9]*$ ]] || (( evidence_size > 90000 )); then
+            echo '::error::Validation log is empty or exceeds the 90 KB transport limit.'
+            exit 1
+          fi
+          if grep -Eiq '(password|passwd|secret|token|api[_-]?key|authorization|cookie)[[:space:]]*[:=]|https?://[^/@[:space:]]+:[^/@[:space:]]+@' \
+              "${evidence_file}"; then
+            echo '::error::Validation log contains credential-like material and will not be transported.'
+            exit 1
+          fi
+
+          evidence_sha256="$(sha256sum "${evidence_file}" | awk '{print $1}')"
+          validation_log_base64="$(base64 -w 0 "${evidence_file}")"
+          [[ "${evidence_sha256}" =~ ^[0-9a-f]{64}$ ]]
+          {
+            echo "tested_digest=${CANDIDATE_DIGEST}"
+            echo "evidence_sha256=${evidence_sha256}"
+            echo "validation_log_base64=${validation_log_base64}"
+            echo "trusted_validator_sha256=${trusted_validator_sha256}"
+            echo "trusted_source_sha256=${trusted_source_sha256}"
+          } >> "${GITHUB_OUTPUT}"
+
+  cleanup_tester:
+    name: Cleanup ${{ inputs.provider }} tester
+    needs: [provision_tester, test_candidate]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: azure-ci
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout trusted cleanup action
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.control_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: ci/azure/actions/cleanup-runner
+          sparse-checkout-cone-mode: false
+
+      - name: Delete and verify tester VM and runner
+        if: ${{ always() }}
+        uses: ./ci/azure/actions/cleanup-runner
+        with:
+          provider: ${{ inputs.provider }}
+          runner_role: tester
+          provision_vm_name: ${{ needs.provision_tester.outputs.vm_name }}
+          provision_runner_id: ${{ needs.provision_tester.outputs.runner_id }}
+          azure_client_id: ${{ vars.AZURE_CLIENT_ID }}
+          azure_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+          azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          runner_resource_group: ${{ vars.AZURE_RUNNER_RESOURCE_GROUP }}
+          runner_app_client_id: ${{ vars.AZURE_RUNNER_APP_CLIENT_ID }}
+          runner_app_private_key: ${{ secrets.AZURE_RUNNER_APP_PRIVATE_KEY }}
+
+  finalize_candidate:
+    name: Promote exact ${{ inputs.provider }} digest
+    needs:
+      - provision_builder
+      - build_candidate
+      - cleanup_builder
+      - provision_tester
+      - test_candidate
+      - cleanup_tester
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: azure-ci
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    steps:
+      - name: Checkout trusted finalizer
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.control_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: ci/azure-images/scripts/finalize-hbv4-candidate.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Reauthorize live source before immutable promotion
+        id: live_source
+        if: >-
+          ${{ needs.build_candidate.result == 'success' &&
+              needs.cleanup_builder.result == 'success' &&
+              needs.test_candidate.result == 'success' &&
+              needs.cleanup_tester.result == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ inputs.event_name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == pull_request_target ]]; then
+            live_pr="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+            jq -e \
+              --arg repository "${GITHUB_REPOSITORY}" \
+              --arg sha "${SOURCE_SHA}" \
+              --argjson number "${PR_NUMBER}" '
+                .number == $number and .state == "open" and
+                .head.repo.full_name == $repository and .head.sha == $sha and
+                any(.labels[]?; .name == "ci: build HBv4 TPL")
+              ' <<< "${live_pr}" >/dev/null || {
+                echo '::error::PR head/label authorization changed; preserving candidate.'
+                exit 1
+              }
+          else
+            live_commit="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/${GITHUB_REPOSITORY}/commits/${SOURCE_SHA}")"
+            [[ "$(jq -r '.sha // empty' <<< "${live_commit}")" == "${SOURCE_SHA}" ]]
+          fi
+
+      - name: Login to Azure for exact-digest promotion
+        id: azure_login
+        if: ${{ steps.live_source.outcome == 'success' }}
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Promote exact tested digest in ACR
+        id: promote
+        if: ${{ steps.azure_login.outcome == 'success' }}
+        env:
+          ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+          CANDIDATE_REPOSITORY: ${{ needs.build_candidate.outputs.candidate_repository }}
+          CANDIDATE_DIGEST: ${{ needs.build_candidate.outputs.candidate_digest }}
+          TESTED_DIGEST: ${{ needs.test_candidate.outputs.tested_digest }}
+          PROVIDER: ${{ inputs.provider }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: ci/azure-images/scripts/finalize-hbv4-candidate.sh
+
+      - name: Write sanitized lifecycle evidence
+        if: ${{ always() }}
+        env:
+          PROVIDER: ${{ inputs.provider }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          CONTROL_SHA: ${{ inputs.control_sha }}
+          ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
+          BASE_DIGEST: ${{ needs.build_candidate.outputs.base_digest }}
+          CANDIDATE_REPOSITORY: ${{ needs.build_candidate.outputs.candidate_repository }}
+          CANDIDATE_DIGEST: ${{ needs.build_candidate.outputs.candidate_digest }}
+          TESTED_DIGEST: ${{ needs.test_candidate.outputs.tested_digest }}
+          TEST_EVIDENCE_SHA256: ${{ needs.test_candidate.outputs.evidence_sha256 }}
+          TEST_LOG_BASE64: ${{ needs.test_candidate.outputs.validation_log_base64 }}
+          TRUSTED_VALIDATOR_SHA256: ${{ needs.test_candidate.outputs.trusted_validator_sha256 }}
+          TRUSTED_SOURCE_SHA256: ${{ needs.test_candidate.outputs.trusted_source_sha256 }}
+          BUILD_RESULT: ${{ needs.build_candidate.result }}
+          CLEANUP_BUILDER_RESULT: ${{ needs.cleanup_builder.result }}
+          TEST_RESULT: ${{ needs.test_candidate.result }}
+          CLEANUP_TESTER_RESULT: ${{ needs.cleanup_tester.result }}
+          PROMOTE_OUTCOME: ${{ steps.promote.outcome }}
+        run: |
+          set -euo pipefail
+          evidence_dir="${RUNNER_TEMP}/hbv4-lifecycle-evidence"
+          install -d -m 0700 "${evidence_dir}"
+          [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${CONTROL_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${ACR_NAME}" =~ ^[a-z0-9]{5,50}$ ]]
+          if [[ -n "${TEST_LOG_BASE64}" ]]; then
+            printf '%s' "${TEST_LOG_BASE64}" | base64 --decode \
+              > "${evidence_dir}/container-validation.log"
+            actual_test_sha256="$(sha256sum "${evidence_dir}/container-validation.log" | awk '{print $1}')"
+            if [[ "${actual_test_sha256}" != "${TEST_EVIDENCE_SHA256}" ]]; then
+              echo '::error::Transported tester evidence failed its SHA-256 check.'
+              exit 1
+            fi
+          elif [[ "${TEST_RESULT}" == success ]]; then
+            echo '::error::Successful tester omitted its bounded validation log.'
+            exit 1
+          fi
+          if [[ "${BUILD_RESULT}" == success ]]; then
+            [[ "${BASE_DIGEST}" =~ ^geosx/ubuntu@sha256:[0-9a-f]{64}$ ]]
+          fi
+          if [[ "${TEST_RESULT}" == success ]]; then
+            [[ "${TRUSTED_VALIDATOR_SHA256}" =~ ^[0-9a-f]{64}$ ]]
+            [[ "${TRUSTED_SOURCE_SHA256}" =~ ^[0-9a-f]{64}$ ]]
+          fi
+          final_acr_registry="${ACR_NAME}.azurecr.io"
+          final_repository="geosx/ubuntu24.04-gcc13-hbv4-${PROVIDER}"
+          final_tag="sha-${SOURCE_SHA}"
+          final_digest=''
+          if [[ "${PROMOTE_OUTCOME}" == success ]]; then
+            final_digest="${CANDIDATE_DIGEST}"
+            [[ "${final_digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
+            final_reference="${final_acr_registry}/${final_repository}@${final_digest}"
+            {
+              printf '# Pull validated HBv4 %s image\n\n' "${PROVIDER}"
+              printf '```bash\n'
+              printf 'docker pull %s\n' "${final_reference}"
+              printf '```\n'
+            } > "${evidence_dir}/pull-instructions.md"
+            cat "${evidence_dir}/pull-instructions.md" >> "${GITHUB_STEP_SUMMARY}"
+          fi
+          jq -n \
+            --arg provider "${PROVIDER}" \
+            --arg tpl_source_sha "${SOURCE_SHA}" \
+            --arg control_sha "${CONTROL_SHA}" \
+            --arg base_digest "${BASE_DIGEST}" \
+            --arg candidate_repository "${CANDIDATE_REPOSITORY}" \
+            --arg candidate_digest "${CANDIDATE_DIGEST}" \
+            --arg tested_digest "${TESTED_DIGEST}" \
+            --arg test_evidence_sha256 "${TEST_EVIDENCE_SHA256}" \
+            --arg trusted_validator_sha256 "${TRUSTED_VALIDATOR_SHA256}" \
+            --arg trusted_source_sha256 "${TRUSTED_SOURCE_SHA256}" \
+            --arg final_acr_registry "${final_acr_registry}" \
+            --arg final_repository "${final_repository}" \
+            --arg final_tag "${final_tag}" \
+            --arg final_digest "${final_digest}" \
+            --arg build_result "${BUILD_RESULT}" \
+            --arg cleanup_builder_result "${CLEANUP_BUILDER_RESULT}" \
+            --arg test_result "${TEST_RESULT}" \
+            --arg cleanup_tester_result "${CLEANUP_TESTER_RESULT}" \
+            --arg promote_outcome "${PROMOTE_OUTCOME}" \
+            '{provider:$provider,tpl_source_sha:$tpl_source_sha,control_sha:$control_sha,base_digest:$base_digest,candidate_repository:$candidate_repository,candidate_digest:$candidate_digest,tested_digest:$tested_digest,test_evidence_sha256:$test_evidence_sha256,trusted_validator_sha256:$trusted_validator_sha256,trusted_parallel_hdf5_source_sha256:$trusted_source_sha256,final_acr:{registry:$final_acr_registry,repository:$final_repository,tag:$final_tag,digest:$final_digest},build_result:$build_result,cleanup_builder_result:$cleanup_builder_result,test_result:$test_result,cleanup_tester_result:$cleanup_tester_result,promote_outcome:$promote_outcome}' \
+            > "${evidence_dir}/lifecycle.json"
+
+      - name: Upload sanitized lifecycle evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hbv4-${{ inputs.provider }}-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/hbv4-lifecycle-evidence
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Require complete successful lifecycle
+        if: ${{ always() }}
+        env:
+          PROVISION_BUILDER_RESULT: ${{ needs.provision_builder.result }}
+          BUILD_RESULT: ${{ needs.build_candidate.result }}
+          CLEANUP_BUILDER_RESULT: ${{ needs.cleanup_builder.result }}
+          PROVISION_TESTER_RESULT: ${{ needs.provision_tester.result }}
+          TEST_RESULT: ${{ needs.test_candidate.result }}
+          CLEANUP_TESTER_RESULT: ${{ needs.cleanup_tester.result }}
+          PROMOTE_OUTCOME: ${{ steps.promote.outcome }}
+        run: |
+          set -euo pipefail
+          failed=false
+          for result in \
+            "${PROVISION_BUILDER_RESULT}" \
+            "${BUILD_RESULT}" \
+            "${CLEANUP_BUILDER_RESULT}" \
+            "${PROVISION_TESTER_RESULT}" \
+            "${TEST_RESULT}" \
+            "${CLEANUP_TESTER_RESULT}"; do
+            if [[ "${result}" != success ]]; then failed=true; fi
+          done
+          if [[ "${PROMOTE_OUTCOME}" != success ]]; then failed=true; fi
+          [[ "${failed}" == false ]]

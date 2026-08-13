@@ -12,6 +12,20 @@ spack:
   # Regular TPLs do not need views
   view: false
 
+  concretizer:
+    unify: true
+    reuse: false
+
+  # Override every lower-precedence user/site/default scope. HBv4 images use
+  # Spack's checksum-addressed public mirror for source archives only; binary
+  # reuse remains disabled here and by the install command's --no-cache flag.
+  mirrors::
+    spack-public:
+      url: https://mirror.spack.io
+      source: true
+      binary: false
+  upstreams:: {}
+
   # Include shared variants and versions
   include:
   - ../defaults.yaml
@@ -27,89 +41,30 @@ spack:
   # selector via the SPEC build-arg.
   # ---------------------------------------------------------------------------
   toolchains:
-    clang-19:
-      - spec: '%[virtuals=c]llvm@19+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@19+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13'
-        when: '%fortran'
-      - spec: '%openmpi'
-        when: '%mpi'
-    clang-20:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%[virtuals=c]llvm@20+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@20+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13'
-        when: '%fortran'
-      - spec: '%openmpi'
-        when: '%mpi'
-    clang-22:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%[virtuals=c]llvm@22+clang~flang~lld~lldb'
-        when: '%c'
-      - spec: '%[virtuals=cxx]llvm@22+clang~flang~lld~lldb'
-        when: '%cxx'
-      - spec: '%[virtuals=fortran]gcc@13'
-        when: '%fortran'
-      - spec: '%openmpi'
-        when: '%mpi'
-    gcc-12:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%c=gcc@12'
-        when: '%c'
-      - spec: '%cxx=gcc@12'
-        when: '%cxx'
-      - spec: '%fortran=gcc@12'
-        when: '%fortran'
-      - spec: '%openmpi %gcc@12'
-        when: '%mpi'
     gcc-13:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
+      - spec: "cflags=='-march=native -mtune=native'"
+      - spec: "cxxflags=='-march=native -mtune=native'"
+      - spec: "fflags=='-march=native -mtune=native'"
       - spec: '%c=gcc@13'
         when: '%c'
       - spec: '%cxx=gcc@13'
         when: '%cxx'
       - spec: '%fortran=gcc@13'
         when: '%fortran'
-      - spec: '%openmpi %gcc@13'
-        when: '%mpi'
-    gcc-14:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%c=gcc@14'
-        when: '%c'
-      - spec: '%cxx=gcc@14'
-        when: '%cxx'
-      - spec: '%fortran=gcc@14'
-        when: '%fortran'
-      - spec: '%openmpi %gcc@14'
-        when: '%mpi'
-    gcc-15:
-      - spec: cxxflags='-pthread'
-      - spec: cflags='-pthread'
-      - spec: '%c=gcc@15'
-        when: '%c'
-      - spec: '%cxx=gcc@15'
-        when: '%cxx'
-      - spec: '%fortran=gcc@15'
-        when: '%fortran'
-      - spec: '%openmpi %gcc@15'
+      - spec: '%openmpi@=5.0.10 %gcc@13'
         when: '%mpi'
 
   packages:
     all:
-      target: [x86_64]
+      target: [zen4]
 
     mpi:
       require:
       - openmpi@=5.0.10
+
+    hdf5:
+      require:
+      - '+mpi +shared'
 
     zlib-api:
       require:
@@ -242,23 +197,11 @@ spack:
       externals:
       - spec: netlib-blas@3.12.0
         prefix: /usr
-    # ---- OpenMPI: source-built in the image with the selected base compiler
+    # ---- OpenMPI: exact source-built HBv4 provider
     openmpi:
       buildable: false
       externals:
-      - spec: openmpi@=5.0.10 %clang@19
-        prefix: /opt/openmpi/5.0.10
-      - spec: openmpi@=5.0.10 %clang@20
-        prefix: /opt/openmpi/5.0.10
-      - spec: openmpi@=5.0.10 %clang@22
-        prefix: /opt/openmpi/5.0.10
-      - spec: openmpi@=5.0.10 %gcc@12
-        prefix: /opt/openmpi/5.0.10
       - spec: openmpi@=5.0.10 %gcc@13
-        prefix: /opt/openmpi/5.0.10
-      - spec: openmpi@=5.0.10 %gcc@14
-        prefix: /opt/openmpi/5.0.10
-      - spec: openmpi@=5.0.10 %gcc@15
         prefix: /opt/openmpi/5.0.10
     perl:
       buildable: false

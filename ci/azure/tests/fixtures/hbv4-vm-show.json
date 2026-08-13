@@ -1,0 +1,47 @@
+{
+  "name": "geos-hbv4-123456-1-openmpi-builder",
+  "location": "southcentralus",
+  "tags": {
+    "project": "GEOS",
+    "purpose": "hbv4-tpl-ci",
+    "provider": "openmpi",
+    "runnerRole": "builder",
+    "runnerInstanceKey": "openmpi-builder",
+    "runnerLabel": "geos-hbv4-123456-1-openmpi-builder",
+    "ttlHours": "6"
+  },
+  "identity": {
+    "type": "UserAssigned",
+    "userAssignedIdentities": {
+      "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/rg-geos-ci-foundation-scus/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-geos-runner-vm": {}
+    }
+  },
+  "hardwareProfile": {
+    "vmSize": "Standard_HB176rs_v4"
+  },
+  "storageProfile": {
+    "imageReference": {
+      "publisher": "microsoft-dsvm",
+      "offer": "ubuntu-hpc",
+      "sku": "2404",
+      "version": "24.04.2026070201",
+      "exactVersion": "24.04.2026070201"
+    },
+    "osDisk": {
+      "managedDisk": {
+        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-geos-ci-runners-scus/providers/Microsoft.Compute/disks/hbv4-os-disk"
+      },
+      "diskSizeGB": 128
+    }
+  },
+  "networkProfile": {
+    "networkInterfaces": [
+      {
+        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-geos-ci-runners-scus/providers/Microsoft.Network/networkInterfaces/hbv4-nic"
+      }
+    ]
+  },
+  "osProfile": {
+    "customData": "DO_NOT_LOG_VM_METADATA"
+  }
+}

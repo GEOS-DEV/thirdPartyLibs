@@ -1,0 +1,562 @@
+# TPL adaptation of the reviewed earthflow-sim/GEOS HBv4 lifecycle at
+# db82dd7dfcbd60f9bf206e3efb0c97cb3568f5fd. Provider-specific image inputs,
+# tags, and trusted validators are the only intended behavioral extensions.
+name: Provision HBv4 JIT runner
+description: Provision one fixed, private, six-hour HBv4 runner and wait for its exact JIT registration.
+
+inputs:
+  provider:
+    description: openmpi or mpich lifecycle owner.
+    required: true
+  runner_role:
+    description: builder or tester.
+    required: true
+  event_name:
+    description: workflow_dispatch or pull_request_target.
+    required: true
+  event_ref:
+    description: Canonical source event ref.
+    required: true
+  source_sha:
+    description: Exact same-repository source commit.
+    required: true
+  pr_number:
+    description: Pull request number, empty for workflow_dispatch.
+    required: false
+    default: ''
+  azure_client_id:
+    required: true
+  azure_tenant_id:
+    required: true
+  azure_subscription_id:
+    required: true
+  foundation_resource_group:
+    required: true
+  runner_resource_group:
+    required: true
+  runner_vm_uami_client_id:
+    description: Client ID matching the existing id-geos-runner-vm workload UAMI.
+    required: true
+  acr_name:
+    required: true
+  runner_group_id:
+    required: true
+  runner_app_client_id:
+    required: true
+  runner_app_private_key:
+    required: true
+
+outputs:
+  runner_label:
+    value: ${{ steps.identity.outputs.runner_label }}
+  vm_name:
+    value: ${{ steps.create_vm.outputs.vm_name }}
+  runner_id:
+    # Capture the registration at JIT creation, before any Azure operation can
+    # fail. Cleanup can therefore delete a pre-VM registration by exact ID.
+    value: ${{ steps.jit.outputs.runner_id }}
+  provision_run_attempt:
+    description: GitHub run attempt incorporated into the provisioned identity.
+    value: ${{ steps.identity.outputs.provision_run_attempt }}
+
+runs:
+  using: composite
+  steps:
+    - name: Validate lifecycle identity and fixed HBv4 contract
+      id: identity
+      shell: bash
+      env:
+        HBV4_PROVIDER: ${{ inputs.provider }}
+        HBV4_ROLE: ${{ inputs.runner_role }}
+        HBV4_EVENT_NAME: ${{ inputs.event_name }}
+        HBV4_EVENT_REF: ${{ inputs.event_ref }}
+        HBV4_SOURCE_SHA: ${{ inputs.source_sha }}
+        HBV4_PR_NUMBER: ${{ inputs.pr_number }}
+        HBV4_ACR_NAME: ${{ inputs.acr_name }}
+        HBV4_RUNNER_GROUP_ID: ${{ inputs.runner_group_id }}
+      run: |
+        set -euo pipefail
+
+        case "${HBV4_PROVIDER}" in openmpi|mpich) ;; *) echo '::error::Invalid provider.'; exit 2 ;; esac
+        case "${HBV4_ROLE}" in builder|tester) ;; *) echo '::error::Invalid runner role.'; exit 2 ;; esac
+        case "${HBV4_EVENT_NAME}" in workflow_dispatch|pull_request_target) ;;
+          *) echo '::error::This event cannot provision a paid runner.'; exit 2 ;;
+        esac
+        [[ "${HBV4_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo '::error::Invalid source SHA.'; exit 2; }
+        [[ "${HBV4_ACR_NAME}" =~ ^[a-z0-9]{5,50}$ ]] || { echo '::error::Invalid ACR name.'; exit 2; }
+        [[ "${HBV4_RUNNER_GROUP_ID}" =~ ^[1-9][0-9]*$ ]] || { echo '::error::Invalid runner group ID.'; exit 2; }
+        [[ "${GITHUB_RUN_ID}" =~ ^[1-9][0-9]*$ ]] || { echo '::error::Invalid GitHub run ID.'; exit 2; }
+        [[ "${GITHUB_RUN_ATTEMPT}" =~ ^[1-9][0-9]*$ ]] || { echo '::error::Invalid GitHub run attempt.'; exit 2; }
+        if [[ "${HBV4_EVENT_NAME}" == pull_request_target ]]; then
+          [[ "${HBV4_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]] || { echo '::error::Invalid PR number.'; exit 2; }
+          [[ "${HBV4_EVENT_REF}" == "refs/pull/${HBV4_PR_NUMBER}/head" ]] || { echo '::error::Invalid PR source ref.'; exit 2; }
+        elif [[ -n "${HBV4_PR_NUMBER}" ]]; then
+          echo '::error::workflow_dispatch must not carry a PR number.'
+          exit 2
+        fi
+
+        instance_key="${HBV4_PROVIDER}-${HBV4_ROLE}"
+        [[ "${instance_key}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || {
+          echo '::error::Runner instance key is not a canonical lowercase ASCII slug.'
+          exit 1
+        }
+
+        for helper in \
+          ci/azure/scripts/runner-names.sh \
+          ci/azure/scripts/render-runner-bootstrap.py \
+          ci/azure/scripts/runner-bootstrap.sh \
+          ci/azure/scripts/validate-created-hbv4-vm.sh \
+          ci/azure/scripts/setup-hbv4-local-nvme.sh \
+          ci/azure/scripts/probe-runner-bootstrap.sh \
+          scripts/hbv4/validate-host.sh \
+          scripts/hbv4/validate-hbv4-tpls \
+          scripts/hbv4/parallel_hdf5_shared.c; do
+          [[ -f "${GITHUB_WORKSPACE}/${helper}" ]] || {
+            echo "::error::Trusted runner helper is missing: ${helper}"
+            exit 1
+          }
+        done
+
+        identity_output="$(bash "${GITHUB_WORKSPACE}/ci/azure/scripts/runner-names.sh" \
+          "${GITHUB_RUN_ID}" "${GITHUB_RUN_ATTEMPT}" "${instance_key}")"
+        for field in runner_name runner_label vm_name log_blob_prefix; do
+          field_count="$(awk -F= -v field="${field}" '$1 == field { count += 1 } END { print count + 0 }' \
+            <<< "${identity_output}")"
+          field_value="$(awk -F= -v field="${field}" '$1 == field { sub(/^[^=]*=/, ""); print }' \
+            <<< "${identity_output}")"
+          if [[ "${field_count}" != 1 || -z "${field_value}" ]]; then
+            echo "::error::runner-names.sh did not emit exactly one nonempty ${field}."
+            exit 1
+          fi
+        done
+
+        expected_name="geos-hbv4-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${instance_key}"
+        (( ${#expected_name} <= 64 )) || { echo '::error::Runner identity exceeds Azure limit.'; exit 1; }
+        actual_runner_name="$(awk -F= '$1 == "runner_name" { sub(/^[^=]*=/, ""); print }' <<< "${identity_output}")"
+        actual_runner_label="$(awk -F= '$1 == "runner_label" { sub(/^[^=]*=/, ""); print }' <<< "${identity_output}")"
+        actual_vm_name="$(awk -F= '$1 == "vm_name" { sub(/^[^=]*=/, ""); print }' <<< "${identity_output}")"
+        if [[ "${actual_runner_name}" != "${expected_name}" ||
+              "${actual_runner_label}" != "${expected_name}" ||
+              "${actual_vm_name}" != "${expected_name}" ]]; then
+          echo "::error::runner-names.sh did not preserve the reconstructable lifecycle identity."
+          exit 1
+        fi
+        {
+          printf '%s\n' "${identity_output}"
+          echo "runner_instance_key=${instance_key}"
+          echo "provision_run_attempt=${GITHUB_RUN_ATTEMPT}"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: Azure login for control-plane provisioning
+      uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+      with:
+        client-id: ${{ inputs.azure_client_id }}
+        tenant-id: ${{ inputs.azure_tenant_id }}
+        subscription-id: ${{ inputs.azure_subscription_id }}
+
+    - name: Mint repository runner-administration token
+      id: runner_app_token
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      with:
+        client-id: ${{ inputs.runner_app_client_id }}
+        private-key: ${{ inputs.runner_app_private_key }}
+        owner: ${{ github.repository_owner }}
+        repositories: ${{ github.event.repository.name }}
+
+    - name: Resolve private subnet and pull-only workload identity
+      id: azure_ids
+      shell: bash
+      env:
+        HBV4_FOUNDATION_RG: ${{ inputs.foundation_resource_group }}
+        HBV4_EXPECTED_UAMI_CLIENT_ID: ${{ inputs.runner_vm_uami_client_id }}
+        HBV4_ACR_NAME: ${{ inputs.acr_name }}
+      run: |
+        set -euo pipefail
+        subnet_id="$(az network vnet subnet show \
+          --resource-group "${HBV4_FOUNDATION_RG}" \
+          --vnet-name vnet-geos-ci \
+          --name snet-runners \
+          --query id --output tsv --only-show-errors)"
+        uami_json="$(az identity show \
+          --resource-group "${HBV4_FOUNDATION_RG}" \
+          --name id-geos-runner-vm \
+          --output json --only-show-errors)"
+        uami_id="$(jq -r '.id // empty' <<< "${uami_json}")"
+        uami_client_id="$(jq -r '.clientId // empty' <<< "${uami_json}")"
+        uami_principal_id="$(jq -r '.principalId // empty' <<< "${uami_json}")"
+        if [[ -z "${subnet_id}" || -z "${uami_id}" ||
+              -z "${uami_principal_id}" ||
+              "${uami_client_id,,}" != "${HBV4_EXPECTED_UAMI_CLIENT_ID,,}" ]]; then
+          echo '::error::Private subnet or fixed workload UAMI does not match configuration.'
+          exit 1
+        fi
+
+        acr_json="$(az acr show --name "${HBV4_ACR_NAME}" \
+          --query '{id:id,roleAssignmentMode:roleAssignmentMode}' \
+          --output json --only-show-errors)"
+        acr_id="$(jq -r '.id // empty' <<< "${acr_json}")"
+        acr_role_assignment_mode="$(jq -r '.roleAssignmentMode // empty' <<< "${acr_json}")"
+        if [[ -z "${acr_id}" || "${acr_role_assignment_mode}" != 'LegacyRegistryPermissions' ]]; then
+          echo '::error::Shared ACR must use its existing legacy RBAC permission mode.'
+          exit 1
+        fi
+        # Do not inspect role assignments here: the narrowly scoped workflow
+        # identity intentionally lacks Microsoft.Authorization/roleAssignments/read.
+        # The guest bootstrap proves the fixed UAMI's AcrPull access with an
+        # operational ACR login before the JIT runner is brought online.
+        {
+          echo "subnet_id=${subnet_id}"
+          echo "uami_id=${uami_id}"
+          echo "uami_client_id=${uami_client_id}"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: Refuse overlapping provider VM or registration
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.runner_app_token.outputs.token }}
+        HBV4_RUNNERS_RG: ${{ inputs.runner_resource_group }}
+        HBV4_PROVIDER: ${{ inputs.provider }}
+        HBV4_EXPECTED_LABEL: ${{ steps.identity.outputs.runner_label }}
+      run: |
+        set -euo pipefail
+        vm_inventory="$(az vm list --resource-group "${HBV4_RUNNERS_RG}" --output json --only-show-errors)"
+        if ! jq -e 'type == "array"' <<< "${vm_inventory}" >/dev/null; then
+          echo '::error::Azure VM inventory is malformed.'
+          exit 1
+        fi
+        overlap_count="$(jq -r --arg provider "${HBV4_PROVIDER}" '[.[] |
+          select((.tags | type) == "object") |
+          select(.tags.project == "GEOS" and .tags.purpose == "hbv4-tpl-ci") |
+          select(.tags.provider == $provider)] | length' <<< "${vm_inventory}")"
+        if (( overlap_count != 0 )); then
+          echo "::error::Provider ${HBV4_PROVIDER} already owns an HBv4 VM; cleanup or janitor must reclaim it first."
+          exit 1
+        fi
+
+        runner_pages="$(gh api --paginate --slurp \
+          "repos/${GITHUB_REPOSITORY}/actions/runners?per_page=100")"
+        if ! jq -e '
+            type == "array" and
+            all(.[];
+              (.runners | type) == "array" and
+              all(.runners[]?;
+                (.id | type) == "number" and .id >= 1 and .id == (.id | floor) and
+                (.name | type) == "string" and (.name | length) > 0 and
+                (.labels | type) == "array" and
+                all(.labels[]?; (.name | type) == "string")
+              )
+            )
+          ' \
+            <<< "${runner_pages}" >/dev/null; then
+          echo '::error::GitHub runner inventory is malformed.'
+          exit 1
+        fi
+        provider_label_pattern="^geos-hbv4-[1-9][0-9]*-[1-9][0-9]*-${HBV4_PROVIDER}-(builder|tester)$"
+        if jq -e --arg expected "${HBV4_EXPECTED_LABEL}" --arg regex "${provider_label_pattern}" '
+            any(.[].runners[]?;
+              (.name | test($regex)) or
+              any(.labels[]?; .name == $expected or (.name | test($regex))))
+            ' <<< "${runner_pages}" >/dev/null; then
+          echo "::error::Provider ${HBV4_PROVIDER} already owns an HBv4 runner registration; cleanup or janitor must reclaim it first."
+          exit 1
+        fi
+
+    - name: Generate exact-label single-use JIT configuration
+      id: jit
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.runner_app_token.outputs.token }}
+        HBV4_JIT_NAME: ${{ steps.identity.outputs.runner_name }}
+        HBV4_JIT_LABEL: ${{ steps.identity.outputs.runner_label }}
+        HBV4_RUNNER_GROUP_ID: ${{ inputs.runner_group_id }}
+      run: |
+        set -euo pipefail
+        response="$(gh api --method POST \
+          -H 'Accept: application/vnd.github+json' \
+          "repos/${GITHUB_REPOSITORY}/actions/runners/generate-jitconfig" \
+          -f "name=${HBV4_JIT_NAME}" \
+          -F "runner_group_id=${HBV4_RUNNER_GROUP_ID}" \
+          -f "labels[]=${HBV4_JIT_LABEL}" \
+          -f 'work_folder=_work')"
+        encoded="$(jq -r '.encoded_jit_config // empty' <<< "${response}")"
+        runner_id="$(jq -r '.runner.id // empty' <<< "${response}")"
+        if [[ -z "${encoded}" ]] || ! [[ "${runner_id}" =~ ^[1-9][0-9]*$ ]] ||
+           ! jq -e \
+              --arg name "${HBV4_JIT_NAME}" \
+              --arg label "${HBV4_JIT_LABEL}" '
+                (.runner.id | type) == "number" and
+                .runner.id >= 1 and .runner.id == (.runner.id | floor) and
+                .runner.name == $name and
+                ([.runner.labels[]? | select(.name == $label)] | length) == 1
+              ' <<< "${response}" >/dev/null; then
+          echo '::error::GitHub returned an incomplete or mismatched JIT runner configuration.'
+          exit 1
+        fi
+        echo "::add-mask::${encoded}"
+        {
+          echo "encoded=${encoded}"
+          echo "runner_id=${runner_id}"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: Render reviewed custom data
+      id: bootstrap
+      shell: bash
+      env:
+        RUNNER_ENCODED_JITCONFIG: ${{ steps.jit.outputs.encoded }}
+        BOOTSTRAP_IDENTITY: ${{ steps.identity.outputs.vm_name }}
+        ACR_NAME: ${{ inputs.acr_name }}
+        RUNNER_VM_UAMI_CLIENT_ID: ${{ steps.azure_ids.outputs.uami_client_id }}
+        RUNNER_STORAGE_PROFILE: hbv4-nvme-raid0
+      run: |
+        set -euo pipefail
+        storage_helper="${GITHUB_WORKSPACE}/ci/azure/scripts/setup-hbv4-local-nvme.sh"
+        host_validator="${GITHUB_WORKSPACE}/scripts/hbv4/validate-host.sh"
+        container_validator="${GITHUB_WORKSPACE}/scripts/hbv4/validate-hbv4-tpls"
+        parallel_hdf5_source="${GITHUB_WORKSPACE}/scripts/hbv4/parallel_hdf5_shared.c"
+        STORAGE_HELPER_SHA256="$(sha256sum "${storage_helper}" | awk '{print $1}')"
+        STORAGE_HELPER_GZIP_BASE64="$(gzip -n -9 -c "${storage_helper}" | base64 -w 0)"
+        HOST_VALIDATOR_SHA256="$(sha256sum "${host_validator}" | awk '{print $1}')"
+        HOST_VALIDATOR_GZIP_BASE64="$(gzip -n -9 -c "${host_validator}" | base64 -w 0)"
+        CONTAINER_VALIDATOR_SHA256="$(sha256sum "${container_validator}" | awk '{print $1}')"
+        CONTAINER_VALIDATOR_GZIP_BASE64="$(gzip -n -9 -c "${container_validator}" | base64 -w 0)"
+        PARALLEL_HDF5_SOURCE_SHA256="$(sha256sum "${parallel_hdf5_source}" | awk '{print $1}')"
+        PARALLEL_HDF5_SOURCE_GZIP_BASE64="$(gzip -n -9 -c "${parallel_hdf5_source}" | base64 -w 0)"
+        export STORAGE_HELPER_SHA256 STORAGE_HELPER_GZIP_BASE64
+        export HOST_VALIDATOR_SHA256 HOST_VALIDATOR_GZIP_BASE64
+        export CONTAINER_VALIDATOR_SHA256 CONTAINER_VALIDATOR_GZIP_BASE64
+        export PARALLEL_HDF5_SOURCE_SHA256 PARALLEL_HDF5_SOURCE_GZIP_BASE64
+        export RUNNER_VERSION='2.335.1'
+        export RUNNER_TARBALL_SHA256='4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8cf'
+
+        output="${RUNNER_TEMP}/${BOOTSTRAP_IDENTITY}-bootstrap.sh"
+        python3 "${GITHUB_WORKSPACE}/ci/azure/scripts/render-runner-bootstrap.py" \
+          "${GITHUB_WORKSPACE}/ci/azure/scripts/runner-bootstrap.sh" "${output}"
+        chmod 0600 "${output}"
+        echo "custom_data=${output}" >> "${GITHUB_OUTPUT}"
+
+    - name: Create fixed paid VM from the authorized source
+      id: create_vm
+      shell: bash
+      env:
+        HBV4_EVENT_NAME: ${{ inputs.event_name }}
+        HBV4_EVENT_REF: ${{ inputs.event_ref }}
+        HBV4_SOURCE_SHA: ${{ inputs.source_sha }}
+        HBV4_PR_NUMBER: ${{ inputs.pr_number }}
+        HBV4_PROVIDER: ${{ inputs.provider }}
+        HBV4_ROLE: ${{ inputs.runner_role }}
+        HBV4_VM_NAME: ${{ steps.identity.outputs.vm_name }}
+        HBV4_JIT_LABEL: ${{ steps.identity.outputs.runner_label }}
+        HBV4_INSTANCE_KEY: ${{ steps.identity.outputs.runner_instance_key }}
+        HBV4_LOG_BLOB_PREFIX: ${{ steps.identity.outputs.log_blob_prefix }}
+        HBV4_RUNNERS_RG: ${{ inputs.runner_resource_group }}
+        HBV4_SUBNET_ID: ${{ steps.azure_ids.outputs.subnet_id }}
+        HBV4_UAMI_ID: ${{ steps.azure_ids.outputs.uami_id }}
+        HBV4_CUSTOM_DATA: ${{ steps.bootstrap.outputs.custom_data }}
+      run: |
+        set -euo pipefail
+        # As in the GEOS runtime-image lifecycle, source authorization belongs
+        # to the calling workflow and its read-only GITHUB_TOKEN. This composite
+        # keeps the runner-administration App token limited to runner APIs and
+        # revalidates only the prepared event contract at the paid boundary.
+        case "${HBV4_EVENT_NAME}" in
+          pull_request_target)
+            [[ "${HBV4_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]
+            [[ "${HBV4_EVENT_REF}" == "refs/pull/${HBV4_PR_NUMBER}/head" ]]
+            [[ "${HBV4_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+            ;;
+          workflow_dispatch)
+            [[ -z "${HBV4_PR_NUMBER}" ]]
+            [[ "${HBV4_EVENT_REF}" == refs/heads/* ]]
+            [[ "${HBV4_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+            ;;
+          *) exit 2 ;;
+        esac
+
+        readonly VM_SIZE='Standard_HB176rs_v4'
+        readonly VM_IMAGE='microsoft-dsvm:ubuntu-hpc:2404:24.04.2026070201'
+        readonly LOCATION='southcentralus'
+        created_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        az vm create \
+          --resource-group "${HBV4_RUNNERS_RG}" \
+          --name "${HBV4_VM_NAME}" \
+          --location "${LOCATION}" \
+          --image "${VM_IMAGE}" \
+          --size "${VM_SIZE}" \
+          --subnet "${HBV4_SUBNET_ID}" \
+          --public-ip-address '' \
+          --nsg '' \
+          --accelerated-networking true \
+          --assign-identity "${HBV4_UAMI_ID}" \
+          --admin-username azureci \
+          --generate-ssh-keys \
+          --os-disk-size-gb 128 \
+          --os-disk-delete-option Delete \
+          --nic-delete-option Delete \
+          --custom-data "${HBV4_CUSTOM_DATA}" \
+          --tags \
+            project=GEOS \
+            purpose=hbv4-tpl-ci \
+            provider="${HBV4_PROVIDER}" \
+            runnerRole="${HBV4_ROLE}" \
+            githubRunId="${GITHUB_RUN_ID}" \
+            runAttempt="${GITHUB_RUN_ATTEMPT}" \
+            runnerInstanceKey="${HBV4_INSTANCE_KEY}" \
+            runnerLabel="${HBV4_JIT_LABEL}" \
+            logBlobPrefix="${HBV4_LOG_BLOB_PREFIX}" \
+            sourceSha="${HBV4_SOURCE_SHA}" \
+            createdAtUtc="${created_at}" \
+            ttlHours=6 \
+          --only-show-errors >/dev/null
+
+        # Validate the unprojected Azure response. The shared helper and its
+        # realistic fixture therefore exercise the same case-sensitive Compute
+        # schema keys, including `storageProfile.osDisk.diskSizeGB`.
+        vm_contract="$(az vm show --resource-group "${HBV4_RUNNERS_RG}" --name "${HBV4_VM_NAME}" \
+          --output json --only-show-errors)"
+        if ! bash "${GITHUB_WORKSPACE}/ci/azure/scripts/validate-created-hbv4-vm.sh" \
+            "${HBV4_VM_NAME}" "${HBV4_PROVIDER}" "${HBV4_ROLE}" \
+            "${HBV4_INSTANCE_KEY}" "${HBV4_JIT_LABEL}" "${HBV4_UAMI_ID}" \
+            <<< "${vm_contract}"; then
+          exit 1
+        fi
+        nic_id="$(jq -r '.networkProfile.networkInterfaces[0].id // empty' \
+          <<< "${vm_contract}")"
+        os_disk_id="$(jq -r '.storageProfile.osDisk.managedDisk.id // empty' \
+          <<< "${vm_contract}")"
+        [[ -n "${nic_id}" && -n "${os_disk_id}" ]] || {
+          echo '::error::Azure VM omitted its exact NIC or OS disk identity.'
+          exit 1
+        }
+        nic_contract="$(az network nic show --ids "${nic_id}" \
+          --query '{subnet:ipConfigurations[0].subnet.id,publicIp:ipConfigurations[0].publicIPAddress.id,nsg:networkSecurityGroup.id,accelerated:enableAcceleratedNetworking}' \
+          --output json --only-show-errors)"
+        jq -e --arg subnet_id "${HBV4_SUBNET_ID}" '
+          (.subnet | ascii_downcase) == ($subnet_id | ascii_downcase) and
+          .publicIp == null and .nsg == null and .accelerated == true
+          ' <<< "${nic_contract}" >/dev/null || {
+          echo '::error::Azure NIC is not private, accelerated, and attached to the fixed subnet.'
+          exit 1
+        }
+        for child_id in "${nic_id}" "${os_disk_id}"; do
+          az tag create --resource-id "${child_id}" --tags \
+            project=GEOS \
+            purpose=hbv4-tpl-ci \
+            provider="${HBV4_PROVIDER}" \
+            runnerRole="${HBV4_ROLE}" \
+            githubRunId="${GITHUB_RUN_ID}" \
+            runAttempt="${GITHUB_RUN_ATTEMPT}" \
+            runnerInstanceKey="${HBV4_INSTANCE_KEY}" \
+            runnerLabel="${HBV4_JIT_LABEL}" \
+            logBlobPrefix="${HBV4_LOG_BLOB_PREFIX}" \
+            createdAtUtc="${created_at}" \
+            ttlHours=6 \
+            --only-show-errors >/dev/null
+        done
+        echo "vm_name=${HBV4_VM_NAME}" >> "${GITHUB_OUTPUT}"
+
+    - name: Require exact JIT runner online
+      id: health
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.runner_app_token.outputs.token }}
+        HBV4_JIT_ID: ${{ steps.jit.outputs.runner_id }}
+        HBV4_JIT_NAME: ${{ steps.identity.outputs.runner_name }}
+        HBV4_JIT_LABEL: ${{ steps.identity.outputs.runner_label }}
+        HBV4_RUNNERS_RG: ${{ inputs.runner_resource_group }}
+        HBV4_VM_NAME: ${{ steps.create_vm.outputs.vm_name }}
+      run: |
+        set -euo pipefail
+
+        [[ "${HBV4_JIT_ID}" =~ ^[1-9][0-9]*$ ]] || {
+          echo '::error::JIT runner ID is missing or invalid.'
+          exit 1
+        }
+
+        # The reviewed guest probe exposes only credential-free state and
+        # sanitized diagnostics. Run it once so terminal first-boot failures are
+        # surfaced promptly while GitHub remains the authoritative online check.
+        probe_guest_bootstrap() {
+          local guest_probe_script probe_output probe_status
+          guest_probe_script="$(<"${GITHUB_WORKSPACE}/ci/azure/scripts/probe-runner-bootstrap.sh")"
+          set +e
+          probe_output="$(timeout --signal=TERM --kill-after=10s 420s \
+            az vm run-command invoke \
+              --resource-group "${HBV4_RUNNERS_RG}" \
+              --name "${HBV4_VM_NAME}" \
+              --command-id RunShellScript \
+              --scripts "${guest_probe_script}" \
+              --query 'value[0].message' \
+              --output tsv \
+              --only-show-errors 2>/dev/null)"
+          probe_status=$?
+          set -e
+          if (( probe_status != 0 )); then
+            echo "Guest bootstrap monitor unavailable or timed out (${probe_status}); continuing bounded GitHub polling."
+            return 2
+          fi
+          if grep -q 'GEOS_BOOTSTRAP_STATE=terminal' <<< "${probe_output}"; then
+            echo '::group::Sanitized terminal guest-bootstrap diagnostics'
+            printf '%s\n' "${probe_output}"
+            echo '::endgroup::'
+            return 1
+          fi
+          if grep -Eq 'GEOS_BOOTSTRAP_STATE=(handoff|inconclusive)' <<< "${probe_output}"; then
+            return 0
+          fi
+          echo 'Guest bootstrap monitor returned no recognized state; continuing bounded GitHub polling.'
+          return 2
+        }
+
+        deadline=$(( $(date +%s) + 900 ))
+        attempt=0
+        guest_probe_pending=true
+        while (( $(date +%s) < deadline )); do
+          attempt=$(( attempt + 1 ))
+          pages="$(gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/actions/runners?per_page=100" 2>/dev/null || true)"
+          if [[ -n "${pages}" ]] && jq -e \
+              'type == "array" and all(.[]; (.runners | type) == "array")' \
+              <<< "${pages}" >/dev/null 2>&1; then
+            matches="$(jq -c --argjson id "${HBV4_JIT_ID}" \
+              '[.[].runners[]? | select(.id == $id)]' <<< "${pages}")"
+            count="$(jq -r 'length' <<< "${matches}")"
+            if (( count > 1 )); then
+              echo "::error::Multiple GitHub runner registrations have JIT ID ${HBV4_JIT_ID}."
+              exit 1
+            fi
+            if (( count == 1 )); then
+              observed_id="$(jq -r '.[0].id' <<< "${matches}")"
+              named="$(jq -r --arg name "${HBV4_JIT_NAME}" '.[0].name == $name' <<< "${matches}")"
+              online="$(jq -r '.[0].status == "online"' <<< "${matches}")"
+              labelled="$(jq -r --arg label "${HBV4_JIT_LABEL}" \
+                'any(.[0].labels[]?; .name == $label)' <<< "${matches}")"
+              echo "attempt ${attempt}: id=${observed_id} name_match=${named} status_online=${online} label_match=${labelled}"
+              if [[ "${named}" == true && "${online}" == true &&
+                    "${labelled}" == true && "${observed_id}" == "${HBV4_JIT_ID}" ]]; then
+                echo "Runner ${HBV4_JIT_NAME} (${HBV4_JIT_ID}) is online with ${HBV4_JIT_LABEL}."
+                exit 0
+              fi
+            else
+              echo "attempt ${attempt}: runner ID ${HBV4_JIT_ID} not yet registered"
+            fi
+          else
+            echo "attempt ${attempt}: GitHub runner inventory unavailable"
+          fi
+
+          if [[ "${guest_probe_pending}" == true ]]; then
+            guest_probe_pending=false
+            if probe_guest_bootstrap; then
+              :
+            else
+              probe_status=$?
+              if (( probe_status == 1 )); then
+                echo "::error::VM ${HBV4_VM_NAME} reached a terminal guest-bootstrap failure."
+                exit 1
+              fi
+            fi
+          fi
+          sleep 15
+        done
+
+        echo "::error::Runner ${HBV4_JIT_NAME} (${HBV4_JIT_ID}) did not become online with label ${HBV4_JIT_LABEL} within 15 minutes."
+        exit 1

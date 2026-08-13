@@ -1,0 +1,220 @@
+name: Build HBv4 TPL images
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Full 40-character commit SHA from this repository to build
+        required: true
+        type: string
+      provider:
+        description: MPI provider image(s) to build
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - openmpi
+          - mpich
+  pull_request_target:
+    branches:
+      - earthflowAI
+    types: [labeled]
+
+permissions: {}
+
+concurrency:
+  group: hbv4-tpls-${{ github.repository }}-${{ github.event.pull_request.number || inputs.source_sha || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Authorize exact source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      authorized: ${{ steps.source.outputs.authorized }}
+      source_sha: ${{ steps.source.outputs.source_sha }}
+      providers: ${{ steps.source.outputs.providers }}
+      event_name: ${{ steps.source.outputs.event_name }}
+      event_ref: ${{ steps.source.outputs.event_ref }}
+      pr_number: ${{ steps.source.outputs.pr_number }}
+    steps:
+      # Provisioning uses the workflow's trusted control revision rather than
+      # the requested TPL source. Exercise that same revision before any paid
+      # VM can be created so Azure response-schema regressions fail cheaply.
+      - name: Checkout trusted HBv4 control-plane tests
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            .github/workflows
+            ci/azure
+            docker/tpl-ubuntu.Dockerfile
+            docker/ubuntu-hbv4-openmpi-spack.yaml
+            docker/ubuntu-hbv4-mpich-spack.yaml
+            scripts/hbv4
+          sparse-checkout-cone-mode: false
+
+      - name: Validate trusted HBv4 control plane
+        run: |
+          set -euo pipefail
+          for test_script in ci/azure/tests/test-*.sh; do
+            bash "${test_script}"
+          done
+          python3 ci/azure/tests/test-render-runner-bootstrap.py
+
+      - name: Validate trigger and live source identity
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_LABEL: ${{ github.event.label.name }}
+          EVENT_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          DISPATCH_SOURCE_SHA: ${{ inputs.source_sha }}
+          DISPATCH_PROVIDER: ${{ inputs.provider }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          authorized=false
+          source_sha=''
+          providers='[]'
+          event_ref=''
+          pr_number=''
+
+          case "${EVENT_NAME}" in
+            workflow_dispatch)
+              if [[ "${GITHUB_REF}" != "refs/heads/${DEFAULT_BRANCH}" ]]; then
+                echo '::error::Manual HBv4 control code must run from the repository default branch.'
+                exit 1
+              fi
+              if ! [[ "${DISPATCH_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+                echo '::error::source_sha must be exactly 40 lowercase hexadecimal characters.'
+                exit 1
+              fi
+              case "${DISPATCH_PROVIDER}" in
+                both) providers='["openmpi","mpich"]' ;;
+                openmpi) providers='["openmpi"]' ;;
+                mpich) providers='["mpich"]' ;;
+                *) echo '::error::provider must be both, openmpi, or mpich.'; exit 1 ;;
+              esac
+
+              commit_json="$(gh api \
+                -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/commits/${DISPATCH_SOURCE_SHA}")"
+              live_sha="$(jq -r '.sha // empty' <<< "${commit_json}")"
+              if [[ "${live_sha}" != "${DISPATCH_SOURCE_SHA}" ]]; then
+                echo '::error::source_sha did not resolve to that exact repository commit.'
+                exit 1
+              fi
+              authorized=true
+              source_sha="${DISPATCH_SOURCE_SHA}"
+              event_ref="${GITHUB_REF}"
+              ;;
+
+            pull_request_target)
+              # Other labels are deliberate no-ops, not authorization failures.
+              if [[ "${EVENT_LABEL}" != 'ci: build HBv4 TPL' ]]; then
+                echo "Ignoring unrelated label '${EVENT_LABEL}'."
+              else
+                if ! [[ "${EVENT_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]] ||
+                   ! [[ "${EVENT_HEAD_SHA}" =~ ^[0-9a-f]{40}$ ]] ||
+                   [[ "${EVENT_HEAD_REPOSITORY}" != "${GITHUB_REPOSITORY}" ]]; then
+                  echo '::error::Only canonical same-repository pull requests can build HBv4 images.'
+                  exit 1
+                fi
+
+                live_pr="$(gh api \
+                  -H 'Accept: application/vnd.github+json' \
+                  "repos/${GITHUB_REPOSITORY}/pulls/${EVENT_PR_NUMBER}")"
+                if ! jq -e \
+                    --arg repository "${GITHUB_REPOSITORY}" \
+                    --arg sha "${EVENT_HEAD_SHA}" \
+                    --argjson number "${EVENT_PR_NUMBER}" '
+                      .number == $number and
+                      .state == "open" and
+                      .head.repo.full_name == $repository and
+                      .head.sha == $sha and
+                      any(.labels[]?; .name == "ci: build HBv4 TPL")
+                    ' <<< "${live_pr}" >/dev/null; then
+                  echo '::error::The PR is closed, forked, stale, or no longer has the exact HBv4 build label.'
+                  exit 1
+                fi
+
+                authorized=true
+                source_sha="${EVENT_HEAD_SHA}"
+                providers='["openmpi","mpich"]'
+                event_ref="refs/pull/${EVENT_PR_NUMBER}/head"
+                pr_number="${EVENT_PR_NUMBER}"
+              fi
+              ;;
+
+            *)
+              echo "::error::Unsupported event ${EVENT_NAME}."
+              exit 1
+              ;;
+          esac
+
+          {
+            echo "authorized=${authorized}"
+            echo "source_sha=${source_sha}"
+            echo "providers=${providers}"
+            echo "event_name=${EVENT_NAME}"
+            echo "event_ref=${event_ref}"
+            echo "pr_number=${pr_number}"
+          } >> "${GITHUB_OUTPUT}"
+
+  providers:
+    name: ${{ matrix.provider }} lifecycle
+    needs: authorize
+    if: ${{ needs.authorize.outputs.authorized == 'true' }}
+    # A reusable workflow cannot elevate above its caller. Grant only the union
+    # needed by its jobs; the called workflow narrows this per job.
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        provider: ${{ fromJSON(needs.authorize.outputs.providers) }}
+    uses: ./.github/workflows/_docker_build_tpls_hbv4_provider.yml
+    with:
+      provider: ${{ matrix.provider }}
+      source_sha: ${{ needs.authorize.outputs.source_sha }}
+      control_sha: ${{ github.sha }}
+      event_name: ${{ needs.authorize.outputs.event_name }}
+      event_ref: ${{ needs.authorize.outputs.event_ref }}
+      pr_number: ${{ needs.authorize.outputs.pr_number }}
+    secrets: inherit
+
+  hbv4_tpl_result:
+    name: HBv4 TPL lifecycle result
+    needs: [authorize, providers]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require every authorized provider lifecycle
+        env:
+          AUTHORIZED: ${{ needs.authorize.outputs.authorized }}
+          AUTHORIZE_RESULT: ${{ needs.authorize.result }}
+          PROVIDERS_RESULT: ${{ needs.providers.result }}
+        run: |
+          set -euo pipefail
+          [[ "${AUTHORIZE_RESULT}" == 'success' ]]
+          if [[ "${AUTHORIZED}" == 'true' ]]; then
+            [[ "${PROVIDERS_RESULT}" == 'success' ]]
+          else
+            echo 'No HBv4 build was requested by this event.'
+          fi

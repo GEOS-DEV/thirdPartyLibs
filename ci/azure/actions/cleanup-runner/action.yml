@@ -1,0 +1,627 @@
+# TPL adaptation of the retrying, fail-closed earthflow-sim/GEOS teardown at
+# db82dd7dfcbd60f9bf206e3efb0c97cb3568f5fd, extended with provider labels.
+name: Cleanup HBv4 JIT runner
+description: Resolve one exact provider/role runner, delete its VM, and verify its GitHub registration is absent.
+
+inputs:
+  provider:
+    required: true
+  runner_role:
+    required: true
+  provision_vm_name:
+    required: false
+    default: ''
+  provision_runner_id:
+    required: false
+    default: ''
+  azure_client_id:
+    required: true
+  azure_tenant_id:
+    required: true
+  azure_subscription_id:
+    required: true
+  runner_resource_group:
+    required: true
+  runner_app_client_id:
+    required: true
+  runner_app_private_key:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate cleanup boundary
+      if: ${{ always() }}
+      shell: bash
+      env:
+        PROVIDER: ${{ inputs.provider }}
+        RUNNER_ROLE: ${{ inputs.runner_role }}
+        VM_NAME: ${{ inputs.provision_vm_name }}
+        RUNNER_ID: ${{ inputs.provision_runner_id }}
+      run: |
+        set -euo pipefail
+        case "${PROVIDER}" in openmpi|mpich) ;; *) exit 2 ;; esac
+        case "${RUNNER_ROLE}" in builder|tester) ;; *) exit 2 ;; esac
+        pattern="^geos-hbv4-${GITHUB_RUN_ID}-([1-9][0-9]*)-${PROVIDER}-${RUNNER_ROLE}$"
+        [[ -z "${VM_NAME}" || "${VM_NAME}" =~ ${pattern} ]] || {
+          echo '::error::Provisioned VM output is outside this run/provider/role boundary.'
+          exit 2
+        }
+        [[ -z "${RUNNER_ID}" || "${RUNNER_ID}" =~ ^[1-9][0-9]*$ ]] || {
+          echo '::error::Provisioned runner ID is invalid.'
+          exit 2
+        }
+
+    - name: Azure login for teardown
+      if: ${{ always() }}
+      uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+      with:
+        client-id: ${{ inputs.azure_client_id }}
+        tenant-id: ${{ inputs.azure_tenant_id }}
+        subscription-id: ${{ inputs.azure_subscription_id }}
+
+    - name: Delete and verify exact Azure VM
+      if: ${{ always() }}
+      shell: bash
+      env:
+        PROVIDER: ${{ inputs.provider }}
+        RUNNER_ROLE: ${{ inputs.runner_role }}
+        PROVISION_VM_NAME: ${{ inputs.provision_vm_name }}
+        RUNNERS_RG: ${{ inputs.runner_resource_group }}
+        AZURE_CLIENT_ID: ${{ inputs.azure_client_id }}
+        AZURE_TENANT_ID: ${{ inputs.azure_tenant_id }}
+        AZURE_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+      run: |
+        set -euo pipefail
+        case "${PROVIDER}" in openmpi|mpich) ;; *) exit 2 ;; esac
+        case "${RUNNER_ROLE}" in builder|tester) ;; *) exit 2 ;; esac
+        pattern="^geos-hbv4-${GITHUB_RUN_ID}-([1-9][0-9]*)-${PROVIDER}-${RUNNER_ROLE}$"
+
+        if ! az account show --only-show-errors >/dev/null 2>&1; then
+          [[ -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" &&
+             -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]] || {
+            echo '::error::No Azure session or job OIDC request credential is available.'
+            exit 1
+          }
+          oidc="$(curl --fail --silent --show-error \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" | jq -r '.value // empty')"
+          [[ -n "${oidc}" ]] || { echo '::error::OIDC endpoint returned no token.'; exit 1; }
+          az login --service-principal \
+            --username "${AZURE_CLIENT_ID}" \
+            --tenant "${AZURE_TENANT_ID}" \
+            --federated-token "${oidc}" \
+            --only-show-errors >/dev/null
+          az account set --subscription "${AZURE_SUBSCRIPTION_ID}" --only-show-errors
+        fi
+
+        inventory="$(az vm list --resource-group "${RUNNERS_RG}" --output json --only-show-errors)"
+        jq -e 'type == "array"' <<< "${inventory}" >/dev/null || {
+          echo '::error::Azure VM inventory is malformed.'
+          exit 1
+        }
+
+        derived_vm_name="geos-hbv4-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${PROVIDER}-${RUNNER_ROLE}"
+        vm_name="${PROVISION_VM_NAME}"
+        if [[ -n "${vm_name}" ]]; then
+          [[ "${vm_name}" =~ ${pattern} ]] || exit 2
+          provision_attempt="${BASH_REMATCH[1]}"
+          exact="$(jq -c --arg name "${vm_name}" '[.[] | select(.name == $name)]' <<< "${inventory}")"
+          count="$(jq -r 'length' <<< "${exact}")"
+          (( count <= 1 )) || { echo '::error::Duplicate exact Azure VM names.'; exit 1; }
+          if (( count == 1 )); then
+            if ! jq -e \
+                --arg run "${GITHUB_RUN_ID}" \
+                --arg attempt "${provision_attempt}" \
+                --arg provider "${PROVIDER}" --arg role "${RUNNER_ROLE}" '
+                  .[0].tags.project == "GEOS" and .[0].tags.purpose == "hbv4-tpl-ci" and
+                  (.[0].tags.githubRunId | tostring) == $run and
+                  (.[0].tags.runAttempt | tostring) == $attempt and
+                  .[0].tags.provider == $provider and .[0].tags.runnerRole == $role
+                ' <<< "${exact}" >/dev/null; then
+              echo '::error::Exact VM output exists but its immutable tags do not match.'
+              exit 1
+            fi
+          else
+            vm_name=''
+          fi
+        fi
+        if [[ -z "${vm_name}" ]]; then
+          exact_current="$(jq -c --arg name "${derived_vm_name}" \
+            '[.[] | select(.name == $name)]' <<< "${inventory}")"
+          current_count="$(jq -r 'length' <<< "${exact_current}")"
+          (( current_count <= 1 )) || {
+            echo '::error::Duplicate current-attempt Azure VM names.'
+            exit 1
+          }
+          if (( current_count == 1 )); then
+            if ! jq -e \
+                --arg run "${GITHUB_RUN_ID}" \
+                --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+                --arg provider "${PROVIDER}" \
+                --arg role "${RUNNER_ROLE}" '
+                  .[0].tags.project == "GEOS" and
+                  .[0].tags.purpose == "hbv4-tpl-ci" and
+                  (.[0].tags.githubRunId | tostring) == $run and
+                  (.[0].tags.runAttempt | tostring) == $attempt and
+                  .[0].tags.provider == $provider and
+                  .[0].tags.runnerRole == $role
+                ' <<< "${exact_current}" >/dev/null; then
+              echo '::error::Current-attempt VM name exists without the exact lifecycle tags.'
+              exit 1
+            fi
+            vm_name="${derived_vm_name}"
+          fi
+        fi
+        if [[ -z "${vm_name}" ]]; then
+          matches="$(jq -c \
+            --arg run "${GITHUB_RUN_ID}" --arg provider "${PROVIDER}" --arg role "${RUNNER_ROLE}" '
+              [.[] |
+                select((.tags | type) == "object") |
+                select(.tags.project == "GEOS" and .tags.purpose == "hbv4-tpl-ci") |
+                select((.tags.githubRunId | tostring) == $run) |
+                select(.tags.provider == $provider and .tags.runnerRole == $role) |
+                .name]
+              ' <<< "${inventory}")"
+          jq -e 'type == "array" and all(.[]; type == "string")' <<< "${matches}" >/dev/null
+          count="$(jq -r 'length' <<< "${matches}")"
+          (( count <= 1 )) || { echo '::error::Ambiguous tag fallback found multiple VMs.'; exit 1; }
+          if (( count == 1 )); then vm_name="$(jq -r '.[0]' <<< "${matches}")"; fi
+          [[ -z "${vm_name}" || "${vm_name}" =~ ${pattern} ]] || {
+            echo '::error::Tag fallback resolved a noncanonical VM name.'
+            exit 1
+          }
+          if [[ -n "${vm_name}" ]]; then
+            [[ "${vm_name}" =~ ${pattern} ]]
+            fallback_attempt="${BASH_REMATCH[1]}"
+            if ! jq -e --arg attempt "${fallback_attempt}" '
+                (.[0].tags.runAttempt | tostring) == $attempt
+              ' <<< "$(jq -c --arg name "${vm_name}" '[.[] | select(.name == $name)]' <<< "${inventory}")" \
+              >/dev/null; then
+              echo '::error::Tag fallback VM name and runAttempt tag disagree.'
+              exit 1
+            fi
+          fi
+        fi
+
+        nic_id=''
+        os_disk_id=''
+        target_attempt=''
+        if [[ -n "${vm_name}" ]]; then
+          [[ "${vm_name}" =~ ${pattern} ]]
+          target_attempt="${BASH_REMATCH[1]}"
+          attachments="$(az vm show --resource-group "${RUNNERS_RG}" --name "${vm_name}" \
+            --query '{nic:networkProfile.networkInterfaces[0].id,osDisk:storageProfile.osDisk.managedDisk.id}' \
+            --output json --only-show-errors)"
+          nic_id="$(jq -r '.nic // empty' <<< "${attachments}")"
+          os_disk_id="$(jq -r '.osDisk // empty' <<< "${attachments}")"
+          case "${nic_id,,}" in
+            */resourcegroups/"${RUNNERS_RG,,}"/providers/microsoft.network/networkinterfaces/*) ;;
+            *) echo '::error::VM attached NIC is outside the exact runner resource group/type.'; exit 1 ;;
+          esac
+          case "${os_disk_id,,}" in
+            */resourcegroups/"${RUNNERS_RG,,}"/providers/microsoft.compute/disks/*) ;;
+            *) echo '::error::VM attached OS disk is outside the exact runner resource group/type.'; exit 1 ;;
+          esac
+          is_expected_vm_not_found() {
+            local error_file="$1"
+            grep -Eq '\(ResourceNotFound\)|Code:[[:space:]]*ResourceNotFound' "${error_file}" &&
+              grep -Fqi -- "${vm_name}" "${error_file}" &&
+              grep -Fqi -- "${RUNNERS_RG}" "${error_file}" &&
+              ! grep -Eiq 'SubscriptionNotFound|ResourceGroupNotFound' "${error_file}"
+          }
+          is_az_retryable() {
+            grep -Eiq \
+              'TooManyRequests|HTTP 429|throttl|timeout|temporar|InternalServerError|ServiceUnavailable|BadGateway|GatewayTimeout' \
+              "$1"
+          }
+          delete_done=false
+          for delete_attempt in 1 2 3 4; do
+            delete_error="$(mktemp)"
+            if az vm delete --resource-group "${RUNNERS_RG}" --name "${vm_name}" \
+                --yes --force-deletion true --only-show-errors 2>"${delete_error}"; then
+              rm -f "${delete_error}"
+              delete_done=true
+              break
+            fi
+            if is_expected_vm_not_found "${delete_error}"; then
+              rm -f "${delete_error}"
+              delete_done=true
+              break
+            fi
+            if (( delete_attempt < 4 )) && is_az_retryable "${delete_error}"; then
+              echo "az vm delete attempt ${delete_attempt} was transient; retrying."
+              sed -n '1,40p' "${delete_error}" >&2
+              rm -f "${delete_error}"
+              sleep $(( delete_attempt * 15 ))
+              continue
+            fi
+            echo "::error::az vm delete failed for ${vm_name}; not accepting implicit success."
+            sed -n '1,40p' "${delete_error}" >&2
+            rm -f "${delete_error}"
+            exit 1
+          done
+          [[ "${delete_done}" == true ]] || {
+            echo "::error::VM deletion did not reach a known success state for ${vm_name}."
+            exit 1
+          }
+        else
+          echo "No matching Azure VM exists for ${PROVIDER}/${RUNNER_ROLE}."
+        fi
+
+        delete_exact_tagged_remnant() {
+          local child_id="$1" expected_type="$2" inventory matches count
+          [[ -n "${child_id}" ]] || return 0
+          inventory="$(az resource list --resource-group "${RUNNERS_RG}" \
+            --output json --only-show-errors)"
+          jq -e 'type == "array"' <<< "${inventory}" >/dev/null
+          matches="$(jq -c --arg id "${child_id}" \
+            '[.[] | select((.id | ascii_downcase) == ($id | ascii_downcase))]' \
+            <<< "${inventory}")"
+          count="$(jq -r 'length' <<< "${matches}")"
+          (( count <= 1 )) || {
+            echo '::error::Duplicate exact child resource IDs were returned.'
+            exit 1
+          }
+          if (( count == 1 )); then
+            if ! jq -e \
+                --arg type "${expected_type}" \
+                --arg run "${GITHUB_RUN_ID}" \
+                --arg attempt "${target_attempt}" \
+                --arg provider "${PROVIDER}" \
+                --arg role "${RUNNER_ROLE}" '
+                  (.[0].type | ascii_downcase) == ($type | ascii_downcase) and
+                  .[0].tags.project == "GEOS" and
+                  .[0].tags.purpose == "hbv4-tpl-ci" and
+                  (.[0].tags.githubRunId | tostring) == $run and
+                  (.[0].tags.runAttempt | tostring) == $attempt and
+                  .[0].tags.provider == $provider and
+                  .[0].tags.runnerRole == $role
+                ' <<< "${matches}" >/dev/null; then
+              echo '::error::Exact VM child remnant is untagged or outside this lifecycle.'
+              exit 1
+            fi
+            az resource delete --ids "${child_id}" --only-show-errors
+          fi
+          for child_attempt in 1 2 3 4; do
+            inventory="$(az resource list --resource-group "${RUNNERS_RG}" \
+              --output json --only-show-errors)"
+            count="$(jq -r --arg id "${child_id}" \
+              '[.[] | select((.id | ascii_downcase) == ($id | ascii_downcase))] | length' \
+              <<< "${inventory}")"
+            if (( count == 0 )); then return 0; fi
+            (( child_attempt < 4 )) || {
+              echo '::error::Exact VM child resource remains after deletion.'
+              exit 1
+            }
+            sleep $(( child_attempt * 5 ))
+          done
+        }
+        delete_exact_tagged_remnant "${nic_id}" 'Microsoft.Network/networkInterfaces'
+        delete_exact_tagged_remnant "${os_disk_id}" 'Microsoft.Compute/disks'
+
+        for attempt in 1 2 3 4; do
+          inventory="$(az vm list --resource-group "${RUNNERS_RG}" --output json --only-show-errors)"
+          jq -e 'type == "array"' <<< "${inventory}" >/dev/null
+          remaining_name=0
+          if [[ -n "${vm_name}" ]]; then
+            remaining_name="$(jq -r --arg name "${vm_name}" \
+              '[.[] | select(.name == $name)] | length' <<< "${inventory}")"
+          fi
+          remaining="$(jq -r --arg run "${GITHUB_RUN_ID}" --arg provider "${PROVIDER}" --arg role "${RUNNER_ROLE}" '
+            [.[] | select((.tags | type) == "object") |
+             select((.tags.githubRunId | tostring) == $run and
+                    .tags.provider == $provider and .tags.runnerRole == $role)] | length
+            ' <<< "${inventory}")"
+          if (( remaining_name == 0 && remaining == 0 )); then exit 0; fi
+          (( attempt < 4 )) || { echo '::error::Exact Azure VM remains after deletion.'; exit 1; }
+          sleep $(( attempt * 10 ))
+        done
+
+    - name: Mint repository runner-administration token
+      id: runner_app_token
+      if: ${{ always() }}
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      with:
+        client-id: ${{ inputs.runner_app_client_id }}
+        private-key: ${{ inputs.runner_app_private_key }}
+        owner: ${{ github.repository_owner }}
+        repositories: ${{ github.event.repository.name }}
+
+    - name: Delete and verify exact runner registration
+      if: ${{ always() }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.runner_app_token.outputs.token }}
+        PROVIDER: ${{ inputs.provider }}
+        RUNNER_ROLE: ${{ inputs.runner_role }}
+        PROVISION_RUNNER_ID: ${{ inputs.provision_runner_id }}
+      run: |
+        set -euo pipefail
+        [[ -n "${GH_TOKEN}" ]] || { echo '::error::Runner administration token is absent.'; exit 1; }
+        case "${PROVIDER}" in openmpi|mpich) ;; *) exit 2 ;; esac
+        case "${RUNNER_ROLE}" in builder|tester) ;; *) exit 2 ;; esac
+        label_pattern="^geos-hbv4-${GITHUB_RUN_ID}-[1-9][0-9]*-${PROVIDER}-${RUNNER_ROLE}$"
+        expected_label="geos-hbv4-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${PROVIDER}-${RUNNER_ROLE}"
+        max_attempts=4
+
+        validate_inventory() {
+          jq -e '
+            type == "array" and
+            all(.[];
+              type == "object" and (.runners | type) == "array" and
+              all(.runners[]?;
+                (.id | type) == "number" and .id >= 1 and
+                .id == (.id | floor) and
+                (.name | type) == "string" and (.name | length) > 0 and
+                (.labels | type) == "array" and
+                all(.labels[]?; (.name | type) == "string")
+              )
+            )
+          ' >/dev/null
+        }
+        lifecycle_records() {
+          jq -c --arg regex "${label_pattern}" '
+            [
+              .[].runners[]?
+              | . as $runner
+              | [$runner.labels[]?.name | select(test($regex))] as $matching_labels
+              | select(($runner.name | test($regex)) or ($matching_labels | length) > 0)
+              | {
+                  id: $runner.id,
+                  name: $runner.name,
+                  labels: [$runner.labels[].name],
+                  matching_labels: $matching_labels,
+                  canonical_name: ($runner.name | test($regex))
+                }
+            ]
+          '
+        }
+
+        validate_lifecycle_records() {
+          jq -e '
+            type == "array" and
+            all(.[];
+              (.matching_labels | type) == "array" and
+              (.matching_labels | length) == 1 and
+              (.canonical_name == false or .name == .matching_labels[0])
+            )
+          ' >/dev/null
+        }
+
+        is_gh_not_found() {
+          grep -Eiq 'HTTP 404|Not Found' "$1"
+        }
+
+        is_gh_retryable() {
+          grep -Eiq \
+            'HTTP (408|429|5[0-9][0-9])|secondary rate limit|rate limit|timeout|temporar' \
+            "$1"
+        }
+
+        probe_runner_collection_access() {
+          local context="$1" response err_file attempt
+          for (( attempt = 1; attempt <= max_attempts; attempt++ )); do
+            err_file="$(mktemp)"
+            if response="$(gh api \
+                -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/actions/runners?per_page=1" \
+                2>"${err_file}")"; then
+              rm -f "${err_file}"
+              if ! jq -e '
+                  type == "object" and
+                  (.total_count | type) == "number" and
+                  .total_count >= 0 and .total_count == (.total_count | floor) and
+                  (.runners | type) == "array"
+                ' <<< "${response}" >/dev/null; then
+                echo "::error::Cannot classify ${context}: runner collection response is malformed."
+                return 1
+              fi
+              return 0
+            fi
+            if (( attempt < max_attempts )) && is_gh_retryable "${err_file}"; then
+              echo "Runner collection probe attempt ${attempt} for ${context} was transient; retrying."
+              sed -n '1,40p' "${err_file}" >&2
+              rm -f "${err_file}"
+              sleep $(( attempt * 10 ))
+              continue
+            fi
+            echo "::error::Cannot classify ${context}: runner collection access failed."
+            sed -n '1,40p' "${err_file}" >&2
+            rm -f "${err_file}"
+            return 1
+          done
+          echo "::error::Cannot classify ${context}: runner collection access failed."
+          return 1
+        }
+
+        read_runner_inventory() {
+          local context="$1" response err_file attempt
+          for (( attempt = 1; attempt <= max_attempts; attempt++ )); do
+            err_file="$(mktemp)"
+            if response="$(gh api --paginate --slurp \
+                -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/actions/runners?per_page=100" \
+                2>"${err_file}")"; then
+              rm -f "${err_file}"
+              if ! validate_inventory <<< "${response}"; then
+                echo "::error::${context} runner inventory is malformed."
+                return 1
+              fi
+              RUNNER_PAGES="${response}"
+              return 0
+            fi
+            if (( attempt < max_attempts )) && is_gh_retryable "${err_file}"; then
+              echo "Runner inventory attempt ${attempt} for ${context} was transient; retrying."
+              sed -n '1,40p' "${err_file}" >&2
+              rm -f "${err_file}"
+              sleep $(( attempt * 10 ))
+              continue
+            fi
+            echo "::error::Unable to read ${context} runner inventory."
+            sed -n '1,40p' "${err_file}" >&2
+            rm -f "${err_file}"
+            return 1
+          done
+          echo "::error::Unable to read ${context} runner inventory."
+          return 1
+        }
+
+        RUNNER_PAGES=''
+        read_runner_inventory initial
+        pages="${RUNNER_PAGES}"
+        candidates="$(lifecycle_records <<< "${pages}")"
+        if ! validate_lifecycle_records <<< "${candidates}"; then
+          echo '::error::Runner inventory contains a malformed or inconsistent HBv4 lifecycle identity.'
+          exit 1
+        fi
+        candidate_count="$(jq -r 'length' <<< "${candidates}")"
+        (( candidate_count <= 1 )) || {
+          echo "::error::Found multiple runner registrations for this run/provider/role: ${candidates}"
+          exit 1
+        }
+
+        runner_id="${PROVISION_RUNNER_ID}"
+        runner_name=''
+        runner_label=''
+        if [[ -n "${runner_id}" ]]; then
+          [[ "${runner_id}" =~ ^[1-9][0-9]*$ ]] || exit 2
+          exact="$(jq -c --argjson id "${runner_id}" '[.[].runners[]? | select(.id == $id)]' <<< "${pages}")"
+          count="$(jq -r 'length' <<< "${exact}")"
+          (( count <= 1 )) || { echo '::error::Duplicate runner ID in inventory.'; exit 1; }
+          if (( count == 1 )); then
+            if (( candidate_count != 1 )) ||
+               [[ "$(jq -r '.[0].id' <<< "${candidates}")" != "${runner_id}" ]]; then
+              echo '::error::Provisioned runner ID resolves outside this exact lifecycle.'
+              exit 1
+            fi
+            runner_name="$(jq -r '.[0].name' <<< "${candidates}")"
+            runner_label="$(jq -r '.[0].matching_labels[0]' <<< "${candidates}")"
+          else
+            runner_id=''
+          fi
+        fi
+        if [[ -z "${runner_id}" ]]; then
+          # JIT registration can be created before the composite publishes any
+          # outputs. Resolve that failure mode by the exact unique label rather
+          # than assuming GitHub preserved a caller-provided runner name.
+          exact_current="$(jq -c --arg label "${expected_label}" '
+            [.[].runners[]? |
+              . as $runner |
+              select(([.labels[]?.name | select(. == $label)] | length) == 1) |
+              {id:$runner.id,name:$runner.name,label:$label}]
+            ' <<< "${pages}")"
+          current_count="$(jq -r 'length' <<< "${exact_current}")"
+          (( current_count <= 1 )) || {
+            echo '::error::Duplicate current-attempt runner registrations.'
+            exit 1
+          }
+          if (( current_count == 1 )); then
+            runner_id="$(jq -r '.[0].id' <<< "${exact_current}")"
+            runner_name="$(jq -r '.[0].name' <<< "${exact_current}")"
+            runner_label="${expected_label}"
+          fi
+        fi
+        if [[ -z "${runner_id}" ]]; then
+          if (( candidate_count == 1 )); then
+            runner_id="$(jq -r '.[0].id' <<< "${candidates}")"
+            runner_name="$(jq -r '.[0].name' <<< "${candidates}")"
+            runner_label="$(jq -r '.[0].matching_labels[0]' <<< "${candidates}")"
+          fi
+        fi
+
+        if [[ -n "${runner_id}" ]]; then
+          [[ "${runner_id}" =~ ^[1-9][0-9]*$ ]] || exit 2
+          [[ "${runner_label}" =~ ${label_pattern} ]] || {
+            echo '::error::Resolved runner is missing its exact lifecycle label.'
+            exit 1
+          }
+          delete_done=false
+          for (( attempt = 1; attempt <= max_attempts; attempt++ )); do
+            err_file="$(mktemp)"
+            if gh api --method DELETE \
+                -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/actions/runners/${runner_id}" \
+                >/dev/null 2>"${err_file}"; then
+              rm -f "${err_file}"
+              delete_done=true
+              break
+            fi
+            if is_gh_not_found "${err_file}"; then
+              rm -f "${err_file}"
+              probe_runner_collection_access "runner DELETE 404 for ${runner_id}" || exit 1
+              delete_done=true
+              break
+            fi
+            if (( attempt < max_attempts )) && is_gh_retryable "${err_file}"; then
+              echo "Runner DELETE attempt ${attempt} was transient; retrying."
+              sed -n '1,40p' "${err_file}" >&2
+              rm -f "${err_file}"
+              sleep $(( attempt * 10 ))
+              continue
+            fi
+            echo "::error::GitHub runner DELETE failed for ${runner_id}."
+            sed -n '1,40p' "${err_file}" >&2
+            rm -f "${err_file}"
+            exit 1
+          done
+          [[ "${delete_done}" == true ]] || {
+            echo "::error::Runner deletion did not reach a known success state for ${runner_id}."
+            exit 1
+          }
+        else
+          echo "No matching GitHub runner registration exists for ${PROVIDER}/${RUNNER_ROLE}."
+        fi
+
+        if [[ -n "${runner_id}" ]]; then
+          for (( attempt = 1; attempt <= max_attempts; attempt++ )); do
+            err_file="$(mktemp)"
+            if response="$(gh api \
+                -H 'Accept: application/vnd.github+json' \
+                "repos/${GITHUB_REPOSITORY}/actions/runners/${runner_id}" \
+                2>"${err_file}")"; then
+              rm -f "${err_file}"
+              if ! jq -e --argjson id "${runner_id}" '
+                  type == "object" and .id == $id
+                ' <<< "${response}" >/dev/null; then
+                echo "::error::Runner GET returned a malformed identity for ${runner_id}."
+                exit 1
+              fi
+              if (( attempt < max_attempts )); then
+                echo "Runner ${runner_id} remains visible after verification attempt ${attempt}; retrying."
+                sleep $(( attempt * 10 ))
+                continue
+              fi
+              echo "::error::Runner registration ${runner_id} still exists after deletion."
+              exit 1
+            fi
+            if is_gh_not_found "${err_file}"; then
+              rm -f "${err_file}"
+              probe_runner_collection_access "runner verification 404 for ${runner_id}" || exit 1
+              break
+            fi
+            if (( attempt < max_attempts )) && is_gh_retryable "${err_file}"; then
+              echo "Runner GET verification attempt ${attempt} was transient; retrying."
+              sed -n '1,40p' "${err_file}" >&2
+              rm -f "${err_file}"
+              sleep $(( attempt * 10 ))
+              continue
+            fi
+            echo "::error::Unable to verify runner registration ${runner_id} was deleted."
+            sed -n '1,40p' "${err_file}" >&2
+            rm -f "${err_file}"
+            exit 1
+          done
+        fi
+
+        read_runner_inventory verification
+        remaining="$(lifecycle_records <<< "${RUNNER_PAGES}")"
+        if ! validate_lifecycle_records <<< "${remaining}"; then
+          echo '::error::Runner verification found a malformed HBv4 lifecycle identity.'
+          exit 1
+        fi
+        if (( $(jq -r 'length' <<< "${remaining}") != 0 )); then
+          echo "::error::HBv4 lifecycle registration remains after deletion: ${remaining}"
+          exit 1
+        fi
+        echo "Runner registration ${runner_id:-none}${runner_name:+ (${runner_name})} is absent."
