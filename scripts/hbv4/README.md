@@ -8,14 +8,14 @@ Run `validate-host.sh` on the tester VM before launching a container:
 ```sh
 scripts/hbv4/validate-host.sh \
   --instance-type Standard_HB176rs_v4 \
-  --compiler-flags 'target=zen4 -march=native -mtune=native -O3' \
+  --compiler-flags '-march=native -mtune=native -O3' \
   --writable-path /mnt/hbv4-local/container-tmp
 ```
 
 The instance type must come from the CI/cloud control-plane metadata step. The
 script independently checks the 9V33X CPU identity, 176 visible CPUs, AVX-512,
-explicit Zen 4 target evidence, required `-march=native` and `-mtune=native`,
-and the exact two-member md RAID0 XFS mount at `/mnt/hbv4-local`. It rejects
+required `-march=native` and `-mtune=native`, and the exact two-member md RAID0
+XFS mount at `/mnt/hbv4-local`. It rejects
 `-mcpu=native`. The required writable path must resolve to that same XFS RAID
 mount. The mount root intentionally remains root-owned; callers should select a
 runner-owned workspace or the mode-`1777` `container-tmp` child.

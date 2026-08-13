@@ -279,7 +279,7 @@ assert!(!tester_validation_script.include?('validation_scratch="/mnt/hbv4-local/
         "tester must not create scratch directly under the protected RAID mount root")
 
 # The workflow declares its root spec alongside its other build configuration;
-# provider manifests own the Zen 4 target and native compiler constraints.
+# provider manifests own Spack target selection and native compiler constraints.
 workflow_env = workflow.fetch("env", {})
 assert!(workflow_env["SPEC"] == "~pygeosx ~docs %gcc-13",
         "HBv4 workflow must declare the root spec with terminal %gcc-13")

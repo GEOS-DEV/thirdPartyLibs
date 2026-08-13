@@ -343,8 +343,6 @@ require_native_flags() {
     die "$evidence_file contains forbidden -mcpu=native"
 }
 require_native_flags "$evidence_dir/compiler-flags.txt"
-grep -Eq '(^|[[:space:]])(target=zen4|arch=zen4)([[:space:]]|$)' "$evidence_dir/compiler-flags.txt" ||
-  die 'compiler-flags evidence lacks target=zen4'
 require_native_flags "$evidence_dir/mpi-configure-args.txt"
 require_native_flags "$evidence_dir/mpi-wrapper-show.txt"
 require_native_flags "$evidence_dir/spack-build.log"

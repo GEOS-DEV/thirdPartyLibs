@@ -160,7 +160,7 @@ jobs:
         run: >-
           /opt/geos-ci/scripts/hbv4/validate-host.sh
           --instance-type Standard_HB176rs_v4
-          --compiler-flags 'target=zen4 -march=native -mtune=native'
+          --compiler-flags '-march=native -mtune=native'
           --writable-path "${GITHUB_WORKSPACE}"
 
       - name: Build without cache
@@ -539,7 +539,7 @@ jobs:
             printf 'trusted-parallel-hdf5-source-sha256=%s\n' "${trusted_source_sha256}"
             /opt/geos-ci/scripts/hbv4/validate-host.sh \
               --instance-type Standard_HB176rs_v4 \
-              --compiler-flags 'target=zen4 -march=native -mtune=native' \
+              --compiler-flags '-march=native -mtune=native' \
               --writable-path "${GITHUB_WORKSPACE}"
             echo 'trusted-host-validation=success'
           } 2>&1 | tee "${evidence_file}"

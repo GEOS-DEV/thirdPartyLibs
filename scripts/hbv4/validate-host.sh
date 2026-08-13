@@ -28,8 +28,6 @@ done
 
 [[ "$instance_type" =~ ^Standard_HB[0-9]+[A-Za-z0-9_-]*_v4$ ]] ||
   die "instance evidence is not an HBv4 SKU: $instance_type"
-[[ "$compiler_flags" =~ (^|[[:space:]])(target=zen4|arch=zen4)([[:space:]]|$) ]] ||
-  die 'build evidence does not contain an explicit Zen 4 target'
 [[ "$compiler_flags" =~ (^|[[:space:]])-march=native([[:space:]]|$) ]] ||
   die 'compiler flags do not contain -march=native'
 [[ "$compiler_flags" =~ (^|[[:space:]])-mtune=native([[:space:]]|$) ]] ||
@@ -83,4 +81,4 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 printf 'hbv4 storage validation\n' >"$probe"
 sync "$probe"
-note "validated $instance_type: AMD EPYC 9V33X, 176 CPUs, Zen 4 flags, two-disk md RAID0 XFS at $mount_path, writable workload path $writable_path"
+note "validated $instance_type: AMD EPYC 9V33X, 176 CPUs, native compiler flags, two-disk md RAID0 XFS at $mount_path, writable workload path $writable_path"

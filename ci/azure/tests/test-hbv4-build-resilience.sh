@@ -8,6 +8,8 @@ capture_wrapper="${repository_root}/scripts/hbv4/capture-mpi-wrapper-show.sh"
 install_from_source="${repository_root}/scripts/hbv4/install-spack-from-source.sh"
 collect_evidence="${repository_root}/scripts/hbv4/collect-build-evidence.sh"
 container_validator="${repository_root}/scripts/hbv4/validate-hbv4-tpls"
+host_validator="${repository_root}/scripts/hbv4/validate-host.sh"
+provider_workflow="${repository_root}/.github/workflows/_docker_build_tpls_hbv4_provider.yml"
 dockerfile="${repository_root}/docker/tpl-ubuntu.Dockerfile"
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/hbv4-build-resilience.XXXXXX")
 trap 'rm -rf -- "$test_root"' EXIT
@@ -43,15 +45,26 @@ if grep -Eiq "$parallel_hdf5_pattern" <<<'Parallel HDF5: OFF'; then
   fail 'parallel-HDF5 pattern accepted a disabled value'
 fi
 
-# Spack normalizes the Zen 4 preference to the x86-64-v4 architecture name in
-# its lockfile. Require that target for every source-built spec while allowing
-# generic x86_64 targets on compilers and other declared externals.
+# Keep the real target check on the generated Spack lockfile. A handwritten
+# target token in compiler-flags evidence is not an independent architecture
+# signal and must never gate builder or candidate validation.
 assert_contains "$container_validator" 'source_specs = [spec for spec in concrete_specs.values() if "external" not in spec]'
 assert_contains "$container_validator" 'if source_targets != {"x86_64_v4"}:'
 assert_contains "$container_validator" 'source-built Spack specs do not all target x86_64_v4'
-if grep -Fq -- 'Spack concretization does not contain target=zen4' "$container_validator"; then
-  fail 'validator still requires the non-concrete target spelling zen4'
+assert_contains "$host_validator" 'compiler flags do not contain -march=native'
+assert_contains "$host_validator" 'compiler flags do not contain -mtune=native'
+assert_contains "$host_validator" '-mcpu=native is forbidden'
+assert_contains "$container_validator" 'require_native_flags "$evidence_dir/compiler-flags.txt"'
+assert_contains "$container_validator" 'require_native_flags "$evidence_dir/mpi-configure-args.txt"'
+assert_contains "$container_validator" 'require_native_flags "$evidence_dir/mpi-wrapper-show.txt"'
+assert_contains "$container_validator" 'require_native_flags "$evidence_dir/spack-build.log"'
+if grep -Eq -- '(^|[^[:alnum:]_])(target|arch)=[[:alnum:]_.+-]+' \
+    "$host_validator" "$container_validator"; then
+  fail 'validator still treats a handwritten target token as build proof'
 fi
+[[ $(grep -Fc -- "--compiler-flags '-march=native -mtune=native'" \
+      "$provider_workflow") -eq 2 ]] ||
+  fail 'trusted workflow must pass only native tuning flags to both host checks'
 
 # h5pcc links shared HDF5 without embedding its installation path. The runtime
 # check must add only the verified HDF5 prefix and retain strict MPI resolution.
