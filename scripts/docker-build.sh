@@ -39,6 +39,14 @@ if [ -n "${CLANG_VERSION}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "CLANG_VERSION
 BUILDER_ARGS=()
 if [ -n "${DOCKER_BUILDER:-}" ]; then BUILDER_ARGS+=(--builder "${DOCKER_BUILDER}"); fi
 if [ "${DOCKER_LOAD:-0}" = 1 ]; then BUILDER_ARGS+=(--load); fi
+if [ -n "${DOCKER_NETWORK:-}" ]; then BUILDER_ARGS+=(--network "${DOCKER_NETWORK}"); fi
+
+# Forward proxy settings into RUN steps (BuildKit special-cases these args).
+for v in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
+    if [ -n "${!v:-}" ]; then
+        EXTRA_BUILD_ARGS+=(--build-arg "${v}=${!v}")
+    fi
+done
 
 docker build --progress=plain \
     "${BUILDER_ARGS[@]}" \

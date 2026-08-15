@@ -167,7 +167,14 @@ jobs:
         lfs: true
 
     - name: Set up Docker Buildx
+      if: matrix.RUNS_ON != 'streak2'
       uses: docker/setup-buildx-action@v4
+
+    - name: Set up Docker Buildx
+      if: matrix.RUNS_ON == 'streak2'
+      uses: docker/setup-buildx-action@v4
+      with:
+        driver-opts: network=host
 
     - name: Print environment
       run: printenv
@@ -186,25 +193,15 @@ jobs:
         if grep -q 'RUN dnf clean all' "${dockerfile}"; then
           sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${dockerfile}"
         else
-          # Ubuntu CUDA jobs also run on streak2. Keep the LLNL bundle in a
-          # dedicated file: apt-get install ca-certificates regenerates
-          # /etc/ssl/certs/ca-certificates.crt and would drop a concatenated
-          # MITM cert. Do not place the multi-cert bundle under
-          # /usr/local/share/ca-certificates (update-ca-certificates skips or
-          # fails those files).
+          # Ubuntu CUDA jobs also run on streak2. Only COPY the host bundle;
+          # tpl-ubuntu.Dockerfile installs it after ca-certificates so the
+          # package postinst cannot wipe it. ENV covers pip/curl/git.
           awk '
             BEGIN { inserted=0 }
             {
               print
               if (!inserted && $0 ~ /^FROM /) {
                 print "COPY ca-bundle.crt /etc/ssl/certs/llnl-ca-bundle.crt"
-                print "RUN mkdir -p /etc/apt/apt.conf.d && \\"
-                print "    if [ -f /etc/ssl/certs/ca-certificates.crt ]; then \\"
-                print "      cat /etc/ssl/certs/llnl-ca-bundle.crt >> /etc/ssl/certs/ca-certificates.crt; \\"
-                print "    else \\"
-                print "      cp /etc/ssl/certs/llnl-ca-bundle.crt /etc/ssl/certs/ca-certificates.crt; \\"
-                print "    fi && \\"
-                print "    echo '\''Acquire::https::CaInfo \"/etc/ssl/certs/llnl-ca-bundle.crt\";'\'' > /etc/apt/apt.conf.d/99-llnl-ca"
                 print "ENV SSL_CERT_FILE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
                 print "    REQUESTS_CA_BUNDLE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
                 print "    CURL_CA_BUNDLE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
@@ -235,6 +232,7 @@ jobs:
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+        DOCKER_NETWORK: ${{ matrix.RUNS_ON == 'streak2' && 'host' || '' }}
       run: bash -x ./scripts/docker-build.sh
 
     - name: Login to DockerHub

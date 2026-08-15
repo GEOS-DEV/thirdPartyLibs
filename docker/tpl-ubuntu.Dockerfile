@@ -51,11 +51,22 @@ RUN apt-get update && \
         lbzip2 \
         bzip2 \
         gnupg && \
+    if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
+      mkdir -p /usr/local/share/ca-certificates && \
+      awk 'BEGIN {n=0} /-----BEGIN/ {n++; f=sprintf("/usr/local/share/ca-certificates/llnl-%03d.crt", n)} n>0 {print > f}' \
+        /etc/ssl/certs/llnl-ca-bundle.crt && \
+      update-ca-certificates ; \
+    fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install clingo for Spack. Do not upgrade Ubuntu's Debian-managed pip in
 # place; Ubuntu 24.04's pip package cannot be uninstalled by pip.
-RUN python3 -m pip install --break-system-packages clingo
+# --trusted-host covers streak2 MITM when the system store is incomplete.
+RUN python3 -m pip install --break-system-packages \
+        --trusted-host pypi.org \
+        --trusted-host files.pythonhosted.org \
+        --trusted-host pypi.python.org \
+        clingo
 
 # MPI environment. CC/CXX/FC come from the base image.
 ENV MPICC=/usr/bin/mpicc \
