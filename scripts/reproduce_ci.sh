@@ -29,10 +29,16 @@ INSTALL_DIR_ROOT=${INSTALL_DIR_ROOT:-/opt/GEOS}
 HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake}
 BUILDX_CPUS=${BUILDX_CPUS:-}
 BUILDX_MEMORY=${BUILDX_MEMORY:-}
+LOG_DIR=${LOG_DIR:-}
 
 keep_artifacts=0
 dry_run=0
+sweep_all=0
 selected=()
+
+job_slug() {
+  printf '%s' "$1" | tr -c 'A-Za-z0-9' '_' | tr -s '_'
+}
 
 job_name() { printf '%s' "${MATRIX[$1]%%|*}"; }
 
@@ -56,7 +62,9 @@ Job selection:
   --ci NAME          Build only this job. Repeatable. Matched exactly, or by a
                      unique case-insensitive substring (e.g. --ci "clang 22").
                      An index from --list also works (e.g. --ci 8).
-  --all              Build every job in the matrix.
+  --all              Build every job in the matrix, one after another. Writes
+                     per-job logs and summary.log under --log-dir (default
+                     /tmp/geos-tpl-ci-builds). Stops on the first failure.
   --list             List the available jobs and exit.
 
 Build settings (each also readable from the environment):
@@ -67,6 +75,7 @@ Build settings (each also readable from the environment):
   --host-config F    HOST_CONFIG           [${HOST_CONFIG}]
   --cpus N           BUILDX_CPUS           [${BUILDX_CPUS:-unset}]
   --memory SIZE      BUILDX_MEMORY         [${BUILDX_MEMORY:-unset}]
+  --log-dir DIR      LOG_DIR               [${LOG_DIR:-/tmp/geos-tpl-ci-builds with --all}]
 
 Other:
   --keep             Keep the image and buildx builder after a successful build
@@ -125,7 +134,7 @@ while (( $# )); do
     --ci)           [[ ${2:-} ]] || { echo "--ci needs a job name" >&2; exit 2; }
                     selected+=("$2"); shift 2 ;;
     --ci=*)         selected+=("${1#*=}"); shift ;;
-    --all)          selected=(__all__); shift ;;
+    --all)          selected=(__all__); sweep_all=1; shift ;;
     --list)         list_jobs; exit 0 ;;
     --tag)          DOCKER_TAG=$2; shift 2 ;;
     --commit)       COMMIT=$2; shift 2 ;;
@@ -134,6 +143,7 @@ while (( $# )); do
     --host-config)  HOST_CONFIG=$2; shift 2 ;;
     --cpus)         BUILDX_CPUS=$2; shift 2 ;;
     --memory)       BUILDX_MEMORY=$2; shift 2 ;;
+    --log-dir)      LOG_DIR=$2; shift 2 ;;
     --keep)         keep_artifacts=1; shift ;;
     --dry-run)      dry_run=1; shift ;;
     -h|--help)      usage; exit 0 ;;
@@ -151,6 +161,7 @@ fi
 indices=()
 if [[ ${selected[0]} == __all__ ]]; then
   indices=("${!MATRIX[@]}")
+  [[ ${LOG_DIR} ]] || LOG_DIR=/tmp/geos-tpl-ci-builds
 else
   resolve_failed=0
   for query in "${selected[@]}"; do
@@ -210,7 +221,7 @@ build() {
   if ! docker buildx create "${create_args[@]}" --bootstrap >/dev/null; then
     printf 'FAILED TO CREATE BUILDER: %s\n' "${name}" >&2
     failed=1
-    return
+    return 1
   fi
 
   if ! TPL_DOCKERFILE=${dockerfile} \
@@ -230,7 +241,7 @@ build() {
     printf 'FAILED: %s (builder retained: %s)\n' "${name}" "${builder}" >&2
     failed=1
     failed_builders+=("${builder}")
-    return
+    return 1
   fi
 
   if (( keep_artifacts )); then
@@ -252,24 +263,58 @@ build() {
   if (( cleanup_failed )); then
     failed=1
     failed_builders+=("${builder}")
-  else
-    printf 'PASSED: %s (image and build cache removed)\n' "${name}"
+    return 1
   fi
+  printf 'PASSED: %s (image and build cache removed)\n' "${name}"
 }
 
 printf 'Selected %d of %d job(s).\n' "${#indices[@]}" "${#MATRIX[@]}"
+
+summary=
+if [[ ${LOG_DIR} ]] && (( ! dry_run )); then
+  mkdir -p "${LOG_DIR}"
+  summary=${LOG_DIR}/summary.log
+  {
+    echo "Sequential TPL docker CI reproductions started $(date -Is)"
+    echo "Limits: ${BUILDX_CPUS:-all} CPUs, ${BUILDX_MEMORY:-unlimited} RAM, one image at a time"
+    echo
+  } | tee "${summary}"
+fi
 
 row=0
 for idx in "${indices[@]}"; do
   row=$((row + 1))
   IFS='|' read -r name dockerfile base_tag base_repository repository gcc clang spec \
     <<<"${MATRIX[${idx}]}"
-  build "${row}" "${name}" "${dockerfile}" "${base_tag}" "${base_repository}" \
-    "${repository}" "${gcc}" "${clang}" "${spec}"
+
+  slog=
+  if [[ ${summary} ]]; then
+    slog=${LOG_DIR}/$(job_slug "${name}").log
+    echo "==== START ${name} $(date -Is) ====" | tee -a "${summary}" | tee "${slog}"
+    if build "${row}" "${name}" "${dockerfile}" "${base_tag}" "${base_repository}" \
+      "${repository}" "${gcc}" "${clang}" "${spec}" > >(tee -a "${slog}") 2>&1; then
+      echo "==== PASSED ${name} $(date -Is) ====" | tee -a "${summary}" | tee -a "${slog}"
+    else
+      echo "==== FAILED ${name} $(date -Is) ====" | tee -a "${summary}" | tee -a "${slog}"
+      echo "See ${slog}" | tee -a "${summary}"
+      if (( sweep_all )); then
+        echo "One or more Docker CI builds failed." >&2
+        if ((${#failed_builders[@]})); then
+          echo "Retained builders for investigation:" >&2
+          printf '  %s\n' "${failed_builders[@]}" >&2
+        fi
+        exit 1
+      fi
+    fi
+  else
+    build "${row}" "${name}" "${dockerfile}" "${base_tag}" "${base_repository}" \
+      "${repository}" "${gcc}" "${clang}" "${spec}"
+  fi
 done
 
 if (( dry_run )); then
-  printf '\nDry run: nothing was built.\n'
+  [[ ${LOG_DIR} ]] && printf '\nLog directory: %s\n' "${LOG_DIR}"
+  printf 'Dry run: nothing was built.\n'
   exit 0
 fi
 
@@ -282,4 +327,7 @@ if (( failed )); then
   exit 1
 fi
 
+if [[ ${summary} ]]; then
+  echo "==== ALL PASSED $(date -Is) ====" | tee -a "${summary}"
+fi
 echo "All selected Docker CI builds passed."
