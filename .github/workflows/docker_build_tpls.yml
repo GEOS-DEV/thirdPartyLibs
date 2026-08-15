@@ -186,26 +186,30 @@ jobs:
         if grep -q 'RUN dnf clean all' "${dockerfile}"; then
           sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${dockerfile}"
         else
-          # Ubuntu CUDA jobs also run on streak2. Insert CA trust immediately
-          # after the first FROM so apt/git/pip can talk through the MITM proxy.
+          # Ubuntu CUDA jobs also run on streak2. Keep the LLNL bundle in a
+          # dedicated file: apt-get install ca-certificates regenerates
+          # /etc/ssl/certs/ca-certificates.crt and would drop a concatenated
+          # MITM cert. Do not place the multi-cert bundle under
+          # /usr/local/share/ca-certificates (update-ca-certificates skips or
+          # fails those files).
           awk '
             BEGIN { inserted=0 }
             {
               print
               if (!inserted && $0 ~ /^FROM /) {
-                print "COPY ca-bundle.crt /usr/local/share/ca-certificates/llnl-ca-bundle.crt"
-                print "RUN mkdir -p /etc/ssl/certs && \\"
+                print "COPY ca-bundle.crt /etc/ssl/certs/llnl-ca-bundle.crt"
+                print "RUN mkdir -p /etc/apt/apt.conf.d && \\"
                 print "    if [ -f /etc/ssl/certs/ca-certificates.crt ]; then \\"
-                print "      cat /usr/local/share/ca-certificates/llnl-ca-bundle.crt >> /etc/ssl/certs/ca-certificates.crt; \\"
+                print "      cat /etc/ssl/certs/llnl-ca-bundle.crt >> /etc/ssl/certs/ca-certificates.crt; \\"
                 print "    else \\"
-                print "      cp /usr/local/share/ca-certificates/llnl-ca-bundle.crt /etc/ssl/certs/ca-certificates.crt; \\"
+                print "      cp /etc/ssl/certs/llnl-ca-bundle.crt /etc/ssl/certs/ca-certificates.crt; \\"
                 print "    fi && \\"
-                print "    (command -v update-ca-certificates >/dev/null 2>&1 && update-ca-certificates || true)"
-                print "ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \\"
-                print "    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \\"
-                print "    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \\"
-                print "    GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt \\"
-                print "    PIP_CERT=/etc/ssl/certs/ca-certificates.crt"
+                print "    echo '\''Acquire::https::CaInfo \"/etc/ssl/certs/llnl-ca-bundle.crt\";'\'' > /etc/apt/apt.conf.d/99-llnl-ca"
+                print "ENV SSL_CERT_FILE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    REQUESTS_CA_BUNDLE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    CURL_CA_BUNDLE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    GIT_SSL_CAINFO=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    PIP_CERT=/etc/ssl/certs/llnl-ca-bundle.crt"
                 inserted=1
               }
             }
