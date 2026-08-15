@@ -22,6 +22,13 @@ FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 ARG CLANG_VERSION
 
+# streak2 hosts can enable kernel FIPS mode even though this Ubuntu image has
+# no FIPS provider. Use OpenSSL's default provider for the image's package
+# downloads and source builds, matching the GEOS streak2 container setup.
+COPY docker/openssl-non-fips.cnf /etc/ssl/openssl-non-fips.cnf
+ENV OPENSSL_FORCE_FIPS_MODE=0 \
+    OPENSSL_CONF=/etc/ssl/openssl-non-fips.cnf
+
 # Install directory provided as a docker build argument; forwarded via ENV
 # (GEOSX_TPL_DIR is part of the image contract consumed by GEOS).
 ARG INSTALL_DIR
