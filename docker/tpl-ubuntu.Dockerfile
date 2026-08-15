@@ -68,6 +68,17 @@ RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
     fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# APT needs the runner bundle for its first HTTPS transaction. Once
+# ca-certificates has rebuilt Ubuntu's trust store, use that merged bundle for
+# all subsequent Python, curl, Git, and pip operations. Keeping the runner
+# bundle selected globally can omit Ubuntu's public roots on some streak2
+# images.
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt
+
 # Install clingo for Spack. Do not upgrade Ubuntu's Debian-managed pip in
 # place; Ubuntu 24.04's pip package cannot be uninstalled by pip.
 RUN python3 -m pip install --break-system-packages clingo
