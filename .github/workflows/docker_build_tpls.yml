@@ -180,8 +180,43 @@ jobs:
     - name: Inject CA certificate into Docker build
       if: matrix.RUNS_ON == 'streak2'
       run: |
+        set -euo pipefail
         cp /etc/pki/tls/certs/ca-bundle.crt ./ca-bundle.crt
-        sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' ${{ matrix.TPL_DOCKERFILE }}
+        dockerfile="${{ matrix.TPL_DOCKERFILE }}"
+        if grep -q 'RUN dnf clean all' "${dockerfile}"; then
+          sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${dockerfile}"
+        else
+          # Ubuntu CUDA jobs also run on streak2. Insert CA trust immediately
+          # after the first FROM so apt/git/pip can talk through the MITM proxy.
+          awk '
+            BEGIN { inserted=0 }
+            {
+              print
+              if (!inserted && $0 ~ /^FROM /) {
+                print "COPY ca-bundle.crt /usr/local/share/ca-certificates/llnl-ca-bundle.crt"
+                print "RUN mkdir -p /etc/ssl/certs && \\"
+                print "    if [ -f /etc/ssl/certs/ca-certificates.crt ]; then \\"
+                print "      cat /usr/local/share/ca-certificates/llnl-ca-bundle.crt >> /etc/ssl/certs/ca-certificates.crt; \\"
+                print "    else \\"
+                print "      cp /usr/local/share/ca-certificates/llnl-ca-bundle.crt /etc/ssl/certs/ca-certificates.crt; \\"
+                print "    fi && \\"
+                print "    (command -v update-ca-certificates >/dev/null 2>&1 && update-ca-certificates || true)"
+                print "ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \\"
+                print "    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \\"
+                print "    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \\"
+                print "    GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt \\"
+                print "    PIP_CERT=/etc/ssl/certs/ca-certificates.crt"
+                inserted=1
+              }
+            }
+            END {
+              if (!inserted) {
+                print "ERROR: no FROM line in Dockerfile" > "/dev/stderr"
+                exit 1
+              }
+            }
+          ' "${dockerfile}" > "${dockerfile}.ca" && mv "${dockerfile}.ca" "${dockerfile}"
+        fi
 
     - name: Run the docker build docker script
       env:

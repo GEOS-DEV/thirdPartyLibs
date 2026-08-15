@@ -1,8 +1,13 @@
 #!/bin/bash
 env
 
-# We save memory for the docker context
-echo .git > .dockerignore
+# Keep .git out of the build context. Do not clobber an existing
+# .dockerignore; local checkouts often ignore large untracked trees.
+if [ -f .dockerignore ]; then
+    grep -qxF '.git' .dockerignore || echo '.git' >> .dockerignore
+else
+    echo .git > .dockerignore
+fi
 
 # Get uberenv submodule
 git submodule update --init scripts/uberenv
