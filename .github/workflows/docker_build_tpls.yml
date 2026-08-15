@@ -194,8 +194,9 @@ jobs:
           sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${dockerfile}"
         else
           # Ubuntu CUDA jobs also run on streak2. Only COPY the host bundle;
-          # tpl-ubuntu.Dockerfile installs it after ca-certificates so the
-          # package postinst cannot wipe it. ENV covers pip/curl/git.
+          # tpl-ubuntu.Dockerfile configures APT before its first update and
+          # installs the bundle after ca-certificates so the package postinst
+          # cannot wipe it. ENV covers pip/curl/git.
           awk '
             BEGIN { inserted=0 }
             {

@@ -30,7 +30,16 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # Packages needed both for the TPL build and for the downstream GEOS build.
 # We avoid reinstalling anything already present in the base image (compiler,
 # cmake, doxygen, blas/lapack-dev when included by base PACKAGES, etc.).
-RUN apt-get update && \
+# The streak2 workflow injects the LLNL CA bundle before this stage. Configure
+# APT to use that bundle before the first update, since the base image does not
+# yet trust the runner's MITM certificate and ca-certificates is installed below.
+RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
+      mkdir -p /etc/apt/apt.conf.d && \
+      printf '%s\n' \
+        'Acquire::https::CaInfo "/etc/ssl/certs/llnl-ca-bundle.crt";' \
+        > /etc/apt/apt.conf.d/99-llnl-ca; \
+    fi && \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -61,12 +70,7 @@ RUN apt-get update && \
 
 # Install clingo for Spack. Do not upgrade Ubuntu's Debian-managed pip in
 # place; Ubuntu 24.04's pip package cannot be uninstalled by pip.
-# --trusted-host covers streak2 MITM when the system store is incomplete.
-RUN python3 -m pip install --break-system-packages \
-        --trusted-host pypi.org \
-        --trusted-host files.pythonhosted.org \
-        --trusted-host pypi.python.org \
-        clingo
+RUN python3 -m pip install --break-system-packages clingo
 
 # MPI environment. CC/CXX/FC come from the base image.
 ENV MPICC=/usr/bin/mpicc \
