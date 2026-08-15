@@ -35,6 +35,7 @@ echo "Docker base image is ${DOCKER_BASE_IMAGE}"
 EXTRA_BUILD_ARGS=()
 if [ -n "${GCC_VERSION}" ];   then EXTRA_BUILD_ARGS+=(--build-arg "GCC_VERSION=${GCC_VERSION}");     fi
 if [ -n "${CLANG_VERSION}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "CLANG_VERSION=${CLANG_VERSION}"); fi
+if [ -n "${SPACK_BUILD_JOBS:-}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "SPACK_BUILD_JOBS=${SPACK_BUILD_JOBS}"); fi
 
 BUILDER_ARGS=()
 if [ -n "${DOCKER_BUILDER:-}" ]; then BUILDER_ARGS+=(--builder "${DOCKER_BUILDER}"); fi

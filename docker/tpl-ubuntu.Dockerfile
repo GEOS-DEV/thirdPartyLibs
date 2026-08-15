@@ -116,6 +116,9 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
 ARG SPEC
+# Keep Spack's package build parallelism bounded on self-hosted runners. The
+# value remains overridable with --build-arg SPACK_BUILD_JOBS=... .
+ARG SPACK_BUILD_JOBS=4
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
@@ -153,6 +156,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
         --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
         --project-json=${SRC_DIR}/.uberenv_config.json \
         --prefix ${GEOSX_TPL_DIR} \
+        -j ${SPACK_BUILD_JOBS} \
         -k && \
     rm -f lvarray* && \
     cp *.cmake /spack-generated.cmake && \
