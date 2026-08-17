@@ -7,7 +7,7 @@
 # By default, we will set permissions and reuse a previous build if available
 SET_PERMISSIONS=true
 CLEAN=false
-: ${USER:=$(whoami)}
+: "${USER:=$(whoami)}"
 
 # --- Argument Parsing ---
 INSTALL_DIR=$1
@@ -49,7 +49,7 @@ fi
 echo "Building the TPLs on $MACHINE for $COMPILER to be installed at $INSTALL_DIR. Progress will be written to $LOG_FILE."
 
 # Execute the command to be run on the compute node via ssh
-ssh -t "${USER}@${MACHINE}.llnl.gov" "
+ssh -T -o ServerAliveInterval=60 -o ServerAliveCountMax=10 "${USER}@${MACHINE}.llnl.gov" "
   source /etc/profile &&
   cd '${PWD}' &&
   ${GET_A_NODE} bash -c '
@@ -59,14 +59,14 @@ ssh -t "${USER}@${MACHINE}.llnl.gov" "
       --prefix \"${INSTALL_DIR}/${CONFIG}_tpls\" \
       --spack-env-name \"${CONFIG}_env\" \
       \"\$@\"
+    uberenv_status=\$?
     echo \"End time: \$(date)\"
+    exit \${uberenv_status}
   '
 " > "${LOG_FILE}" 2>&1
+UBERENV_STATUS=$?
 
-## Check the last ten lines of the log file.
-## A successful install should show up on one of the final lines.
-tail -10 "$LOG_FILE" | grep -E "Successfully installed geos" > /dev/null
-if [ $? -eq 0 ]; then
+if [ "$UBERENV_STATUS" -eq 0 ]; then
   echo "Cleanup extra build files at ${INSTALL_DIR}/${CONFIG}_tpls/."
   rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/${CONFIG}_env"
   rm -rf "${INSTALL_DIR}/${CONFIG}_tpls/.spack-db"

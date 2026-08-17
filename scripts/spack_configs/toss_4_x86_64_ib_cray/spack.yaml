@@ -89,7 +89,7 @@ spack:
           - /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0/lib
           - /opt/cray/pe/mpich/9.0.1/gtl/lib
         modules:
-        - PrgEnv-cray/8.6.0
+        - PrgEnv-cray/8.7.0
         - craype-x86-genoa
         - craype/2.7.35
         - craype-network-ofi
@@ -125,7 +125,7 @@ spack:
           - /opt/cray/pe/mpich/9.0.1/gtl/lib
         modules:
         - rocm/6.4.3
-        - PrgEnv-cray/8.6.0
+        - PrgEnv-cray/8.7.0
         - craype-x86-genoa
         - craype/2.7.35
         - craype-network-ofi
