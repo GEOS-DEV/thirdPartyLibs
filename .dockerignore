@@ -1,0 +1,13 @@
+.git
+build
+build-*
+install
+install-*
+*_tpls
+.rocm-ci-local.*
+*.cmake
+*.log
+__pycache__
+vtk-9.6.2-local/
+tplMirror/*.tar.gz
+tplMirror/chai-develop-060425/

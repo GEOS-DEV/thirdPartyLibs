@@ -27,6 +27,8 @@ DOCKER_TAG=${DOCKER_TAG:-local}
 COMMIT=${COMMIT:-$(git rev-parse HEAD 2>/dev/null || echo HEAD)}
 INSTALL_DIR_ROOT=${INSTALL_DIR_ROOT:-/opt/GEOS}
 HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake}
+BUILDX_CPUS=${BUILDX_CPUS:-}
+BUILDX_MEMORY=${BUILDX_MEMORY:-}
 
 keep_artifacts=0
 dry_run=0
@@ -63,6 +65,8 @@ Build settings (each also readable from the environment):
   --base-sha SHA     DOCKER_BASE_IMAGE_SHA [${DOCKER_BASE_IMAGE_SHA}]
   --install-dir DIR  INSTALL_DIR_ROOT      [${INSTALL_DIR_ROOT}]
   --host-config F    HOST_CONFIG           [${HOST_CONFIG}]
+  --cpus N           BUILDX_CPUS           [${BUILDX_CPUS:-unset}]
+  --memory SIZE      BUILDX_MEMORY         [${BUILDX_MEMORY:-unset}]
 
 Other:
   --keep             Keep the image and buildx builder after a successful build
@@ -128,6 +132,8 @@ while (( $# )); do
     --base-sha)     DOCKER_BASE_IMAGE_SHA=$2; shift 2 ;;
     --install-dir)  INSTALL_DIR_ROOT=$2; shift 2 ;;
     --host-config)  HOST_CONFIG=$2; shift 2 ;;
+    --cpus)         BUILDX_CPUS=$2; shift 2 ;;
+    --memory)       BUILDX_MEMORY=$2; shift 2 ;;
     --keep)         keep_artifacts=1; shift ;;
     --dry-run)      dry_run=1; shift ;;
     -h|--help)      usage; exit 0 ;;
@@ -188,13 +194,23 @@ build() {
     printf '    commit       %s\n' "${COMMIT}"
     printf '    install dir  %s\n' "${INSTALL_DIR_ROOT}"
     printf '    host config  %s\n' "${HOST_CONFIG}"
+    [[ ${BUILDX_CPUS} ]] && printf '    cpus         %s\n' "${BUILDX_CPUS}"
+    [[ ${BUILDX_MEMORY} ]] && printf '    memory       %s\n' "${BUILDX_MEMORY}"
     return
   fi
 
-  if ! docker buildx create --name "${builder}" --driver docker-container --bootstrap >/dev/null; then
+  create_args=(--name "${builder}" --driver docker-container)
+  if [[ ${BUILDX_CPUS} ]]; then
+    # docker-container has no "cpus" option; CFS quota 100000us * N == N CPUs.
+    create_args+=(--driver-opt "cpu-period=100000")
+    create_args+=(--driver-opt "cpu-quota=$((BUILDX_CPUS * 100000))")
+    create_args+=(--driver-opt "cpuset-cpus=0-$((BUILDX_CPUS - 1))")
+  fi
+  [[ ${BUILDX_MEMORY} ]] && create_args+=(--driver-opt "memory=${BUILDX_MEMORY}")
+  if ! docker buildx create "${create_args[@]}" --bootstrap >/dev/null; then
     printf 'FAILED TO CREATE BUILDER: %s\n' "${name}" >&2
     failed=1
-    return
+    return 1
   fi
 
   if ! TPL_DOCKERFILE=${dockerfile} \
@@ -214,7 +230,7 @@ build() {
     printf 'FAILED: %s (builder retained: %s)\n' "${name}" "${builder}" >&2
     failed=1
     failed_builders+=("${builder}")
-    return
+    return 1
   fi
 
   if (( keep_artifacts )); then
@@ -236,9 +252,9 @@ build() {
   if (( cleanup_failed )); then
     failed=1
     failed_builders+=("${builder}")
-  else
-    printf 'PASSED: %s (image and build cache removed)\n' "${name}"
+    return 1
   fi
+  printf 'PASSED: %s (image and build cache removed)\n' "${name}"
 }
 
 printf 'Selected %d of %d job(s).\n' "${#indices[@]}" "${#MATRIX[@]}"
@@ -248,12 +264,13 @@ for idx in "${indices[@]}"; do
   row=$((row + 1))
   IFS='|' read -r name dockerfile base_tag base_repository repository gcc clang spec \
     <<<"${MATRIX[${idx}]}"
+
   build "${row}" "${name}" "${dockerfile}" "${base_tag}" "${base_repository}" \
     "${repository}" "${gcc}" "${clang}" "${spec}"
 done
 
 if (( dry_run )); then
-  printf '\nDry run: nothing was built.\n'
+  printf 'Dry run: nothing was built.\n'
   exit 0
 fi
 

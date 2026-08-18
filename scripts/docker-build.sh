@@ -1,8 +1,13 @@
 #!/bin/bash
 env
 
-# We save memory for the docker context
-echo .git > .dockerignore
+# Keep .git out of the build context. Do not clobber an existing
+# .dockerignore; local checkouts often ignore large untracked trees.
+if [ -f .dockerignore ]; then
+    grep -qxF '.git' .dockerignore || echo '.git' >> .dockerignore
+else
+    echo .git > .dockerignore
+fi
 
 # Get uberenv submodule
 git submodule update --init scripts/uberenv
@@ -30,10 +35,19 @@ echo "Docker base image is ${DOCKER_BASE_IMAGE}"
 EXTRA_BUILD_ARGS=()
 if [ -n "${GCC_VERSION}" ];   then EXTRA_BUILD_ARGS+=(--build-arg "GCC_VERSION=${GCC_VERSION}");     fi
 if [ -n "${CLANG_VERSION}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "CLANG_VERSION=${CLANG_VERSION}"); fi
+if [ -n "${SPACK_BUILD_JOBS:-}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "SPACK_BUILD_JOBS=${SPACK_BUILD_JOBS}"); fi
 
 BUILDER_ARGS=()
 if [ -n "${DOCKER_BUILDER:-}" ]; then BUILDER_ARGS+=(--builder "${DOCKER_BUILDER}"); fi
 if [ "${DOCKER_LOAD:-0}" = 1 ]; then BUILDER_ARGS+=(--load); fi
+if [ -n "${DOCKER_NETWORK:-}" ]; then BUILDER_ARGS+=(--network "${DOCKER_NETWORK}"); fi
+
+# Forward proxy settings into RUN steps (BuildKit special-cases these args).
+for v in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
+    if [ -n "${!v:-}" ]; then
+        EXTRA_BUILD_ARGS+=(--build-arg "${v}=${!v}")
+    fi
+done
 
 docker build --progress=plain \
     "${BUILDER_ARGS[@]}" \

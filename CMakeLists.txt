@@ -47,10 +47,12 @@ option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_HYPRE "" ON )
-option( ENABLE_TRILINOS "" ON )
+option( ENABLE_TRILINOS "" OFF )
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SCOTCH "" ON )
 option( ENABLE_SUITESPARSE "" ON )
+option( ENABLE_SUPERLU_DIST "" ON )
+option( ENABLE_HYPRE_GPU_PROFILING "" OFF )
 option( ENABLE_VTK "" ON )
 option( ENABLE_VTK_WRAP_PYTHON "" OFF )
 
@@ -125,6 +127,50 @@ else( TRUE )
 endif()
 
 
+################################
+# HIP / ROCm
+################################
+if( ENABLE_HIP )
+    if( NOT DEFINED ROCM_PATH )
+        if( DEFINED HIP_ROOT )
+            set( ROCM_PATH ${HIP_ROOT} )
+        elseif( DEFINED ENV{ROCM_PATH} )
+            set( ROCM_PATH $ENV{ROCM_PATH} )
+        else()
+            message( FATAL_ERROR "ENABLE_HIP is ON but neither ROCM_PATH nor HIP_ROOT is defined." )
+        endif()
+    endif()
+
+    if( NOT DEFINED HIP_ROOT )
+        set( HIP_ROOT ${ROCM_PATH} )
+    endif()
+
+    if( NOT DEFINED CMAKE_HIP_ARCHITECTURES )
+        message( FATAL_ERROR "ENABLE_HIP is ON but CMAKE_HIP_ARCHITECTURES is not defined (e.g. gfx90a, gfx942, gfx1100)." )
+    endif()
+
+    # hypre is configured outside of cmake, so it needs the MPI include directory explicitly
+    # when its sources are compiled for the device.
+    if( ENABLE_MPI AND NOT DEFINED MPI_INCLUDE_DIR )
+        if( DEFINED ENV{MPICH_DIR} )               # set by the cray-mpich module on LC
+            set( MPI_INCLUDE_DIR "$ENV{MPICH_DIR}/include" )
+        elseif( DEFINED ENV{MPI_ROOT} )
+            set( MPI_INCLUDE_DIR "$ENV{MPI_ROOT}/include" )
+        elseif( MPI_C_INCLUDE_DIRS )               # set by find_package( MPI ) through BLT
+            list( GET MPI_C_INCLUDE_DIRS 0 MPI_INCLUDE_DIR )
+        elseif( MPI_C_COMPILER )                   # <prefix>/bin/mpicc -> <prefix>/include
+            get_filename_component( MPI_BIN_DIR ${MPI_C_COMPILER} DIRECTORY )
+            get_filename_component( MPI_PREFIX_DIR ${MPI_BIN_DIR} DIRECTORY )
+            set( MPI_INCLUDE_DIR "${MPI_PREFIX_DIR}/include" )
+        else()
+            message( FATAL_ERROR "ENABLE_HIP is ON but MPI_INCLUDE_DIR is not defined and cannot be deduced." )
+        endif()
+        message( STATUS "MPI_INCLUDE_DIR = ${MPI_INCLUDE_DIR}" )
+    endif()
+
+    message( STATUS "ROCM_PATH = ${ROCM_PATH}" )
+    message( STATUS "CMAKE_HIP_ARCHITECTURES = ${CMAKE_HIP_ARCHITECTURES}" )
+endif()
 
 
 ################################
@@ -340,6 +386,13 @@ set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2025.12.0.tar.gz")
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
+# RAJA's vectorization layer does not compile with the ROCm toolchain.
+if( ENABLE_HIP )
+    set( RAJA_ENABLE_VECTORIZATION OFF )
+else()
+    set( RAJA_ENABLE_VECTORIZATION ON )
+endif()
+
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
@@ -360,10 +413,18 @@ ExternalProject_Add( raja
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
+                                -D ENABLE_HIP:BOOL=${ENABLE_HIP}
+                                -D RAJA_ENABLE_HIP:BOOL=${ENABLE_HIP}
+                                -D CMAKE_HIP_COMPILER=${CMAKE_HIP_COMPILER}
+                                -D RAJA_ENABLE_VECTORIZATION:BOOL=${RAJA_ENABLE_VECTORIZATION}
+                                -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
+                                -D ROCPRIM_DIR=${HIP_ROOT}
+                                -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
                                 -D ENABLE_TESTS:BOOL=OFF
                                 -D ENABLE_EXAMPLES:BOOL=OFF
                                 -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                     )
@@ -398,8 +459,14 @@ ExternalProject_Add( chai
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
+                                -D ENABLE_HIP:BOOL=${ENABLE_HIP}
+                                -D CHAI_ENABLE_HIP:BOOL=${ENABLE_HIP}
+                                -D CMAKE_HIP_COMPILER=${CMAKE_HIP_COMPILER}
+                                -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
+                                -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D ENABLE_TESTS=OFF
                                 -D ENABLE_BENCHMARKS=OFF
@@ -444,6 +511,7 @@ if (ENABLE_CALIPER)
                                     -D MPI_CXX_COMPILER:STRING=${MPI_CXX_COMPILER}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                     -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
                        )
 
@@ -480,13 +548,22 @@ if (ENABLE_CALIPER)
                                     -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                    -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                     -D WITH_PAPI:BOOL=${ENABLE_PAPI}
                                     -D PAPI_PREFIX:STRING=${PAPI_PREFIX}
                                     -D WITH_ADIAK:BOOL=ON
                                     -D adiak_DIR:STRING=${ADIAK_DIR}/lib/cmake/adiak/
                                     -D WITH_CUPTI=${CALIPER_WITH_CUPTI}
                                     -D WITH_NVPROF=${ENABLE_CUDA}
+                                    -D WITH_ROCM=${ENABLE_ROCTX}
+                                    -D ROCM_PREFIX:PATH=${ROCM_PATH}
                        )
+
+    if( BUILD_SHARED_LIBS )
+        set( CALIPER_LIB "libcaliper.so" )
+    else()
+        set( CALIPER_LIB "libcaliper.a" )
+    endif()
 
     list(APPEND build_list caliper adiak)
 else()
@@ -587,11 +664,6 @@ if (ENABLE_TRILINOS)
                                  -D TPL_ENABLE_MKL:BOOL=ON
                                  -D TPL_MKL_INCLUDE_DIRS:PATH=${MKL_INCLUDE_DIRS}
                                  -D TPL_MKL_LIBRARIES:STRING=${MKL_LIBRARIES})
-    endif()
-
-    if ( ENABLE_ESSL )
-        set( TRILINOS_EXTRA_ARGS ${TRILINOS_EXTRA_ARGS}
-                                 -D HAVE_dggsvd3:BOOL=ON)
     endif()
 
     if ( DEFINED OpenMP_Fortran_FLAGS )
@@ -737,7 +809,7 @@ list(APPEND build_list metis )
 ################################
 # SUPERLU --
 ################################
-if( ENABLE_MPI )
+if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
 
@@ -784,6 +856,7 @@ if( ENABLE_MPI )
                                   -D CMAKE_Fortran_FLAGS_RELEASE=${CMAKE_Fortran_FLAGS_RELEASE}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                   -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                  -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                   -D enable_openmp=${ENABLE_OPENMP}
           )
 
@@ -814,6 +887,9 @@ if( ENABLE_HYPRE )
     set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
     set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
     set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+  endif()
+
+  if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
     set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
     if( ENABLE_OPENMP )
       set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
@@ -844,9 +920,41 @@ if( ENABLE_HYPRE )
 --with-umpire-include=${CHAI_DIR}/include \
 --with-umpire-lib-dirs=${CHAI_DIR}/lib \
 --with-umpire-libs=umpire " )
+
+      if( ENABLE_HYPRE_GPU_AWARE_MPI )
+        set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-aware-mpi" )
+      endif()
+
+      if( ENABLE_HYPRE_GPU_PROFILING )
+        set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-profiling" )
+      endif()
     endif()
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
-    message( FATAL_ERROR "hip tpls build only supported through spack" )
+    if( NOT ENABLE_HIP )
+      message( FATAL_ERROR "Non-compatible options: HYPRE device cannot be set to HIP when ENABLE_HIP is OFF" )
+    else()
+      list( APPEND HYPRE_DEPENDS chai )
+      set( HYPRE_HIP_FLAGS "\
+ROCM_PATH=${ROCM_PATH} \
+--with-hip \
+--enable-rocblas \
+--enable-rocsparse \
+--enable-rocsolver \
+--with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
+--with-umpire-device \
+--with-umpire-include=${CHAI_DIR}/include \
+--with-umpire-lib-dirs=${CHAI_DIR}/lib \
+--with-umpire-libs=\"umpire camp\" \
+--with-MPI-include=${MPI_INCLUDE_DIR} " )
+
+      if( ENABLE_HYPRE_GPU_AWARE_MPI )
+        set( HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-aware-mpi" )
+      endif()
+
+      if( ENABLE_HYPRE_GPU_PROFILING )
+        set( HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-profiling" )
+      endif()
+    endif()
   endif()
 
   if( CMAKE_HOST_APPLE )
@@ -856,7 +964,7 @@ if( ENABLE_HYPRE )
   endif()
 
   if( ENABLE_CALIPER_HYPRE )
-    set( HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}/include\" --with-caliper-lib=\"${CALIPER_DIR}/libs/caliper.a\"" )
+    set( HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}/include\" --with-caliper-lib=\"${CALIPER_DIR}/lib/${CALIPER_LIB}\"" )
     list( APPEND HYPRE_DEPENDS caliper )
   endif()
 
@@ -881,6 +989,7 @@ if( ENABLE_HYPRE )
   ${HYPRE_SUPERLU_FLAGS} \
   ${HYPRE_OPENMP_FLAG} \
   ${HYPRE_CUDA_FLAGS} \
+  ${HYPRE_HIP_FLAGS} \
   ${HYPRE_CALIPER_FLAGS}\n")
 
   ExternalProject_Add( hypre

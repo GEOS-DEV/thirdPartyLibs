@@ -41,7 +41,8 @@ RUN dnf clean all && \
         bzip2 \
         gnupg2 \
         perl \
-        xz && \
+        xz \
+        xz-devel && \
     (dnf -y install python3-virtualenv || \
      /usr/bin/python3 -m pip install --no-cache-dir virtualenv) && \
     dnf clean all && rm -rf /var/cache/dnf /var/lib/dnf
@@ -89,6 +90,9 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
 ARG SPEC
+# Keep Spack's package build parallelism bounded on self-hosted runners. The
+# value remains overridable with --build-arg SPACK_BUILD_JOBS=... .
+ARG SPACK_BUILD_JOBS=4
 
 RUN dnf -y install \
         tbb-devel \
@@ -146,6 +150,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
                 --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
                 --project-json=${SRC_DIR}/.uberenv_config.json \
                 --prefix ${GEOSX_TPL_DIR} \
+                -j ${SPACK_BUILD_JOBS} \
                 -k " ; \
     else \
         ./scripts/uberenv/uberenv.py \
@@ -153,6 +158,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
             --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
             --project-json=${SRC_DIR}/.uberenv_config.json \
             --prefix ${GEOSX_TPL_DIR} \
+            -j ${SPACK_BUILD_JOBS} \
             -k ; \
     fi && \
     rm -f lvarray* && \

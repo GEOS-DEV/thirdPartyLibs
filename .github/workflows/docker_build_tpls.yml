@@ -167,7 +167,14 @@ jobs:
         lfs: true
 
     - name: Set up Docker Buildx
+      if: matrix.RUNS_ON != 'streak2'
       uses: docker/setup-buildx-action@v4
+
+    - name: Set up Docker Buildx
+      if: matrix.RUNS_ON == 'streak2'
+      uses: docker/setup-buildx-action@v4
+      with:
+        driver-opts: network=host
 
     - name: Print environment
       run: printenv
@@ -180,8 +187,38 @@ jobs:
     - name: Inject CA certificate into Docker build
       if: matrix.RUNS_ON == 'streak2'
       run: |
+        set -euo pipefail
         cp /etc/pki/tls/certs/ca-bundle.crt ./ca-bundle.crt
-        sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' ${{ matrix.TPL_DOCKERFILE }}
+        dockerfile="${{ matrix.TPL_DOCKERFILE }}"
+        if grep -q 'RUN dnf clean all' "${dockerfile}"; then
+          sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${dockerfile}"
+        else
+          # Ubuntu CUDA jobs also run on streak2. Only COPY the host bundle;
+          # tpl-ubuntu.Dockerfile configures APT before its first update and
+          # installs the bundle after ca-certificates so the package postinst
+          # cannot wipe it. ENV covers pip/curl/git.
+          awk '
+            BEGIN { inserted=0 }
+            {
+              print
+              if (!inserted && $0 ~ /^FROM /) {
+                print "COPY ca-bundle.crt /etc/ssl/certs/llnl-ca-bundle.crt"
+                print "ENV SSL_CERT_FILE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    REQUESTS_CA_BUNDLE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    CURL_CA_BUNDLE=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    GIT_SSL_CAINFO=/etc/ssl/certs/llnl-ca-bundle.crt \\"
+                print "    PIP_CERT=/etc/ssl/certs/llnl-ca-bundle.crt"
+                inserted=1
+              }
+            }
+            END {
+              if (!inserted) {
+                print "ERROR: no FROM line in Dockerfile" > "/dev/stderr"
+                exit 1
+              }
+            }
+          ' "${dockerfile}" > "${dockerfile}.ca" && mv "${dockerfile}.ca" "${dockerfile}"
+        fi
 
     - name: Run the docker build docker script
       env:
@@ -196,6 +233,7 @@ jobs:
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+        DOCKER_NETWORK: ${{ matrix.RUNS_ON == 'streak2' && 'host' || '' }}
       run: bash -x ./scripts/docker-build.sh
 
     - name: Login to DockerHub

@@ -22,6 +22,13 @@ FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 ARG CLANG_VERSION
 
+# streak2 hosts can enable kernel FIPS mode even though this Ubuntu image has
+# no FIPS provider. Use OpenSSL's default provider for the image's package
+# downloads and source builds, matching the GEOS streak2 container setup.
+COPY docker/openssl-non-fips.cnf /etc/ssl/openssl-non-fips.cnf
+ENV OPENSSL_FORCE_FIPS_MODE=0 \
+    OPENSSL_CONF=/etc/ssl/openssl-non-fips.cnf
+
 # Install directory provided as a docker build argument; forwarded via ENV
 # (GEOSX_TPL_DIR is part of the image contract consumed by GEOS).
 ARG INSTALL_DIR
@@ -30,7 +37,16 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # Packages needed both for the TPL build and for the downstream GEOS build.
 # We avoid reinstalling anything already present in the base image (compiler,
 # cmake, doxygen, blas/lapack-dev when included by base PACKAGES, etc.).
-RUN apt-get update && \
+# The streak2 workflow injects the LLNL CA bundle before this stage. Configure
+# APT to use that bundle before the first update, since the base image does not
+# yet trust the runner's MITM certificate and ca-certificates is installed below.
+RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
+      mkdir -p /etc/apt/apt.conf.d && \
+      printf '%s\n' \
+        'Acquire::https::CaInfo "/etc/ssl/certs/llnl-ca-bundle.crt";' \
+        > /etc/apt/apt.conf.d/99-llnl-ca; \
+    fi && \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -51,7 +67,24 @@ RUN apt-get update && \
         lbzip2 \
         bzip2 \
         gnupg && \
+    if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
+      mkdir -p /usr/local/share/ca-certificates && \
+      awk 'BEGIN {n=0} /-----BEGIN/ {n++; f=sprintf("/usr/local/share/ca-certificates/llnl-%03d.crt", n)} n>0 {print > f}' \
+        /etc/ssl/certs/llnl-ca-bundle.crt && \
+      update-ca-certificates ; \
+    fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# APT needs the runner bundle for its first HTTPS transaction. Once
+# ca-certificates has rebuilt Ubuntu's trust store, use that merged bundle for
+# all subsequent Python, curl, Git, and pip operations. Keeping the runner
+# bundle selected globally can omit Ubuntu's public roots on some streak2
+# images.
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt
 
 # Install clingo for Spack. Do not upgrade Ubuntu's Debian-managed pip in
 # place; Ubuntu 24.04's pip package cannot be uninstalled by pip.
@@ -101,6 +134,9 @@ FROM tpl_toolchain_intersect_geosx_toolchain AS tpl_toolchain
 ARG SRC_DIR
 ARG BLD_DIR
 ARG SPEC
+# Keep Spack's package build parallelism bounded on self-hosted runners. The
+# value remains overridable with --build-arg SPACK_BUILD_JOBS=... .
+ARG SPACK_BUILD_JOBS=4
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
@@ -138,6 +174,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
         --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
         --project-json=${SRC_DIR}/.uberenv_config.json \
         --prefix ${GEOSX_TPL_DIR} \
+        -j ${SPACK_BUILD_JOBS} \
         -k && \
     rm -f lvarray* && \
     cp *.cmake /spack-generated.cmake && \
