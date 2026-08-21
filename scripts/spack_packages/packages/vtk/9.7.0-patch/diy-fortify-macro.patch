@@ -1,0 +1,18 @@
+--- a/ThirdParty/diy2/vtkdiy2/include/vtkdiy2/coroutine/sjlj.hpp
++++ b/ThirdParty/diy2/vtkdiy2/include/vtkdiy2/coroutine/sjlj.hpp
+@@ -6,5 +6,5 @@
+ #if __USE_FORTIFY_LEVEL
+-#define DIY_USE_FORTIFY_LEVEL __USE_FORTIFY_LEVEL
++#pragma push_macro("__USE_FORTIFY_LEVEL")
+ #undef __USE_FORTIFY_LEVEL
+-#warning "diy::coroutine (sjlj.hpp) cannot be compiled with _FORTIFY_SOURCE; disabling."
++#define DIY_SJLJ_FORTIFY_LEVEL_SAVED
+ #endif
+@@ -126,4 +126,5 @@
+ #if DIY_USE_FORTIFY_LEVEL
+-#define __USE_FORTIFY_LEVEL DIY_USE_FORTIFY_LEVEL
+-#undef DIY_USE_FORTIFY_LEVEL
++#if defined(DIY_SJLJ_FORTIFY_LEVEL_SAVED)
++#pragma pop_macro("__USE_FORTIFY_LEVEL")
++#undef DIY_SJLJ_FORTIFY_LEVEL_SAVED
+ #endif

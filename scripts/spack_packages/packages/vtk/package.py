@@ -67,6 +67,10 @@ class Vtk(CMakePackage):
                    if fname in ('vtkCellGridReader.cxx.patch', 'vtkLegacyCellGridReader.cxx.patch'):
                        patch(os.path.join('9.4.2-patch', fname), when='@9.7.0')
 
+    # Keep DIY's SJLJ fortify workaround scoped to its libc includes and do
+    # not promote its expected condition to a compiler warning.
+    patch('9.7.0-patch/diy-fortify-macro.patch', when='@9.7.0')
+
     def cmake_args(self):
         spec = self.spec
 
