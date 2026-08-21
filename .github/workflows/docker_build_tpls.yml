@@ -159,6 +159,20 @@ jobs:
           #   DOCKER_REPOSITORY: geosx/rockylinux9-gcc15-cuda13.2.1
           #   SPEC: "+cuda cuda_arch=86,120 ~openmp ~pygeosx ~docs %gcc-15 ^cuda@13.2.1+allow-unsupported-compilers"
 
+          # ROCm build. Unlike the rows above it does not layer on a
+          # geosx/<os>:<tag>-<sha> base image: AMD's own ROCm image already
+          # ships the amdclang toolchain and the ROCm math libraries, so the
+          # base image is given literally via DOCKER_BASE_IMAGE_OVERRIDE.
+          - name: Ubuntu 24.04 - amdclang 19 + ROCm 6.4.3
+            RUNS_ON: streak2
+            TPL_DOCKERFILE: docker/tpl-ubuntu-hip.Dockerfile
+            DOCKER_BASE_IMAGE_OVERRIDE: rocm/dev-ubuntu-24.04:6.4.3
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-amdclang19.0.0-rocm6.4.3
+            ROCM_VERSION: 6.4.3
+            AMDGPU_TARGET: gfx942
+            SPACK_BUILD_JOBS: 8
+            SPEC: "+rocm ~uncrustify ~openmp ~pygeosx ~docs ~trilinos ~petsc amdgpu_target=gfx942 %%amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw"
+
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -182,7 +196,13 @@ jobs:
     - name: Compose DOCKER_BASE_IMAGE
       id: base
       run: |
-        echo "DOCKER_BASE_IMAGE=${{ matrix.DOCKER_BASE_IMAGE_REPO }}:${{ matrix.DOCKER_BASE_IMAGE_TAG }}-${DOCKER_BASE_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
+        # Rows that do not build on a docker_base_images image (e.g. ROCm)
+        # pin their base image directly.
+        if [ -n "${{ matrix.DOCKER_BASE_IMAGE_OVERRIDE }}" ]; then
+          echo "DOCKER_BASE_IMAGE=${{ matrix.DOCKER_BASE_IMAGE_OVERRIDE }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "DOCKER_BASE_IMAGE=${{ matrix.DOCKER_BASE_IMAGE_REPO }}:${{ matrix.DOCKER_BASE_IMAGE_TAG }}-${DOCKER_BASE_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: Inject CA certificate into Docker build
       if: matrix.RUNS_ON == 'streak2'
@@ -227,6 +247,9 @@ jobs:
         DOCKER_BASE_IMAGE: ${{ steps.base.outputs.DOCKER_BASE_IMAGE }}
         GCC_VERSION: ${{ matrix.GCC_VERSION }}
         CLANG_VERSION: ${{ matrix.CLANG_VERSION }}
+        ROCM_VERSION: ${{ matrix.ROCM_VERSION }}
+        AMDGPU_TARGET: ${{ matrix.AMDGPU_TARGET }}
+        SPACK_BUILD_JOBS: ${{ matrix.SPACK_BUILD_JOBS }}
         INSTALL_DIR_ROOT: ${{ matrix.INSTALL_DIR_ROOT || '/opt/GEOS' }}
         HOST_CONFIG: ${{ matrix.HOST_CONFIG || 'host-configs/environment.cmake' }}
         SPEC: ${{ matrix.SPEC || 'undefined' }}
