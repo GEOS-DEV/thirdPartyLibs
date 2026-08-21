@@ -8,11 +8,12 @@
 -#warning "diy::coroutine (sjlj.hpp) cannot be compiled with _FORTIFY_SOURCE; disabling."
 +#define DIY_SJLJ_FORTIFY_LEVEL_SAVED
  #endif
-@@ -126,4 +126,5 @@
- #if DIY_USE_FORTIFY_LEVEL
+@@ -126,4 +126,4 @@
+-#if DIY_USE_FORTIFY_LEVEL
 -#define __USE_FORTIFY_LEVEL DIY_USE_FORTIFY_LEVEL
 -#undef DIY_USE_FORTIFY_LEVEL
+-#endif
 +#if defined(DIY_SJLJ_FORTIFY_LEVEL_SAVED)
 +#pragma pop_macro("__USE_FORTIFY_LEVEL")
 +#undef DIY_SJLJ_FORTIFY_LEVEL_SAVED
- #endif
++#endif
