@@ -184,6 +184,15 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # ----- Final GEOS-build image -----
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
+
+# The non-FIPS OpenSSL configuration is needed while building the TPLs on
+# FIPS-enabled hosts, but it must not be inherited by downstream tools. In
+# particular, sccache 0.17 uses OpenSSL for its GCS token exchange and this
+# configuration makes Ubuntu reject the Google endpoint certificate as too
+# weak. The GEOS CI script applies the same configuration at runtime only when
+# it is actually needed.
+ENV OPENSSL_CONF=""
+
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 COPY --from=tpl_toolchain /spack-generated.cmake /
 
