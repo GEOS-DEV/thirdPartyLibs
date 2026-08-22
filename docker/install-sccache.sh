@@ -2,8 +2,7 @@
 set -xe
 
 # Install `sccache` binaries to speed up the build of `geos`
-# 0.8.2 adds HIP compiler support while retaining the v0.7 cache format.
-VERSION=${1-0.8.2}
+VERSION=${1-0.17.0}
 PREFIX=${2-/opt/sccache}
 
 mkdir -p $PREFIX/bin
