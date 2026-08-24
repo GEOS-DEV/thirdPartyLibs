@@ -111,6 +111,8 @@ spack:
       externals:
       - spec: py-sphinx@4.3.2
         prefix: /usr
+        dependencies:
+        - spec: python@3.10.12
     python:
       buildable: false
       externals:

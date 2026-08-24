@@ -275,6 +275,8 @@ spack:
       externals:
       - spec: py-sphinx@7.4.7
         prefix: /usr
+        dependencies:
+        - spec: python@3.12
     python:
       buildable: false
       externals:

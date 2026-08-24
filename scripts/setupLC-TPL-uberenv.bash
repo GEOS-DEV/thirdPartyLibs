@@ -88,7 +88,7 @@ function launch_jobs() {
   # Note: The max time allowed on the debug queue is 1h. If we need more, switch to pbatch
   case "$machine" in
     dane)
-      ALLOC_CMD="srun -N 1 --exclusive -t 60 -A vortex"
+      ALLOC_CMD="srun -N 1 --exclusive -p pdebug -t 60 -A vortex"
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-12  "+docs %%gcc-12 ${COMMON}"   "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane gcc-13  "+docs %%gcc-13 ${COMMON}"   "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" dane llvm-14 "+docs %%clang-14 ${COMMON}" "${ALLOC_CMD}" "$@" &
@@ -96,7 +96,7 @@ function launch_jobs() {
       ;;
 
     matrix)
-      ALLOC_CMD="srun -N 1 --exclusive -t 60 -A vortex"
+      ALLOC_CMD="srun -N 1 --exclusive -p pdebug -t 60 -A vortex"
       "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-12-cuda-12.6  "+cuda ~uncrustify cuda_arch=90 %%gcc-12 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" matrix gcc-13-cuda-12.9  "+cuda ~uncrustify cuda_arch=90 %%gcc-13 ^cuda@12.9.1+allow-unsupported-compilers ${COMMON}"   "${ALLOC_CMD}" "$@" &
       "${UBERENV_HELPER}" "$INSTALL_DIR" matrix llvm-14-cuda-12.6 "+cuda ~uncrustify cuda_arch=90 %%clang-14 ^cuda@12.6.0+allow-unsupported-compilers ${COMMON}" "${ALLOC_CMD}" "$@" &
@@ -131,7 +131,13 @@ done
 echo "All jobs launched. Waiting for completion..."
 # Note: Estimated completion time is ~90 minutes.
 # Check log files for unreported completion of jobs.
-wait
+BUILD_FAILED=false
+mapfile -t JOB_PIDS < <(jobs -p)
+for pid in "${JOB_PIDS[@]}"; do
+  if ! wait "$pid"; then
+    BUILD_FAILED=true
+  fi
+done
 
 # --- Conditionally Set Final Permissions ---
 if [ "$SET_PERMISSIONS" = true ]; then
@@ -142,6 +148,11 @@ if [ "$SET_PERMISSIONS" = true ]; then
 else
     echo "---"
     echo "Skipping final permission updates as requested."
+fi
+
+if [ "$BUILD_FAILED" = true ]; then
+  echo "One or more builds failed. Check the corresponding log files." >&2
+  exit 1
 fi
 
 echo "Complete."
