@@ -1064,6 +1064,9 @@ if( ENABLE_HYPREDRV )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )
+  set( HYPREDRV_HYPRE_LIBRARIES "${HYPREDRV_HYPRE_LIBRARY}" )
+  list( APPEND HYPREDRV_HYPRE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+  string( REPLACE ";" "^" HYPREDRV_HYPRE_LIBRARIES_ARG "${HYPREDRV_HYPRE_LIBRARIES}" )
   set( HYPREDRV_MPI_ARGS )
   set( HYPREDRV_ACCELERATOR_ARGS )
   set( HYPREDRV_ENABLE_CUDA OFF )
@@ -1108,6 +1111,7 @@ if( ENABLE_HYPREDRV )
                        URL ${HYPREDRV_URL}
                        URL_HASH SHA256=${HYPREDRV_URL_HASH}
                        UPDATE_COMMAND ""
+                       LIST_SEPARATOR "^"
                        PREFIX ${PROJECT_BINARY_DIR}/hypredrive
                        INSTALL_DIR ${HYPREDRV_DIR}
                        DEPENDS hypre
@@ -1122,9 +1126,8 @@ if( ENABLE_HYPREDRV )
                                   -D CMAKE_INSTALL_LIBDIR:STRING=lib
                                   -D BUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                  -D HYPRE_ROOT:PATH=${HYPRE_DIR}
                                   -D HYPRE_INCLUDE_DIRS:PATH=${HYPRE_DIR}/include
-                                  -D HYPRE_LIBRARIES:FILEPATH=${HYPREDRV_HYPRE_LIBRARY}
+                                  -D HYPRE_LIBRARIES:STRING=${HYPREDRV_HYPRE_LIBRARIES_ARG}
                                   -D HYPREDRV_ENABLE_TESTING:BOOL=OFF
                                   -D HYPREDRV_ENABLE_ALL_TESTS:BOOL=OFF
                                   -D HYPREDRV_ENABLE_DATA:BOOL=OFF
