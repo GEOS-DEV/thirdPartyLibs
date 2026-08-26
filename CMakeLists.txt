@@ -47,6 +47,7 @@ option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_HYPRE "" ON )
+option( ENABLE_HYPREDRV "" ON )
 option( ENABLE_TRILINOS "" OFF )
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SCOTCH "" ON )
@@ -1046,6 +1047,98 @@ ROCM_PATH=${ROCM_PATH} \
                        )
 
   list( APPEND build_list hypre )
+endif()
+
+################################
+# HYPREDRIVE
+################################
+
+if( ENABLE_HYPREDRV )
+  if( NOT ENABLE_HYPRE )
+    message( FATAL_ERROR "ENABLE_HYPREDRV requires ENABLE_HYPRE=ON" )
+  endif()
+
+  set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
+  set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/98989bef31e865d738c1b678ee058bb0e5dd635e.tar.gz" )
+  set( HYPREDRV_URL_HASH "7ea64b3ea5330dff2322bd265d22b2daded75733cdde8a6e5047feeea57b2cb5" )
+  set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+  set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )
+  set( HYPREDRV_MPI_ARGS )
+  set( HYPREDRV_ACCELERATOR_ARGS )
+  set( HYPREDRV_ENABLE_CUDA OFF )
+  set( HYPREDRV_ENABLE_HIP OFF )
+
+  if( ENABLE_MPI )
+    set( HYPREDRV_C_COMPILER ${MPI_C_COMPILER} )
+    list( APPEND HYPREDRV_MPI_ARGS
+          -D MPI_C_COMPILER:FILEPATH=${MPI_C_COMPILER}
+          -D MPI_CXX_COMPILER:FILEPATH=${MPI_CXX_COMPILER} )
+  endif()
+
+  if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
+    set( HYPREDRV_ENABLE_CUDA ON )
+    list( APPEND HYPREDRV_ACCELERATOR_ARGS
+          -D CMAKE_CUDA_COMPILER:FILEPATH=${CMAKE_CUDA_COMPILER}
+          -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
+          -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
+  elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    set( HYPREDRV_ENABLE_HIP ON )
+    list( APPEND HYPREDRV_ACCELERATOR_ARGS
+          -D CMAKE_HIP_COMPILER:FILEPATH=${CMAKE_HIP_COMPILER}
+          -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
+          -D ROCM_PATH:PATH=${ROCM_PATH} )
+  endif()
+
+  set( HYPREDRV_CALIPER_ARGS )
+  set( HYPREDRV_ENABLE_CALIPER OFF )
+  if( DEFINED ENABLE_CALIPER_HYPRE AND ENABLE_CALIPER_HYPRE )
+    set( HYPREDRV_ENABLE_CALIPER ON )
+    list( APPEND HYPREDRV_CALIPER_ARGS
+          -D TPL_CALIPER_INCLUDE_DIRS:PATH=${CALIPER_DIR}/include
+          -D TPL_CALIPER_LIBRARIES:FILEPATH=${CALIPER_DIR}/lib/${CALIPER_LIB} )
+  endif()
+
+  message( STATUS "Building HYPREDRIVE found at ${HYPREDRV_URL}" )
+
+  # The legacy superbuild installs HYPRE with its Autotools interface. Pass
+  # those include/library paths explicitly so HypreDrive does not fetch and
+  # build a second copy of HYPRE.
+  ExternalProject_Add( hypredrive
+                       URL ${HYPREDRV_URL}
+                       URL_HASH SHA256=${HYPREDRV_URL_HASH}
+                       UPDATE_COMMAND ""
+                       PREFIX ${PROJECT_BINARY_DIR}/hypredrive
+                       INSTALL_DIR ${HYPREDRV_DIR}
+                       DEPENDS hypre
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                  -D CMAKE_C_COMPILER:FILEPATH=${HYPREDRV_C_COMPILER}
+                                  -D CMAKE_C_FLAGS:STRING=${HYPREDRV_C_FLAGS}
+                                  -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                  -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                  -D CMAKE_INSTALL_LIBDIR:STRING=lib
+                                  -D BUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+                                  -D CMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                  -D HYPRE_ROOT:PATH=${HYPRE_DIR}
+                                  -D HYPRE_INCLUDE_DIRS:PATH=${HYPRE_DIR}/include
+                                  -D HYPRE_LIBRARIES:FILEPATH=${HYPREDRV_HYPRE_LIBRARY}
+                                  -D HYPREDRV_ENABLE_TESTING:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_ALL_TESTS:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_DATA:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_DOCS:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_EXAMPLES:BOOL=OFF
+                                  -D HYPREDRV_BUILD_DSUPERLU:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_CALIPER:BOOL=${HYPREDRV_ENABLE_CALIPER}
+                                  -D HYPREDRV_ENABLE_CUDA:BOOL=${HYPREDRV_ENABLE_CUDA}
+                                  -D HYPREDRV_ENABLE_HIP:BOOL=${HYPREDRV_ENABLE_HIP}
+                                  ${HYPREDRV_MPI_ARGS}
+                                  ${HYPREDRV_ACCELERATOR_ARGS}
+                                  ${HYPREDRV_CALIPER_ARGS} )
+
+  list( APPEND build_list hypredrive )
 endif()
 
 ################################
