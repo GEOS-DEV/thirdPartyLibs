@@ -2,7 +2,7 @@
 set -xe
 
 # Install `sccache` binaries to speed up the build of `geos`
-VERSION=${1-0.7.7}
+VERSION=${1-0.17.0}
 PREFIX=${2-/opt/sccache}
 
 mkdir -p $PREFIX/bin

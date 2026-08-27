@@ -20,7 +20,8 @@ class Vtk(CMakePackage):
 
     maintainers = ['chuckatkins', 'danlipsa']
     
-    version("9.4.2", sha256="36c98e0da96bb12a30fe53708097aa9492e7b66d5c3b366e1c8dc251e2856a02", preferred=True)
+    version("9.7.0", url="https://www.vtk.org/files/release/9.7/VTK-9.7.0.tar.gz", sha256="affdb7a15ec34ee0174407f911ab70b646c7af01161818bbab4e1160b7eff720", preferred=True)
+    version("9.4.2", sha256="36c98e0da96bb12a30fe53708097aa9492e7b66d5c3b366e1c8dc251e2856a02")
     version("9.3.1", sha256="8354ec084ea0d2dc3d23dbe4243823c4bfc270382d0ce8d658939fd50061cab8")
     version("9.2.6", sha256="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12")
     version('9.1.0', sha256='8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96')
@@ -63,6 +64,12 @@ class Vtk(CMakePackage):
                full_path = os.path.join(patch_dir, fname)
                if fname.endswith('.patch') and os.path.isfile(full_path):
                    patch(os.path.join('9.4.2-patch', fname), when='@9.4.2')
+                   if fname in ('vtkCellGridReader.cxx.patch', 'vtkLegacyCellGridReader.cxx.patch'):
+                       patch(os.path.join('9.4.2-patch', fname), when='@9.7.0')
+
+    # Keep DIY's SJLJ fortify workaround scoped to its libc includes and do
+    # not promote its expected condition to a compiler warning.
+    patch('9.7.0-patch/diy-fortify-macro.patch', when='@9.7.0')
 
     def cmake_args(self):
         spec = self.spec

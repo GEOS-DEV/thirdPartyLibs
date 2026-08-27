@@ -135,6 +135,8 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
             from_variant("HYPREDRV_ENABLE_MATLAB", "matlab"),
             from_variant("HYPREDRV_ENABLE_JULIA", "julia"),
             self.define("CMAKE_POSITION_INDEPENDENT_CODE", pic_enabled),
+            self.define("HYPRE_INCLUDE_DIRS", spec["hypre"].prefix.include),
+            self.define("HYPRE_LIBRARIES", spec["hypre"].libs[0]),
             self.define("HYPRE_ROOT", spec["hypre"].prefix),
             self.define("HYPREDRV_ENABLE_TESTING", testing_enabled),
             self.define("HYPREDRV_ENABLE_ALL_TESTS", False),

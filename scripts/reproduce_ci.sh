@@ -7,7 +7,12 @@ repo_root=$(cd -- "${script_dir}/.." && pwd)
 cd -- "${repo_root}"
 
 # Active build_images entries from .github/workflows/docker_build_tpls.yml.
-# Fields: name|dockerfile|base_tag|base_repository|repository|gcc|clang|spec
+# Fields: name|dockerfile|base_tag|base_repository|repository|gcc|clang|spec|base_image|extra_env
+#
+# The last two fields are optional and may simply be omitted:
+#   base_image  overrides the composed <base_repository>:<base_tag>-<sha> for
+#               rows that do not build on a docker_base_images image (ROCm).
+#   extra_env   space-separated KEY=VALUE pairs passed to scripts/docker-build.sh.
 MATRIX=(
 'Ubuntu 24.04 - gcc 12|docker/tpl-ubuntu.Dockerfile|24.04-gcc12|geosx/ubuntu|geosx/ubuntu24.04-gcc12|12||~pygeosx ~docs %gcc-12'
 'Ubuntu 24.04 - gcc 13 (docs)|docker/tpl-ubuntu.Dockerfile|24.04-gcc13|geosx/ubuntu|geosx/ubuntu24.04-gcc13|13||~pygeosx +docs %gcc-13'
@@ -20,6 +25,7 @@ MATRIX=(
 'Ubuntu 24.04 - gcc 13 + CUDA 12.9.1|docker/tpl-ubuntu.Dockerfile|24.04-gcc13-cuda12.9.1|geosx/ubuntu|geosx/ubuntu24.04-gcc13-cuda12.9.1|13||+cuda cuda_arch=86,120 ~openmp ~pygeosx ~docs %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers'
 'Ubuntu 24.04 - clang 19 + CUDA 12.9.1|docker/tpl-ubuntu.Dockerfile|24.04-clang19-cuda12.9.1|geosx/ubuntu|geosx/ubuntu24.04-clang19-cuda12.9.1||19|+cuda cuda_arch=86,120 ~openmp ~pygeosx ~docs %clang-19 ^cuda@12.9.1+allow-unsupported-compilers'
 'Rocky Linux 8 - gcc 13 + CUDA 12.9.1|docker/tpl-rockylinux.Dockerfile|8-gcc13-cuda12.9.1|geosx/rockylinux|geosx/rockylinux8-gcc13-cuda12.9.1|||+cuda cuda_arch=86,120 ~openmp ~pygeosx ~docs %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers'
+'Ubuntu 24.04 - amdclang 19 + ROCm 6.4.3|docker/tpl-ubuntu-hip.Dockerfile|||geosx/ubuntu24.04-amdclang19.0.0-rocm6.4.3|||+rocm ~uncrustify ~openmp ~pygeosx ~docs ~trilinos ~petsc amdgpu_target=gfx942 %%amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw|rocm/dev-ubuntu-24.04:6.4.3|ROCM_VERSION=6.4.3 AMDGPU_TARGET=gfx942 SPACK_BUILD_JOBS=8'
 )
 
 DOCKER_BASE_IMAGE_SHA=${DOCKER_BASE_IMAGE_SHA:-1c3c049b3f629d9d44838656fd306b2a0c04c9e8}
@@ -177,20 +183,24 @@ failed_builders=()
 
 build() {
   local index=$1 name=$2 dockerfile=$3 base_tag=$4 base_repository=$5 repository=$6
-  local gcc=$7 clang=$8 spec=$9
+  local gcc=$7 clang=$8 spec=$9 base_image=${10} extra_env=${11}
   local builder="reproduce-ci-$$-${index}" image="${repository}:${DOCKER_TAG}"
   local cleanup_failed=0
+
+  # Rows without an explicit base_image layer on a docker_base_images image.
+  [[ ${base_image} ]] || base_image="${base_repository}:${base_tag}-${DOCKER_BASE_IMAGE_SHA}"
 
   printf '\n==> %s\n' "${name}"
 
   if (( dry_run )); then
     printf '    dockerfile   %s\n' "${dockerfile}"
-    printf '    base image   %s:%s-%s\n' "${base_repository}" "${base_tag}" "${DOCKER_BASE_IMAGE_SHA}"
+    printf '    base image   %s\n' "${base_image}"
     printf '    repository   %s\n' "${repository}"
     printf '    tag          %s\n' "${DOCKER_TAG}"
     printf '    spec         %s\n' "${spec}"
     [[ ${gcc} ]] && printf '    gcc          %s\n' "${gcc}"
     [[ ${clang} ]] && printf '    clang        %s\n' "${clang}"
+    [[ ${extra_env} ]] && printf '    extra env    %s\n' "${extra_env}"
     printf '    commit       %s\n' "${COMMIT}"
     printf '    install dir  %s\n' "${INSTALL_DIR_ROOT}"
     printf '    host config  %s\n' "${HOST_CONFIG}"
@@ -213,9 +223,11 @@ build() {
     return 1
   fi
 
+  # extra_env is expanded, and bash only honours literal VAR=value words as
+  # assignments, so it has to go through env rather than the prefix list.
   if ! TPL_DOCKERFILE=${dockerfile} \
     DOCKER_REPOSITORY=${repository} \
-    DOCKER_BASE_IMAGE="${base_repository}:${base_tag}-${DOCKER_BASE_IMAGE_SHA}" \
+    DOCKER_BASE_IMAGE="${base_image}" \
     GCC_VERSION=${gcc} \
     CLANG_VERSION=${clang} \
     INSTALL_DIR_ROOT=${INSTALL_DIR_ROOT} \
@@ -226,6 +238,7 @@ build() {
     DOCKER_TAG=${DOCKER_TAG} \
     DOCKER_BUILDER=${builder} \
     DOCKER_LOAD=1 \
+    env ${extra_env} \
     bash -x scripts/docker-build.sh; then
     printf 'FAILED: %s (builder retained: %s)\n' "${name}" "${builder}" >&2
     failed=1
@@ -263,10 +276,9 @@ row=0
 for idx in "${indices[@]}"; do
   row=$((row + 1))
   IFS='|' read -r name dockerfile base_tag base_repository repository gcc clang spec \
-    <<<"${MATRIX[${idx}]}"
-
+    base_image extra_env <<<"${MATRIX[${idx}]}"
   build "${row}" "${name}" "${dockerfile}" "${base_tag}" "${base_repository}" \
-    "${repository}" "${gcc}" "${clang}" "${spec}"
+    "${repository}" "${gcc}" "${clang}" "${spec}" "${base_image}" "${extra_env}"
 done
 
 if (( dry_run )); then

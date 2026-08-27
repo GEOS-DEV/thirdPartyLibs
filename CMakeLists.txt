@@ -47,6 +47,7 @@ option( BUILD_SHARED_LIBS "" OFF )
 
 option( ENABLE_CALIPER "" ON )
 option( ENABLE_HYPRE "" ON )
+option( ENABLE_HYPREDRV "" ON )
 option( ENABLE_TRILINOS "" OFF )
 option( ENABLE_PETSC "" OFF )
 option( ENABLE_SCOTCH "" ON )
@@ -64,7 +65,6 @@ ProcessorCount(NUM_CORES)
 set(NUM_PROC ${NUM_CORES} CACHE STRING "")
 message( "Running with NUM_PROC = ${NUM_PROC}")
 
-set(TPL_MIRROR_DIR "${CMAKE_SOURCE_DIR}/tplMirror")
 set(build_list )
 
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
@@ -81,7 +81,7 @@ string(REPLACE "-Wextra" "" CXX_FLAGS_NO_WARNINGS ${CXX_FLAGS_NO_WARNINGS})
 set(CXX_FLAGS_NO_WARNINGS "${CXX_FLAGS_NO_WARNINGS} -w")
 string(STRIP ${CXX_FLAGS_NO_WARNINGS} CXX_FLAGS_NO_WARNINGS)
 
-string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
+string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UPPER)
 
 # Setup Ninja support
 if (ENABLE_NINJA)
@@ -177,11 +177,13 @@ endif()
 # UNCRUSTIFY
 ################################
 set(UNCRUSTIFY_DIR "${CMAKE_INSTALL_PREFIX}/uncrustify")
-set(UNCRUSTIFY_URL "${TPL_MIRROR_DIR}/uncrustify-401a409.zip")
+set(UNCRUSTIFY_URL "https://github.com/uncrustify/uncrustify/archive/401a409.zip")
+set(UNCRUSTIFY_URL_HASH "3d948d9d9047a7749632946f323313b9603f026302c37fb932c8414dfc714207")
 message(STATUS "Building uncrustify found at ${UNCRUSTIFY_URL}")
 
 ExternalProject_Add( uncrustify
                      URL ${UNCRUSTIFY_URL}
+                     URL_HASH SHA256=${UNCRUSTIFY_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/uncrustify
                      INSTALL_DIR ${UNCRUSTIFY_DIR}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
@@ -204,11 +206,13 @@ list(APPEND build_list uncrustify )
 if( GEOSXTPL_ENABLE_DOXYGEN )
 
   set(DOXYGEN_DIR "${CMAKE_INSTALL_PREFIX}/doxygen")
-  set(DOXYGEN_URL "${TPL_MIRROR_DIR}/doxygen-1.8.20.tar.gz")
+  set(DOXYGEN_URL "https://github.com/doxygen/doxygen/archive/refs/tags/Release_1_8_20.tar.gz")
+  set(DOXYGEN_URL_HASH "3dbdf8814d6e68233d5149239cb1f0b40b4e7b32eef2fd53de8828fedd7aca15")
   message(STATUS "Building Doxygen found at ${DOXYGEN_URL}")
 
   ExternalProject_Add( doxygen
                        URL ${DOXYGEN_URL}
+                       URL_HASH SHA256=${DOXYGEN_URL_HASH}
                        PREFIX ${PROJECT_BINARY_DIR}/doxygen
                        INSTALL_DIR ${DOXYGEN_DIR}
                        BUILD_COMMAND make -j ${NUM_PROC}
@@ -228,7 +232,8 @@ endif()
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "${TPL_MIRROR_DIR}/hdf5-1.12.1.tar.gz")
+set(HDF5_URL "https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_1.tar.gz")
+set(HDF5_URL_HASH "e6dde173c2d243551922d23a0387a79961205b018502e6a742acb30b61bc2d5f")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
@@ -251,6 +256,7 @@ endif()
 
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
+                     URL_HASH SHA256=${HDF5_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
                      BUILD_COMMAND make -j ${NUM_PROC}
@@ -282,7 +288,8 @@ list(APPEND build_list hdf5 )
 # Conduit
 ################################
 set(CONDUIT_DIR "${CMAKE_INSTALL_PREFIX}/conduit")
-set(CONDUIT_URL "${TPL_MIRROR_DIR}/conduit-v0.9.5-src-with-blt.tar.gz")
+set(CONDUIT_URL "https://github.com/LLNL/conduit/releases/download/v0.9.5/conduit-v0.9.5-src-with-blt.tar.gz")
+set(CONDUIT_URL_HASH "d93294efbf0936da5a27941e13486aa1a04a74a59285786a2303eed19a24265a")
 message(STATUS "Building Conduit found at ${CONDUIT_URL}")
 
 if( ${ENABLE_MPI} )
@@ -295,6 +302,7 @@ endif()
 
 ExternalProject_Add( conduit
                      URL ${CONDUIT_URL}
+                     URL_HASH SHA256=${CONDUIT_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/conduit
                      SOURCE_SUBDIR src
                      INSTALL_DIR ${CONDUIT_DIR}
@@ -339,7 +347,8 @@ list(APPEND build_list conduit )
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
-set(SILO_URL "${TPL_MIRROR_DIR}/silo-4.11.1-bsd.tar.xz")
+set(SILO_URL "https://github.com/LLNL/Silo/releases/download/4.11.1/silo-4.11.1-bsd.tar.xz")
+set(SILO_URL_HASH "51ccfdf3c09dfc98c7858a0a6f08cc3b2a07ee3c4142ee6482ba7b24e314c2aa")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
 string(REPLACE ";" " " HDF5_C_FLAGS_STR "${HDF5_C_FLAGS}")
@@ -364,9 +373,9 @@ LIBS=\"-ldl\" \
 
 ExternalProject_Add( silo
                      URL ${SILO_URL}
+                     URL_HASH SHA256=${SILO_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/silo
                      INSTALL_DIR ${SILO_DIR}
-#                     PATCH_COMMAND patch src/hdf5_drv/H5FDsilo.c < ${TPL_MIRROR_DIR}/silo-4.11.patch
                      DEPENDS ${HDF5_DEPENDENCIES}
                      CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_silo_for_geos && . ${PROJECT_BINARY_DIR}/config_silo_for_geos
                      BUILD_COMMAND make -j ${NUM_PROC}
@@ -381,7 +390,8 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "${TPL_MIRROR_DIR}/RAJA-v2025.12.0.tar.gz")
+set(RAJA_URL "https://github.com/LLNL/RAJA/releases/download/v2026.07.0/RAJA-v2026.07.0.tar.gz")
+set(RAJA_URL_HASH "2774a569f19a7d8e37d1e166d197c828c6b614e7f8ef6d16ccbfb144b8284d02")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -395,6 +405,7 @@ endif()
 
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
+                     URL_HASH SHA256=${RAJA_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
@@ -411,6 +422,7 @@ ExternalProject_Add( raja
                                 -D RAJA_ENABLE_ROCTX:BOOL=${ENABLE_ROCTX}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                                -D CUB_DIR:PATH=${CUB_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${RAJA_CUDA_FLAGS}
                                 -D ENABLE_HIP:BOOL=${ENABLE_HIP}
@@ -436,12 +448,14 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "${TPL_MIRROR_DIR}/chai-v2025.12.0.tar.gz")
+set(CHAI_URL "https://github.com/LLNL/CHAI/releases/download/v2026.07.0/chai-v2026.07.0.tar.gz")
+set(CHAI_URL_HASH "a03616ab5488d9d816d2ef007559c2ad7da988f82c0b7d7ddf9f8931518d99d8")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
+                     URL_HASH SHA256=${CHAI_URL_HASH}
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
@@ -488,11 +502,13 @@ list(APPEND build_list chai )
 ################################
 if (ENABLE_CALIPER)
     set(ADIAK_DIR "${CMAKE_INSTALL_PREFIX}/adiak")
-    set(ADIAK_URL "${TPL_MIRROR_DIR}/adiak-0.4.0.tar.gz")
+    set(ADIAK_URL "https://github.com/LLNL/Adiak/releases/download/v0.4.0/adiak-0.4.0.tar.gz")
+    set(ADIAK_URL_HASH "5f789998004a68f540d5d787a2062d8aa6a828f4787064221c5081f287a7b334")
     message(STATUS "Building Adiak found at ${ADIAK_URL}")
 
     ExternalProject_Add( adiak
                          URL ${ADIAK_URL}
+                         URL_HASH SHA256=${ADIAK_URL_HASH}
                          PREFIX ${PROJECT_BINARY_DIR}/adiak
                          INSTALL_DIR ${ADIAK_DIR}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
@@ -517,7 +533,8 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "${TPL_MIRROR_DIR}/Caliper-2.14.0.tar.gz")
+    set(CALIPER_URL "https://github.com/LLNL/Caliper/archive/refs/tags/v2.14.0.tar.gz")
+    set(CALIPER_URL_HASH "b42c35dfbe485960dd326033893dae37ac00d9807c5c3e6b5b1f396bc4af273f")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)
@@ -528,6 +545,7 @@ if (ENABLE_CALIPER)
 
     ExternalProject_Add( caliper
                          URL ${CALIPER_URL}
+                         URL_HASH SHA256=${CALIPER_URL_HASH}
                          PREFIX ${PROJECT_BINARY_DIR}/caliper
                          INSTALL_DIR ${CALIPER_DIR}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
@@ -578,23 +596,35 @@ if (DEFINED ENABLE_MATHPRESSO AND NOT ENABLE_MATHPRESSO)
     message(STATUS "MATHPRESSO disabled")
 else()
     set(MATHPRESSO_DIR "${CMAKE_INSTALL_PREFIX}/mathpresso")
-    set(MATHPRESSO_URL "${TPL_MIRROR_DIR}/mathpresso-24d60e5.zip")
-    set(ASMJIT_URL "${TPL_MIRROR_DIR}/asmjit-2e93826.zip")
+    set(MATHPRESSO_URL "https://github.com/kobalicek/mathpresso/archive/24d60e5c4d9a887c9ecb11991d07c54b3139ff1e.zip")
+    set(MATHPRESSO_URL_HASH "6f46abaf2bd2ae97edf5bc338093bcb296800241b3e17242e22b4b44fe8c9d80")
+    set(ASMJIT_URL "https://github.com/asmjit/asmjit/archive/2e93826348d6cd1325a8b1f7629e193c58332da9.zip")
+    set(ASMJIT_URL_HASH "6e35cd3cfe58aec65b12aa4fd46fe5ed33cfb4023173e5a449a8f40a08daaf47")
+    set(ASMJIT_DIR "${PROJECT_BINARY_DIR}/asmjit-master")
     message(STATUS "Building MATHPRESSO found at ${MATHPRESSO_URL}")
+
+    ExternalProject_Add( asmjit
+                         URL ${ASMJIT_URL}
+                         URL_HASH SHA256=${ASMJIT_URL_HASH}
+                         PREFIX ${PROJECT_BINARY_DIR}/asmjit
+                         SOURCE_DIR ${ASMJIT_DIR}
+                         CONFIGURE_COMMAND ""
+                         BUILD_COMMAND ""
+                         INSTALL_COMMAND ""
+                       )
 
     ExternalProject_Add( mathpresso
                          URL ${MATHPRESSO_URL}
+                         URL_HASH SHA256=${MATHPRESSO_URL_HASH}
                          PREFIX ${PROJECT_BINARY_DIR}/mathpresso
                          INSTALL_DIR ${MATHPRESSO_DIR}
-                         PATCH_COMMAND cd ${PROJECT_BINARY_DIR} && unzip ${ASMJIT_URL}
-                         BUILD_COMMAND make -j ${NUM_PROC}
-                         INSTALL_COMMAND mkdir -p <INSTALL_DIR>/include &&
-                                         mkdir -p <INSTALL_DIR>/lib &&
-                                         make INSTALL_DIR=<INSTALL_DIR> install &&
-                                         cp libmathpresso.a <INSTALL_DIR>/lib/
+                         DEPENDS asmjit
+                         BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --parallel ${NUM_PROC}
+                         INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR>
+                         CMAKE_GENERATOR ${TPL_GENERATOR}
                          CMAKE_ARGS -D MATHPRESSO_STATIC=TRUE
                                     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                                    -D ASMJIT_DIR=${PROJECT_BINARY_DIR}/asmjit-master
+                                    -D ASMJIT_DIR=${ASMJIT_DIR}
                                     -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                     -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
@@ -616,13 +646,15 @@ endif()
 # PUGIXML
 ################################
 set(PUGIXML_DIR "${CMAKE_INSTALL_PREFIX}/pugixml")
-set(PUGIXML_URL "${TPL_MIRROR_DIR}/pugixml-1.13.tar.gz")
+set(PUGIXML_URL "https://github.com/zeux/pugixml/archive/refs/tags/v1.13.tar.gz")
+set(PUGIXML_URL_HASH "5c5ad5d7caeb791420408042a7d88c2c6180781bf218feca259fd9d840a888e1")
 
 message(STATUS "Building PUGIXML found at ${PUGIXML_URL}")
 
 ExternalProject_Add( pugixml
                      PREFIX ${PROJECT_BINARY_DIR}/pugixml
                      URL ${PUGIXML_URL}
+                     URL_HASH SHA256=${PUGIXML_URL_HASH}
                      INSTALL_DIR ${PUGIXML_DIR}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -643,7 +675,8 @@ list(APPEND build_list pugixml )
 ################################
 if (ENABLE_TRILINOS)
     set(TRILINOS_DIR "${CMAKE_INSTALL_PREFIX}/trilinos")
-    set(TRILINOS_URL "${TPL_MIRROR_DIR}/trilinos-release-16-1-0.tar.gz")
+    set(TRILINOS_URL "https://github.com/trilinos/Trilinos/archive/refs/tags/trilinos-release-16-1-0.tar.gz")
+    set(TRILINOS_URL_HASH "e9651c88f581049457036cfc01b527a9d3903c257338eeeab942befd7452f23a")
 
     message(STATUS "Building TRILINOS found at ${TRILINOS_URL}")
 
@@ -689,6 +722,7 @@ if (ENABLE_TRILINOS)
     ExternalProject_Add( trilinos
                          PREFIX ${PROJECT_BINARY_DIR}/trilinos
                          URL ${TRILINOS_URL}
+                         URL_HASH SHA256=${TRILINOS_URL_HASH}
                          INSTALL_DIR ${TRILINOS_DIR}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -753,7 +787,8 @@ endif()
 
 set(PARMETIS_DIR "${CMAKE_INSTALL_PREFIX}/parmetis")
 set(METIS_DIR "${CMAKE_INSTALL_PREFIX}/metis")
-set(PARMETIS_URL "${TPL_MIRROR_DIR}/parmetis-4.0.3-IDXTYPEWIDTH_64.tar.gz")
+set(PARMETIS_URL "https://ftp.mcs.anl.gov/pub/pdetools/spack-pkgs/parmetis-4.0.3.tar.gz")
+set(PARMETIS_URL_HASH "f2d9a231b7cf97f1fee6e8c9663113ebf6c240d407d3c118c55b3633d6be6e5f")
 
 if( ${ENABLE_MPI} )
   message(STATUS "Building PARMETIS found at ${PARMETIS_URL}")
@@ -761,7 +796,9 @@ if( ${ENABLE_MPI} )
   ExternalProject_Add( parmetis
                        PREFIX ${PROJECT_BINARY_DIR}/parmetis
                        URL ${PARMETIS_URL}
+                       URL_HASH SHA256=${PARMETIS_URL_HASH}
                        INSTALL_DIR ${PARMETIS_DIR}
+                       PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -786,8 +823,10 @@ message(STATUS "Building METIS found at ${PARMETIS_URL}")
 ExternalProject_Add( metis
                      PREFIX ${PROJECT_BINARY_DIR}/metis
                      URL ${PARMETIS_URL}
+                     URL_HASH SHA256=${PARMETIS_URL_HASH}
                      INSTALL_DIR ${METIS_DIR}
                      SOURCE_SUBDIR metis
+                     PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -811,7 +850,8 @@ list(APPEND build_list metis )
 ################################
 if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
-  set(SUPERLU_URL "${TPL_MIRROR_DIR}/superlu_dist-0f6efc3.tar.gz")
+  set(SUPERLU_URL "https://github.com/xiaoyeli/superlu_dist/archive/0f6efc3.tar.gz")
+  set(SUPERLU_URL_HASH "49cd47da22fe72a37011e8dfaf94bd63ad8d61cc8144eac7a571bcbd0a2edf58a")
 
   if ( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 16.0 )
     set(SUPERLU_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
@@ -831,6 +871,7 @@ if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
   ExternalProject_Add( superlu_dist
                        PREFIX ${PROJECT_BINARY_DIR}/superlu_dist
                        URL ${SUPERLU_URL}
+                       URL_HASH SHA256=${SUPERLU_URL_HASH}
                        INSTALL_DIR ${SUPERLU_DIR}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -869,8 +910,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/8b0093306228fef1b92384d9face7fbe5a63b460.tar.gz" )
-  set( HYPRE_URL_HASH "9b2334e2e08bb93770271eee1f46f74b3c50d8952033cf1f1ebb6de38baec17d" )
+  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/f1374fb6182c9e730abaa82f865a87b36f9ad50a.tar.gz" )
+  set( HYPRE_URL_HASH "8b3c9176e9a4e3bc3e526d497aa52e5adbfbdff8810b90e9cc7413e898de6524" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -1009,11 +1050,107 @@ ROCM_PATH=${ROCM_PATH} \
 endif()
 
 ################################
+# HYPREDRIVE
+################################
+
+if( ENABLE_HYPREDRV )
+  if( NOT ENABLE_HYPRE )
+    message( FATAL_ERROR "ENABLE_HYPREDRV requires ENABLE_HYPRE=ON" )
+  endif()
+
+  set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
+  set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/98989bef31e865d738c1b678ee058bb0e5dd635e.tar.gz" )
+  set( HYPREDRV_URL_HASH "7ea64b3ea5330dff2322bd265d22b2daded75733cdde8a6e5047feeea57b2cb5" )
+  set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
+  set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+  set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )
+  set( HYPREDRV_HYPRE_LIBRARIES "${HYPREDRV_HYPRE_LIBRARY}" )
+  list( APPEND HYPREDRV_HYPRE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+  string( REPLACE ";" "^" HYPREDRV_HYPRE_LIBRARIES_ARG "${HYPREDRV_HYPRE_LIBRARIES}" )
+  set( HYPREDRV_MPI_ARGS )
+  set( HYPREDRV_ACCELERATOR_ARGS )
+  set( HYPREDRV_ENABLE_CUDA OFF )
+  set( HYPREDRV_ENABLE_HIP OFF )
+
+  if( ENABLE_MPI )
+    set( HYPREDRV_C_COMPILER ${MPI_C_COMPILER} )
+    list( APPEND HYPREDRV_MPI_ARGS
+          -D MPI_C_COMPILER:FILEPATH=${MPI_C_COMPILER}
+          -D MPI_CXX_COMPILER:FILEPATH=${MPI_CXX_COMPILER} )
+  endif()
+
+  if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
+    set( HYPREDRV_ENABLE_CUDA ON )
+    list( APPEND HYPREDRV_ACCELERATOR_ARGS
+          -D CMAKE_CUDA_COMPILER:FILEPATH=${CMAKE_CUDA_COMPILER}
+          -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
+          -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
+  elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    set( HYPREDRV_ENABLE_HIP ON )
+    list( APPEND HYPREDRV_ACCELERATOR_ARGS
+          -D CMAKE_HIP_COMPILER:FILEPATH=${CMAKE_HIP_COMPILER}
+          -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
+          -D ROCM_PATH:PATH=${ROCM_PATH} )
+  endif()
+
+  set( HYPREDRV_CALIPER_ARGS )
+  set( HYPREDRV_ENABLE_CALIPER OFF )
+  if( DEFINED ENABLE_CALIPER_HYPRE AND ENABLE_CALIPER_HYPRE )
+    set( HYPREDRV_ENABLE_CALIPER ON )
+    list( APPEND HYPREDRV_CALIPER_ARGS
+          -D TPL_CALIPER_INCLUDE_DIRS:PATH=${CALIPER_DIR}/include
+          -D TPL_CALIPER_LIBRARIES:FILEPATH=${CALIPER_DIR}/lib/${CALIPER_LIB} )
+  endif()
+
+  message( STATUS "Building HYPREDRIVE found at ${HYPREDRV_URL}" )
+
+  # The legacy superbuild installs HYPRE with its Autotools interface. Pass
+  # those include/library paths explicitly so HypreDrive does not fetch and
+  # build a second copy of HYPRE.
+  ExternalProject_Add( hypredrive
+                       URL ${HYPREDRV_URL}
+                       URL_HASH SHA256=${HYPREDRV_URL_HASH}
+                       UPDATE_COMMAND ""
+                       LIST_SEPARATOR "^"
+                       PREFIX ${PROJECT_BINARY_DIR}/hypredrive
+                       INSTALL_DIR ${HYPREDRV_DIR}
+                       DEPENDS hypre
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                                  -D CMAKE_C_COMPILER:FILEPATH=${HYPREDRV_C_COMPILER}
+                                  -D CMAKE_C_FLAGS:STRING=${HYPREDRV_C_FLAGS}
+                                  -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+                                  -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                                  -D CMAKE_INSTALL_LIBDIR:STRING=lib
+                                  -D BUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+                                  -D CMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                  -D HYPRE_INCLUDE_DIRS:PATH=${HYPRE_DIR}/include
+                                  -D HYPRE_LIBRARIES:STRING=${HYPREDRV_HYPRE_LIBRARIES_ARG}
+                                  -D HYPREDRV_ENABLE_TESTING:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_ALL_TESTS:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_DATA:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_DOCS:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_EXAMPLES:BOOL=OFF
+                                  -D HYPREDRV_BUILD_DSUPERLU:BOOL=OFF
+                                  -D HYPREDRV_ENABLE_CALIPER:BOOL=${HYPREDRV_ENABLE_CALIPER}
+                                  -D HYPREDRV_ENABLE_CUDA:BOOL=${HYPREDRV_ENABLE_CUDA}
+                                  -D HYPREDRV_ENABLE_HIP:BOOL=${HYPREDRV_ENABLE_HIP}
+                                  ${HYPREDRV_MPI_ARGS}
+                                  ${HYPREDRV_ACCELERATOR_ARGS}
+                                  ${HYPREDRV_CALIPER_ARGS} )
+
+  list( APPEND build_list hypredrive )
+endif()
+
+################################
 # SUITESPARSE
 ################################
 if(ENABLE_SUITESPARSE)
     set(SUITESPARSE_DIR "${CMAKE_INSTALL_PREFIX}/suitesparse")
-    set(SUITESPARSE_URL "${TPL_MIRROR_DIR}/SuiteSparse-5.10.1.tar.gz")
+    set(SUITESPARSE_URL "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v5.10.1.tar.gz")
+    set(SUITESPARSE_URL_HASH "acb4d1045f48a237e70294b950153e48dce5b5f9ca8190e86c2b8c54ce00a7ee")
 
     message(STATUS "Building SUITESPARSE found at ${SUITESPARSE_URL}")
 
@@ -1075,6 +1212,7 @@ cd ..\n" )
 
     ExternalProject_Add( suitesparse
                          URL ${SUITESPARSE_URL}
+                         URL_HASH SHA256=${SUITESPARSE_URL_HASH}
                          PREFIX ${PROJECT_BINARY_DIR}/suitesparse
                          INSTALL_DIR ${SUITESPARSE_DIR}
                          DEPENDS ${SUITESPARSE_DEPENDS}
@@ -1093,7 +1231,8 @@ endif(ENABLE_SUITESPARSE)
 
 if( ENABLE_SCOTCH )
     set( SCOTCH_DIR "${CMAKE_INSTALL_PREFIX}/scotch" )
-    set( SCOTCH_URL "${TPL_MIRROR_DIR}/scotch-v7.0.8.tar.gz" )
+    set( SCOTCH_URL "https://gitlab.inria.fr/scotch/scotch/-/archive/v7.0.8/scotch-v7.0.8.tar.gz" )
+    set( SCOTCH_URL_HASH "21f48ac85c7991a5eb5fae9232dd68584556ccc500f85e2ebd6b5b275617e11a" )
 
     message( STATUS "Building SCOTCH found at ${SCOTCH_URL}" )
 
@@ -1110,6 +1249,7 @@ if( ENABLE_SCOTCH )
     ExternalProject_Add( scotch
                         PREFIX ${PROJECT_BINARY_DIR}/scotch
                         URL ${SCOTCH_URL}
+                        URL_HASH SHA256=${SCOTCH_URL_HASH}
                         INSTALL_DIR ${SCOTCH_DIR}
                         BUILD_COMMAND ${TPL_BUILD_COMMAND}
                         INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -1140,7 +1280,8 @@ endif()
 
 if( ENABLE_PETSC )
     set(PETSC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/petsc")
-    set(PETSC_URL "${TPL_MIRROR_DIR}/petsc-3.19.4.tar.gz")
+    set(PETSC_URL "https://gitlab.com/petsc/petsc/-/archive/v3.19.4/petsc-v3.19.4.tar.gz")
+    set(PETSC_URL_HASH "f22413832558575f784ad927ad21b9b45cae91d90ca686802c45c6fd48b04b2c")
 
     message(STATUS "Building PETSC found at ${PETSC_URL}")
 
@@ -1213,6 +1354,7 @@ ${PETSC_DEP_FLAG}\n")
 
     ExternalProject_Add( petsc
                          URL ${PETSC_URL}
+                         URL_HASH SHA256=${PETSC_URL_HASH}
                          PREFIX ${PROJECT_BINARY_DIR}/petsc #outer petsc directory
                          DEPENDS ${PETSC_DEPENDS}
                          BINARY_DIR ${PROJECT_BINARY_DIR}/petsc/src/petsc
@@ -1230,7 +1372,8 @@ endif()
 ################################
 if( ENABLE_VTK )
     set( VTK_DIR "${CMAKE_INSTALL_PREFIX}/vtk" )
-    set( VTK_URL "${TPL_MIRROR_DIR}/VTK-9.4.2.tar.gz" )
+    set( VTK_URL "https://www.vtk.org/files/release/9.7/VTK-9.7.0.tar.gz" )
+    set( VTK_URL_HASH "affdb7a15ec34ee0174407f911ab70b646c7af01161818bbab4e1160b7eff720" )
 
     message( STATUS "Building VTK found at ${VTK_URL}" )
 
@@ -1257,10 +1400,10 @@ endif( ENABLE_MPI )
     ExternalProject_Add( vtk
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
+                         URL_HASH SHA256=${VTK_URL_HASH}
                          INSTALL_DIR ${VTK_DIR}
                          PATCH_COMMAND patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch &&
-                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch &&
-                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkformat.h.patch
+                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -1297,13 +1440,15 @@ endif( ENABLE_VTK )
 # FMT
 ################################
 set(FMT_DIR "${CMAKE_INSTALL_PREFIX}/fmt")
-set(FMT_URL "${TPL_MIRROR_DIR}/fmt-11.0.1.tar.gz")
+set(FMT_URL "https://github.com/fmtlib/fmt/archive/refs/tags/12.1.0.tar.gz")
+set(FMT_URL_HASH "ea7de4299689e12b6dddd392f9896f08fb0777ac7168897a244a6d6085043fea")
 
 message(STATUS "Building FMT found at ${FMT_URL}")
 
 ExternalProject_Add( fmt
                      PREFIX ${PROJECT_BINARY_DIR}/fmt
                      URL ${FMT_URL}
+                     URL_HASH SHA256=${FMT_URL_HASH}
                      INSTALL_DIR ${FMT_DIR}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
