@@ -966,6 +966,10 @@ if( ENABLE_HYPRE )
 --with-umpire-lib-dirs=${CHAI_DIR}/lib \
 --with-umpire-libs=umpire " )
 
+      if( NOT "${CMAKE_CUDA_FLAGS}" STREQUAL "" )
+        set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-extra-CUFLAGS=\"${CMAKE_CUDA_FLAGS}\"" )
+      endif()
+
       if( ENABLE_HYPRE_GPU_AWARE_MPI )
         set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-aware-mpi" )
       endif()
