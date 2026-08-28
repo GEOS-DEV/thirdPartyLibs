@@ -851,7 +851,7 @@ list(APPEND build_list metis )
 if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
   set(SUPERLU_DIR "${CMAKE_INSTALL_PREFIX}/superlu_dist")
   set(SUPERLU_URL "https://github.com/xiaoyeli/superlu_dist/archive/0f6efc3.tar.gz")
-  set(SUPERLU_URL_HASH "49cd47da22fe72a37011e8dfaf94bd63ad8d61cc8144eac7a571bcbd0a2edf58a")
+  set(SUPERLU_URL_HASH "49cd47da22fe72a37011e8dfaf94bd63ad8d61cc8144eac7a571bcbd0a2edf58")
 
   if ( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 16.0 )
     set(SUPERLU_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS}")
