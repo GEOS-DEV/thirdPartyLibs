@@ -1,0 +1,182 @@
+# This is a Spack Environment file for RDHPC8.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+#
+# Run command from the top-level of the repository:
+# ./scripts/uberenv/uberenv.py                                  \
+#    --spec "%gcc@8.5.0 +cuda~pygeosx~docs cuda_arch=70 ^cuda@11.5.119+allow-unsupported-compilers"                  \
+#    --spack-env-file=scripts/spack_configs/rdhpc8/spack.yaml     \
+#    --project-json=.uberenv_config.json                        \
+#    --prefix ${GEOS_TPL_DIR}
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage:
+      - $spack/../build_stage
+  # Regular TPLs do not need views
+  view: false
+
+  #############
+  # COMPILERS #
+  #############
+  compilers:
+  - compiler:
+      spec: gcc@8.5.0
+      paths:
+        cc: /usr/bin/gcc
+        cxx: /usr/bin/g++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      flags:
+        cflags:
+        cxxflags:
+      operating_system: rocky8
+      target: x86_64
+      modules: []
+      extra_rpaths: []
+
+  #############
+  # PACKAGES  #
+  #############
+  packages:
+    all:
+      target: [skylake_avx512]
+      compiler: [gcc]
+      providers:
+        blas: [intel-mkl]
+        lapack: [intel-mkl]
+        mpi: [openmpi]
+
+    ####
+    # make sure spack doesn't rebuild mpi and mathpresso libs
+    mpi:
+      buildable: false
+    blas:
+      buildable: false
+    lapack:
+      buildable: false
+
+    ####
+    # spec of packages to build for
+
+    # v0.6.2
+    blt:
+      require: "@git.9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35=develop"
+    # v2.32.0-33
+    hypre:
+      require: "@git.907a2d07b64fe47bdde4540c54665c83ced83a2c"
+    # v2025.0.3
+    chai:
+      require: "@git.4b9060b18b9bec1167026cfb3132bd540c4bd56b=develop"
+    # v2025.0.3.0
+    umpire:
+      require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee=develop"
+    # v2025.0.3.0
+    raja:
+      require: "@git.1d70abf171474d331f1409908bdf1b1c3fe19222=develop"
+    # v2025.0.3.0
+    camp:
+      require: "@git.ee0a3069a7ae72da8bcea63c06260fad34901d43=main"
+    # v2.12.0
+    caliper:
+      require: "@git.287b7f3ad2d12f520aad04268d44f353cd05403c"
+    # v0.9.2
+    conduit:
+      require: "@git.ad86e316ad56a75c099d30ca5ce75cff275b5924=develop"
+    # master - 04/12/20
+    uncrustify:
+      require: "@git.401a4098bce9dcc47e024987403f2d59d9ba7bd2"
+    # master - 04/26/20
+    superlu-dist:
+      require: "@git.0f6efc377df2440c235452d13d28d2c717f832a1"
+
+    ####
+    # spec of spack packages to reuse
+    gmp:
+      externals:
+      - spec: gmp@6.3.0
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/gmp-6.3.0-y6hf3afsc7po5zuvz2uih5rvs3mglxib
+      buildable: false
+    mpfr:
+      externals:
+      - spec: mpfr@4.2.1
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/mpfr-4.2.1-ibxnolx4crxh4gvhnogaieqqjiv3l2tp
+      buildable: false      
+    libiconv:
+      externals:
+      - spec: libiconv@1.17
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/libiconv-1.17-5xmxrhiguclwngq36mzhcxw3hdkkgyih
+      buildable: false
+    perl:
+      externals:
+      - spec: perl@5.38.2
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/perl-5.38.2-qfgl5hsxdergsgfnrjxbwtt3yd2lgjca
+      buildable: false
+    berkeley-db:
+      externals:
+      - spec: berkeley-db@18.1.40
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/berkeley-db-18.1.40-2ibv6xjctjrpwotmb2tw2rjh5vr25yrp
+      buildable: false
+
+    ####
+    # spec of system packages to reuse
+    # bin
+    cmake:
+      externals:
+      - spec: cmake@3.31.6
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/cmake-3.31.6-uet33jg2bx45qktjkpc7yx2jsmhwvzig
+      buildable: false
+    git:
+      externals:
+      - spec: git@2.27.0
+        prefix: /usr
+      buildable: false
+    gmake:
+      externals:
+      - spec: gmake@4.2.1
+        prefix: /usr
+      buildable: false
+    m4:
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+      buildable: false
+    python:
+      buildable: False
+      externals:
+      - spec: python@3.10.9
+        prefix: /shared/data1/Users/j0265258/tools/python/Python-3.10.9
+    intel-mkl:
+      externals:
+      - spec: intel-mkl@219.5.281
+        prefix: /apps/intel/2019/u5/compilers_and_libraries_2019.5.281/linux/mkl
+      buildable: false
+    #lib
+    cuda:
+      externals:
+      - spec: cuda@11.5.119
+        prefix: /hrtc/apps/cuda/11.5.119/x86_64/centos8
+      buildable: false
+    openmpi:
+      externals:
+      - spec: openmpi@4.1.4
+        prefix: /hrtc/apps/mpi/openmpi/x86_64/centos8/4.1.4/gcc/8.5.0
+      buildable: false
+    pkgconf:
+      externals:
+      - spec: pkgconf@1.4.2
+        prefix: /usr
+      buildable: false
+    readline:
+      externals:
+      - spec: readline@8.2
+        prefix: /hrtc/apps/devtools/spack/RDHPC8/linux-rocky8-skylake_avx512/gcc-8.5.0/readline-8.2-j2eohrk6475pxf4qkwofxhbd25xvfg4q
+      buildable: false        
+
+
