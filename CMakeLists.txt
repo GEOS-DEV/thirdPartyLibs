@@ -259,8 +259,9 @@ ExternalProject_Add( hdf5
                      URL_HASH SHA256=${HDF5_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
-                     BUILD_COMMAND make -j ${NUM_PROC}
-                     INSTALL_COMMAND make install
+                     BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                     INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
+                     CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
                                 -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
@@ -421,6 +422,7 @@ ExternalProject_Add( raja
                                 -D RAJA_ENABLE_NV_TOOLS_EXT:BOOL=${ENABLE_CUDA_NVTOOLSEXT}
                                 -D RAJA_ENABLE_ROCTX:BOOL=${ENABLE_ROCTX}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -D CMAKE_CUDA_HOST_COMPILER:FILEPATH=${CMAKE_CUDA_HOST_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CUB_DIR:PATH=${CUB_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
@@ -439,6 +441,7 @@ ExternalProject_Add( raja
                                 -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                 -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                -D RAJA_ENABLE_EXERCISES:BOOL=OFF
                     )
 
 list(APPEND build_list raja )
@@ -470,6 +473,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CHAI_ENABLE_CUDA:BOOL=${ENABLE_CUDA}
                                 -D CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+                                -D CMAKE_CUDA_HOST_COMPILER:FILEPATH=${CMAKE_CUDA_HOST_COMPILER}
                                 -D CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                                 -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                                 -D CMAKE_CUDA_FLAGS:STRING=${CHAI_CUDA_FLAGS}
