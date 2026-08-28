@@ -1255,9 +1255,10 @@ if( ENABLE_SCOTCH )
                         URL ${SCOTCH_URL}
                         URL_HASH SHA256=${SCOTCH_URL_HASH}
                         INSTALL_DIR ${SCOTCH_DIR}
-                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
-                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
-                        CMAKE_GENERATOR ${TPL_GENERATOR}
+                        BINARY_DIR ${PROJECT_BINARY_DIR}/scotch/src/scotch-make-build
+                        BUILD_COMMAND make -j ${NUM_PROC}
+                        INSTALL_COMMAND make install
+                        CMAKE_GENERATOR "Unix Makefiles"
                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D BUILD_PTSCOTCH:BOOL=ON
                                     -D BUILD_LIBSCOTCHMETIS:BOOL=OFF
