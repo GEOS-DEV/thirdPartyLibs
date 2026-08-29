@@ -397,6 +397,19 @@ set(RAJA_URL_HASH "2774a569f19a7d8e37d1e166d197c828c6b614e7f8ef6d16ccbfb144b8284
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
 
+# RDNA GPUs use 32-lane wavefronts, while the CDNA GPUs targeted by the
+# default RAJA configuration use 64-lane wavefronts.  Keep this override
+# configurable so callers can select the wave size explicitly when needed.
+if( ENABLE_HIP )
+    set( RAJA_HIP_WAVESIZE_DEFAULT 64 )
+    if( CMAKE_HIP_ARCHITECTURES MATCHES "(^|;)gfx(10|11)" )
+        set( RAJA_HIP_WAVESIZE_DEFAULT 32 )
+    endif()
+    set( RAJA_HIP_WAVESIZE "${RAJA_HIP_WAVESIZE_DEFAULT}" CACHE STRING
+         "RAJA HIP wavefront size (32 for RDNA, 64 for CDNA)" )
+    message( STATUS "RAJA HIP wavefront size = ${RAJA_HIP_WAVESIZE}" )
+endif()
+
 # RAJA's vectorization layer does not compile with the ROCm toolchain.
 if( ENABLE_HIP )
     set( RAJA_ENABLE_VECTORIZATION OFF )
@@ -434,6 +447,7 @@ ExternalProject_Add( raja
                                 -D hip_DIR=${HIP_ROOT}/lib/cmake/hip
                                 -D ROCPRIM_DIR=${HIP_ROOT}
                                 -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
+                                -D RAJA_HIP_WAVESIZE:STRING=${RAJA_HIP_WAVESIZE}
                                 -D ENABLE_TESTS:BOOL=OFF
                                 -D ENABLE_EXAMPLES:BOOL=OFF
                                 -D ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}
