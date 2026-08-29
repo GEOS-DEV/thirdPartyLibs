@@ -482,7 +482,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             if '+rocm' in spec:
                 cfg.write(cmake_cache_option('ENABLE_HIP', True))
                 cfg.write(cmake_cache_string('CMAKE_HIP_STANDARD', spec.variants['cxxstd'].value))
-                cfg.write(cmake_cache_path('CMAKE_HIP_COMPILER', spec['hip'].prefix.bin.hipcc))
+                hip_compiler = pjoin(str(spec['hip'].prefix), 'bin', 'amdclang++')
+                cfg.write(cmake_cache_path('CMAKE_HIP_COMPILER', hip_compiler))
 
                 if not spec.satisfies('amdgpu_target=none'):
                     cmake_hip_archs = ";".join(spec.variants["amdgpu_target"].value)
