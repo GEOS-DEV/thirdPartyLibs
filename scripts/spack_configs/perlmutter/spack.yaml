@@ -1,0 +1,303 @@
+#------------------------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# Copyright (c) 2018-2020 Lawrence Livermore National Security LLC
+# Copyright (c) 2018-2020 The Board of Trustees of the Leland Stanford Junior University
+# Copyright (c) 2018-2020 TotalEnergies
+# Copyright (c) 2019-     GEOSX Contributors
+# All rights reserved
+#
+# See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS files for details.
+#------------------------------------------------------------------------------------------------------------
+#
+# NERSC Perlmutter GPU (A100 / cuda_arch=80, Milan / znver3).
+# Uses the default CPE 26.03 stack: gcc-native/14 or nvidia/26.5, cray-mpich/9.1.0,
+# cray-libsci/26.03.0, and cudatoolkit/13.2.
+#
+# CFS install (private dir under project m4553, no nested quota):
+#   mkdir -p "$CFS/m4553/${USER}/geos-tpl"
+#   chmod 700 "$CFS/m4553/${USER}"
+#
+# Before uberenv, on a GPU allocation (-C gpu -A m4553_g):
+#   module unload darshan
+#   module load python/3.12-26.1.0   # /usr/bin/python3 is 3.6; too old for Spack
+#   # Stage on a FS that supports flock. CFS is DVS-mounted on compute nodes
+#   # (error 524 / autom4te). Prefer node-local NVMe; PSCRATCH is second choice.
+#   unset TMPDIR
+#   export TMPDIR=/tmp
+#   mkdir -p "$TMPDIR"
+#
+# GNU (recommended):
+#   module load PrgEnv-gnu/8.7.0 gcc-native/14 craype-accel-nvidia80 cudatoolkit/13.2 cmake/3.30.2
+#   python3 ./scripts/uberenv/uberenv.py \
+#     --spec="+cuda~uncrustify~pygeosx~docs~trilinos~petsc cuda_arch=80 %%gcc-14 ^cuda@13.2.0+allow-unsupported-compilers ^vtk generator=ninja" \
+#     --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml \
+#     --prefix "$CFS/m4553/${USER}/geos-tpl"
+#
+# NVHPC (do not load cudatoolkit; it conflicts with the nvidia module):
+#   module load PrgEnv-nvidia/8.7.0 nvidia/26.5 craype-accel-nvidia80 cmake/3.30.2
+#   python3 ./scripts/uberenv/uberenv.py \
+#     --spec="+cuda~uncrustify~pygeosx~docs~trilinos~petsc cuda_arch=80 %%nvhpc-26 ^cuda@13.2.0+allow-unsupported-compilers ^vtk generator=ninja" \
+#     --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml \
+#     --prefix "$CFS/m4553/${USER}/geos-tpl"
+#
+# NOTE: Use "%%" to propagate the compiler choice to dependency libraries.
+#
+# If the NVHPC cray-libsci prefix is wrong, run:
+#   module load PrgEnv-nvidia/8.7.0 nvidia/26.5
+#   echo "$CRAY_LIBSCI_PREFIX_DIR"
+#
+# Resume a live env after gmp/superlu-dist failures (do not copy this file
+# over spack_env/spack.yaml; only patch config:build_stage, then concretize):
+#   export TMPDIR=/tmp
+#   ENV="$CFS/m4553/${USER}/geos/tpl-install/spack_env"
+#   SPACK="$CFS/m4553/${USER}/geos/tpl-install/spack/bin/spack"
+#   "$SPACK" -D "$ENV" config add 'config:build_stage:[$tempdir/$user/spack-stage, $spack/../build_stage]'
+#   "$SPACK" -D "$ENV" concretize -f
+#   "$SPACK" -D "$ENV" install --keep-stage -u lvarray_hostconfig
+#
+
+spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    # Do not stage on CFS: DVS has no flock, so gmp/mpfr autoreconf fails.
+    # $tempdir follows TMPDIR (/tmp on the GPU node, or $PSCRATCH if you set it).
+    build_stage:
+      - $tempdir/$user/spack-stage
+      - $spack/../build_stage
+    build_jobs: 32
+    # Rewritten installer, default since spack v1.2.0. Set to 'old' to fall back.
+    installer: new
+
+  # Regular TPLs do not need views
+  view: false
+
+  # Include shared variants and versions
+  include:
+  - ../defaults.yaml
+  - ../versions.yaml
+
+  toolchains:
+    gcc-14:
+    - spec: '%c=gcc@14.3.0'
+      when: '%c'
+    - spec: '%cxx=gcc@14.3.0'
+      when: '%cxx'
+    - spec: '%fortran=gcc@14.3.0'
+      when: '%fortran'
+    - spec: '%cray-mpich@9.1.0_gnu'
+      when: '%mpi'
+    nvhpc-26:
+    - spec: '%c=nvhpc@26.5'
+      when: '%c'
+    - spec: '%cxx=nvhpc@26.5'
+      when: '%cxx'
+    - spec: '%fortran=nvhpc@26.5'
+      when: '%fortran'
+    - spec: '%cray-mpich@9.1.0_nvhpc'
+      when: '%mpi'
+
+  packages:
+    all:
+      target: [znver3]
+      providers:
+        blas: [cray-libsci]
+        lapack: [cray-libsci]
+        mpi: [cray-mpich]
+        zlib-api: [zlib]
+        pkgconfig: [pkg-config]
+
+    gcc:
+      buildable: false
+      externals:
+      - spec: gcc@14.3.0 languages:=c,c++,fortran
+        prefix: /opt/cray/pe/gcc-native/14
+        extra_attributes:
+          compilers:
+            c: /opt/cray/pe/gcc-native/14/bin/gcc
+            cxx: /opt/cray/pe/gcc-native/14/bin/g++
+            fortran: /opt/cray/pe/gcc-native/14/bin/gfortran
+          flags: {}
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
+          extra_rpaths:
+          - /opt/cray/pe/mpich/9.1.0/ofi/gnu/12.3/lib
+          - /opt/cray/pe/mpich/9.1.0/gtl/lib
+          - /opt/cray/pe/libsci/26.03.0/GNU/12/x86_64/lib
+          - /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/cuda/13.2/lib64
+        modules:
+        - PrgEnv-gnu/8.7.0
+        - gcc-native/14
+        - craype-x86-milan
+        - craype/2.7.36
+        - craype-network-ofi
+        - craype-accel-nvidia80
+        - cray-mpich/9.1.0
+        - cray-libsci/26.03.0
+        - cudatoolkit/13.2
+        - cray-dsmml/0.3.1
+        - libfabric/1.22.0
+        - xpmem/2.11.5-1.3_g73ade43320bc
+        - cpe/26.03
+        - cmake/3.30.2
+        - perftools-base/26.03.0
+
+    nvhpc:
+      buildable: false
+      externals:
+      - spec: nvhpc@26.5
+        prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
+        extra_attributes:
+          compilers:
+            c: /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/compilers/bin/nvc
+            cxx: /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/compilers/bin/nvc++
+            fortran: /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/compilers/bin/nvfortran
+          flags: {}
+          environment:
+            set: # Needed for scotch
+              BISON: bison
+              FLEX: flex
+          extra_rpaths:
+          - /opt/cray/pe/mpich/9.1.0/ofi/nvidia/23.3/lib
+          - /opt/cray/pe/mpich/9.1.0/gtl/lib
+          - /opt/cray/pe/libsci/26.03.0/NVIDIA/23/x86_64/lib
+          - /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/cuda/13.2/lib64
+          - /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/compilers/lib
+        modules:
+        - PrgEnv-nvidia/8.7.0
+        - nvidia/26.5
+        - craype-x86-milan
+        - craype/2.7.36
+        - craype-network-ofi
+        - craype-accel-nvidia80
+        - cray-mpich/9.1.0
+        - cray-libsci/26.03.0
+        - cray-dsmml/0.3.1
+        - libfabric/1.22.0
+        - xpmem/2.11.5-1.3_g73ade43320bc
+        - cpe/26.03
+        - cmake/3.30.2
+        - perftools-base/26.03.0
+
+    cray-mpich:
+      buildable: false
+      externals:
+      - spec: cray-mpich@9.1.0_gnu %gcc@14.3.0
+        prefix: /opt/cray/pe/mpich/9.1.0/ofi/gnu/12.3
+      - spec: cray-mpich@9.1.0_nvhpc %nvhpc@26.5
+        prefix: /opt/cray/pe/mpich/9.1.0/ofi/nvidia/23.3
+
+    cray-libsci:
+      buildable: false
+      externals:
+      - spec: cray-libsci@26.03.0 %gcc@14.3.0
+        prefix: /opt/cray/pe/libsci/26.03.0/GNU/12/x86_64
+      # ABI dir matches cray-mpich nvidia/23.3. Confirm with $CRAY_LIBSCI_PREFIX_DIR.
+      - spec: cray-libsci@26.03.0 %nvhpc@26.5
+        prefix: /opt/cray/pe/libsci/26.03.0/NVIDIA/23/x86_64
+
+    cuda:
+      buildable: false
+      externals:
+      - spec: cuda@13.2.0 +allow-unsupported-compilers
+        prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/26.5/cuda/13.2
+
+    cmake:
+      buildable: false
+      externals:
+      - spec: cmake@3.30.2
+        prefix: /global/common/software/nersc9/cmake/3.30.2
+        modules:
+        - cmake/3.30.2
+
+    ninja:
+      buildable: false
+      externals:
+      - spec: ninja@1.10.0
+        prefix: /usr
+
+    glibc:
+      buildable: false
+      externals:
+      - spec: glibc@2.38
+        prefix: /usr
+
+    autoconf:
+      buildable: false
+      externals:
+      - spec: autoconf@2.69
+        prefix: /usr
+    automake:
+      buildable: false
+      externals:
+      - spec: automake@1.15.1
+        prefix: /usr
+    libtool:
+      buildable: false
+      externals:
+      - spec: libtool@2.4.6
+        prefix: /usr
+    m4:
+      buildable: false
+      externals:
+      - spec: m4@1.4.18
+        prefix: /usr
+    perl:
+      buildable: false
+      externals:
+      - spec: perl@5.26.1
+        prefix: /usr
+    pkg-config:
+      buildable: false
+      externals:
+      - spec: pkg-config@0.29.2
+        prefix: /usr
+    gmake:
+      buildable: false
+      externals:
+      - spec: gmake@4.2.1
+        prefix: /usr
+    git:
+      buildable: false
+      externals:
+      - spec: git@2.51.0 ~tcltk
+        prefix: /usr
+    tar:
+      buildable: false
+      externals:
+      - spec: tar@1.34
+        prefix: /usr
+    unzip:
+      buildable: false
+      externals:
+      - spec: unzip@6.0
+        prefix: /usr
+    curl:
+      buildable: false
+      externals:
+      - spec: curl@8.14.1
+        prefix: /usr
+    bzip2:
+      buildable: false
+      externals:
+      - spec: bzip2@1.0.8
+        prefix: /usr
+    zlib:
+      buildable: false
+      externals:
+      - spec: zlib@1.2.13
+        prefix: /usr
+    binutils:
+      buildable: false
+      externals:
+      - spec: binutils@2.45
+        prefix: /usr
+    # System bison is 3.0.4 (too old for scotch). Let Spack build bison.
+    # Do not mark flex external; scotch has issues with some system flex.
