@@ -5,4 +5,6 @@ from spack_repo.builtin.packages.libmd.package import Libmd as BuiltinLibmd
 class Libmd(BuiltinLibmd):
     # Builtin nvhpc-aliases.patch matches libmd_alias(); 1.1.0 renamed that
     # to libmd_strong_alias(), so the hunk fails. nvc 26 supports aliases.
-    patches = []
+    # Must be a dict (when_spec -> [patch]); a list breaks Spack 1.2 concretize
+    # with "'list' object has no attribute 'items'".
+    patches = {}

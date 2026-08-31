@@ -84,10 +84,10 @@
 #   "$SPACK" -D "$ENV" config add 'packages:util-linux-uuid:require:["%gcc"]'
 #   "$SPACK" -D "$ENV" config add 'packages:texinfo:require:["%gcc"]'
 #   "$SPACK" -D "$ENV" config add 'concretizer:unify:when_possible'
-#   # Patch file changes require --fresh; -f alone reuses the lockfile vtk hash.
-#   "$SPACK" clean -m
-#   "$SPACK" -D "$ENV" concretize -f --fresh
-#   "$SPACK" -D "$ENV" spec -I geosx | grep -E 'python|libffi|libiconv|libmd |zstd|vtk'
+#   # Do not use --fresh on this env (Spack 1.2.2). If vtk stays on the old
+#   # lockfile hash, back up and drop spack.lock, then concretize -f.
+#   "$SPACK" -D "$ENV" concretize -f
+#   "$SPACK" -D "$ENV" spec | grep -E 'python|libffi|libiconv|libmd |zstd|vtk'
 #   # python/libffi/libiconv/libmd/zstd must be %gcc@14.3.0 under gcc-14.3.0/
 #   # (new hashes). vtk stays %nvhpc@26.5 with a NEW hash (surface-nets patch).
 #   "$SPACK" -D "$ENV" uninstall --yes /fnqnbm7 /4e3655z /auvwsmg /jdknojp /xqymogj || true

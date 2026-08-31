@@ -10,15 +10,25 @@ class Gettext(BuiltinGettext):
 
 
 def _drop_nvhpc_export_symbols_patch(cls):
+    # Spack stores patches as {when_spec: [patch, ...]}. Replacing that dict
+    # with a list makes concretize raise "'list' object has no attribute 'items'".
     patches = getattr(cls, "patches", None)
-    if not patches:
+    if not isinstance(patches, dict):
         return
-    kept = []
-    for patch in patches:
-        path = getattr(patch, "relative_path", None) or getattr(patch, "path", None) or str(patch)
-        if "nvhpc-export-symbols" in str(path):
-            continue
-        kept.append(patch)
+    kept = {}
+    for when, plist in patches.items():
+        filtered = []
+        for patch in plist:
+            path = (
+                getattr(patch, "relative_path", None)
+                or getattr(patch, "path", None)
+                or str(patch)
+            )
+            if "nvhpc-export-symbols" in str(path):
+                continue
+            filtered.append(patch)
+        if filtered:
+            kept[when] = filtered
     cls.patches = kept
 
 
