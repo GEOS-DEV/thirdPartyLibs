@@ -34,11 +34,14 @@
 #     --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml \
 #     --prefix "$CFS/m4553/${USER}/geos-tpl"
 #
-# NVHPC (do not load cudatoolkit; it conflicts with the nvidia module):
+# NVHPC (do not load cudatoolkit; it conflicts with the nvidia module).
+# nvc cannot build GNU C/autotools (python, libffi, libiconv). Reuse gcc python.
+# Use a separate env name so uberenv does not delete the gcc spack_env.
 #   module load PrgEnv-nvidia/8.7.0 nvidia/26.5 craype-accel-nvidia80 cmake/3.30.2
 #   python3 ./scripts/uberenv/uberenv.py \
-#     --spec="+cuda~uncrustify~pygeosx~docs~trilinos~petsc cuda_arch=80 %%nvhpc-26 ^cuda@13.2.0+allow-unsupported-compilers ^vtk generator=ninja" \
+#     --spec="+cuda~uncrustify~pygeosx~docs~trilinos~petsc cuda_arch=80 %%nvhpc-26 ^cuda@13.2.0+allow-unsupported-compilers ^vtk generator=ninja ^python%gcc-14" \
 #     --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml \
+#     --spack-env-name=spack_env_nvhpc \
 #     --prefix "$CFS/m4553/${USER}/geos-tpl"
 #
 # NOTE: Use "%%" to propagate the compiler choice to dependency libraries.
@@ -55,6 +58,17 @@
 #   "$SPACK" -D "$ENV" config add 'config:build_stage:[$tempdir/$user/spack-stage, $spack/../build_stage]'
 #   "$SPACK" -D "$ENV" config add 'packages:blas:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" config add 'packages:lapack:require:[cray-libsci]'
+#   "$SPACK" -D "$ENV" concretize -f
+#   "$SPACK" -D "$ENV" install --keep-stage -u lvarray_hostconfig
+#
+# NVHPC env (after git pull of vtk/zstd overlays). Reuse gcc python; force LibSci:
+#   export TMPDIR=/tmp
+#   ENV="$CFS/m4553/${USER}/geos/tpl-install/spack_env_nvhpc"
+#   SPACK="$CFS/m4553/${USER}/geos/tpl-install/spack/bin/spack"
+#   "$SPACK" -D "$ENV" config add 'packages:blas:require:[cray-libsci]'
+#   "$SPACK" -D "$ENV" config add 'packages:lapack:require:[cray-libsci]'
+#   "$SPACK" -D "$ENV" config add 'packages:python:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'concretizer:unify:when_possible'
 #   "$SPACK" -D "$ENV" concretize -f
 #   "$SPACK" -D "$ENV" install --keep-stage -u lvarray_hostconfig
 #
@@ -75,6 +89,10 @@ spack:
     build_jobs: 32
     # Rewritten installer, default since spack v1.2.0. Set to 'old' to fall back.
     installer: new
+
+  # Allow python%gcc next to %%nvhpc-26 (nvc cannot build libffi/libiconv/libmd).
+  concretizer:
+    unify: when_possible
 
   # Regular TPLs do not need views
   view: false
@@ -123,6 +141,11 @@ spack:
     lapack:
       require:
       - cray-libsci
+
+    # nvc 26.5 ICEs or miscompiles GNU C (libffi .S, libiconv error.h, libmd patch).
+    python:
+      require:
+      - "%gcc"
 
     gcc:
       buildable: false

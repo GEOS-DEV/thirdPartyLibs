@@ -71,6 +71,21 @@ class Vtk(CMakePackage):
     # not promote its expected condition to a compiler warning.
     patch('9.7.0-patch/diy-fortify-macro.patch', when='@9.7.0')
 
+    @run_before("cmake")
+    def nvhpc_workaround_surface_nets_ice(self):
+        # nvc++ 26.5 ICE: interpret.cpp extract_value_from_constant on this
+        # generated table file at default -O2.
+        if not self.spec.satisfies("%nvhpc"):
+            return
+        cmakelists = join_path(self.stage.source_path, "Filters", "Core", "CMakeLists.txt")
+        with open(cmakelists, "a") as handle:
+            handle.write(
+                "\n# nvc++ ICE on vtkSurfaceNets3DNonManifoldCases.cxx at -O2+\n"
+                "set_source_files_properties(\n"
+                "  vtkSurfaceNets3DNonManifoldCases.cxx\n"
+                '  PROPERTIES COMPILE_FLAGS "-O0")\n'
+            )
+
     def cmake_args(self):
         spec = self.spec
 
