@@ -75,6 +75,14 @@
 #   "$SPACK" -D "$ENV" config add 'packages:libiconv:require:["%gcc"]'
 #   "$SPACK" -D "$ENV" config add 'packages:libmd:require:["%gcc"]'
 #   "$SPACK" -D "$ENV" config add 'packages:zstd:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:gettext:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:expat:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:gdbm:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:ncurses:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:readline:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:sqlite:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:util-linux-uuid:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:texinfo:require:["%gcc"]'
 #   "$SPACK" -D "$ENV" config add 'concretizer:unify:when_possible'
 #   "$SPACK" -D "$ENV" concretize -f
 #   "$SPACK" -D "$ENV" spec -I geosx | grep -E 'python|libffi|libiconv|libmd |zstd|vtk'
@@ -153,8 +161,8 @@ spack:
       require:
       - cray-libsci
 
-    # nvc 26.5 ICEs GNU C (libffi .S, libiconv error.h, libmd aliases, zstd -MF).
-    # Hard exception to %%nvhpc-26. After concretize these must not be %nvhpc.
+    # nvc 26.5 ICEs GNU C (libffi .S, libiconv error.h, libmd aliases, zstd -MF,
+    # gettext nvhpc-export-symbols.patch vs 1.0). Hard exception to %%nvhpc-26.
     python:
       require:
       - "%gcc"
@@ -168,6 +176,30 @@ spack:
       require:
       - "%gcc"
     zstd:
+      require:
+      - "%gcc"
+    gettext:
+      require:
+      - "%gcc"
+    expat:
+      require:
+      - "%gcc"
+    gdbm:
+      require:
+      - "%gcc"
+    ncurses:
+      require:
+      - "%gcc"
+    readline:
+      require:
+      - "%gcc"
+    sqlite:
+      require:
+      - "%gcc"
+    util-linux-uuid:
+      require:
+      - "%gcc"
+    texinfo:
       require:
       - "%gcc"
 

@@ -1,11 +1,23 @@
 --- a/Filters/Core/vtkSurfaceNets3DNonManifoldCases.cxx
 +++ b/Filters/Core/vtkSurfaceNets3DNonManifoldCases.cxx
-@@ -6016,10 +6016,17 @@
+@@ -8,6 +8,12 @@
+ #include <cassert>
+ #include <numeric>
+ 
++#ifdef __NVCOMPILER
++// nvc++ 26.5 ICE in extract_value_from_constant even at -O0 while evaluating
++// these constexpr tables. Drop constexpr so initialization is runtime.
++#define constexpr
++#endif
++
+ // enable when creating the metadata table
+ // #define VTK_SURFACE_NETS_3D_NON_MANIFOLD_CASES_CREATE_TABLE
+ #ifdef VTK_SURFACE_NETS_3D_NON_MANIFOLD_CASES_CREATE_TABLE
+@@ -6016,10 +6022,17 @@
    // clang-format on
    return { offsets, metadata };
  }
 +#ifdef __NVCOMPILER
-+// nvc++ 26.5 ICE in extract_value_from_constant on these constexpr tables.
 +static const auto Result = CreateNonManifoldMetaDataPerEdgeCase();
 +static const auto& Offsets = Result.first;
 +static const auto& Metadata = Result.second;
@@ -25,7 +37,6 @@
  vtk_add_test_mangling(VTK::FiltersCore)
  
 +if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
-+  # Keep this generated table at -O0; -fast -O3 ICEs nvc++ 26.5.
 +  set_source_files_properties(vtkSurfaceNets3DNonManifoldCases.cxx PROPERTIES COMPILE_OPTIONS "-O0")
 +endif()
 +
