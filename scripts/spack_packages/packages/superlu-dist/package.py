@@ -19,7 +19,7 @@ class SuperluDist(BuiltinSuperluDist):
             if not libs:
                 raise InstallError(
                     "{0} libraries were empty for {1}; "
-                    "check the cray-libsci prefix in packages.yaml".format(
+                    "expected cray-libsci (not nvhpc) as the {0} provider".format(
                         virtual, self.spec[virtual]
                     )
                 )

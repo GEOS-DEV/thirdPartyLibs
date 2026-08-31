@@ -53,6 +53,8 @@
 #   ENV="$CFS/m4553/${USER}/geos/tpl-install/spack_env"
 #   SPACK="$CFS/m4553/${USER}/geos/tpl-install/spack/bin/spack"
 #   "$SPACK" -D "$ENV" config add 'config:build_stage:[$tempdir/$user/spack-stage, $spack/../build_stage]'
+#   "$SPACK" -D "$ENV" config add 'packages:blas:require:[cray-libsci]'
+#   "$SPACK" -D "$ENV" config add 'packages:lapack:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" concretize -f
 #   "$SPACK" -D "$ENV" install --keep-stage -u lvarray_hostconfig
 #
@@ -112,6 +114,16 @@ spack:
         zlib-api: [zlib]
         pkgconfig: [pkg-config]
 
+    # nvhpc also provides blas/lapack (default +blas+lapack) and the concretizer
+    # will pick it over cray-libsci because the compiler is already in the DAG.
+    # Force LibSci; otherwise TPL_BLAS_LIBRARIES and SuiteSparse BLAS= are empty.
+    blas:
+      require:
+      - cray-libsci
+    lapack:
+      require:
+      - cray-libsci
+
     gcc:
       buildable: false
       externals:
@@ -152,7 +164,7 @@ spack:
     nvhpc:
       buildable: false
       externals:
-      - spec: nvhpc@26.5
+      - spec: nvhpc@26.5 ~blas ~lapack
         prefix: /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
         extra_attributes:
           compilers:
