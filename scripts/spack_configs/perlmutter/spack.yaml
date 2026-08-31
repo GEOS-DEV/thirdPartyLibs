@@ -14,11 +14,11 @@
 # Uses the default CPE 26.03 stack: gcc-native/14 or nvidia/26.5, cray-mpich/9.1.0,
 # cray-libsci/26.03.0, and cudatoolkit/13.2.
 #
-# CFS install (private dir under project m4553, no nested quota):
-#   mkdir -p "$CFS/m4553/${USER}/geos-tpl"
-#   chmod 700 "$CFS/m4553/${USER}"
+# CFS install (private dir under project mXXXX, no nested quota):
+#   mkdir -p "$CFS/mXXXX/${USER}/geos-tpl"
+#   chmod 700 "$CFS/mXXXX/${USER}"
 #
-# Before uberenv, on a GPU allocation (-C gpu -A m4553_g):
+# Before uberenv, on a GPU allocation (-C gpu -A mXXXX_g):
 #   module unload darshan
 #   module load python/3.12-26.1.0   # /usr/bin/python3 is 3.6; too old for Spack
 #   # Stage on a FS that supports flock. CFS is DVS-mounted on compute nodes
@@ -32,7 +32,7 @@
 #   python3 ./scripts/uberenv/uberenv.py \
 #     --spec="+cuda~uncrustify~pygeosx~docs~trilinos~petsc cuda_arch=80 %%gcc-14 ^cuda@13.2.0+allow-unsupported-compilers ^vtk generator=ninja" \
 #     --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml \
-#     --prefix "$CFS/m4553/${USER}/geos-tpl"
+#     --prefix "$CFS/mXXXX/${USER}/geos-tpl"
 #
 # NVHPC (do not load cudatoolkit; it conflicts with the nvidia module).
 # Keep "%%" so C++ TPLs (vtk, raja, hypre) stay nvc. %% is a preference;
@@ -43,7 +43,7 @@
 #     --spec="+cuda~uncrustify~pygeosx~docs~trilinos~petsc cuda_arch=80 %%nvhpc-26 ^cuda@13.2.0+allow-unsupported-compilers ^vtk generator=ninja ^python%gcc-14" \
 #     --spack-env-file=scripts/spack_configs/perlmutter/spack.yaml \
 #     --spack-env-name=spack_env_nvhpc \
-#     --prefix "$CFS/m4553/${USER}/geos-tpl"
+#     --prefix "$CFS/mXXXX/${USER}/geos-tpl"
 #
 # NOTE: Use "%%" to propagate the compiler choice to dependency libraries.
 #
@@ -54,8 +54,8 @@
 # Resume a live env after gmp/superlu-dist failures (do not copy this file
 # over spack_env/spack.yaml; only patch config:build_stage, then concretize):
 #   export TMPDIR=/tmp
-#   ENV="$CFS/m4553/${USER}/geos/tpl-install/spack_env"
-#   SPACK="$CFS/m4553/${USER}/geos/tpl-install/spack/bin/spack"
+#   ENV="$CFS/mXXXX/${USER}/geos/tpl-install/spack_env"
+#   SPACK="$CFS/mXXXX/${USER}/geos/tpl-install/spack/bin/spack"
 #   "$SPACK" -D "$ENV" config add 'config:build_stage:[$tempdir/$user/spack-stage, $spack/../build_stage]'
 #   "$SPACK" -D "$ENV" config add 'packages:blas:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" config add 'packages:lapack:require:[cray-libsci]'
@@ -66,8 +66,8 @@
 # on GitHub until committed). Same hashes as a previous fail mean the lockfile
 # was not re-concretized — config add on a live env does not restage vtk.
 #   export TMPDIR=/tmp
-#   ENV="$CFS/m4553/${USER}/geos/tpl-install/spack_env_nvhpc"
-#   SPACK="$CFS/m4553/${USER}/geos/tpl-install/spack/bin/spack"
+#   ENV="$CFS/mXXXX/${USER}/geos/tpl-install/spack_env_nvhpc"
+#   SPACK="$CFS/mXXXX/${USER}/geos/tpl-install/spack/bin/spack"
 #   "$SPACK" -D "$ENV" config add 'packages:blas:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" config add 'packages:lapack:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" config add 'packages:python:require:["%gcc"]'
