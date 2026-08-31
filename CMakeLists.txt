@@ -928,8 +928,8 @@ endif()
 
 if( ENABLE_HYPRE )
   set( HYPRE_DIR "${CMAKE_INSTALL_PREFIX}/hypre" )
-  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/f1374fb6182c9e730abaa82f865a87b36f9ad50a.tar.gz" )
-  set( HYPRE_URL_HASH "8b3c9176e9a4e3bc3e526d497aa52e5adbfbdff8810b90e9cc7413e898de6524" )
+  set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/53927ee4fb68e5caf6be1957af2c3d75905b6b3d.tar.gz" )
+  set( HYPRE_URL_HASH "d418846bc1466616cc22e71c4d3b855127846307bb4f4a2f4d37f046ac9c3355" )
   set( HYPRE_DEPENDS "" )
 
 
@@ -1094,8 +1094,8 @@ if( ENABLE_HYPREDRV )
   endif()
 
   set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
-  set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/98989bef31e865d738c1b678ee058bb0e5dd635e.tar.gz" )
-  set( HYPREDRV_URL_HASH "7ea64b3ea5330dff2322bd265d22b2daded75733cdde8a6e5047feeea57b2cb5" )
+  set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/00cdb36800d6754b01467a4ef62e0e4ae19e6897.tar.gz" )
+  set( HYPREDRV_URL_HASH "c33212d5fb7391c81ae22ae801d387f41c2c3f293f48ccd8153845d97ba5150c" )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )

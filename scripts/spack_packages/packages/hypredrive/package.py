@@ -23,7 +23,9 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     license("MIT", checked_by="victorapm")
 
-    version("develop", branch="master")
+    # Keep the complete Git history so CMake can compute the tagged,
+    # distance-aware development version (for example, v0.2.0-2-g<sha>).
+    version("develop", branch="master", get_full_repo=True)
     version("0.2.0", sha256="2fe6c5b2779de41fbd294cb4647c7bbd210ec95934639117e56a790e56c32e41")
     version("0.1.0", sha256="39db73b75e37457035c64b4c8831abe716bf2f596c4ca79a32293d9bd51ca8d6")
 
