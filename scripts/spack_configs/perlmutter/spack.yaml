@@ -35,7 +35,8 @@
 #     --prefix "$CFS/m4553/${USER}/geos-tpl"
 #
 # NVHPC (do not load cudatoolkit; it conflicts with the nvidia module).
-# nvc cannot build GNU C/autotools (python, libffi, libiconv). Reuse gcc python.
+# Keep "%%" so C++ TPLs (vtk, raja, hypre) stay nvc. %% is a preference;
+# packages.yaml require %gcc is a hard exception for GNU C that nvc 26.5 ICEs.
 # Use a separate env name so uberenv does not delete the gcc spack_env.
 #   module load PrgEnv-nvidia/8.7.0 nvidia/26.5 craype-accel-nvidia80 cmake/3.30.2
 #   python3 ./scripts/uberenv/uberenv.py \
@@ -61,15 +62,25 @@
 #   "$SPACK" -D "$ENV" concretize -f
 #   "$SPACK" -D "$ENV" install --keep-stage -u lvarray_hostconfig
 #
-# NVHPC env (after git pull of vtk/zstd overlays). Reuse gcc python; force LibSci:
+# NVHPC env. Copy overlays into the geos-tpls checkout (zstd/libmd are not
+# on GitHub until committed). Same hashes as a previous fail mean the lockfile
+# was not re-concretized — config add on a live env does not restage vtk.
 #   export TMPDIR=/tmp
 #   ENV="$CFS/m4553/${USER}/geos/tpl-install/spack_env_nvhpc"
 #   SPACK="$CFS/m4553/${USER}/geos/tpl-install/spack/bin/spack"
 #   "$SPACK" -D "$ENV" config add 'packages:blas:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" config add 'packages:lapack:require:[cray-libsci]'
 #   "$SPACK" -D "$ENV" config add 'packages:python:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:libffi:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:libiconv:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:libmd:require:["%gcc"]'
+#   "$SPACK" -D "$ENV" config add 'packages:zstd:require:["%gcc"]'
 #   "$SPACK" -D "$ENV" config add 'concretizer:unify:when_possible'
 #   "$SPACK" -D "$ENV" concretize -f
+#   "$SPACK" -D "$ENV" spec -I geosx | grep -E 'python|libffi|libiconv|libmd |zstd|vtk'
+#   # python/libffi/libiconv/libmd/zstd must be %gcc@14.3.0 under gcc-14.3.0/
+#   # (new hashes). vtk stays %nvhpc@26.5 with a NEW hash (surface-nets patch).
+#   "$SPACK" -D "$ENV" uninstall --yes /fnqnbm7 /4e3655z /auvwsmg /jdknojp /xqymogj || true
 #   "$SPACK" -D "$ENV" install --keep-stage -u lvarray_hostconfig
 #
 
@@ -90,7 +101,7 @@ spack:
     # Rewritten installer, default since spack v1.2.0. Set to 'old' to fall back.
     installer: new
 
-  # Allow python%gcc next to %%nvhpc-26 (nvc cannot build libffi/libiconv/libmd).
+  # Allow python%gcc next to %%nvhpc-26. %% is a preference; require wins.
   concretizer:
     unify: when_possible
 
@@ -142,8 +153,21 @@ spack:
       require:
       - cray-libsci
 
-    # nvc 26.5 ICEs or miscompiles GNU C (libffi .S, libiconv error.h, libmd patch).
+    # nvc 26.5 ICEs GNU C (libffi .S, libiconv error.h, libmd aliases, zstd -MF).
+    # Hard exception to %%nvhpc-26. After concretize these must not be %nvhpc.
     python:
+      require:
+      - "%gcc"
+    libffi:
+      require:
+      - "%gcc"
+    libiconv:
+      require:
+      - "%gcc"
+    libmd:
+      require:
+      - "%gcc"
+    zstd:
       require:
       - "%gcc"
 

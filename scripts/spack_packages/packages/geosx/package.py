@@ -208,7 +208,10 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Python
     #
-    depends_on('python')
+    # Hostconfig always needs an interpreter. Keep python off the link/run DAG
+    # unless +pygeosx; otherwise %%nvhpc prefers nvc for libffi/libiconv/libmd.
+    depends_on('python', type='build', when='~pygeosx')
+    depends_on('python', type=('build', 'link', 'run'), when='+pygeosx')
 
 
     #
