@@ -40,6 +40,35 @@ def cmake_cache_list(name, value, comment=""):
     return 'set(%s %s CACHE STRING "%s")\n\n' % (name, join_str.join(value), comment)
 
 
+_SANITIZER_COMPILE_FLAGS = "-fsanitize=address,undefined -fno-omit-frame-pointer"
+_SANITIZER_LINK_FLAGS = "-fsanitize=address,undefined"
+# Non-exact flags so they compose with existing cflags='-fPIC' constraints.
+_SANITIZER_SPEC_FLAGS = (
+    "cflags='{0}' cxxflags='{0}' fflags='{0}' ldflags='{1}'".format(
+        _SANITIZER_COMPILE_FLAGS, _SANITIZER_LINK_FLAGS
+    )
+)
+
+
+def _join_flags(*parts):
+    seen = []
+    for part in parts:
+        for tok in str(part).split():
+            if tok and tok not in seen:
+                seen.append(tok)
+    return " ".join(seen)
+
+
+def write_sanitizer_cache(cfg, spec):
+    enabled = "+sanitizers" in spec
+    cfg.write(cmake_cache_option("GEOS_ENABLE_SANITIZERS", enabled))
+    if not enabled:
+        return
+    cfg.write(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", _SANITIZER_LINK_FLAGS))
+    cfg.write(cmake_cache_string("CMAKE_SHARED_LINKER_FLAGS", _SANITIZER_LINK_FLAGS))
+    cfg.write(cmake_cache_string("CMAKE_MODULE_LINKER_FLAGS", _SANITIZER_LINK_FLAGS))
+
+
 class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     """GEOSX simulation framework."""
 
@@ -83,6 +112,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
 
     variant('cuda_stack_size', default="0", description="Defines the adjusted cuda stack \
         size limit if required. Zero or negative keep default behavior")
+    variant('sanitizers', default=False,
+            description='Build TPLs and GEOS with ASan/UBSan (GEOS_ENABLE_SANITIZERS).')
 
     # SPHINX_BEGIN_DEPENDS
     depends_on("c", type="build")
@@ -232,6 +263,36 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('grpc', when='+grpc')
     depends_on('addr2line', when='+addr2line')
 
+    # Propagate sanitizer flags to C/C++/Fortran TPLs. Do not attach them to
+    # externals (mpi, cuda, python, cmake) or they may try to rebuild the toolchain.
+    with when("+sanitizers"):
+        for _san_pkg in (
+            "raja",
+            "chai",
+            "camp",
+            "umpire",
+            "hdf5",
+            "silo",
+            "conduit",
+            "pugixml",
+            "fmt",
+            "parmetis",
+            "metis",
+            "superlu-dist",
+            "suite-sparse",
+        ):
+            depends_on("{0} {1}".format(_san_pkg, _SANITIZER_SPEC_FLAGS))
+        depends_on("vtk {0}".format(_SANITIZER_SPEC_FLAGS), when="+vtk")
+        depends_on("adiak {0}".format(_SANITIZER_SPEC_FLAGS), when="+caliper")
+        depends_on("caliper {0}".format(_SANITIZER_SPEC_FLAGS), when="+caliper")
+        depends_on("scotch {0}".format(_SANITIZER_SPEC_FLAGS), when="+scotch")
+        depends_on("hypre {0}".format(_SANITIZER_SPEC_FLAGS), when="+hypre")
+        depends_on("hypredrive {0}".format(_SANITIZER_SPEC_FLAGS), when="+hypredrive")
+        depends_on("mathpresso {0}".format(_SANITIZER_SPEC_FLAGS), when="+mathpresso")
+        depends_on("trilinos {0}".format(_SANITIZER_SPEC_FLAGS), when="+trilinos")
+        depends_on("petsc {0}".format(_SANITIZER_SPEC_FLAGS), when="+petsc")
+        depends_on("grpc {0}".format(_SANITIZER_SPEC_FLAGS), when="+grpc")
+
     # SPHINX_END_DEPENDS
 
     #
@@ -240,6 +301,18 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     conflicts('~trilinos lai=trilinos', msg='To use Trilinos as the Linear Algebra Interface you must build it.')
     conflicts('~hypre lai=hypre', msg='To use HYPRE as the Linear Algebra Interface you must build it.')
     conflicts('~petsc lai=petsc', msg='To use PETSc as the Linear Algebra Interface you must build it.')
+    conflicts('+sanitizers', when='%nvhpc',
+              msg='NVHPC does not support -fsanitize=address,undefined')
+    conflicts('+sanitizers', when='%pgi',
+              msg='PGI does not support -fsanitize=address,undefined')
+
+    def flag_handler(self, name, flags):
+        if self.spec.satisfies("+sanitizers"):
+            if name in ("cflags", "cxxflags", "fflags"):
+                flags.extend(_SANITIZER_COMPILE_FLAGS.split())
+            elif name == "ldflags":
+                flags.extend(_SANITIZER_LINK_FLAGS.split())
+        return (flags, None, None)
 
     # Only phases necessary for building dependencies and generate host configs
     phases = ['geos_hostconfig', 'lvarray_hostconfig']
@@ -285,6 +358,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                                                     str(spec.compiler.name),
                                                     str(spec.compiler.version),
                                                     gpu_backend)
+        if "+sanitizers" in spec:
+            host_config_path = host_config_path[:-6] + "-sanitizers.cmake"
 
         dest_dir = self.stage.source_path
         host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
@@ -348,13 +423,17 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write("#{0}\n\n".format("-" * 80))
             cfg.write(cmake_cache_path("CMAKE_C_COMPILER", c_compiler))
             cflags = ' '.join(spec.compiler_flags['cflags'])
+            cxxflags = ' '.join(spec.compiler_flags['cxxflags'])
+            if '+sanitizers' in spec:
+                cflags = _join_flags(cflags, _SANITIZER_COMPILE_FLAGS)
+                cxxflags = _join_flags(cxxflags, _SANITIZER_COMPILE_FLAGS)
             if cflags:
                 cfg.write(cmake_cache_string("CMAKE_C_FLAGS", cflags))
 
             cfg.write(cmake_cache_path("CMAKE_CXX_COMPILER", cpp_compiler))
-            cxxflags = ' '.join(spec.compiler_flags['cxxflags'])
             if cxxflags:
                 cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
+            write_sanitizer_cache(cfg, spec)
 
             release_flags = "-O3 -DNDEBUG"
             if "clang" in self.compiler.cxx:
@@ -465,6 +544,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                     cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
                     cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
 
+                if '+sanitizers' in spec:
+                    cmake_cuda_flags += (
+                        ' -Xcompiler -fsanitize=address,undefined'
+                        ' -Xcompiler -fno-omit-frame-pointer'
+                    )
+
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS_RELWITHDEBINFO', '-g -lineinfo ${CMAKE_CUDA_FLAGS_RELEASE}'))
@@ -499,6 +584,9 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                     cfg.write(cmake_cache_string('AMDGPU_TARGETS', cmake_hip_archs))
 
                 cfg.write(cmake_cache_path('ROCM_PATH', spec['hip'].prefix))
+                if '+sanitizers' in spec:
+                    cfg.write(cmake_cache_string('CMAKE_HIP_FLAGS',
+                                                _SANITIZER_COMPILE_FLAGS))
             else:
                 cfg.write(cmake_cache_option('ENABLE_HIP', False))
 
@@ -745,13 +833,17 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write("#{0}\n\n".format("-" * 80))
             cfg.write(cmake_cache_path("CMAKE_C_COMPILER", c_compiler))
             cflags = ' '.join(spec.compiler_flags['cflags'])
+            cxxflags = ' '.join(spec.compiler_flags['cxxflags'])
+            if '+sanitizers' in spec:
+                cflags = _join_flags(cflags, _SANITIZER_COMPILE_FLAGS)
+                cxxflags = _join_flags(cxxflags, _SANITIZER_COMPILE_FLAGS)
             if cflags:
                 cfg.write(cmake_cache_string("CMAKE_C_FLAGS", cflags))
 
             cfg.write(cmake_cache_path("CMAKE_CXX_COMPILER", cpp_compiler))
-            cxxflags = ' '.join(spec.compiler_flags['cxxflags'])
             if cxxflags:
                 cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
+            write_sanitizer_cache(cfg, spec)
 
             release_flags = "-O3 -DNDEBUG"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
@@ -785,6 +877,12 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 if not spec.satisfies('cuda_arch=none'):
                     cuda_arches = [str(arch) for arch in spec.variants['cuda_arch'].value]
                     cfg.write(cmake_cache_string('CMAKE_CUDA_ARCHITECTURES', ';'.join(cuda_arches)))
+
+                if '+sanitizers' in spec:
+                    cmake_cuda_flags += (
+                        ' -Xcompiler -fsanitize=address,undefined'
+                        ' -Xcompiler -fno-omit-frame-pointer'
+                    )
 
                 cfg.write(cmake_cache_string('CMAKE_CUDA_FLAGS', cmake_cuda_flags))
 

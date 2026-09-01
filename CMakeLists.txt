@@ -86,6 +86,72 @@ option( ENABLE_VTK_WRAP_PYTHON "" OFF )
 
 option( ENABLE_NINJA "" OFF )
 
+# Instrument TPL compiles/links and the generated GEOS host-config with
+# ASan+UBSan. GCC/Clang (and compatible) only; pass the same cache variable
+# to a downstream GEOS configure so the application is instrumented too.
+option( GEOS_ENABLE_SANITIZERS "Build TPLs and GEOS with AddressSanitizer and UndefinedBehaviorSanitizer" OFF )
+
+if( GEOS_ENABLE_SANITIZERS )
+    if( MSVC )
+        message( FATAL_ERROR "GEOS_ENABLE_SANITIZERS is not supported with MSVC; use GCC or Clang" )
+    endif()
+    set( _GEOS_SANITIZER_COMPILE_FLAGS "-fsanitize=address,undefined -fno-omit-frame-pointer" )
+    set( _GEOS_SANITIZER_LINK_FLAGS "-fsanitize=address,undefined" )
+    foreach( _geos_san_var CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_Fortran_FLAGS )
+        string( FIND "${${_geos_san_var}}" "-fsanitize=address" _geos_san_pos )
+        if( _geos_san_pos EQUAL -1 )
+            set( ${_geos_san_var} "${${_geos_san_var}} ${_GEOS_SANITIZER_COMPILE_FLAGS}" CACHE STRING "" FORCE )
+        endif()
+    endforeach()
+    foreach( _geos_san_var CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS )
+        string( FIND "${${_geos_san_var}}" "-fsanitize=address" _geos_san_pos )
+        if( _geos_san_pos EQUAL -1 )
+            set( ${_geos_san_var} "${${_geos_san_var}} ${_GEOS_SANITIZER_LINK_FLAGS}" CACHE STRING "" FORCE )
+        endif()
+    endforeach()
+    if( ENABLE_CUDA )
+        message( STATUS "GEOS_ENABLE_SANITIZERS: instrumenting CUDA host code via -Xcompiler (device code is not sanitized)" )
+        string( FIND "${CMAKE_CUDA_FLAGS}" "-fsanitize=address" _geos_san_pos )
+        if( _geos_san_pos EQUAL -1 )
+            set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-fsanitize=address,undefined -Xcompiler=-fno-omit-frame-pointer" CACHE STRING "" FORCE )
+        endif()
+    endif()
+    if( ENABLE_HIP )
+        message( STATUS "GEOS_ENABLE_SANITIZERS: instrumenting HIP host code (device code is not sanitized)" )
+        string( FIND "${CMAKE_HIP_FLAGS}" "-fsanitize=address" _geos_san_pos )
+        if( _geos_san_pos EQUAL -1 )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} ${_GEOS_SANITIZER_COMPILE_FLAGS}" CACHE STRING "" FORCE )
+        endif()
+    endif()
+    unset( _geos_san_var )
+    unset( _geos_san_pos )
+    unset( _GEOS_SANITIZER_COMPILE_FLAGS )
+    unset( _GEOS_SANITIZER_LINK_FLAGS )
+    message( STATUS "GEOS_ENABLE_SANITIZERS is ON" )
+endif()
+
+# Forward sanitizer (and other) flags to every CMake ExternalProject.  CMAKE_ARGS
+# -D still wins when a TPL needs specialized flags (C_FLAGS_NO_WARNINGS, etc.).
+# Always pass at least one cache entry so CMAKE_CACHE_ARGS is never an empty keyword.
+set( GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS "-DGEOS_ENABLE_SANITIZERS:BOOL=${GEOS_ENABLE_SANITIZERS}" )
+if( GEOS_ENABLE_SANITIZERS )
+    list( APPEND GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS
+          "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}"
+          "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
+          "-DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}"
+          "-DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}"
+          "-DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}"
+          "-DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}" )
+    if( ENABLE_CUDA )
+        list( APPEND GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS
+              "-DCMAKE_CUDA_FLAGS:STRING=${CMAKE_CUDA_FLAGS}" )
+    endif()
+    if( ENABLE_HIP )
+        list( APPEND GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS
+              "-DCMAKE_HIP_FLAGS:STRING=${CMAKE_HIP_FLAGS}" )
+    endif()
+endif()
+
 include(ProcessorCount)
 ProcessorCount(NUM_CORES)
 
@@ -216,6 +282,7 @@ ExternalProject_Add( uncrustify
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -243,6 +310,7 @@ if( GEOSXTPL_ENABLE_DOXYGEN )
                        PREFIX ${PROJECT_BINARY_DIR}/doxygen
                        INSTALL_DIR ${DOXYGEN_DIR}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                        BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --parallel ${NUM_PROC}
                        INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --parallel ${NUM_PROC}
                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -290,6 +358,7 @@ ExternalProject_Add( hdf5
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
                                 -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
@@ -339,6 +408,7 @@ ExternalProject_Add( conduit
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D ENABLE_DOCS=OFF
                                 -D ENABLE_EXAMPLES=OFF
                                 -D ENABLE_FORTRAN=OFF
@@ -459,6 +529,7 @@ ExternalProject_Add( raja
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
@@ -511,6 +582,7 @@ ExternalProject_Add( chai
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -565,6 +637,7 @@ if (ENABLE_CALIPER)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                          CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
                                     -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
@@ -602,6 +675,7 @@ if (ENABLE_CALIPER)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                          DEPENDS adiak
                          CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
                                     -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
@@ -673,6 +747,7 @@ else()
                          BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --parallel ${NUM_PROC}
                          INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR>
                          CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                          CMAKE_ARGS -D MATHPRESSO_STATIC=TRUE
                                     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                     -D ASMJIT_DIR=${ASMJIT_DIR}
@@ -710,6 +785,7 @@ ExternalProject_Add( pugixml
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
@@ -778,7 +854,8 @@ if (ENABLE_TRILINOS)
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
-                         CMAKE_CACHE_ARGS -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                         CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
+                                          -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
                                           -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
                          CMAKE_ARGS -D CMAKE_C_COMPILER:PATH=${TRILINOS_C_COMPILER}
                                     -D CMAKE_C_FLAGS:STRING=${TRILINOS_C_FLAGS}
@@ -853,6 +930,7 @@ if( ${ENABLE_MPI} )
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                        CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                   -D GKLIB_PATH=../parmetis/metis/GKlib
                                   -D METIS_PATH=../parmetis/metis
@@ -881,6 +959,7 @@ ExternalProject_Add( metis
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D GKLIB_PATH=../metis/metis/GKlib
                                 -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -928,7 +1007,8 @@ if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
                        DEPENDS parmetis metis
-                       CMAKE_CACHE_ARGS -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
+                       CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
+                                        -DTPL_PARMETIS_INCLUDE_DIRS:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/include;${CMAKE_INSTALL_PREFIX}/metis/include
                                         -DTPL_PARMETIS_LIBRARIES:STRING=${CMAKE_INSTALL_PREFIX}/parmetis/lib/libparmetis.a;${CMAKE_INSTALL_PREFIX}/metis/lib/libmetis.a
                                         -DTPL_BLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
                                         -DTPL_LAPACK_LIBRARIES:STRING=${LAPACK_LIBRARIES}
@@ -964,6 +1044,16 @@ if( ENABLE_HYPRE )
   set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/53927ee4fb68e5caf6be1957af2c3d75905b6b3d.tar.gz" )
   set( HYPRE_URL_HASH "d418846bc1466616cc22e71c4d3b855127846307bb4f4a2f4d37f046ac9c3355" )
   set( HYPRE_DEPENDS "" )
+  set( HYPRE_PATCH_COMMAND ${CMAKE_COMMAND} -E true )
+
+  if( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    # Avoid the broken legacy rocSPARSE CSR sort/ILU analysis on gfx1100.
+    # Keep classical HYPRE ILU(0) setup; only the setup-time factor migration
+    # and triangular application remain device compatible.
+    set( HYPRE_PATCH_COMMAND
+         patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/hypre-hip-rocsparse-sort.patch &&
+         patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/hypre-hip-standard-ilu.patch )
+  endif()
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -1088,6 +1178,7 @@ if( ENABLE_HYPRE )
           "-DCMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}"
           "-DCMAKE_HIP_STANDARD:STRING=${HYPRE_HIP_STANDARD}"
           "-DCMAKE_HIP_STANDARD_REQUIRED:BOOL=ON"
+          "-DCMAKE_HIP_FLAGS:STRING=${CMAKE_HIP_FLAGS}"
           "-DROCM_PATH:PATH=${ROCM_PATH}" )
   endif()
 
@@ -1146,8 +1237,10 @@ if( ENABLE_HYPRE )
                        SOURCE_SUBDIR src
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
+                       PATCH_COMMAND ${HYPRE_PATCH_COMMAND}
                        LIST_SEPARATOR "^"
                        CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                        CMAKE_ARGS ${HYPRE_CMAKE_ARGS}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
@@ -1168,6 +1261,7 @@ if( ENABLE_HYPREDRV )
   set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
   set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/00cdb36800d6754b01467a4ef62e0e4ae19e6897.tar.gz" )
   set( HYPREDRV_URL_HASH "c33212d5fb7391c81ae22ae801d387f41c2c3f293f48ccd8153845d97ba5150c" )
+  set( HYPREDRV_PATCH_COMMAND ${CMAKE_COMMAND} -E true )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPREDRV_HYPRE_INCLUDE_DIRS "${HYPRE_DIR}/include" )
@@ -1211,6 +1305,7 @@ if( ENABLE_HYPREDRV )
           -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     set( HYPREDRV_ENABLE_HIP ON )
+    set( HYPREDRV_PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/hypredrive-hip-rocsparse.patch )
     list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
           "${CHAI_DIR}/lib/libumpire.a"
@@ -1251,9 +1346,11 @@ if( ENABLE_HYPREDRV )
                        PREFIX ${PROJECT_BINARY_DIR}/hypredrive
                        INSTALL_DIR ${HYPREDRV_DIR}
                        DEPENDS hypre
+                       PATCH_COMMAND ${HYPREDRV_PATCH_COMMAND}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                        CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                   -D CMAKE_C_COMPILER:FILEPATH=${HYPREDRV_C_COMPILER}
                                   -D CMAKE_C_FLAGS:STRING=${HYPREDRV_C_FLAGS}
@@ -1298,9 +1395,9 @@ if(ENABLE_SUITESPARSE)
         set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     endif()
 
-    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
-    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
-    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
 
     set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
     set( SUITESPARSE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
@@ -1391,6 +1488,7 @@ if( ENABLE_SCOTCH )
                         BUILD_COMMAND make -j ${NUM_PROC}
                         INSTALL_COMMAND make install
                         CMAKE_GENERATOR "Unix Makefiles"
+                        CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                         CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D BUILD_PTSCOTCH:BOOL=ON
                                     -D BUILD_LIBSCOTCHMETIS:BOOL=OFF
@@ -1544,6 +1642,7 @@ endif( ENABLE_MPI )
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
@@ -1592,6 +1691,7 @@ ExternalProject_Add( fmt
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
+                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
@@ -1687,6 +1787,9 @@ set(GEOS_TPL_HOST_CONFIG_FILENAME
     "host-config-${GEOS_TPL_HOST_CONFIG_COMPILER}@${GEOS_TPL_HOST_CONFIG_COMPILER_VERSION}-${GEOS_TPL_HOST_CONFIG_BACKEND}")
 if(NOT GEOS_TPL_HOST_CONFIG_BACKEND STREQUAL "cpu")
   string(APPEND GEOS_TPL_HOST_CONFIG_FILENAME "@${GEOS_TPL_HOST_CONFIG_BACKEND_VERSION}")
+endif()
+if(GEOS_ENABLE_SANITIZERS)
+  string(APPEND GEOS_TPL_HOST_CONFIG_FILENAME "-sanitizers")
 endif()
 string(APPEND GEOS_TPL_HOST_CONFIG_FILENAME ".cmake")
 message(STATUS "Generated GEOS TPL host config name: ${GEOS_TPL_HOST_CONFIG_FILENAME}")

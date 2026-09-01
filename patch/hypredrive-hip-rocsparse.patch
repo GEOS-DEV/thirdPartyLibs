@@ -1,0 +1,77 @@
+--- a/src/internal/amg.c
++++ b/src/internal/amg.c
+@@ -190,19 +190,29 @@
+ *-----------------------------------------------------------------------------*/
+ 
+ void
+ hypredrv_AMGrlxSetDefaultArgs(AMGrlx_args *args)
+ {
++#ifdef HYPRE_USING_HIP
++   /* Use a device-compatible smoother even when AMG does not coarsen. */
++   args->type = 18;
++#else
+    args->type = -1;
++#endif
+ #ifdef HYPRE_USING_GPU
+    args->down_type = 18;
+    args->up_type   = 18;
+ #else
+    args->down_type = 13;
+    args->up_type   = 14;
+ #endif
++#ifdef HYPRE_USING_HIP
++   /* Avoid the legacy ROCm CSR triangular-solve path on HIP GPUs. */
++   args->coarse_type   = 18;
++#else
+    args->coarse_type   = 9;
++#endif
+    args->down_sweeps   = -1;
+    args->up_sweeps     = -1;
+    args->coarse_sweeps = 1;
+    args->num_sweeps    = 1;
+    args->order         = 0;
+@@ -1187,7 +1193,12 @@
+ #else
+    HYPRE_BoomerAMGSetILULocalReordering(precon, args->smoother.ilu.reordering);
+ #endif
++#ifdef HYPRE_USING_HIP
++   /* Keep the classical HIP ILU factors off rocSPARSE csrsv. */
++   HYPRE_BoomerAMGSetILUTriSolve(precon, 0);
++#else
+    HYPRE_BoomerAMGSetILUTriSolve(precon, args->smoother.ilu.tri_solve);
++#endif
+    HYPRE_BoomerAMGSetILULowerJacobiIters(precon, args->smoother.ilu.lower_jac_iters);
+    HYPRE_BoomerAMGSetILUUpperJacobiIters(precon, args->smoother.ilu.upper_jac_iters);
+ #endif
+--- a/src/internal/ilu.c
++++ b/src/internal/ilu.c
+@@ -87,7 +87,12 @@
+    HYPRE_ILUSetLocalReordering(precon, args->reordering);
+ #endif
+ #if HYPRE_CHECK_MIN_VERSION(22600, 0)
++#ifdef HYPRE_USING_HIP
++   /* HYPRE uses classical host ILU(0) setup on HIP; avoid rocSPARSE csrsv. */
++   HYPRE_ILUSetTriSolve(precon, 0);
++#else
+    HYPRE_ILUSetTriSolve(precon, args->tri_solve);
++#endif
+    HYPRE_ILUSetLowerJacobiIters(precon, args->lower_jac_iters);
+    HYPRE_ILUSetUpperJacobiIters(precon, args->upper_jac_iters);
+ #endif
+--- a/src/HYPREDRV.c
++++ b/src/HYPREDRV.c
+@@ -313,10 +313,13 @@
+ #endif
+ 
+ #if HYPRE_CHECK_MIN_VERSION(22500, 0)
+       HYPRE_SetSpGemmUseVendor(hypredrv->iargs->general.use_vendor_spgemm);
+       HYPRE_SetSpMVUseVendor(hypredrv->iargs->general.use_vendor_spmv);
++#ifdef HYPRE_USING_HIP
++      HYPRE_SetSpTransUseVendor(0);
++#endif
+ #endif
+ 
+ #ifdef HYPRE_USING_UMPIRE
+       HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE");
+       HYPRE_SetUmpireUMPoolName("HYPRE_UM");
+       HYPRE_SetUmpireHostPoolName("HYPRE_HOST");
