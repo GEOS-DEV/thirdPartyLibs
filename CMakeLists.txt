@@ -21,18 +21,24 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 set( CXX_STANDARD 20 )
 set( BLT_CXX_STD c++20 CACHE STRING "" FORCE )
 
-# CUDA 13.3 rejects newer host compiler versions unless this opt-in is given.
-# Keep it in the common CUDA flags so CMake/BLT and the external CUDA TPLs use
-# the same NVCC behavior.
+# Keep required NVCC options in the common CUDA flags so CMake/BLT, the
+# generated GEOS host config, and the external CUDA TPLs use the same behavior.
+# CUDA 13.3 rejects newer host compiler versions unless the first option is
+# given, and GEOS/LvArray device lambdas require the second one.
 if( ENABLE_CUDA )
-  string( FIND "${CMAKE_CUDA_FLAGS}" "--allow-unsupported-compiler" _GEOS_TPL_CUDA_FLAG_POS )
-  if( _GEOS_TPL_CUDA_FLAG_POS EQUAL -1 )
-    if( CMAKE_CUDA_FLAGS )
-      set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --allow-unsupported-compiler" CACHE STRING "" FORCE )
-    else()
-      set( CMAKE_CUDA_FLAGS "--allow-unsupported-compiler" CACHE STRING "" FORCE )
+  foreach( _GEOS_TPL_CUDA_REQUIRED_FLAG IN ITEMS
+           --allow-unsupported-compiler
+           --extended-lambda )
+    string( FIND "${CMAKE_CUDA_FLAGS}" "${_GEOS_TPL_CUDA_REQUIRED_FLAG}" _GEOS_TPL_CUDA_FLAG_POS )
+    if( _GEOS_TPL_CUDA_FLAG_POS EQUAL -1 )
+      if( CMAKE_CUDA_FLAGS )
+        set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${_GEOS_TPL_CUDA_REQUIRED_FLAG}" CACHE STRING "" FORCE )
+      else()
+        set( CMAKE_CUDA_FLAGS "${_GEOS_TPL_CUDA_REQUIRED_FLAG}" CACHE STRING "" FORCE )
+      endif()
     endif()
-  endif()
+  endforeach()
+  unset( _GEOS_TPL_CUDA_REQUIRED_FLAG )
   unset( _GEOS_TPL_CUDA_FLAG_POS )
 endif()
 
