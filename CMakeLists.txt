@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.23.1)
+if( POLICY CMP0135 )
+  cmake_policy( SET CMP0135 NEW )
+endif()
 ################################
 # GEOS_TPL
 ################################
@@ -15,8 +18,23 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 ################################
 # BLT
 ################################
-set( CXX_STANDARD 17 )
-set( BLT_CXX_STD c++17 CACHE STRING "" FORCE )
+set( CXX_STANDARD 20 )
+set( BLT_CXX_STD c++20 CACHE STRING "" FORCE )
+
+# CUDA 13.3 rejects newer host compiler versions unless this opt-in is given.
+# Keep it in the common CUDA flags so CMake/BLT and the external CUDA TPLs use
+# the same NVCC behavior.
+if( ENABLE_CUDA )
+  string( FIND "${CMAKE_CUDA_FLAGS}" "--allow-unsupported-compiler" _GEOS_TPL_CUDA_FLAG_POS )
+  if( _GEOS_TPL_CUDA_FLAG_POS EQUAL -1 )
+    if( CMAKE_CUDA_FLAGS )
+      set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --allow-unsupported-compiler" CACHE STRING "" FORCE )
+    else()
+      set( CMAKE_CUDA_FLAGS "--allow-unsupported-compiler" CACHE STRING "" FORCE )
+    endif()
+  endif()
+  unset( _GEOS_TPL_CUDA_FLAG_POS )
+endif()
 
 if (DEFINED BLT_SOURCE_DIR)
     # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
@@ -149,8 +167,8 @@ if( ENABLE_HIP )
         message( FATAL_ERROR "ENABLE_HIP is ON but CMAKE_HIP_ARCHITECTURES is not defined (e.g. gfx90a, gfx942, gfx1100)." )
     endif()
 
-    # hypre is configured outside of cmake, so it needs the MPI include directory explicitly
-    # when its sources are compiled for the device.
+    # Device-enabled HYPRE/HypreDrive builds need the MPI include directory
+    # explicitly when their sources are compiled for the device.
     if( ENABLE_MPI AND NOT DEFINED MPI_INCLUDE_DIR )
         if( DEFINED ENV{MPICH_DIR} )               # set by the cray-mpich module on LC
             set( MPI_INCLUDE_DIR "$ENV{MPICH_DIR}/include" )
@@ -415,6 +433,11 @@ if( ENABLE_HIP )
     set( RAJA_ENABLE_VECTORIZATION OFF )
 else()
     set( RAJA_ENABLE_VECTORIZATION ON )
+endif()
+
+if( ENABLE_CUDA )
+    set( RAJA_CUDA_FLAGS "${RAJA_CUDA_FLAGS} ${CMAKE_CUDA_FLAGS}" )
+    set( CHAI_CUDA_FLAGS "${CHAI_CUDA_FLAGS} ${CMAKE_CUDA_FLAGS}" )
 endif()
 
 ExternalProject_Add( raja
@@ -932,153 +955,191 @@ if( ENABLE_HYPRE )
   set( HYPRE_URL_HASH "d418846bc1466616cc22e71c4d3b855127846307bb4f4a2f4d37f046ac9c3355" )
   set( HYPRE_DEPENDS "" )
 
-
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
-  set( HYPRE_C_COMPILER ${CMAKE_C_COMPILER} )
-  set( HYPRE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
-  set( HYPRE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} )
-  set( HYPRE_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
-  set( HYPRE_CXX_FLAGS "-fPIC ${CXX_FLAGS_NO_WARNINGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
-  set( HYPRE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
+  # HYPRE's CMake project is rooted in its src directory.  Keep the HYPRE
+  # build tree separate from the extracted source tree; in-source CMake
+  # builds are not supported by HYPRE.
+  set( HYPRE_CMAKE_ARGS
+       "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
+       "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
+       "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
+       "-DCMAKE_C_STANDARD:STRING=99"
+       "-DCMAKE_C_STANDARD_REQUIRED:BOOL=ON"
+       "-DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}"
+       "-DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
+       "-DCMAKE_C_FLAGS:STRING=-fPIC ${C_FLAGS_NO_WARNINGS}"
+       "-DCMAKE_CXX_FLAGS:STRING=-fPIC ${CXX_FLAGS_NO_WARNINGS}"
+       "-DCMAKE_C_FLAGS_${BUILD_TYPE_UPPER}:STRING=${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}"
+       "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}"
+       "-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>"
+       "-DCMAKE_INSTALL_LIBDIR:STRING=lib"
+       "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
+       "-DHYPRE_ENABLE_MPI:BOOL=${ENABLE_MPI}"
+       "-DHYPRE_ENABLE_OPENMP:BOOL=${ENABLE_OPENMP}"
+       "-DHYPRE_ENABLE_FORTRAN:BOOL=OFF"
+       "-DHYPRE_ENABLE_PRINT_ERRORS:BOOL=ON"
+       "-DHYPRE_BUILD_EXAMPLES:BOOL=OFF"
+       "-DHYPRE_BUILD_TESTS:BOOL=OFF"
+       "-DHYPRE_ENABLE_HYPRE_BLAS:BOOL=OFF"
+       "-DHYPRE_ENABLE_HYPRE_LAPACK:BOOL=OFF"
+       "-DHYPRE_ENABLE_CUDA:BOOL=OFF"
+       "-DHYPRE_ENABLE_HIP:BOOL=OFF"
+       "-DHYPRE_ENABLE_BIGINT:BOOL=OFF"
+       "-DHYPRE_ENABLE_MIXEDINT:BOOL=OFF"
+       "-DHYPRE_ENABLE_UNIFIED_MEMORY:BOOL=OFF"
+       "-DHYPRE_ENABLE_UMPIRE:BOOL=OFF"
+       "-DHYPRE_ENABLE_DSUPERLU:BOOL=OFF"
+       "-DHYPRE_ENABLE_CALIPER:BOOL=OFF"
+       "-DHYPRE_ENABLE_GPU_AWARE_MPI:BOOL=OFF"
+       "-DHYPRE_ENABLE_GPU_PROFILING:BOOL=OFF" )
 
   if( ENABLE_MPI )
-    set( HYPRE_C_COMPILER ${MPI_C_COMPILER} )
-    set( HYPRE_CXX_COMPILER ${MPI_CXX_COMPILER} )
-    set( HYPRE_Fortran_COMPILER ${MPI_Fortran_COMPILER} )
+    # Use the host compilers for the HYPRE project.  FindMPI is given the
+    # wrappers separately, which is important for CUDA: HYPRE's CUDA setup
+    # uses CMAKE_CXX_COMPILER as nvcc's host compiler.
+    list( APPEND HYPRE_CMAKE_ARGS
+          "-DMPI_C_COMPILER:FILEPATH=${MPI_C_COMPILER}"
+          "-DMPI_CXX_COMPILER:FILEPATH=${MPI_CXX_COMPILER}" )
   endif()
 
   if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
-    set( HYPRE_SUPERLU_LIBS "${SUPERLU_DIR}/lib/libsuperlu_dist.a ${PARMETIS_DIR}/lib/libparmetis.a ${METIS_DIR}/lib/libmetis.a -lstdc++" )
-    if( ENABLE_OPENMP )
-      set( HYPRE_SUPERLU_LIBS "${HYPRE_SUPERLU_LIBS} ${OpenMP_C_FLAGS}" ) # Sergey: why is this needed?
-    endif()
-    set( HYPRE_SUPERLU_FLAGS "--with-dsuperlu --with-dsuperlu-include=${SUPERLU_DIR}/include --with-dsuperlu-lib=\"${HYPRE_SUPERLU_LIBS}\"" )
     list( APPEND HYPRE_DEPENDS superlu_dist )
-  endif()
+    list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_DSUPERLU:BOOL=ON"
+          "-DTPL_DSUPERLU_INCLUDE_DIRS:STRING=${SUPERLU_DIR}/include" )
 
-  if( ENABLE_OPENMP )
-    set( HYPRE_OPENMP_FLAG --with-openmp )
-    set( HYPRE_C_FLAGS "${HYPRE_C_FLAGS} ${OpenMP_C_FLAGS}" )
-    set( HYPRE_CXX_FLAGS "${HYPRE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+    if( BUILD_SHARED_LIBS )
+      set( HYPRE_SUPERLU_LIBRARY_SUFFIX so )
+    else()
+      set( HYPRE_SUPERLU_LIBRARY_SUFFIX a )
+    endif()
+    set( HYPRE_TPL_DSUPERLU_LIBRARIES
+         "${SUPERLU_DIR}/lib/libsuperlu_dist.${HYPRE_SUPERLU_LIBRARY_SUFFIX}"
+         "${PARMETIS_DIR}/lib/libparmetis.${HYPRE_SUPERLU_LIBRARY_SUFFIX}"
+         "${METIS_DIR}/lib/libmetis.${HYPRE_SUPERLU_LIBRARY_SUFFIX}" )
+    string( REPLACE ";" "^" HYPRE_TPL_DSUPERLU_LIBRARIES_ARG
+            "${HYPRE_TPL_DSUPERLU_LIBRARIES}" )
+    list( APPEND HYPRE_CMAKE_ARGS
+          "-DTPL_DSUPERLU_LIBRARIES:STRING=${HYPRE_TPL_DSUPERLU_LIBRARIES_ARG}" )
   endif()
 
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     if( NOT ENABLE_CUDA )
       message( FATAL_ERROR "Non-compatible options: HYPRE device cannot be set to CUDA when ENABLE_CUDA is OFF" )
-    else()
-      list( APPEND HYPRE_DEPENDS chai )
-      string( SUBSTRING ${CUDA_ARCH} 3 -1 HYPRE_CUDA_SM ) # sm_XY -> XY
-      set( HYPRE_CUDA_FLAGS "\
---with-cuda --with-cuda-home=${CUDA_TOOLKIT_ROOT_DIR} \
---enable-cusparse \
---enable-cusolver \
---enable-unified-memory \
---with-gpu-arch=${HYPRE_CUDA_SM} \
---with-umpire \
---with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib-dirs=${CHAI_DIR}/lib \
---with-umpire-libs=umpire " )
-
-      if( NOT "${CMAKE_CUDA_FLAGS}" STREQUAL "" )
-        set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-extra-CUFLAGS=\"${CMAKE_CUDA_FLAGS}\"" )
-      endif()
-
-      if( ENABLE_MPI )
-        if( MPI_C_INCLUDE_DIRS )
-          list( GET MPI_C_INCLUDE_DIRS 0 HYPRE_MPI_INCLUDE_DIR )
-        elseif( MPI_C_COMPILER )
-          get_filename_component( HYPRE_MPI_BIN_DIR ${MPI_C_COMPILER} DIRECTORY )
-          get_filename_component( HYPRE_MPI_PREFIX_DIR ${HYPRE_MPI_BIN_DIR} DIRECTORY )
-          set( HYPRE_MPI_INCLUDE_DIR "${HYPRE_MPI_PREFIX_DIR}/include" )
-        endif()
-        if( HYPRE_MPI_INCLUDE_DIR )
-          set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --with-MPI-include=${HYPRE_MPI_INCLUDE_DIR}" )
-        endif()
-      endif()
-
-      if( ENABLE_HYPRE_GPU_AWARE_MPI )
-        set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-aware-mpi" )
-      endif()
-
-      if( ENABLE_HYPRE_GPU_PROFILING )
-        set( HYPRE_CUDA_FLAGS "${HYPRE_CUDA_FLAGS} --enable-gpu-profiling" )
-      endif()
     endif()
+
+    list( APPEND HYPRE_DEPENDS chai )
+    if( NOT DEFINED CMAKE_CUDA_HOST_COMPILER OR CMAKE_CUDA_HOST_COMPILER STREQUAL "" )
+      set( HYPRE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}" )
+    else()
+      set( HYPRE_CUDA_HOST_COMPILER "${CMAKE_CUDA_HOST_COMPILER}" )
+    endif()
+    list( APPEND HYPRE_CMAKE_ARGS
+          "-DHYPRE_ENABLE_CUDA:BOOL=ON"
+          "-DHYPRE_ENABLE_UNIFIED_MEMORY:BOOL=ON"
+          "-DHYPRE_ENABLE_UMPIRE:BOOL=ON"
+          "-DHYPRE_ENABLE_UMPIRE_DEVICE:BOOL=ON"
+          "-DHYPRE_ENABLE_UMPIRE_UM:BOOL=ON"
+          "-DHYPRE_ENABLE_CUDA_STREAMS:BOOL=ON"
+          "-DHYPRE_ENABLE_CUSPARSE:BOOL=ON"
+          "-DHYPRE_ENABLE_CUSOLVER:BOOL=ON"
+          "-DHYPRE_ENABLE_CUBLAS:BOOL=ON"
+          "-DHYPRE_ENABLE_CURAND:BOOL=ON"
+          "-DCMAKE_CUDA_COMPILER:FILEPATH=${CMAKE_CUDA_COMPILER}"
+          "-DCMAKE_CUDA_HOST_COMPILER:FILEPATH=${HYPRE_CUDA_HOST_COMPILER}"
+          "-DCMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}"
+          "-DCMAKE_CUDA_STANDARD:STRING=${CMAKE_CUDA_STANDARD}"
+          "-DCMAKE_CUDA_STANDARD_REQUIRED:BOOL=ON"
+          "-DCMAKE_CUDA_FLAGS:STRING=${CMAKE_CUDA_FLAGS}"
+          "-DCUDAToolkit_ROOT:PATH=${CUDA_TOOLKIT_ROOT_DIR}"
+          "-DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}" )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     if( NOT ENABLE_HIP )
       message( FATAL_ERROR "Non-compatible options: HYPRE device cannot be set to HIP when ENABLE_HIP is OFF" )
-    else()
-      list( APPEND HYPRE_DEPENDS chai )
-      set( HYPRE_HIP_FLAGS "\
-ROCM_PATH=${ROCM_PATH} \
---with-hip \
---enable-rocblas \
---enable-rocsparse \
---enable-rocsolver \
---with-gpu-arch=${CMAKE_HIP_ARCHITECTURES} \
---with-umpire-device \
---with-umpire-include=${CHAI_DIR}/include \
---with-umpire-lib-dirs=${CHAI_DIR}/lib \
---with-umpire-libs=\"umpire camp\" \
---with-MPI-include=${MPI_INCLUDE_DIR} " )
-
-      if( ENABLE_HYPRE_GPU_AWARE_MPI )
-        set( HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-aware-mpi" )
-      endif()
-
-      if( ENABLE_HYPRE_GPU_PROFILING )
-        set( HYPRE_HIP_FLAGS "${HYPRE_HIP_FLAGS} --enable-gpu-profiling" )
-      endif()
     endif()
+
+    list( APPEND HYPRE_DEPENDS chai )
+    if( NOT DEFINED CMAKE_HIP_STANDARD OR CMAKE_HIP_STANDARD STREQUAL "" )
+      set( HYPRE_HIP_STANDARD "${CMAKE_CXX_STANDARD}" )
+    else()
+      set( HYPRE_HIP_STANDARD "${CMAKE_HIP_STANDARD}" )
+    endif()
+    list( APPEND HYPRE_CMAKE_ARGS
+          "-DHYPRE_ENABLE_HIP:BOOL=ON"
+          "-DHYPRE_ENABLE_UMPIRE:BOOL=ON"
+          "-DHYPRE_ENABLE_UMPIRE_DEVICE:BOOL=ON"
+          "-DHYPRE_ENABLE_UMPIRE_UM:BOOL=OFF"
+          "-DHYPRE_ENABLE_ROCBLAS:BOOL=ON"
+          "-DHYPRE_ENABLE_ROCSPARSE:BOOL=ON"
+          "-DHYPRE_ENABLE_ROCSOLVER:BOOL=ON"
+          "-DHYPRE_ENABLE_ROCRAND:BOOL=ON"
+          "-DCMAKE_HIP_COMPILER:FILEPATH=${CMAKE_HIP_COMPILER}"
+          "-DCMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}"
+          "-DCMAKE_HIP_STANDARD:STRING=${HYPRE_HIP_STANDARD}"
+          "-DCMAKE_HIP_STANDARD_REQUIRED:BOOL=ON"
+          "-DROCM_PATH:PATH=${ROCM_PATH}" )
+  endif()
+
+  if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" OR ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    if( ENABLE_HYPRE_GPU_AWARE_MPI )
+      list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_GPU_AWARE_MPI:BOOL=ON" )
+    endif()
+    if( ENABLE_HYPRE_GPU_PROFILING )
+      list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_GPU_PROFILING:BOOL=ON" )
+    endif()
+
+    if( BUILD_SHARED_LIBS )
+      set( HYPRE_UMPIRE_LIBRARY_SUFFIX so )
+    else()
+      set( HYPRE_UMPIRE_LIBRARY_SUFFIX a )
+    endif()
+    set( HYPRE_TPL_UMPIRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
+    set( HYPRE_TPL_UMPIRE_LIBRARIES
+         "${CHAI_DIR}/lib/libumpire.${HYPRE_UMPIRE_LIBRARY_SUFFIX}"
+         "${CHAI_DIR}/lib/libcamp.${HYPRE_UMPIRE_LIBRARY_SUFFIX}"
+         "${CHAI_DIR}/lib/libfmt.${HYPRE_UMPIRE_LIBRARY_SUFFIX}" )
+    string( REPLACE ";" "^" HYPRE_TPL_UMPIRE_LIBRARIES_ARG
+            "${HYPRE_TPL_UMPIRE_LIBRARIES}" )
+    list( APPEND HYPRE_CMAKE_ARGS
+          "-DTPL_UMPIRE_INCLUDE_DIRS:STRING=${HYPRE_TPL_UMPIRE_INCLUDE_DIRS}"
+          "-DTPL_UMPIRE_LIBRARIES:STRING=${HYPRE_TPL_UMPIRE_LIBRARIES_ARG}" )
   endif()
 
   if( CMAKE_HOST_APPLE )
-    set( HYPRE_INT_FLAG "--enable-bigint" )
+    list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_BIGINT:BOOL=ON" )
   else()
-    set( HYPRE_INT_FLAG "--enable-mixedint" )
+    list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_MIXEDINT:BOOL=ON" )
   endif()
+
+  string( REPLACE ";" "^" HYPRE_TPL_BLAS_LIBRARIES_ARG "${BLAS_LIBRARIES}" )
+  string( REPLACE ";" "^" HYPRE_TPL_LAPACK_LIBRARIES_ARG "${LAPACK_LIBRARIES}" )
+  list( APPEND HYPRE_CMAKE_ARGS
+        "-DTPL_BLAS_LIBRARIES:STRING=${HYPRE_TPL_BLAS_LIBRARIES_ARG}"
+        "-DTPL_LAPACK_LIBRARIES:STRING=${HYPRE_TPL_LAPACK_LIBRARIES_ARG}" )
 
   if( ENABLE_CALIPER_HYPRE )
-    set( HYPRE_CALIPER_FLAGS "--with-caliper --with-caliper-include=\"${CALIPER_DIR}/include\" --with-caliper-lib=\"${CALIPER_DIR}/lib/${CALIPER_LIB}\"" )
     list( APPEND HYPRE_DEPENDS caliper )
+    list( APPEND HYPRE_CMAKE_ARGS
+          "-DHYPRE_ENABLE_CALIPER:BOOL=ON"
+          "-DTPL_CALIPER_INCLUDE_DIRS:STRING=${CALIPER_DIR}/include"
+          "-DTPL_CALIPER_LIBRARIES:STRING=${CALIPER_DIR}/lib/${CALIPER_LIB}" )
   endif()
-
-  if( CMAKE_BUILD_TYPE MATCHES Debug )
-    set( HYPRE_DEBUG_FLAG "--enable-debug" )
-  endif()
-
-  file(WRITE ${PROJECT_BINARY_DIR}/config_hypre_for_geos "\
-  ./configure \
-  CC=${HYPRE_C_COMPILER} \
-  CFLAGS=\"${HYPRE_C_FLAGS}\" \
-  CXX=${HYPRE_CXX_COMPILER} \
-  CXXFLAGS=\"${HYPRE_CXX_FLAGS}\" \
-  FC=${HYPRE_Fortran_COMPILER} \
-  FCFLAGS=\"${HYPRE_Fortran_FLAGS}\" \
-  --prefix=${HYPRE_DIR} \
-  --with-print-errors \
-  ${HYPRE_DEBUG_FLAG} \
-  ${HYPRE_INT_FLAG} \
-  --with-blas-lib=\"${BLAS_LINK_LINE}\" \
-  --with-lapack-lib=\"${LAPACK_LINK_LINE}\" \
-  ${HYPRE_SUPERLU_FLAGS} \
-  ${HYPRE_OPENMP_FLAG} \
-  ${HYPRE_CUDA_FLAGS} \
-  ${HYPRE_HIP_FLAGS} \
-  ${HYPRE_CALIPER_FLAGS}\n")
 
   ExternalProject_Add( hypre
                        URL ${HYPRE_URL}
                        URL_HASH SHA256=${HYPRE_URL_HASH}
                        UPDATE_COMMAND ""  # Skip git pull/update since this is a snapshot
                        PREFIX ${PROJECT_BINARY_DIR}/hypre
+                       SOURCE_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre
+                       BINARY_DIR ${PROJECT_BINARY_DIR}/hypre-build
+                       SOURCE_SUBDIR src
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
-                       BINARY_DIR ${PROJECT_BINARY_DIR}/hypre/src/hypre/src
-                       CONFIGURE_COMMAND cat ${PROJECT_BINARY_DIR}/config_hypre_for_geos && . ${PROJECT_BINARY_DIR}/config_hypre_for_geos
-                       BUILD_COMMAND make -j ${NUM_PROC} VERBOSE=1
-                       INSTALL_COMMAND make install
+                       LIST_SEPARATOR "^"
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       CMAKE_ARGS ${HYPRE_CMAKE_ARGS}
+                       BUILD_COMMAND ${TPL_BUILD_COMMAND}
+                       INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        )
 
   list( APPEND build_list hypre )
@@ -1098,10 +1159,16 @@ if( ENABLE_HYPREDRV )
   set( HYPREDRV_URL_HASH "c33212d5fb7391c81ae22ae801d387f41c2c3f293f48ccd8153845d97ba5150c" )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+  set( HYPREDRV_HYPRE_INCLUDE_DIRS "${HYPRE_DIR}/include" )
   set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )
   set( HYPREDRV_HYPRE_LIBRARIES "${HYPREDRV_HYPRE_LIBRARY}" )
   list( APPEND HYPREDRV_HYPRE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
-  string( REPLACE ";" "^" HYPREDRV_HYPRE_LIBRARIES_ARG "${HYPREDRV_HYPRE_LIBRARIES}" )
+  if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
+    list( APPEND HYPREDRV_HYPRE_LIBRARIES
+          "${SUPERLU_DIR}/lib/libsuperlu_dist.a"
+          "${PARMETIS_DIR}/lib/libparmetis.a"
+          "${METIS_DIR}/lib/libmetis.a" )
+  endif()
   set( HYPREDRV_MPI_ARGS )
   set( HYPREDRV_ACCELERATOR_ARGS )
   set( HYPREDRV_ENABLE_CUDA OFF )
@@ -1116,12 +1183,29 @@ if( ENABLE_HYPREDRV )
 
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     set( HYPREDRV_ENABLE_CUDA ON )
+    # The legacy HYPRE build uses Umpire for device memory.  Its generated
+    # headers include Umpire headers, and its static archive leaves the
+    # Umpire/CUDA dependencies to consumers, so propagate both explicitly.
+    list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
+    list( APPEND HYPREDRV_HYPRE_LIBRARIES
+          "${CHAI_DIR}/lib/libumpire.a"
+          "${CHAI_DIR}/lib/libcamp.a"
+          "${CHAI_DIR}/lib/libfmt.a"
+          "-L${CUDA_TOOLKIT_ROOT_DIR}/lib64"
+          -lcudart -lcusparse -lcublas -lcurand -lcusolver
+          -ldl -lstdc++ )
     list( APPEND HYPREDRV_ACCELERATOR_ARGS
           -D CMAKE_CUDA_COMPILER:FILEPATH=${CMAKE_CUDA_COMPILER}
           -D CMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
           -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     set( HYPREDRV_ENABLE_HIP ON )
+    list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
+    list( APPEND HYPREDRV_HYPRE_LIBRARIES
+          "${CHAI_DIR}/lib/libumpire.a"
+          "${CHAI_DIR}/lib/libcamp.a"
+          "${CHAI_DIR}/lib/libfmt.a"
+          -ldl -lstdc++ )
     list( APPEND HYPREDRV_ACCELERATOR_ARGS
           -D CMAKE_HIP_COMPILER:FILEPATH=${CMAKE_HIP_COMPILER}
           -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
@@ -1139,9 +1223,13 @@ if( ENABLE_HYPREDRV )
 
   message( STATUS "Building HYPREDRIVE found at ${HYPREDRV_URL}" )
 
-  # The legacy superbuild installs HYPRE with its Autotools interface. Pass
-  # those include/library paths explicitly so HypreDrive does not fetch and
-  # build a second copy of HYPRE.
+  string( REPLACE ";" "^" HYPREDRV_HYPRE_INCLUDE_DIRS_ARG
+          "${HYPREDRV_HYPRE_INCLUDE_DIRS}" )
+  string( REPLACE ";" "^" HYPREDRV_HYPRE_LIBRARIES_ARG
+          "${HYPREDRV_HYPRE_LIBRARIES}" )
+
+  # Pass the superbuild's HYPRE include/library paths explicitly so
+  # HypreDrive does not fetch and build a second copy of HYPRE.
   ExternalProject_Add( hypredrive
                        URL ${HYPREDRV_URL}
                        URL_HASH SHA256=${HYPREDRV_URL_HASH}
@@ -1161,7 +1249,7 @@ if( ENABLE_HYPREDRV )
                                   -D CMAKE_INSTALL_LIBDIR:STRING=lib
                                   -D BUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
                                   -D CMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
-                                  -D HYPRE_INCLUDE_DIRS:PATH=${HYPRE_DIR}/include
+                                  -D HYPRE_INCLUDE_DIRS:PATH=${HYPREDRV_HYPRE_INCLUDE_DIRS_ARG}
                                   -D HYPRE_LIBRARIES:STRING=${HYPREDRV_HYPRE_LIBRARIES_ARG}
                                   -D HYPREDRV_ENABLE_TESTING:BOOL=OFF
                                   -D HYPREDRV_ENABLE_ALL_TESTS:BOOL=OFF
@@ -1447,6 +1535,9 @@ endif( ENABLE_MPI )
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
                                     -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                                    -D CMAKE_CXX_STANDARD:STRING=${CXX_STANDARD}
+                                    -D CMAKE_CXX_STANDARD_REQUIRED:BOOL=ON
+                                    -D VTK_IGNORE_CMAKE_CXX17_CHECKS:BOOL=ON
                                     -D VTK_USE_MPI=${VTK_USE_MPI}
                                     -D VTK_MODULE_ENABLE_VTK_IOParallelXML=${VTK_MODULE_ENABLE_VTK_IOParallelXML}
                                     -D VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2=${VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2}
@@ -1466,8 +1557,7 @@ endif( ENABLE_MPI )
                                     -D VTK_MODULE_ENABLE_VTK_vtkm=DONT_WANT
                                     -D VTK_MODULE_ENABLE_VTK_IOXML=YES
                                     -D VTK_MODULE_ENABLE_VTK_IOLegacy=YES
-                                    -D VTK_BUILD_TESTING=OFF
-                                    -D VTK_LEGACY_REMOVE=ON )
+                                    -D VTK_BUILD_TESTING=OFF )
 
     list( APPEND build_list vtk )
 endif( ENABLE_VTK )
@@ -1508,15 +1598,207 @@ list(APPEND build_list fmt)
 ################################
 message(STATUS "Building = ${build_list}")
 
+# Generate a self-contained configuration for a downstream GEOS build.  The
+# file is generated during configuration and copied to the install prefix by
+# the `tpl` target after all external projects have been built.
+set(GEOS_TPL_HOST_CONFIG_TPL_DIR "${CMAKE_INSTALL_PREFIX}")
+set(GEOS_TPL_HOST_CONFIG_CAMP_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+
+# Include the toolchain identity in the host-config name so that an install
+# directory makes its compiler/backend requirements visible without opening
+# the file.  Use the C++ compiler because it is the compiler used by GEOS and
+# is also the host compiler for CUDA builds.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER gcc)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER appleclang)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER clang)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER intelllvm)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER intel)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER nvhpc)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER pgi)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Cray")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER cray)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "XL")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER xl)
+else()
+  string(TOLOWER "${CMAKE_CXX_COMPILER_ID}" GEOS_TPL_HOST_CONFIG_COMPILER)
+endif()
+if(GEOS_TPL_HOST_CONFIG_COMPILER STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER unknown)
+endif()
+
+set(GEOS_TPL_HOST_CONFIG_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+if(GEOS_TPL_HOST_CONFIG_COMPILER_VERSION STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_COMPILER_VERSION unknown)
+endif()
+string(REGEX REPLACE "[^A-Za-z0-9._+-]" "_"
+       GEOS_TPL_HOST_CONFIG_COMPILER_VERSION
+       "${GEOS_TPL_HOST_CONFIG_COMPILER_VERSION}")
+
+set(GEOS_TPL_HOST_CONFIG_BACKEND cpu)
+set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "")
+if(ENABLE_CUDA)
+  set(GEOS_TPL_HOST_CONFIG_BACKEND cuda)
+  if(DEFINED CUDAToolkit_VERSION AND NOT CUDAToolkit_VERSION STREQUAL "")
+    set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "${CUDAToolkit_VERSION}")
+  elseif(DEFINED CMAKE_CUDA_COMPILER_VERSION AND NOT CMAKE_CUDA_COMPILER_VERSION STREQUAL "")
+    set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "${CMAKE_CUDA_COMPILER_VERSION}")
+  elseif(DEFINED CUDA_VERSION_STRING AND NOT CUDA_VERSION_STRING STREQUAL "")
+    set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "${CUDA_VERSION_STRING}")
+  endif()
+elseif(ENABLE_HIP)
+  set(GEOS_TPL_HOST_CONFIG_BACKEND hip)
+  if(DEFINED hip_VERSION AND NOT hip_VERSION STREQUAL "")
+    set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "${hip_VERSION}")
+  elseif(DEFINED ROCM_VERSION AND NOT ROCM_VERSION STREQUAL "")
+    set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "${ROCM_VERSION}")
+  elseif(DEFINED CMAKE_HIP_COMPILER_VERSION AND NOT CMAKE_HIP_COMPILER_VERSION STREQUAL "")
+    set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION "${CMAKE_HIP_COMPILER_VERSION}")
+  endif()
+endif()
+if(NOT GEOS_TPL_HOST_CONFIG_BACKEND STREQUAL "cpu"
+   AND GEOS_TPL_HOST_CONFIG_BACKEND_VERSION STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_BACKEND_VERSION unknown)
+endif()
+string(REGEX REPLACE "[^A-Za-z0-9._+-]" "_"
+       GEOS_TPL_HOST_CONFIG_BACKEND_VERSION
+       "${GEOS_TPL_HOST_CONFIG_BACKEND_VERSION}")
+
+set(GEOS_TPL_HOST_CONFIG_FILENAME
+    "host-config-${GEOS_TPL_HOST_CONFIG_COMPILER}@${GEOS_TPL_HOST_CONFIG_COMPILER_VERSION}-${GEOS_TPL_HOST_CONFIG_BACKEND}")
+if(NOT GEOS_TPL_HOST_CONFIG_BACKEND STREQUAL "cpu")
+  string(APPEND GEOS_TPL_HOST_CONFIG_FILENAME "@${GEOS_TPL_HOST_CONFIG_BACKEND_VERSION}")
+endif()
+string(APPEND GEOS_TPL_HOST_CONFIG_FILENAME ".cmake")
+message(STATUS "Generated GEOS TPL host config name: ${GEOS_TPL_HOST_CONFIG_FILENAME}")
+
+if(NOT DEFINED CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD STREQUAL "")
+  set(CMAKE_CXX_STANDARD "${CXX_STANDARD}")
+endif()
+set(GEOS_TPL_HOST_CONFIG_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+
+if(DEFINED MPIEXEC_EXECUTABLE AND NOT MPIEXEC_EXECUTABLE STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_MPIEXEC "${MPIEXEC_EXECUTABLE}")
+elseif(DEFINED MPIEXEC AND NOT MPIEXEC STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_MPIEXEC "${MPIEXEC}")
+elseif(DEFINED MPI_C_COMPILER AND NOT MPI_C_COMPILER STREQUAL "")
+  get_filename_component(GEOS_TPL_HOST_CONFIG_MPI_BIN "${MPI_C_COMPILER}" DIRECTORY)
+  set(GEOS_TPL_HOST_CONFIG_MPIEXEC "${GEOS_TPL_HOST_CONFIG_MPI_BIN}/mpirun")
+else()
+  set(GEOS_TPL_HOST_CONFIG_MPIEXEC "")
+endif()
+if(DEFINED MPIEXEC_NUMPROC_FLAG AND NOT MPIEXEC_NUMPROC_FLAG STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}")
+else()
+  set(GEOS_TPL_HOST_CONFIG_MPIEXEC_NUMPROC_FLAG "-np")
+endif()
+
+if(DEFINED ENABLE_HYPRE_DEVICE AND NOT ENABLE_HYPRE_DEVICE STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_HYPRE_DEVICE "${ENABLE_HYPRE_DEVICE}")
+else()
+  set(GEOS_TPL_HOST_CONFIG_HYPRE_DEVICE CPU)
+endif()
+
+if(DEFINED ENABLE_HYPRE_GPU_AWARE_MPI)
+  set(GEOS_TPL_HOST_CONFIG_HYPRE_GPU_AWARE_MPI "${ENABLE_HYPRE_GPU_AWARE_MPI}")
+else()
+  set(GEOS_TPL_HOST_CONFIG_HYPRE_GPU_AWARE_MPI OFF)
+endif()
+if(DEFINED ENABLE_CALIPER_HYPRE)
+  set(GEOS_TPL_HOST_CONFIG_CALIPER_HYPRE "${ENABLE_CALIPER_HYPRE}")
+else()
+  set(GEOS_TPL_HOST_CONFIG_CALIPER_HYPRE OFF)
+endif()
+
+if(ENABLE_HYPRE)
+  set(GEOS_TPL_HOST_CONFIG_LA_INTERFACE Hypre)
+elseif(ENABLE_TRILINOS)
+  set(GEOS_TPL_HOST_CONFIG_LA_INTERFACE Trilinos)
+elseif(ENABLE_PETSC)
+  set(GEOS_TPL_HOST_CONFIG_LA_INTERFACE Petsc)
+else()
+  set(GEOS_TPL_HOST_CONFIG_LA_INTERFACE Hypre)
+endif()
+
+if(ENABLE_MPI)
+  set(GEOS_TPL_HOST_CONFIG_PARMETIS ON)
+else()
+  set(GEOS_TPL_HOST_CONFIG_PARMETIS OFF)
+endif()
+set(GEOS_TPL_HOST_CONFIG_METIS ON)
+set(GEOS_TPL_HOST_CONFIG_SILO ON)
+set(GEOS_TPL_HOST_CONFIG_UNCRUSTIFY ON)
+if(CMAKE_HOST_APPLE)
+  set(GEOS_TPL_HOST_CONFIG_HYPRE_MIXINT OFF)
+else()
+  set(GEOS_TPL_HOST_CONFIG_HYPRE_MIXINT ON)
+endif()
+if(DEFINED MATHPRESSO_DIR AND NOT MATHPRESSO_DIR STREQUAL "")
+  set(GEOS_TPL_HOST_CONFIG_MATHPRESSO ON)
+else()
+  set(GEOS_TPL_HOST_CONFIG_MATHPRESSO OFF)
+endif()
+set(GEOS_TPL_HOST_CONFIG_DOXYGEN_EXECUTABLE "${CMAKE_INSTALL_PREFIX}/doxygen/bin/doxygen")
+set(GEOS_TPL_HOST_CONFIG_UNCRUSTIFY_EXECUTABLE "${CMAKE_INSTALL_PREFIX}/uncrustify/bin/uncrustify")
+
+# CUDA 13 no longer ships nvToolsExt.  Do not propagate a stale superbuild
+# option to GEOS when the library is absent from the selected toolkit.
+set(GEOS_TPL_HOST_CONFIG_CUDA_NVTOOLSEXT OFF)
+if(ENABLE_CUDA)
+  find_library(GEOS_TPL_NVTOOLSEXT_LIBRARY
+               NAMES nvToolsExt
+               PATHS "${CUDA_TOOLKIT_ROOT_DIR}/lib64" "${CUDA_TOOLKIT_ROOT_DIR}/lib"
+               NO_DEFAULT_PATH)
+  if(GEOS_TPL_NVTOOLSEXT_LIBRARY)
+    set(GEOS_TPL_HOST_CONFIG_CUDA_NVTOOLSEXT ON)
+  elseif(ENABLE_CUDA_NVTOOLSEXT)
+    message(WARNING "ENABLE_CUDA_NVTOOLSEXT is ON, but nvToolsExt was not found; disabling it in the generated GEOS host config")
+  endif()
+  unset(GEOS_TPL_NVTOOLSEXT_LIBRARY CACHE)
+endif()
+
+set(GEOS_TPL_HOST_CONFIG_PREFIX_PATH
+    "${CMAKE_INSTALL_PREFIX}/adiak;${CMAKE_INSTALL_PREFIX}/caliper;${CMAKE_INSTALL_PREFIX}/chai;${CMAKE_INSTALL_PREFIX}/conduit;${CMAKE_INSTALL_PREFIX}/fmt;${CMAKE_INSTALL_PREFIX}/hdf5;${CMAKE_INSTALL_PREFIX}/hypre;${CMAKE_INSTALL_PREFIX}/hypredrive;${CMAKE_INSTALL_PREFIX}/mathpresso;${CMAKE_INSTALL_PREFIX}/metis;${CMAKE_INSTALL_PREFIX}/parmetis;${CMAKE_INSTALL_PREFIX}/pugixml;${CMAKE_INSTALL_PREFIX}/raja;${CMAKE_INSTALL_PREFIX}/scotch;${CMAKE_INSTALL_PREFIX}/silo;${CMAKE_INSTALL_PREFIX}/suitesparse;${CMAKE_INSTALL_PREFIX}/superlu_dist;${CMAKE_INSTALL_PREFIX}/vtk")
+
+set(GEOS_TPL_HOST_CONFIG_BUILD "${PROJECT_BINARY_DIR}/${GEOS_TPL_HOST_CONFIG_FILENAME}")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/geos-host-config.cmake.in"
+               "${GEOS_TPL_HOST_CONFIG_BUILD}" @ONLY)
+install(FILES "${GEOS_TPL_HOST_CONFIG_BUILD}" DESTINATION .)
+
 blt_add_executable( NAME             tpl
                     SOURCES          tpl.cpp )
 
 add_dependencies( tpl ${build_list}  )
 
+# Keep the installed copy current even when the `tpl` executable itself is
+# already up to date after a CMake reconfigure.
+set(GEOS_TPL_HOST_CONFIG_INSTALL "${CMAKE_INSTALL_PREFIX}/${GEOS_TPL_HOST_CONFIG_FILENAME}")
+add_custom_command(
+  OUTPUT "${GEOS_TPL_HOST_CONFIG_INSTALL}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${GEOS_TPL_HOST_CONFIG_BUILD}"
+          "${GEOS_TPL_HOST_CONFIG_INSTALL}"
+  DEPENDS "${GEOS_TPL_HOST_CONFIG_BUILD}"
+  COMMENT "Installing generated GEOS host config")
+add_custom_target( geos_tpl_host_config ALL
+                   DEPENDS "${GEOS_TPL_HOST_CONFIG_INSTALL}" )
+add_dependencies( geos_tpl_host_config tpl )
+
 # Clean up
 add_custom_command( TARGET tpl POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_silo_for_geos
-                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_hypre_for_geos
                     COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/config_suitesparse_for_geos
                     COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/build_suitesparse_for_geos
-                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/install_suitesparse_for_geos )
+                    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/install_suitesparse_for_geos
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                            ${GEOS_TPL_HOST_CONFIG_BUILD}
+                            ${GEOS_TPL_HOST_CONFIG_INSTALL}
+                    COMMENT "Installing generated GEOS host config")
