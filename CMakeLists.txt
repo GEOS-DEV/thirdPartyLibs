@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.23.1)
 if( POLICY CMP0135 )
   cmake_policy( SET CMP0135 NEW )
 endif()
+if( POLICY CMP0144 )
+  cmake_policy( SET CMP0144 NEW )
+endif()
 ################################
 # GEOS_TPL
 ################################
@@ -239,8 +242,9 @@ if( GEOSXTPL_ENABLE_DOXYGEN )
                        URL_HASH SHA256=${DOXYGEN_URL_HASH}
                        PREFIX ${PROJECT_BINARY_DIR}/doxygen
                        INSTALL_DIR ${DOXYGEN_DIR}
-                       BUILD_COMMAND make -j ${NUM_PROC}
-                       INSTALL_COMMAND make install
+                       CMAKE_GENERATOR ${TPL_GENERATOR}
+                       BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --parallel ${NUM_PROC}
+                       INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --parallel ${NUM_PROC}
                        CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -1006,7 +1010,8 @@ if( ENABLE_HYPRE )
     # uses CMAKE_CXX_COMPILER as nvcc's host compiler.
     list( APPEND HYPRE_CMAKE_ARGS
           "-DMPI_C_COMPILER:FILEPATH=${MPI_C_COMPILER}"
-          "-DMPI_CXX_COMPILER:FILEPATH=${MPI_CXX_COMPILER}" )
+          "-DMPI_CXX_COMPILER:FILEPATH=${MPI_CXX_COMPILER}"
+          "-DMPI_INCLUDE_DIR:PATH=${MPI_INCLUDE_DIR}" )
   endif()
 
   if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
@@ -1211,6 +1216,8 @@ if( ENABLE_HYPREDRV )
           "${CHAI_DIR}/lib/libumpire.a"
           "${CHAI_DIR}/lib/libcamp.a"
           "${CHAI_DIR}/lib/libfmt.a"
+          "-L${ROCM_PATH}/lib"
+          -lrocblas -lrocsparse -lrocrand -lrocsolver -lamdhip64
           -ldl -lstdc++ )
     list( APPEND HYPREDRV_ACCELERATOR_ARGS
           -D CMAKE_HIP_COMPILER:FILEPATH=${CMAKE_HIP_COMPILER}
