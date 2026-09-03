@@ -1,0 +1,30 @@
+--- a/src/parcsr_ls/par_ilu_setup_device.c
++++ b/src/parcsr_ls/par_ilu_setup_device.c
+@@ -161,1 +161,1 @@
+-#if !defined(HYPRE_USING_SYCL)
++#if !defined(HYPRE_USING_SYCL) && !defined(HYPRE_USING_HIP)
+@@ -187,0 +188,15 @@
++#if defined(HYPRE_USING_HIP)
++         /*
++          * rocSPARSE's legacy csrilu0 analysis is not functional on the
++          * gfx1100 devices shipped with ROCm 7.2.  Use HYPRE's classical
++          * ILU(0) implementation instead.  The factorization is performed
++          * on the host only during setup and the resulting LDU factors are
++          * migrated back to the device by hypre_ILUSetupLDUtoVendor.
++          */
++         if (fill_level == 0 && !(ilu_type % 10))
++         {
++            hypre_ParCSRMatrixMigrate(Apq, HYPRE_MEMORY_HOST);
++            hypre_ILUSetupILU0(Apq, NULL, NULL, n, n,
++                               &parL, &parD, &parU, &parS, &uend);
++         }
++#endif
+@@ -214,0 +215,6 @@
++#if defined(HYPRE_USING_HIP)
++         else if (fill_level == 0 && !(ilu_type % 10))
++         {
++            hypre_TFree(parD, HYPRE_MEMORY_HOST);
++         }
++#endif
+
+

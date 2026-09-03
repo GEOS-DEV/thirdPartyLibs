@@ -1,0 +1,28 @@
+--- a/src/tpl/umpire/src/tpl/umpire/judy/judy.c
++++ b/src/tpl/umpire/src/tpl/umpire/judy/judy.c
+@@ -502,7 +502,11 @@ JudySlot * judy_slot( Judy * judy, const unsigned char * buff, unsigned int max ) {
+                 //  find slot > key
+ 
+                 while( slot-- ) {
+-                    test = *( judyvalue * )( base + slot * keysize );
++                    // Judy keys are byte-packed and therefore need not be
++                    // aligned for a judyvalue load.  Use memcpy to preserve
++                    // the original byte-wise load without invoking
++                    // undefined behavior under UBSan.
++                    memcpy( &test, base + slot * keysize, sizeof( test ) );
+ #if BYTE_ORDER == BIG_ENDIAN
+                     test >>= 8 * ( JUDY_key_size - keysize );
+ #else
+@@ -1319,7 +1323,11 @@ JudySlot * judy_ins( Judy * judy, const unsigned char * buff, unsigned int max ) {
+                 //  find slot > key
+ 
+                 while( slot-- ) {
+-                    test = *( judyvalue * )( base + slot * keysize );
++                    // Judy keys are byte-packed and therefore need not be
++                    // aligned for a judyvalue load.  Use memcpy to preserve
++                    // the original byte-wise load without invoking
++                    // undefined behavior under UBSan.
++                    memcpy( &test, base + slot * keysize, sizeof( test ) );
+ #if BYTE_ORDER == BIG_ENDIAN
+                     test >>= 8 * ( JUDY_key_size - keysize );
+ #else

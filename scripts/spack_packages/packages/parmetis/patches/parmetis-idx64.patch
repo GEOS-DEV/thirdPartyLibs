@@ -1,0 +1,15 @@
+diff --git a/metis/include/metis.h b/metis/include/metis.h
+index 1cbd4b8..c6537e2 100644
+--- a/metis/include/metis.h
++++ b/metis/include/metis.h
+@@ -30,7 +30,7 @@
+  GCC does provides these definitions in stdint.h, but it may require some
+  modifications on other architectures.
+ --------------------------------------------------------------------------*/
+-#define IDXTYPEWIDTH 32
++#define IDXTYPEWIDTH 64
+
+
+ /*--------------------------------------------------------------------------
+
+

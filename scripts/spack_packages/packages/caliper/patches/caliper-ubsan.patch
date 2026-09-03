@@ -1,0 +1,33 @@
+diff --git a/include/caliper/reader/QuerySpec.h b/include/caliper/reader/QuerySpec.h
+index 6a0e8b2..f6dc7a4 100644
+--- a/include/caliper/reader/QuerySpec.h
++++ b/include/caliper/reader/QuerySpec.h
+@@ -28,10 +28,10 @@ struct QuerySpec {
+             All,     ///< Take all available
+             List     ///< User-defined list
+-        } selection; ///< Selection specification
++        } selection = Default; ///< Selection specification
+ 
+         /// \brief User-defined list
+         std::vector<T> list;
+ 
+         /// \brief Use path (main nested region hierarchy) attributes
+-        bool use_path;
++        bool use_path = false;
+     };
+diff --git a/src/caliper/Caliper.cpp b/src/caliper/Caliper.cpp
+index b6fbcf5..07b7c8d 100644
+--- a/src/caliper/Caliper.cpp
++++ b/src/caliper/Caliper.cpp
+@@ -1439,6 +1439,9 @@ void Caliper::deactivate_channel(Channel& channel)
+ 
+ void Caliper::finalize()
+ {
++    if (!sT)
++        return;
++
+     std::lock_guard<::siglock> g(sT->lock);
+ 
+     Log(1).stream() << "Finalizing ... " << std::endl;
+
+

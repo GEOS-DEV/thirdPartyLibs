@@ -25,9 +25,14 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     # Keep the complete Git history so CMake can compute the tagged,
     # distance-aware development version (for example, v0.2.0-2-g<sha>).
-    version("develop", branch="master", get_full_repo=True)
+    version("develop", branch="master", get_full_repo=True, preferred=True)
     version("0.2.0", sha256="2fe6c5b2779de41fbd294cb4647c7bbd210ec95934639117e56a790e56c32e41")
     version("0.1.0", sha256="39db73b75e37457035c64b4c8831abe716bf2f596c4ca79a32293d9bd51ca8d6")
+
+    # Match the patches used by the legacy GEOS TPL superbuild.  The HIP
+    # changes are only valid for the HIP backend.
+    patch("patches/hypredrive-cxx-linker.patch", when="@develop")
+    patch("patches/hypredrive-hip-rocsparse.patch", when="@develop+rocm")
 
     variant("shared", default=False, description="Build shared libraries")
     variant("pic", default=False, description="Build position independent code")
@@ -51,19 +56,19 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("cmake@3.23:", type="build")
     depends_on("mpi")
-    depends_on("hypre@2.20.0: +mpi")
-    depends_on("hypre+shared", when="+shared")
-    depends_on("hypre@2.21:+pic~shared", when="+pic~shared")
-    depends_on("hypre+caliper", when="+caliper")
-    depends_on("hypre+cuda", when="+cuda")
-    depends_on("hypre+rocm", when="+rocm")
-    depends_on("hypre@2.24:+sycl", when="+sycl")
-    depends_on("hypre+superlu-dist", when="+superlu-dist")
+    depends_on("hypre@develop +mpi")
+    depends_on("hypre@develop +shared", when="+shared")
+    depends_on("hypre@develop +pic~shared", when="+pic~shared")
+    depends_on("hypre@develop +caliper", when="+caliper")
+    depends_on("hypre@develop +cuda", when="+cuda")
+    depends_on("hypre@develop +rocm", when="+rocm")
+    depends_on("hypre@develop +sycl", when="+sycl")
+    depends_on("hypre@develop +superlu-dist", when="+superlu-dist")
 
     for feature in ("fortran", "matlab", "julia", "superlu-dist"):
-        depends_on("hypre precision=double", when="+{0}".format(feature))
+        depends_on("hypre@develop precision=double", when="+{0}".format(feature))
     for feature in ("matlab", "julia"):
-        depends_on("hypre~complex", when="+{0}".format(feature))
+        depends_on("hypre@develop~complex", when="+{0}".format(feature))
 
     requires(
         "%c,cxx=oneapi",
@@ -73,7 +78,7 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     for arch in CudaPackage.cuda_arch_values:
         depends_on(
-            "hypre+cuda cuda_arch={0}".format(arch), when="+cuda cuda_arch={0}".format(arch)
+            "hypre@develop+cuda cuda_arch={0}".format(arch), when="+cuda cuda_arch={0}".format(arch)
         )
         depends_on(
             "superlu-dist@9.2.1:+cuda cuda_arch={0}".format(arch),
@@ -82,7 +87,7 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     for target in ROCmPackage.amdgpu_targets:
         depends_on(
-            "hypre+rocm amdgpu_target={0}".format(target),
+            "hypre@develop+rocm amdgpu_target={0}".format(target),
             when="+rocm amdgpu_target={0}".format(target),
         )
         depends_on(

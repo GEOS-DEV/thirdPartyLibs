@@ -1,0 +1,10 @@
+diff --git a/src/seq_mv/vector.c b/src/seq_mv/vector.c
+--- a/src/seq_mv/vector.c
++++ b/src/seq_mv/vector.c
+@@ -1384,1 +1384,1 @@
+-                                                 num_threads * num_tags,
++                                                 num_threads * (num_tags + 1),
+@@ -1413,0 +1414,1 @@
++   hypre_TFree(thread_sums, HYPRE_MEMORY_HOST);
+
+

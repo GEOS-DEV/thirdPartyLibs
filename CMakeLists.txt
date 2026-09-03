@@ -24,6 +24,18 @@ set( ENABLE_DOXYGEN OFF CACHE BOOL "" FORCE )
 set( CXX_STANDARD 20 )
 set( BLT_CXX_STD c++20 CACHE STRING "" FORCE )
 
+# BLT still discovers CUDA through CMake's legacy FindCUDA module.  Its
+# default is to link the static CUDA runtime, which gives each shared TPL
+# library its own CUDA runtime instance.  That is unsafe for sanitizer builds:
+# GEOS loads several CUDA shared libraries before main(), and their static
+# runtime instances can disagree during Umpire's early device discovery.
+# Use one shared CUDA runtime for the sanitizer CUDA build and propagate the
+# same choice to CUDA-enabled ExternalProjects below.
+if( ENABLE_CUDA AND DEFINED GEOS_ENABLE_SANITIZERS AND GEOS_ENABLE_SANITIZERS )
+  set( CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "" FORCE )
+  set( CMAKE_CUDA_RUNTIME_LIBRARY Shared CACHE STRING "" FORCE )
+endif()
+
 # Keep required NVCC options in the common CUDA flags so CMake/BLT, the
 # generated GEOS host config, and the external CUDA TPLs use the same behavior.
 # CUDA 13.3 rejects newer host compiler versions unless the first option is
@@ -86,10 +98,14 @@ option( ENABLE_VTK_WRAP_PYTHON "" OFF )
 
 option( ENABLE_NINJA "" OFF )
 
+set( GEOS_TPL_PATCH_SCRIPT "${CMAKE_SOURCE_DIR}/cmake/apply-patches.cmake" )
+
 # Instrument TPL compiles/links and the generated GEOS host-config with
 # ASan+UBSan. GCC/Clang (and compatible) only; pass the same cache variable
 # to a downstream GEOS configure so the application is instrumented too.
-option( GEOS_ENABLE_SANITIZERS "Build TPLs and GEOS with AddressSanitizer and UndefinedBehaviorSanitizer" OFF )
+# HIP deliberately uses host UBSan only: ROCm's host ASan runtime currently
+# interposes HSA allocation calls and is not reliable on the supported GPUs.
+option( GEOS_ENABLE_SANITIZERS "Build TPLs and GEOS with ASan+UBSan (UBSan-only for HIP host code)" OFF )
 
 if( GEOS_ENABLE_SANITIZERS )
     if( MSVC )
@@ -97,36 +113,93 @@ if( GEOS_ENABLE_SANITIZERS )
     endif()
     set( _GEOS_SANITIZER_COMPILE_FLAGS "-fsanitize=address,undefined -fno-omit-frame-pointer" )
     set( _GEOS_SANITIZER_LINK_FLAGS "-fsanitize=address,undefined" )
+    set( _GEOS_SANITIZER_CHECK_FLAG "-fsanitize=address" )
+    if( ENABLE_HIP )
+        # The ROCm ASan runtime installs HSA API interceptors in every host
+        # executable.  On gfx1100 this crashes in hsa_amd_memory_pool_allocate
+        # before GEOS reaches main(), so retain UBSan coverage without loading
+        # the incompatible ASan runtime.
+        set( _GEOS_SANITIZER_COMPILE_FLAGS "-fsanitize=undefined -fno-omit-frame-pointer" )
+        set( _GEOS_SANITIZER_LINK_FLAGS "-fsanitize=undefined" )
+        set( _GEOS_SANITIZER_CHECK_FLAG "-fsanitize=undefined" )
+    endif()
+
+    if( ENABLE_HIP )
+        # Make reconfiguration of a build directory that was previously
+        # configured with HIP ASan deterministic as well.
+        foreach( _geos_san_var CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_Fortran_FLAGS
+                               CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS
+                               CMAKE_MODULE_LINKER_FLAGS CMAKE_HIP_FLAGS )
+            string( REPLACE "-fsanitize=address,undefined" "-fsanitize=undefined"
+                     ${_geos_san_var} "${${_geos_san_var}}" )
+            string( REPLACE "-fsanitize=address" "" ${_geos_san_var} "${${_geos_san_var}}" )
+            # Keep both the normal variable and its cache entry synchronized.
+            # The generated GEOS host-config is configured from the normal
+            # variables, whereas ExternalProjects consume the cache entries.
+            set( ${_geos_san_var} "${${_geos_san_var}}" )
+            set( ${_geos_san_var} "${${_geos_san_var}}" CACHE STRING "" FORCE )
+        endforeach()
+    endif()
+
     foreach( _geos_san_var CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_Fortran_FLAGS )
-        string( FIND "${${_geos_san_var}}" "-fsanitize=address" _geos_san_pos )
+        string( FIND "${${_geos_san_var}}" "${_GEOS_SANITIZER_CHECK_FLAG}" _geos_san_pos )
         if( _geos_san_pos EQUAL -1 )
-            set( ${_geos_san_var} "${${_geos_san_var}} ${_GEOS_SANITIZER_COMPILE_FLAGS}" CACHE STRING "" FORCE )
+            set( ${_geos_san_var} "${${_geos_san_var}} ${_GEOS_SANITIZER_COMPILE_FLAGS}" )
+            set( ${_geos_san_var} "${${_geos_san_var}}" CACHE STRING "" FORCE )
         endif()
     endforeach()
     foreach( _geos_san_var CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS )
-        string( FIND "${${_geos_san_var}}" "-fsanitize=address" _geos_san_pos )
+        string( FIND "${${_geos_san_var}}" "${_GEOS_SANITIZER_CHECK_FLAG}" _geos_san_pos )
         if( _geos_san_pos EQUAL -1 )
-            set( ${_geos_san_var} "${${_geos_san_var}} ${_GEOS_SANITIZER_LINK_FLAGS}" CACHE STRING "" FORCE )
+            set( ${_geos_san_var} "${${_geos_san_var}} ${_GEOS_SANITIZER_LINK_FLAGS}" )
+            set( ${_geos_san_var} "${${_geos_san_var}}" CACHE STRING "" FORCE )
         endif()
     endforeach()
     if( ENABLE_CUDA )
         message( STATUS "GEOS_ENABLE_SANITIZERS: instrumenting CUDA host code via -Xcompiler (device code is not sanitized)" )
         string( FIND "${CMAKE_CUDA_FLAGS}" "-fsanitize=address" _geos_san_pos )
         if( _geos_san_pos EQUAL -1 )
-            set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-fsanitize=address,undefined -Xcompiler=-fno-omit-frame-pointer" CACHE STRING "" FORCE )
+            # nvcc parses comma-separated -Xcompiler values as individual
+            # host options. Keep the sanitizer options themselves complete;
+            # otherwise `undefined` is passed to the host compiler as an input
+            # file rather than as part of -fsanitize.
+            set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-fsanitize=address,-fsanitize=undefined,-fno-omit-frame-pointer" )
+            set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS}" CACHE STRING "" FORCE )
         endif()
     endif()
     if( ENABLE_HIP )
-        message( STATUS "GEOS_ENABLE_SANITIZERS: instrumenting HIP host code (device code is not sanitized)" )
-        string( FIND "${CMAKE_HIP_FLAGS}" "-fsanitize=address" _geos_san_pos )
+        # Keep sanitizer instrumentation on the host side of a HIP compile.
+        # Passing raw -fsanitize flags through CMAKE_HIP_FLAGS also sends them
+        # to the gfx device compiler, which emits an option-ignored warning
+        # for gfx1100 and does not instrument the device code anyway.
+        set( _GEOS_SANITIZER_HIP_FLAGS "-Xarch_host ${_GEOS_SANITIZER_COMPILE_FLAGS} -Wno-option-ignored" )
+        message( STATUS "GEOS_ENABLE_SANITIZERS: instrumenting HIP host code with UBSan (device code is not sanitized)" )
+        string( FIND "${CMAKE_HIP_FLAGS}" "${_GEOS_SANITIZER_CHECK_FLAG}" _geos_san_pos )
+        string( FIND "${CMAKE_HIP_FLAGS}" "-Xarch_host" _geos_hip_host_flag_pos )
+        string( FIND "${CMAKE_HIP_FLAGS}" "-Wno-option-ignored" _geos_hip_warning_flag_pos )
         if( _geos_san_pos EQUAL -1 )
-            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} ${_GEOS_SANITIZER_COMPILE_FLAGS}" CACHE STRING "" FORCE )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} ${_GEOS_SANITIZER_HIP_FLAGS}" )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS}" CACHE STRING "" FORCE )
+        elseif( _geos_hip_host_flag_pos EQUAL -1 )
+            string( REPLACE "-fsanitize=undefined -fno-omit-frame-pointer"
+                     "${_GEOS_SANITIZER_HIP_FLAGS}"
+                     CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS}" )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS}" )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS}" CACHE STRING "" FORCE )
+        endif()
+        if( _geos_hip_warning_flag_pos EQUAL -1 )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -Wno-option-ignored" )
+            set( CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS}" CACHE STRING "" FORCE )
         endif()
     endif()
     unset( _geos_san_var )
     unset( _geos_san_pos )
+    unset( _geos_hip_host_flag_pos )
+    unset( _geos_hip_warning_flag_pos )
     unset( _GEOS_SANITIZER_COMPILE_FLAGS )
     unset( _GEOS_SANITIZER_LINK_FLAGS )
+    unset( _GEOS_SANITIZER_CHECK_FLAG )
+    unset( _GEOS_SANITIZER_HIP_FLAGS )
     message( STATUS "GEOS_ENABLE_SANITIZERS is ON" )
 endif()
 
@@ -144,7 +217,9 @@ if( GEOS_ENABLE_SANITIZERS )
           "-DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}" )
     if( ENABLE_CUDA )
         list( APPEND GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS
-              "-DCMAKE_CUDA_FLAGS:STRING=${CMAKE_CUDA_FLAGS}" )
+              "-DCMAKE_CUDA_FLAGS:STRING=${CMAKE_CUDA_FLAGS}"
+              "-DCUDA_USE_STATIC_CUDA_RUNTIME:BOOL=OFF"
+              "-DCMAKE_CUDA_RUNTIME_LIBRARY:STRING=Shared" )
     endif()
     if( ENABLE_HIP )
         list( APPEND GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS
@@ -332,6 +407,12 @@ set(HDF5_URL "https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_1.tar
 set(HDF5_URL_HASH "e6dde173c2d243551922d23a0387a79961205b018502e6a742acb30b61bc2d5f")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
+set( HDF5_PATCH_COMMAND
+     ${CMAKE_COMMAND}
+     "-DGEOS_PATCH_STRIP:STRING=1"
+     "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/hdf5-cmake-duplicate-byproduct.patch"
+     -P ${GEOS_TPL_PATCH_SCRIPT} )
+
 if( ${ENABLE_MPI} )
   set( HDF5_C_COMPILER ${MPI_C_COMPILER} )
   set( HDF5_CXX_COMPILER ${MPI_CXX_COMPILER} )
@@ -347,7 +428,41 @@ endif()
 if( CMAKE_BUILD_TYPE MATCHES Debug )
   set( HDF5_CMAKE_BUILD_TYPE RelWithDebInfo )
 else()
-  set( HDF5_CMAKE_BUILD_TYPE CMAKE_BUILD_TYPE )
+  set( HDF5_CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} )
+endif()
+
+set( HDF5_CMAKE_C_FLAGS "${C_FLAGS_NO_WARNINGS}" )
+set( HDF5_CMAKE_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}" )
+set( HDF5_CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}" )
+set( HDF5_CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}" )
+set( HDF5_CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}" )
+if( GEOS_ENABLE_SANITIZERS )
+  # HDF5 1.12.1 stores typed close callbacks in its generic H5I_free_t
+  # function-pointer table. UBSan diagnoses that intentional C callback ABI
+  # conversion, so keep ASan enabled for HDF5 but disable only UBSan there.
+  string( APPEND HDF5_CMAKE_C_FLAGS " -fno-sanitize=undefined" )
+  string( APPEND HDF5_CMAKE_CXX_FLAGS " -fno-sanitize=undefined" )
+  string( REPLACE "-fsanitize=address,undefined" "-fsanitize=address" HDF5_CMAKE_EXE_LINKER_FLAGS "${HDF5_CMAKE_EXE_LINKER_FLAGS}" )
+  string( REPLACE "-fsanitize=address,undefined" "-fsanitize=address" HDF5_CMAKE_SHARED_LINKER_FLAGS "${HDF5_CMAKE_SHARED_LINKER_FLAGS}" )
+  string( REPLACE "-fsanitize=address,undefined" "-fsanitize=address" HDF5_CMAKE_MODULE_LINKER_FLAGS "${HDF5_CMAKE_MODULE_LINKER_FLAGS}" )
+  if( ENABLE_HIP )
+    string( REPLACE "-fsanitize=undefined" "" HDF5_CMAKE_EXE_LINKER_FLAGS "${HDF5_CMAKE_EXE_LINKER_FLAGS}" )
+    string( REPLACE "-fsanitize=undefined" "" HDF5_CMAKE_SHARED_LINKER_FLAGS "${HDF5_CMAKE_SHARED_LINKER_FLAGS}" )
+    string( REPLACE "-fsanitize=undefined" "" HDF5_CMAKE_MODULE_LINKER_FLAGS "${HDF5_CMAKE_MODULE_LINKER_FLAGS}" )
+  endif()
+endif()
+
+# CMAKE_CACHE_ARGS is applied after CMAKE_ARGS by ExternalProject.  Keep the
+# HDF5-specific sanitizer exceptions in that cache as well, otherwise the
+# superbuild-wide flags silently override the intentional -fno-sanitize flag.
+set( HDF5_TPL_CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS} )
+if( GEOS_ENABLE_SANITIZERS )
+  list( APPEND HDF5_TPL_CMAKE_CACHE_ARGS
+        "-DCMAKE_C_FLAGS:STRING=${HDF5_CMAKE_C_FLAGS}"
+        "-DCMAKE_CXX_FLAGS:STRING=${HDF5_CMAKE_CXX_FLAGS}"
+        "-DCMAKE_EXE_LINKER_FLAGS:STRING=${HDF5_CMAKE_EXE_LINKER_FLAGS}"
+        "-DCMAKE_SHARED_LINKER_FLAGS:STRING=${HDF5_CMAKE_SHARED_LINKER_FLAGS}"
+        "-DCMAKE_MODULE_LINKER_FLAGS:STRING=${HDF5_CMAKE_MODULE_LINKER_FLAGS}" )
 endif()
 
 ExternalProject_Add( hdf5
@@ -355,16 +470,20 @@ ExternalProject_Add( hdf5
                      URL_HASH SHA256=${HDF5_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/hdf5
                      INSTALL_DIR ${HDF5_DIR}
+                     PATCH_COMMAND ${HDF5_PATCH_COMMAND}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
-                     CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
+                     CMAKE_CACHE_ARGS ${HDF5_TPL_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
-                                -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
+                                -D CMAKE_C_FLAGS:STRING=${HDF5_CMAKE_C_FLAGS}
                                 -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-                                -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                -D CMAKE_CXX_FLAGS:STRING=${HDF5_CMAKE_CXX_FLAGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_EXE_LINKER_FLAGS:STRING=${HDF5_CMAKE_EXE_LINKER_FLAGS}
+                                -D CMAKE_SHARED_LINKER_FLAGS:STRING=${HDF5_CMAKE_SHARED_LINKER_FLAGS}
+                                -D CMAKE_MODULE_LINKER_FLAGS:STRING=${HDF5_CMAKE_MODULE_LINKER_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${HDF5_CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
@@ -396,6 +515,15 @@ if( ${ENABLE_MPI} )
 else()
   set( CONDUIT_C_COMPILER ${CMAKE_C_COMPILER} )
   set( CONDUIT_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
+endif()
+
+set( CONDUIT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS} )
+if( GEOS_ENABLE_SANITIZERS )
+  # Conduit's static configuration selects hdf5-static. That embeds HDF5
+  # into every GEOS shared library that consumes conduit_relay, alongside the
+  # process-wide hdf5-shared library, which ASan correctly reports as an ODR
+  # violation. Shared Conduit makes it use the shared HDF5 target instead.
+  set( CONDUIT_BUILD_SHARED_LIBS ON )
 endif()
 
 ExternalProject_Add( conduit
@@ -434,7 +562,7 @@ ExternalProject_Add( conduit
 #                                    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D BUILD_SHARED_LIBS:BOOL=${CONDUIT_BUILD_SHARED_LIBS}
                                 -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
                                 -D BLT_CXX_STD:STRING=${BLT_CXX_STD}
                                 )
@@ -459,6 +587,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config_silo_for_geos "\
 CC=\"${HDF5_C_COMPILER}\" \
 CXX=\"${HDF5_CXX_COMPILER}\" \
 CFLAGS=\"${HDF5_C_FLAGS_STR} ${C_FLAGS_NO_WARNINGS} -Wno-error=implicit-function-declaration -Wno-error=int-conversion\" \
+LDFLAGS=\"${CMAKE_EXE_LINKER_FLAGS}\" \
 LIBS=\"-ldl\" \
 --prefix=${SILO_DIR} \
 --build=${SILO_BUILD_TYPE} \
@@ -520,12 +649,19 @@ if( ENABLE_CUDA )
     set( CHAI_CUDA_FLAGS "${CHAI_CUDA_FLAGS} ${CMAKE_CUDA_FLAGS}" )
 endif()
 
+set( RAJA_PATCH_COMMAND
+     ${CMAKE_COMMAND}
+     "-DGEOS_PATCH_STRIP:STRING=1"
+     "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/raja-reducer-assignment.patch"
+     -P ${GEOS_TPL_PATCH_SCRIPT} )
+
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      URL_HASH SHA256=${RAJA_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
+                     PATCH_COMMAND ${RAJA_PATCH_COMMAND}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -573,19 +709,53 @@ set(CHAI_URL "https://github.com/LLNL/CHAI/releases/download/v2026.07.0/chai-v20
 set(CHAI_URL_HASH "a03616ab5488d9d816d2ef007559c2ad7da988f82c0b7d7ddf9f8931518d99d8")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
+# GEOS uses shared component libraries.  When sanitizer instrumentation is
+# enabled, a static Umpire archive would be copied into every component that
+# consumes it.  Umpire contains process-wide state (for example
+# umpire::util::MPI::s_mpi_init_called), which AddressSanitizer correctly
+# diagnoses as an ODR violation when it appears in more than one shared
+# object.  Build the CHAI/Umpire package shared for sanitizer builds so that
+# all GEOS components use one Umpire instance.  Keep the normal TPL layout
+# unchanged.
+set( CHAI_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS} )
+if( GEOS_ENABLE_SANITIZERS )
+    set( CHAI_BUILD_SHARED_LIBS ON )
+endif()
+
+set( CHAI_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
+if( GEOS_ENABLE_SANITIZERS )
+    # CHAI registers its RAJA execution-space plugin during shared-library
+    # startup. UBSan's vptr instrumentation reports that third-party
+    # initialization as a false positive before the application reaches main().
+    string( APPEND CHAI_CXX_FLAGS " -fno-sanitize=vptr" )
+endif()
+
+# The bundled Judy implementation stores keys as packed bytes.  Its original
+# judyvalue load is not valid when sanitizer alignment checking is enabled.
+# Apply the small, defined-behavior fix only to sanitizer builds.
+set( CHAI_PATCH_COMMAND ${CMAKE_COMMAND} -E true )
+if( GEOS_ENABLE_SANITIZERS )
+    set( CHAI_PATCH_COMMAND
+         ${CMAKE_COMMAND}
+         "-DGEOS_PATCH_STRIP:STRING=1"
+         "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/umpire-judy-ubsan.patch|${CMAKE_SOURCE_DIR}/patch/umpire-judy-ubsan-remainder.patch"
+         -P ${GEOS_TPL_PATCH_SCRIPT} )
+endif()
+
 ExternalProject_Add( chai
                      PREFIX ${PROJECT_BINARY_DIR}/chai
                      URL ${CHAI_URL}
                      URL_HASH SHA256=${CHAI_URL_HASH}
                      INSTALL_DIR ${CHAI_DIR}
                      DEPENDS raja
+                     PATCH_COMMAND ${CHAI_PATCH_COMMAND}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_CACHE_ARGS ${GEOS_TPL_SANITIZER_CMAKE_CACHE_ARGS}
                      CMAKE_ARGS -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -D CMAKE_CXX_FLAGS=${CHAI_CXX_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
@@ -604,7 +774,7 @@ ExternalProject_Add( chai
                                 -D ENABLE_OPENMP=${ENABLE_OPENMP}
                                 -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                 -D CMAKE_INSTALL_LIBDIR:PATH=lib
-                                -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                                -D BUILD_SHARED_LIBS:BOOL=${CHAI_BUILD_SHARED_LIBS}
                                 -D ENABLE_TESTS=OFF
                                 -D ENABLE_BENCHMARKS=OFF
                                 -D ENABLE_EXAMPLES=OFF
@@ -663,6 +833,19 @@ if (ENABLE_CALIPER)
 
     set(CALIPER_WITH_CUPTI OFF)
 
+    set( CALIPER_PATCH_COMMAND
+         ${CMAKE_COMMAND}
+         "-DGEOS_PATCH_STRIP:STRING=1"
+         "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/caliper-ubsan.patch"
+         -P ${GEOS_TPL_PATCH_SCRIPT} )
+    set( CALIPER_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}" )
+    if( GEOS_ENABLE_SANITIZERS )
+        # Caliper constructs its configuration objects during shared-library
+        # startup. UBSan's vptr instrumentation reports that initialization as
+        # a false positive before the application reaches main().
+        string( APPEND CALIPER_CXX_FLAGS " -fno-sanitize=vptr" )
+    endif()
+
     if(ENABLE_CALIPER_WITH_CUPTI)
         set(CALIPER_WITH_CUPTI ON)
     endif()
@@ -672,6 +855,7 @@ if (ENABLE_CALIPER)
                          URL_HASH SHA256=${CALIPER_URL_HASH}
                          PREFIX ${PROJECT_BINARY_DIR}/caliper
                          INSTALL_DIR ${CALIPER_DIR}
+                         PATCH_COMMAND ${CALIPER_PATCH_COMMAND}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                          CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -681,7 +865,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
                                     -D CMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_CXX_FLAGS:STRING=${CALIPER_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
@@ -738,6 +922,14 @@ else()
                          INSTALL_COMMAND ""
                        )
 
+    set( MATHPRESSO_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}" )
+    if( GEOS_ENABLE_SANITIZERS )
+        # MathPresso embeds AsmJit, which creates a polymorphic JIT runtime in
+        # a static initializer. UBSan's vptr check fires while that runtime is
+        # being constructed, before GEOS reaches main().
+        string( APPEND MATHPRESSO_CXX_FLAGS " -fno-sanitize=vptr" )
+    endif()
+
     ExternalProject_Add( mathpresso
                          URL ${MATHPRESSO_URL}
                          URL_HASH SHA256=${MATHPRESSO_URL_HASH}
@@ -755,7 +947,7 @@ else()
                                     -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
+                                    -D CMAKE_CXX_FLAGS=${MATHPRESSO_CXX_FLAGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -926,7 +1118,10 @@ if( ${ENABLE_MPI} )
                        URL ${PARMETIS_URL}
                        URL_HASH SHA256=${PARMETIS_URL_HASH}
                        INSTALL_DIR ${PARMETIS_DIR}
-                       PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch
+                       PATCH_COMMAND ${CMAKE_COMMAND}
+                                     "-DGEOS_PATCH_STRIP:STRING=1"
+                                     "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch"
+                                     -P ${GEOS_TPL_PATCH_SCRIPT}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -955,7 +1150,10 @@ ExternalProject_Add( metis
                      URL_HASH SHA256=${PARMETIS_URL_HASH}
                      INSTALL_DIR ${METIS_DIR}
                      SOURCE_SUBDIR metis
-                     PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch
+                     PATCH_COMMAND ${CMAKE_COMMAND}
+                                   "-DGEOS_PATCH_STRIP:STRING=1"
+                                   "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch"
+                                   -P ${GEOS_TPL_PATCH_SCRIPT}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -1044,16 +1242,27 @@ if( ENABLE_HYPRE )
   set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/53927ee4fb68e5caf6be1957af2c3d75905b6b3d.tar.gz" )
   set( HYPRE_URL_HASH "d418846bc1466616cc22e71c4d3b855127846307bb4f4a2f4d37f046ac9c3355" )
   set( HYPRE_DEPENDS "" )
-  set( HYPRE_PATCH_COMMAND ${CMAKE_COMMAND} -E true )
+  set( HYPRE_PATCH_FILES
+       "${CMAKE_SOURCE_DIR}/patch/hypre-mixedint-export.patch|"
+       "${CMAKE_SOURCE_DIR}/patch/hypre-tagged-innerprod.patch|"
+       "${CMAKE_SOURCE_DIR}/patch/hypre-rcm-capacity.patch|"
+       "${CMAKE_SOURCE_DIR}/patch/hypre-umpire-wrapper-lifetime.patch" )
 
   if( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     # Avoid the broken legacy rocSPARSE CSR sort/ILU analysis on gfx1100.
     # Keep classical HYPRE ILU(0) setup; only the setup-time factor migration
     # and triangular application remain device compatible.
-    set( HYPRE_PATCH_COMMAND
-         patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/hypre-hip-rocsparse-sort.patch &&
-         patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/hypre-hip-standard-ilu.patch )
+    string( APPEND HYPRE_PATCH_FILES
+            "|${CMAKE_SOURCE_DIR}/patch/hypre-hip-rocsparse-sort.patch"
+            "|${CMAKE_SOURCE_DIR}/patch/hypre-hip-standard-ilu.patch" )
   endif()
+
+  string( REPLACE ";" "" HYPRE_PATCH_FILES "${HYPRE_PATCH_FILES}" )
+  set( HYPRE_PATCH_COMMAND
+       ${CMAKE_COMMAND}
+       "-DGEOS_PATCH_STRIP:STRING=1"
+       "-DGEOS_PATCH_FILES:STRING=${HYPRE_PATCH_FILES}"
+       -P ${GEOS_TPL_PATCH_SCRIPT} )
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -1190,7 +1399,7 @@ if( ENABLE_HYPRE )
       list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_GPU_PROFILING:BOOL=ON" )
     endif()
 
-    if( BUILD_SHARED_LIBS )
+    if( CHAI_BUILD_SHARED_LIBS )
       set( HYPRE_UMPIRE_LIBRARY_SUFFIX so )
     else()
       set( HYPRE_UMPIRE_LIBRARY_SUFFIX a )
@@ -1261,13 +1470,19 @@ if( ENABLE_HYPREDRV )
   set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
   set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/00cdb36800d6754b01467a4ef62e0e4ae19e6897.tar.gz" )
   set( HYPREDRV_URL_HASH "c33212d5fb7391c81ae22ae801d387f41c2c3f293f48ccd8153845d97ba5150c" )
-  set( HYPREDRV_PATCH_COMMAND ${CMAKE_COMMAND} -E true )
+  # The static SuperLU dependency is C++, while hypredrive-cli is a C target.
+  # Patch the target to use the C++ linker so its runtime is selected by CMake.
+  set( HYPREDRV_PATCH_FILES "${CMAKE_SOURCE_DIR}/patch/hypredrive-cxx-linker.patch" )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPREDRV_HYPRE_INCLUDE_DIRS "${HYPRE_DIR}/include" )
   set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )
   set( HYPREDRV_HYPRE_LIBRARIES "${HYPREDRV_HYPRE_LIBRARY}" )
   list( APPEND HYPREDRV_HYPRE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+  set( HYPREDRV_HYPRE_USE_OPENMP OFF )
+  if( ENABLE_OPENMP )
+    set( HYPREDRV_HYPRE_USE_OPENMP ON )
+  endif()
   if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
           "${SUPERLU_DIR}/lib/libsuperlu_dist.a"
@@ -1289,13 +1504,18 @@ if( ENABLE_HYPREDRV )
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     set( HYPREDRV_ENABLE_CUDA ON )
     # The legacy HYPRE build uses Umpire for device memory.  Its generated
-    # headers include Umpire headers, and its static archive leaves the
-    # Umpire/CUDA dependencies to consumers, so propagate both explicitly.
+    # headers include Umpire headers, and its archive leaves the Umpire/CUDA
+    # dependencies to consumers, so propagate both explicitly.
+    if( CHAI_BUILD_SHARED_LIBS )
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX so )
+    else()
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX a )
+    endif()
     list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
-          "${CHAI_DIR}/lib/libumpire.a"
-          "${CHAI_DIR}/lib/libcamp.a"
-          "${CHAI_DIR}/lib/libfmt.a"
+          "${CHAI_DIR}/lib/libumpire.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libcamp.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libfmt.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
           "-L${CUDA_TOOLKIT_ROOT_DIR}/lib64"
           -lcudart -lcusparse -lcublas -lcurand -lcusolver
           -ldl -lstdc++ )
@@ -1305,12 +1525,18 @@ if( ENABLE_HYPREDRV )
           -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     set( HYPREDRV_ENABLE_HIP ON )
-    set( HYPREDRV_PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/hypredrive-hip-rocsparse.patch )
+    string( APPEND HYPREDRV_PATCH_FILES
+            "|${CMAKE_SOURCE_DIR}/patch/hypredrive-hip-rocsparse.patch" )
+    if( CHAI_BUILD_SHARED_LIBS )
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX so )
+    else()
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX a )
+    endif()
     list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
-          "${CHAI_DIR}/lib/libumpire.a"
-          "${CHAI_DIR}/lib/libcamp.a"
-          "${CHAI_DIR}/lib/libfmt.a"
+          "${CHAI_DIR}/lib/libumpire.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libcamp.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libfmt.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
           "-L${ROCM_PATH}/lib"
           -lrocblas -lrocsparse -lrocrand -lrocsolver -lamdhip64
           -ldl -lstdc++ )
@@ -1319,6 +1545,12 @@ if( ENABLE_HYPREDRV )
           -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
           -D ROCM_PATH:PATH=${ROCM_PATH} )
   endif()
+
+  set( HYPREDRV_PATCH_COMMAND
+       ${CMAKE_COMMAND}
+       "-DGEOS_PATCH_STRIP:STRING=1"
+       "-DGEOS_PATCH_FILES:STRING=${HYPREDRV_PATCH_FILES}"
+       -P ${GEOS_TPL_PATCH_SCRIPT} )
 
   set( HYPREDRV_CALIPER_ARGS )
   set( HYPREDRV_ENABLE_CALIPER OFF )
@@ -1370,6 +1602,7 @@ if( ENABLE_HYPREDRV )
                                   -D HYPREDRV_ENABLE_CALIPER:BOOL=${HYPREDRV_ENABLE_CALIPER}
                                   -D HYPREDRV_ENABLE_CUDA:BOOL=${HYPREDRV_ENABLE_CUDA}
                                   -D HYPREDRV_ENABLE_HIP:BOOL=${HYPREDRV_ENABLE_HIP}
+                                  -D HYPREDRV_HYPRE_USE_OPENMP:BOOL=${HYPREDRV_HYPRE_USE_OPENMP}
                                   ${HYPREDRV_MPI_ARGS}
                                   ${HYPREDRV_ACCELERATOR_ARGS}
                                   ${HYPREDRV_CALIPER_ARGS} )
@@ -1407,12 +1640,24 @@ if(ENABLE_SUITESPARSE)
         set(SUITESPARSE_OPENMP_FLAG "${OpenMP_C_FLAGS}")
     endif()
 
+    set(SUITESPARSE_LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS}")
+    # SuiteSparse_config.mk appends its install-library search path with
+    # `LDFLAGS +=`. Since LDFLAGS is supplied on the make command line, GNU
+    # Make does not apply that append. Add the staging library directory here
+    # so the subsequently built SuiteSparse components can find
+    # libsuitesparseconfig before the final install step.
+    string(APPEND SUITESPARSE_LINK_FLAGS " -L${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse/lib")
+    if (SUITESPARSE_OPENMP_FLAG)
+        string(APPEND SUITESPARSE_LINK_FLAGS " ${SUITESPARSE_OPENMP_FLAG}")
+    endif()
+
     set( SUITESPARSE_CONFIG_ARGS "CC=${SUITESPARSE_C_COMPILER} \
 CFLAGS=\"${SUITESPARSE_C_FLAGS} ${SUITESPARSE_LONG_INT_FLAGS}\" \
 CXX=${SUITESPARSE_CXX_COMPILER} \
 CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
 FC=${SUITESPARSE_Fortran_COMPILER} \
 FCFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
+LDFLAGS=\"${SUITESPARSE_LINK_FLAGS}\" \
 JOBS=${NUM_PROC} \
 CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
 INSTALL=${SUITESPARSE_DIR} \
@@ -1497,11 +1742,17 @@ if( ENABLE_SCOTCH )
                                     -D SCOTCH_DETERMINISTIC:STRING=FULL
                                     -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -D CMAKE_Fortran_COMPILER:FILEPATH=${CMAKE_Fortran_COMPILER}
                                     -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                     -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
                                     -D CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
                                     -D CMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
+                                    # ASan reports Scotch's file-scope parser state when
+                                    # the static library is embedded in more than one
+                                    # GEOS shared library. Use shared Scotch for sanitizer
+                                    # builds so there is one definition in the process.
+                                    -D BUILD_SHARED_LIBS:BOOL=${GEOS_ENABLE_SANITIZERS}
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     )
 
@@ -1632,13 +1883,23 @@ else()
     set( VTK_MODULE_ENABLE_VTK_FiltersParallelDIY2 NO )
 endif( ENABLE_MPI )
 
+set( VTK_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
+if( GEOS_ENABLE_SANITIZERS )
+    # VTK constructs polymorphic objects during shared-library startup. Its
+    # generated factory/registration code is incompatible with UBSan's vptr
+    # checks during that phase, even though the VTK code is otherwise covered
+    # by the sanitizer build.
+    string( APPEND VTK_CXX_FLAGS " -fno-sanitize=vptr" )
+endif()
     ExternalProject_Add( vtk
                          PREFIX ${PROJECT_BINARY_DIR}/vtk
                          URL ${VTK_URL}
                          URL_HASH SHA256=${VTK_URL_HASH}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch &&
-                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch
+                         PATCH_COMMAND ${CMAKE_COMMAND}
+                                       "-DGEOS_PATCH_STRIP:STRING=0"
+                                       "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch|${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch"
+                                       -P ${GEOS_TPL_PATCH_SCRIPT}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -1646,7 +1907,7 @@ endif( ENABLE_MPI )
                          CMAKE_ARGS -D CMAKE_C_COMPILER=${VTK_C_COMPILER}
                                     -D CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                                     -D CMAKE_CXX_COMPILER=${VTK_CXX_COMPILER}
-                                    -D CMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                                    -D CMAKE_CXX_FLAGS:STRING=${VTK_CXX_FLAGS}
                                     -D CMAKE_CXX_STANDARD:STRING=${CXX_STANDARD}
                                     -D CMAKE_CXX_STANDARD_REQUIRED:BOOL=ON
                                     -D VTK_IGNORE_CMAKE_CXX17_CHECKS:BOOL=ON
@@ -1716,6 +1977,7 @@ message(STATUS "Building = ${build_list}")
 # the `tpl` target after all external projects have been built.
 set(GEOS_TPL_HOST_CONFIG_TPL_DIR "${CMAKE_INSTALL_PREFIX}")
 set(GEOS_TPL_HOST_CONFIG_CAMP_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+set(GEOS_TPL_HOST_CONFIG_FMT_DIR "${FMT_DIR}/lib/cmake/fmt")
 
 # Include the toolchain identity in the host-config name so that an install
 # directory makes its compiler/backend requirements visible without opening
