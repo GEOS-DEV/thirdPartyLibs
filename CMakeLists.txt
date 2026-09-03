@@ -86,6 +86,8 @@ option( ENABLE_VTK_WRAP_PYTHON "" OFF )
 
 option( ENABLE_NINJA "" OFF )
 
+set( GEOS_TPL_PATCH_SCRIPT "${CMAKE_SOURCE_DIR}/cmake/apply-patches.cmake" )
+
 include(ProcessorCount)
 ProcessorCount(NUM_CORES)
 
@@ -279,8 +281,14 @@ endif()
 if( CMAKE_BUILD_TYPE MATCHES Debug )
   set( HDF5_CMAKE_BUILD_TYPE RelWithDebInfo )
 else()
-  set( HDF5_CMAKE_BUILD_TYPE CMAKE_BUILD_TYPE )
+  set( HDF5_CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} )
 endif()
+
+set( HDF5_CMAKE_C_FLAGS "${C_FLAGS_NO_WARNINGS}" )
+set( HDF5_CMAKE_CXX_FLAGS "${CXX_FLAGS_NO_WARNINGS}" )
+set( HDF5_CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}" )
+set( HDF5_CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}" )
+set( HDF5_CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}" )
 
 ExternalProject_Add( hdf5
                      URL ${HDF5_URL}
@@ -292,10 +300,13 @@ ExternalProject_Add( hdf5
                      CMAKE_GENERATOR ${TPL_GENERATOR}
                      CMAKE_ARGS -D CMAKE_C_COMPILER:STRING=${HDF5_C_COMPILER}
                                 -D CMAKE_CXX_COMPILER:STRING=${HDF5_CXX_COMPILER}
-                                -D CMAKE_C_FLAGS:STRING=${C_FLAGS_NO_WARNINGS}
+                                -D CMAKE_C_FLAGS:STRING=${HDF5_CMAKE_C_FLAGS}
                                 -D CMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-                                -D CMAKE_CXX_FLAGS:STRING=${CXX_FLAGS_NO_WARNINGS}
+                                -D CMAKE_CXX_FLAGS:STRING=${HDF5_CMAKE_CXX_FLAGS}
                                 -D CMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+                                -D CMAKE_EXE_LINKER_FLAGS:STRING=${HDF5_CMAKE_EXE_LINKER_FLAGS}
+                                -D CMAKE_SHARED_LINKER_FLAGS:STRING=${HDF5_CMAKE_SHARED_LINKER_FLAGS}
+                                -D CMAKE_MODULE_LINKER_FLAGS:STRING=${HDF5_CMAKE_MODULE_LINKER_FLAGS}
                                 -D CMAKE_BUILD_TYPE:STRING=${HDF5_CMAKE_BUILD_TYPE}
                                 -D CMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
                                 -D HDF5_ENABLE_PARALLEL:BOOL=${ENABLE_MPI}
@@ -389,6 +400,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config_silo_for_geos "\
 CC=\"${HDF5_C_COMPILER}\" \
 CXX=\"${HDF5_CXX_COMPILER}\" \
 CFLAGS=\"${HDF5_C_FLAGS_STR} ${C_FLAGS_NO_WARNINGS} -Wno-error=implicit-function-declaration -Wno-error=int-conversion\" \
+LDFLAGS=\"${CMAKE_EXE_LINKER_FLAGS}\" \
 LIBS=\"-ldl\" \
 --prefix=${SILO_DIR} \
 --build=${SILO_BUILD_TYPE} \
@@ -450,12 +462,19 @@ if( ENABLE_CUDA )
     set( CHAI_CUDA_FLAGS "${CHAI_CUDA_FLAGS} ${CMAKE_CUDA_FLAGS}" )
 endif()
 
+set( RAJA_PATCH_COMMAND
+     ${CMAKE_COMMAND}
+     "-DGEOS_PATCH_STRIP:STRING=1"
+     "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/raja-reducer-assignment.patch"
+     -P ${GEOS_TPL_PATCH_SCRIPT} )
+
 ExternalProject_Add( raja
                      URL ${RAJA_URL}
                      URL_HASH SHA256=${RAJA_URL_HASH}
                      PREFIX ${PROJECT_BINARY_DIR}/raja
                      INSTALL_DIR ${RAJA_DIR}
                      DEPENDS ${RAJA_DEPENDS}
+                     PATCH_COMMAND ${RAJA_PATCH_COMMAND}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -849,7 +868,10 @@ if( ${ENABLE_MPI} )
                        URL ${PARMETIS_URL}
                        URL_HASH SHA256=${PARMETIS_URL_HASH}
                        INSTALL_DIR ${PARMETIS_DIR}
-                       PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch
+                       PATCH_COMMAND ${CMAKE_COMMAND}
+                                     "-DGEOS_PATCH_STRIP:STRING=1"
+                                     "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch"
+                                     -P ${GEOS_TPL_PATCH_SCRIPT}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -877,7 +899,10 @@ ExternalProject_Add( metis
                      URL_HASH SHA256=${PARMETIS_URL_HASH}
                      INSTALL_DIR ${METIS_DIR}
                      SOURCE_SUBDIR metis
-                     PATCH_COMMAND patch --forward -p1 < ${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch
+                     PATCH_COMMAND ${CMAKE_COMMAND}
+                                   "-DGEOS_PATCH_STRIP:STRING=1"
+                                   "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/parmetis-idx64.patch"
+                                   -P ${GEOS_TPL_PATCH_SCRIPT}
                      BUILD_COMMAND ${TPL_BUILD_COMMAND}
                      INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                      CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -964,6 +989,27 @@ if( ENABLE_HYPRE )
   set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/53927ee4fb68e5caf6be1957af2c3d75905b6b3d.tar.gz" )
   set( HYPRE_URL_HASH "d418846bc1466616cc22e71c4d3b855127846307bb4f4a2f4d37f046ac9c3355" )
   set( HYPRE_DEPENDS "" )
+  set( HYPRE_PATCH_FILES
+       "${CMAKE_SOURCE_DIR}/patch/hypre-mixedint-export.patch|"
+       "${CMAKE_SOURCE_DIR}/patch/hypre-tagged-innerprod.patch|"
+       "${CMAKE_SOURCE_DIR}/patch/hypre-rcm-capacity.patch|"
+       "${CMAKE_SOURCE_DIR}/patch/hypre-umpire-wrapper-lifetime.patch" )
+
+  if( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
+    # Avoid the broken legacy rocSPARSE CSR sort/ILU analysis on gfx1100.
+    # Keep classical HYPRE ILU(0) setup; only the setup-time factor migration
+    # and triangular application remain device compatible.
+    string( APPEND HYPRE_PATCH_FILES
+            "|${CMAKE_SOURCE_DIR}/patch/hypre-hip-rocsparse-sort.patch"
+            "|${CMAKE_SOURCE_DIR}/patch/hypre-hip-standard-ilu.patch" )
+  endif()
+
+  string( REPLACE ";" "" HYPRE_PATCH_FILES "${HYPRE_PATCH_FILES}" )
+  set( HYPRE_PATCH_COMMAND
+       ${CMAKE_COMMAND}
+       "-DGEOS_PATCH_STRIP:STRING=1"
+       "-DGEOS_PATCH_FILES:STRING=${HYPRE_PATCH_FILES}"
+       -P ${GEOS_TPL_PATCH_SCRIPT} )
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -1088,6 +1134,7 @@ if( ENABLE_HYPRE )
           "-DCMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}"
           "-DCMAKE_HIP_STANDARD:STRING=${HYPRE_HIP_STANDARD}"
           "-DCMAKE_HIP_STANDARD_REQUIRED:BOOL=ON"
+          "-DCMAKE_HIP_FLAGS:STRING=${CMAKE_HIP_FLAGS}"
           "-DROCM_PATH:PATH=${ROCM_PATH}" )
   endif()
 
@@ -1099,7 +1146,7 @@ if( ENABLE_HYPRE )
       list( APPEND HYPRE_CMAKE_ARGS "-DHYPRE_ENABLE_GPU_PROFILING:BOOL=ON" )
     endif()
 
-    if( BUILD_SHARED_LIBS )
+    if( CHAI_BUILD_SHARED_LIBS )
       set( HYPRE_UMPIRE_LIBRARY_SUFFIX so )
     else()
       set( HYPRE_UMPIRE_LIBRARY_SUFFIX a )
@@ -1146,6 +1193,7 @@ if( ENABLE_HYPRE )
                        SOURCE_SUBDIR src
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
+                       PATCH_COMMAND ${HYPRE_PATCH_COMMAND}
                        LIST_SEPARATOR "^"
                        CMAKE_GENERATOR ${TPL_GENERATOR}
                        CMAKE_ARGS ${HYPRE_CMAKE_ARGS}
@@ -1168,12 +1216,19 @@ if( ENABLE_HYPREDRV )
   set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
   set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/00cdb36800d6754b01467a4ef62e0e4ae19e6897.tar.gz" )
   set( HYPREDRV_URL_HASH "c33212d5fb7391c81ae22ae801d387f41c2c3f293f48ccd8153845d97ba5150c" )
+  # The static SuperLU dependency is C++, while hypredrive-cli is a C target.
+  # Patch the target to use the C++ linker so its runtime is selected by CMake.
+  set( HYPREDRV_PATCH_FILES "${CMAKE_SOURCE_DIR}/patch/hypredrive-cxx-linker.patch" )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPREDRV_HYPRE_INCLUDE_DIRS "${HYPRE_DIR}/include" )
   set( HYPREDRV_HYPRE_LIBRARY "${HYPRE_DIR}/lib/libHYPRE.a" )
   set( HYPREDRV_HYPRE_LIBRARIES "${HYPREDRV_HYPRE_LIBRARY}" )
   list( APPEND HYPREDRV_HYPRE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+  set( HYPREDRV_HYPRE_USE_OPENMP OFF )
+  if( ENABLE_OPENMP )
+    set( HYPREDRV_HYPRE_USE_OPENMP ON )
+  endif()
   if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
           "${SUPERLU_DIR}/lib/libsuperlu_dist.a"
@@ -1195,13 +1250,18 @@ if( ENABLE_HYPREDRV )
   if( ENABLE_HYPRE_DEVICE STREQUAL "CUDA" )
     set( HYPREDRV_ENABLE_CUDA ON )
     # The legacy HYPRE build uses Umpire for device memory.  Its generated
-    # headers include Umpire headers, and its static archive leaves the
-    # Umpire/CUDA dependencies to consumers, so propagate both explicitly.
+    # headers include Umpire headers, and its archive leaves the Umpire/CUDA
+    # dependencies to consumers, so propagate both explicitly.
+    if( CHAI_BUILD_SHARED_LIBS )
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX so )
+    else()
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX a )
+    endif()
     list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
-          "${CHAI_DIR}/lib/libumpire.a"
-          "${CHAI_DIR}/lib/libcamp.a"
-          "${CHAI_DIR}/lib/libfmt.a"
+          "${CHAI_DIR}/lib/libumpire.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libcamp.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libfmt.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
           "-L${CUDA_TOOLKIT_ROOT_DIR}/lib64"
           -lcudart -lcusparse -lcublas -lcurand -lcusolver
           -ldl -lstdc++ )
@@ -1211,11 +1271,18 @@ if( ENABLE_HYPREDRV )
           -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     set( HYPREDRV_ENABLE_HIP ON )
+    string( APPEND HYPREDRV_PATCH_FILES
+            "|${CMAKE_SOURCE_DIR}/patch/hypredrive-hip-rocsparse.patch" )
+    if( CHAI_BUILD_SHARED_LIBS )
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX so )
+    else()
+      set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX a )
+    endif()
     list( APPEND HYPREDRV_HYPRE_INCLUDE_DIRS "${CHAI_DIR}/include" )
     list( APPEND HYPREDRV_HYPRE_LIBRARIES
-          "${CHAI_DIR}/lib/libumpire.a"
-          "${CHAI_DIR}/lib/libcamp.a"
-          "${CHAI_DIR}/lib/libfmt.a"
+          "${CHAI_DIR}/lib/libumpire.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libcamp.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
+          "${CHAI_DIR}/lib/libfmt.${HYPREDRV_UMPIRE_LIBRARY_SUFFIX}"
           "-L${ROCM_PATH}/lib"
           -lrocblas -lrocsparse -lrocrand -lrocsolver -lamdhip64
           -ldl -lstdc++ )
@@ -1224,6 +1291,12 @@ if( ENABLE_HYPREDRV )
           -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
           -D ROCM_PATH:PATH=${ROCM_PATH} )
   endif()
+
+  set( HYPREDRV_PATCH_COMMAND
+       ${CMAKE_COMMAND}
+       "-DGEOS_PATCH_STRIP:STRING=1"
+       "-DGEOS_PATCH_FILES:STRING=${HYPREDRV_PATCH_FILES}"
+       -P ${GEOS_TPL_PATCH_SCRIPT} )
 
   set( HYPREDRV_CALIPER_ARGS )
   set( HYPREDRV_ENABLE_CALIPER OFF )
@@ -1251,6 +1324,7 @@ if( ENABLE_HYPREDRV )
                        PREFIX ${PROJECT_BINARY_DIR}/hypredrive
                        INSTALL_DIR ${HYPREDRV_DIR}
                        DEPENDS hypre
+                       PATCH_COMMAND ${HYPREDRV_PATCH_COMMAND}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -1273,6 +1347,7 @@ if( ENABLE_HYPREDRV )
                                   -D HYPREDRV_ENABLE_CALIPER:BOOL=${HYPREDRV_ENABLE_CALIPER}
                                   -D HYPREDRV_ENABLE_CUDA:BOOL=${HYPREDRV_ENABLE_CUDA}
                                   -D HYPREDRV_ENABLE_HIP:BOOL=${HYPREDRV_ENABLE_HIP}
+                                  -D HYPREDRV_HYPRE_USE_OPENMP:BOOL=${HYPREDRV_HYPRE_USE_OPENMP}
                                   ${HYPREDRV_MPI_ARGS}
                                   ${HYPREDRV_ACCELERATOR_ARGS}
                                   ${HYPREDRV_CALIPER_ARGS} )
@@ -1298,9 +1373,9 @@ if(ENABLE_SUITESPARSE)
         set( SUITESPARSE_LONG_INT_FLAGS "-D\'SuiteSparse_long=long long int\' -DSuiteSparse_long_max=2147483647 -DSuiteSparse_long_idd=\\\"d\\\" -D\'SuiteSparse_long_id=\\\"%d\\\"\'" )
     endif()
 
-    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
-    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
-    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UPPER}}" )
+    set( SUITESPARSE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${BUILD_TYPE_UPPER}}" )
 
     set( SUITESPARSE_C_COMPILER ${CMAKE_C_COMPILER} )
     set( SUITESPARSE_CXX_COMPILER ${CMAKE_CXX_COMPILER} )
@@ -1310,12 +1385,24 @@ if(ENABLE_SUITESPARSE)
         set(SUITESPARSE_OPENMP_FLAG "${OpenMP_C_FLAGS}")
     endif()
 
+    set(SUITESPARSE_LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS}")
+    # SuiteSparse_config.mk appends its install-library search path with
+    # `LDFLAGS +=`. Since LDFLAGS is supplied on the make command line, GNU
+    # Make does not apply that append. Add the staging library directory here
+    # so the subsequently built SuiteSparse components can find
+    # libsuitesparseconfig before the final install step.
+    string(APPEND SUITESPARSE_LINK_FLAGS " -L${PROJECT_BINARY_DIR}/suitesparse/src/suitesparse/lib")
+    if (SUITESPARSE_OPENMP_FLAG)
+        string(APPEND SUITESPARSE_LINK_FLAGS " ${SUITESPARSE_OPENMP_FLAG}")
+    endif()
+
     set( SUITESPARSE_CONFIG_ARGS "CC=${SUITESPARSE_C_COMPILER} \
 CFLAGS=\"${SUITESPARSE_C_FLAGS} ${SUITESPARSE_LONG_INT_FLAGS}\" \
 CXX=${SUITESPARSE_CXX_COMPILER} \
 CXXFLAGS=\"${SUITESPARSE_CXX_FLAGS}\" \
 FC=${SUITESPARSE_Fortran_COMPILER} \
 FCFLAGS=\"${SUITESPARSE_Fortran_FLAGS}\" \
+LDFLAGS=\"${SUITESPARSE_LINK_FLAGS}\" \
 JOBS=${NUM_PROC} \
 CFOPENMP=${SUITESPARSE_OPENMP_FLAG} \
 INSTALL=${SUITESPARSE_DIR} \
@@ -1399,6 +1486,7 @@ if( ENABLE_SCOTCH )
                                     -D SCOTCH_DETERMINISTIC:STRING=FULL
                                     -D CMAKE_C_COMPILER=${MPI_C_COMPILER}
                                     -D CMAKE_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                    -D CMAKE_Fortran_COMPILER:FILEPATH=${CMAKE_Fortran_COMPILER}
                                     -D CMAKE_C_FLAGS=${C_FLAGS_NO_WARNINGS}
                                     -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
                                     -D CMAKE_CXX_FLAGS=${CXX_FLAGS_NO_WARNINGS}
@@ -1539,8 +1627,10 @@ endif( ENABLE_MPI )
                          URL ${VTK_URL}
                          URL_HASH SHA256=${VTK_URL_HASH}
                          INSTALL_DIR ${VTK_DIR}
-                         PATCH_COMMAND patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch &&
-                                       patch --forward -p0 < ${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch
+                         PATCH_COMMAND ${CMAKE_COMMAND}
+                                       "-DGEOS_PATCH_STRIP:STRING=0"
+                                       "-DGEOS_PATCH_FILES:STRING=${CMAKE_SOURCE_DIR}/patch/vtkCellGridReader.cxx.patch|${CMAKE_SOURCE_DIR}/patch/vtkLegacyCellGridReader.cxx.patch"
+                                       -P ${GEOS_TPL_PATCH_SCRIPT}
                          BUILD_COMMAND ${TPL_BUILD_COMMAND}
                          INSTALL_COMMAND "${TPL_INSTALL_COMMAND}"
                          CMAKE_GENERATOR ${TPL_GENERATOR}
@@ -1616,6 +1706,7 @@ message(STATUS "Building = ${build_list}")
 # the `tpl` target after all external projects have been built.
 set(GEOS_TPL_HOST_CONFIG_TPL_DIR "${CMAKE_INSTALL_PREFIX}")
 set(GEOS_TPL_HOST_CONFIG_CAMP_DIR "${CMAKE_INSTALL_PREFIX}/raja")
+set(GEOS_TPL_HOST_CONFIG_FMT_DIR "${FMT_DIR}/lib/cmake/fmt")
 
 # Include the toolchain identity in the host-config name so that an install
 # directory makes its compiler/backend requirements visible without opening

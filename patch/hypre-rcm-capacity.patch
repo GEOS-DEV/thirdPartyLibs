@@ -1,0 +1,7 @@
+diff --git a/src/parcsr_ls/par_ilu.c b/src/parcsr_ls/par_ilu.c
+--- a/src/parcsr_ls/par_ilu.c
++++ b/src/parcsr_ls/par_ilu.c
+@@ -2579,1 +2579,2 @@
+-   G_capacity = hypre_max((A_nnz * n * n / num_nodes / num_nodes) - num_nodes, 1);
++   G_capacity = hypre_max((HYPRE_Int)((HYPRE_Real) A_nnz * n * n /
++                                      num_nodes / num_nodes) - num_nodes, 1);
