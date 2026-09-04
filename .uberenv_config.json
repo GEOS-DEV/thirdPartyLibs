@@ -2,7 +2,6 @@
 "package_name": "geosx",
 "package_version": "develop",
 "package_final_phase": "lvarray_hostconfig",
-"package_host_config_pattern": "*-*@*.cmake",
 "package_source_dir": "../..",
 "spack_configs_path": "scripts/spack_configs",
 "spack_packages_path": "scripts/spack_packages/packages",
@@ -11,5 +10,6 @@
 "spack_commit_note": "v1.2.2 (Jul 20th 2026)",
 "spack_packages_commit": "9bb5e217dd9f9233991e0b4ceb407849588a0fa4",
 "spack_packages_note": "Aug 20th 2026",
-"spack_setup_clingo": 0
+"spack_setup_clingo": 0,
+"spack_allow_compiler_mixing": true
 }
