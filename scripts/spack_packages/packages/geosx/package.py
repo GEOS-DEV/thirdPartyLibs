@@ -77,7 +77,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # variant('examples', default=False, description='Build examples')
 
     variant('docs', default=False, description='Build docs')
-    variant('addr2line', default=False,
+    variant('addr2line', default=True,
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
