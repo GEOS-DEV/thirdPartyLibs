@@ -17,146 +17,168 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers:
-    - compiler:
-        spec: apple-clang@16.0.0
-        paths:
-          cc: /usr/bin/clang
-          cxx: /usr/bin/clang++
-          f77: /opt/homebrew/bin/gfortran 
-          fc: /opt/homebrew/bin/gfortran  
-        flags:
-          cppflags: -I/opt/homebrew/opt/openblas/include
-          ldflags: -L/opt/homebrew/opt/openblas/lib
-        operating_system: sequoia
-        target: aarch64
-        modules: []
-        environment:
-          set:
-            PATH: /usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
-            AR: /usr/bin/ar
-            RANLIB: /usr/bin/ranlib
-            CMAKE_AR: /usr/bin/ar
-            CMAKE_RANLIB: /usr/bin/ranlib
-        extra_rpaths: []
-    - compiler:
-        spec: apple-clang@17.0.0
-        paths:
-          cc: /usr/bin/clang
-          cxx: /usr/bin/clang++
-          f77: /opt/homebrew/bin/gfortran 
-          fc: /opt/homebrew/bin/gfortran  
-        flags:
-          cppflags: -I/opt/homebrew/opt/openblas/include
-          ldflags: -L/opt/homebrew/opt/openblas/lib
-        operating_system: sequoia
-        target: aarch64
-        modules: []
-        environment:
-          set:
-            PATH: /usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
-            AR: /usr/bin/ar
-            RANLIB: /usr/bin/ranlib
-            CMAKE_AR: /usr/bin/ar
-            CMAKE_RANLIB: /usr/bin/ranlib
-        extra_rpaths: []
-
   packages:
     all:
       target: [aarch64]
-      compiler: [apple-clang]
-      providers:
-        mpi: [openmpi]
-        blas: [openblas]
-        lapack: [openblas]
-        zlib-api: [zlib]
       variants: "~openmp"
 
-    geosx:
-      variants: "+addr2line~openmp"
+    # Spack 1.2 models compilers as package externals. Apple Clang supplies
+    # C/C++, while Homebrew GCC supplies only the Fortran language virtual.
+    c:
+      require: "apple-clang@=17.0.0"
+    cxx:
+      require: "apple-clang@=17.0.0"
+    fortran:
+      require: "gcc@=16.2.0 languages:=fortran"
 
-    openblas:
-      buildable: False
-      externals:
-        - spec: openblas@0.3.29
-          prefix: /opt/homebrew/opt/openblas
-
-    # Lock down which MPI we are using
-    openmpi:
-      buildable: False
-      externals:
-        - spec: openmpi@5.0.6
-          prefix: /opt/homebrew/opt/open-mpi
-
-    # System level packages to not build
-    cmake:
-      version: [3.29.6]
+    apple-clang:
       buildable: false
       externals:
-        - spec: cmake@3.29.6
-          prefix: /opt/homebrew/opt/cmake
+      - spec: "apple-clang@=17.0.0 platform=darwin os=tahoe target=aarch64"
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/clang
+            cxx: /usr/bin/clang++
+          environment:
+            set:
+              AR: /usr/bin/ar
+              RANLIB: /usr/bin/ranlib
+              CMAKE_AR: /usr/bin/ar
+              CMAKE_RANLIB: /usr/bin/ranlib
+            prepend_path:
+              PATH: /usr/bin
+            remove_path:
+              PATH: /opt/homebrew/opt/binutils/bin
+
+    gcc:
+      buildable: false
+      externals:
+      - spec: "gcc@=16.2.0 languages:=fortran platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/gcc
+        extra_attributes:
+          compilers:
+            fortran: /opt/homebrew/opt/gcc/bin/gfortran-16
+          environment:
+            set:
+              AR: /usr/bin/ar
+              RANLIB: /usr/bin/ranlib
+              CMAKE_AR: /usr/bin/ar
+              CMAKE_RANLIB: /usr/bin/ranlib
+            prepend_path:
+              PATH: /usr/bin
+            remove_path:
+              PATH: /opt/homebrew/opt/binutils/bin
+
+    geosx:
+      require: "+addr2line ~openmp"
+
+    # Lock virtual dependencies to the matching Homebrew externals. zlib-api
+    # remains buildable so Spack supplies zlib instead of a nonexistent keg.
+    mpi:
+      buildable: false
+      require: "openmpi@=5.0.10"
+    blas:
+      buildable: false
+      require: "openblas@=0.3.34"
+    lapack:
+      buildable: false
+      require: "openblas@=0.3.34"
+    pkgconfig:
+      buildable: false
+      require: "pkgconf@=3.0.6"
+    zlib-api:
+      require: "zlib@=1.3.2"
+
+    # These tools/libraries are intentionally Spack-built rather than modeled
+    # as nonexistent Homebrew kegs.
+    zlib:
+      buildable: true
+      require: "@=1.3.2 +pic +shared"
+    perl:
+      buildable: true
+      require: "@=5.42.2"
+    diffutils:
+      buildable: true
+      require: "@=3.12"
+
+    openblas:
+      buildable: false
+      externals:
+      - spec: >-
+          openblas@=0.3.34
+          +fortran ~ilp64 +pic +shared +static
+          +dynamic_dispatch +locking ~bignuma ~consistent_fpcsr
+          threads=openmp max_num_threads=56 symbol_suffix=none
+          platform=darwin os=tahoe target=aarch64
+        prefix: /opt/homebrew/opt/openblas
+
+    openmpi:
+      buildable: false
+      externals:
+      - spec: >-
+          openmpi@=5.0.10
+          +fortran +ipv6 +romio
+          ~internal-hwloc ~internal-libevent ~internal-pmix ~static
+          fabrics:=none schedulers:=sge
+          platform=darwin os=tahoe target=aarch64
+        prefix: /opt/homebrew/opt/open-mpi
+
+    # Homebrew system packages. Perl, diffutils, and zlib are intentionally not
+    # external: Spack builds those dependencies for a complete, valid prefix.
+    cmake:
+      buildable: false
+      externals:
+      - spec: "cmake@=3.31.6 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/cmake@3.31.6
     readline:
       buildable: false
       externals:
-      - spec: readline@8.2.13
+      - spec: "readline@=8.3 platform=darwin os=tahoe target=aarch64"
         prefix: /opt/homebrew/opt/readline
-      
+
     m4:
-      buildable: False
-      externals:
-        - spec: m4@1.4.6
-          prefix: /opt/homebrew/opt/m4
-    perl:
       buildable: false
       externals:
-      - spec: perl@5.34.1
-        prefix: /opt/homebrew/opt/perl
-    pkg-config:
+      - spec: "m4@=1.4.21 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/m4
+    pkgconf:
       buildable: false
       externals:
-      - spec: pkg-config@2.3.0
+      - spec: "pkgconf@=3.0.6 platform=darwin os=tahoe target=aarch64"
         prefix: /opt/homebrew/opt/pkgconf
-    diffutils:
-      buildable: False
-      externals:
-        - spec: diffutils@3.11
-          prefix: /opt/homebrew/opt/diffutils
-          
+
     autoconf:
-      buildable: False
+      buildable: false
       externals:
-        - spec: autoconf@2.72
-          prefix: /opt/homebrew/opt/autoconf
+      - spec: "autoconf@=2.73 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/autoconf
     automake:
-      buildable: False
+      buildable: false
       externals:
-        - spec: automake@1.17
-          prefix: /opt/homebrew/opt/automake
+      - spec: "automake@=1.18.1 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/automake
     libtool:
-      buildable: False
+      buildable: false
       externals:
-        - spec: libtool@2.5.4
-          prefix: /opt/homebrew/opt/libtool
+      - spec: "libtool@=2.6.2 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/libtool
     gettext:
-      buildable: False
+      buildable: false
       externals:
-        - spec: gettext@0.23.1 
-          prefix: /opt/homebrew/opt/gettext
+      - spec: "gettext@=1.0 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/gettext
 
-    addr2line:
-      buildable: False
+    binutils:
+      buildable: false
       externals:
-        - spec: addr2line@2.43.1
-          prefix: /opt/homebrew/opt/binutils
-
-    zlib:
-      buildable: False
-      externals:
-        - spec: zlib@1.3.1
-          prefix: /opt/homebrew/opt/zlib 
+      - spec: >-
+          binutils@=2.47 libs:=static
+          platform=darwin os=tahoe target=aarch64
+        prefix: /opt/homebrew/opt/binutils
 
     python:
       buildable: false
       externals:
-        - spec: python@3.14.3
-          prefix: /opt/homebrew/opt/python@3.14
+      - spec: "python@=3.14.7 platform=darwin os=tahoe target=aarch64"
+        prefix: /opt/homebrew/opt/python@3.14

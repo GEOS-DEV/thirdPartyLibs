@@ -77,7 +77,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     # variant('examples', default=False, description='Build examples')
 
     variant('docs', default=False, description='Build docs')
-    variant('addr2line', default=True,
+    variant('addr2line', default=False,
             description='Add support for addr2line.')
     variant('mathpresso', default=True, description='Build mathpresso.')
 
@@ -227,7 +227,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     depends_on("mathpresso cxxflags='-fPIC'", when='+mathpresso')
     depends_on('grpc', when='+grpc')
-    depends_on('addr2line', when='+addr2line')
+    depends_on('binutils', when='+addr2line', type='run')
 
     # SPHINX_END_DEPENDS
 
@@ -648,7 +648,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write('# addr2line\n')
                 cfg.write('#{0}\n\n'.format('-' * 80))
                 cfg.write(cmake_cache_option('ENABLE_ADDR2LINE', True))
-                cfg.write(cmake_cache_path('ADDR2LINE_EXEC', os.path.join(spec['addr2line'].prefix.bin, 'addr2line')))
+                cfg.write(cmake_cache_path('ADDR2LINE_EXEC', os.path.join(spec['binutils'].prefix.bin, 'addr2line')))
 
             cfg.write('#{0}\n'.format('-' * 80))
             cfg.write('# Other\n')
@@ -836,7 +836,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write('# addr2line\n')
                 cfg.write('#{0}\n\n'.format('-' * 80))
                 cfg.write(cmake_cache_option('ENABLE_ADDR2LINE', True))
-                cfg.write(cmake_cache_path('ADDR2LINE_EXEC', os.path.join(spec['addr2line'].prefix.bin, 'addr2line')))
+                cfg.write(cmake_cache_path('ADDR2LINE_EXEC', os.path.join(spec['binutils'].prefix.bin, 'addr2line')))
 
     def cmake_args(self):
         pass

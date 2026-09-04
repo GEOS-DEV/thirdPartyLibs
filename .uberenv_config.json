@@ -2,6 +2,7 @@
 "package_name": "geosx",
 "package_version": "develop",
 "package_final_phase": "lvarray_hostconfig",
+"package_host_config_pattern": "*-*@*.cmake",
 "package_source_dir": "../..",
 "spack_configs_path": "scripts/spack_configs",
 "spack_packages_path": "scripts/spack_packages/packages",

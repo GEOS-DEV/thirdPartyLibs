@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "source": {
+    "description": "Official Homebrew formula API metadata selected for GEOS macOS TPL qualification",
+    "as_of": "2026-09-04"
+  },
+  "supported_platform": {
+    "os": "Darwin",
+    "arch": "arm64",
+    "macos_major": "26",
+    "apple_clang_version": "17.0.0",
+    "sdk_major": "26",
+    "homebrew_prefix": "/opt/homebrew"
+  },
+  "qualification_host": {
+    "macos_product_version": "26.6.2",
+    "macos_build_version": "25G83",
+    "apple_clang_build": "1700.6.3.2",
+    "sdk_version": "26.2",
+    "homebrew_version": "6.0.21"
+  },
+  "taps": [
+    {
+      "name": "geos-dev/geos",
+      "remote": "https://github.com/GEOS-DEV/homebrew-geos"
+    }
+  ],
+  "formulae": [
+    {
+      "name": "gcc",
+      "brew_version": "16.2.0",
+      "formula_sha256": "0683955ef01d30162abfcfff3fe9b0e73eebba9a5f9920fb53cb94bc8cdc3f43",
+      "prefix": "/opt/homebrew/opt/gcc",
+      "spack_package": "gcc",
+      "spack_version": "16.2.0",
+      "required_paths": [
+        "bin/gfortran-16"
+      ]
+    },
+    {
+      "name": "openblas",
+      "brew_version": "0.3.34",
+      "formula_sha256": "b6c9d393f4c2a6ebe1b66354decd9d7da8ce66952f9e760454fd601689e2d89a",
+      "prefix": "/opt/homebrew/opt/openblas",
+      "spack_package": "openblas",
+      "spack_version": "0.3.34",
+      "required_paths": [
+        "include/cblas.h",
+        "lib/libopenblas.dylib"
+      ]
+    },
+    {
+      "name": "open-mpi",
+      "brew_version": "5.0.10",
+      "formula_sha256": "c642ed42caecd2f2f26aa4232fea968583408fa54097f79acf0c9a30a299c82a",
+      "prefix": "/opt/homebrew/opt/open-mpi",
+      "spack_package": "openmpi",
+      "spack_version": "5.0.10",
+      "required_paths": [
+        "bin/mpicc",
+        "bin/mpicxx",
+        "bin/mpifort",
+        "lib/libmpi.dylib"
+      ]
+    },
+    {
+      "name": "geos-dev/geos/cmake@3.31.6",
+      "brew_version": "3.31.6",
+      "formula_sha256": "83150ce2f83038812850ef40904b9cc67d468f2067809a822f23be4189167712",
+      "prefix": "/opt/homebrew/opt/cmake@3.31.6",
+      "spack_package": "cmake",
+      "spack_version": "3.31.6",
+      "required_paths": [
+        "bin/cmake"
+      ]
+    },
+    {
+      "name": "readline",
+      "brew_version": "8.3.3",
+      "formula_sha256": "660d4099f7dcd652c78f530672ffaf01103a00b3ee72aca4059f10c1038b1228",
+      "prefix": "/opt/homebrew/opt/readline",
+      "spack_package": "readline",
+      "spack_version": "8.3",
+      "required_paths": [
+        "include/readline/readline.h",
+        "lib/libreadline.dylib"
+      ]
+    },
+    {
+      "name": "m4",
+      "brew_version": "1.4.21",
+      "formula_sha256": "79b4221c141d51a12b59824d0dd69e59c90ee582ca9451150ea973278e19fabf",
+      "prefix": "/opt/homebrew/opt/m4",
+      "spack_package": "m4",
+      "spack_version": "1.4.21",
+      "required_paths": [
+        "bin/m4"
+      ]
+    },
+    {
+      "name": "pkgconf",
+      "brew_version": "3.0.6",
+      "formula_sha256": "53cae4d107ccc45a50359ea12428bddec0ecd0ef1fe8283a3ace27cd497ef4e0",
+      "prefix": "/opt/homebrew/opt/pkgconf",
+      "spack_package": "pkgconf",
+      "spack_version": "3.0.6",
+      "required_paths": [
+        "bin/pkg-config",
+        "bin/pkgconf"
+      ]
+    },
+    {
+      "name": "autoconf",
+      "brew_version": "2.73",
+      "formula_sha256": "036d4f18fa1b9072705af36ebc9c8d02700853c0149e04feeb0fc2232aecab96",
+      "prefix": "/opt/homebrew/opt/autoconf",
+      "spack_package": "autoconf",
+      "spack_version": "2.73",
+      "required_paths": [
+        "bin/autoconf"
+      ]
+    },
+    {
+      "name": "automake",
+      "brew_version": "1.18.1_1",
+      "formula_sha256": "187e1f49c7831094765bc2630eef07270d5080670f67b3b4a610391cb73bd233",
+      "prefix": "/opt/homebrew/opt/automake",
+      "spack_package": "automake",
+      "spack_version": "1.18.1",
+      "required_paths": [
+        "bin/automake"
+      ]
+    },
+    {
+      "name": "libtool",
+      "brew_version": "2.6.2",
+      "formula_sha256": "1b21318c46a9bba74d7013aef9d76ee0144f1b747aceecaa7ba92438462c3a79",
+      "prefix": "/opt/homebrew/opt/libtool",
+      "spack_package": "libtool",
+      "spack_version": "2.6.2",
+      "required_paths": [
+        "bin/glibtool",
+        "bin/glibtoolize"
+      ]
+    },
+    {
+      "name": "gettext",
+      "brew_version": "1.0",
+      "formula_sha256": "bd0322f7114c68dd627c974ec16ceaa6295bf68eac55995ee2dfb59ce6fefd51",
+      "prefix": "/opt/homebrew/opt/gettext",
+      "spack_package": "gettext",
+      "spack_version": "1.0",
+      "required_paths": [
+        "bin/gettext",
+        "lib/libintl.dylib"
+      ]
+    },
+    {
+      "name": "binutils",
+      "brew_version": "2.47",
+      "formula_sha256": "f1fd62bf787bec32ca4f0bf872372bddd6432f0db24b5c5d6c68fb0b340d047e",
+      "prefix": "/opt/homebrew/opt/binutils",
+      "spack_package": "binutils",
+      "spack_version": "2.47",
+      "required_paths": [
+        "bin/addr2line"
+      ]
+    },
+    {
+      "name": "python@3.14",
+      "brew_version": "3.14.7",
+      "formula_sha256": "e7e3a023de8b88f5a7e2e09c861e9e15fb0d0a2d78b6bb619a1b27e7da155b9a",
+      "prefix": "/opt/homebrew/opt/python@3.14",
+      "spack_package": "python",
+      "spack_version": "3.14.7",
+      "required_paths": [
+        "bin/python3.14"
+      ]
+    }
+  ],
+  "spack_built": [
+    {
+      "package": "perl",
+      "version": "5.42.2"
+    },
+    {
+      "package": "diffutils",
+      "version": "3.12"
+    },
+    {
+      "package": "zlib",
+      "version": "1.3.2",
+      "variants": "+pic+shared"
+    }
+  ]
+}
