@@ -1,0 +1,24 @@
+--- a/src/seq_mv/csr_matop_device.c
++++ b/src/seq_mv/csr_matop_device.c
+@@ -4016,6 +4016,21 @@
+    void             *pBuffer = NULL;
+    HYPRE_Int        *P = NULL;
+    HYPRE_Complex    *d_a_tmp;
++#if defined(HYPRE_USING_HIP)
++   /*
++    * ROCm 7.2's legacy rocSPARSE csrsort path poisons the subsequent
++    * csritilu0 preprocessing on gfx1100.  Use HYPRE's device-side stable
++    * tuple sort instead.  The row index is a secondary key; row pointers
++    * remain valid because entries from different rows are never exchanged.
++    */
++   HYPRE_Int *d_row_ind = hypre_CsrRowPtrsToIndicesDevice(n, num_nonzeros,
++                                                          (HYPRE_Int *) d_ia);
++   hypre_StableSortByTupleKeyDevice(num_nonzeros, d_row_ind, d_ja_sorted,
++                                    d_a_sorted, 0);
++   hypre_ForceSyncComputeStream();
++   hypre_TFree(d_row_ind, HYPRE_MEMORY_DEVICE);
++   return hypre_error_flag;
++#endif
+
+    // FIXME: There is not in-place version of csr sort in rocSPARSE currently, so we make
+    //        a temporary copy of the data for gthr, sort that, and then copy the sorted values
