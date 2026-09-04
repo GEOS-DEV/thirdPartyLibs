@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Validate and, when necessary, install the exact Homebrew dependencies used by
-# the supported macOS TPL configuration. Homebrew itself and required taps must
-# already exist. This script intentionally never updates or upgrades Homebrew.
+# Validate and, when necessary, install the Homebrew dependencies used by the
+# macOS TPL configuration. Homebrew must already exist. This script
+# intentionally never updates or upgrades Homebrew.
 
 set -euo pipefail
 
@@ -11,12 +11,13 @@ DEFAULT_MANIFEST="${SCRIPT_DIR}/spack_configs/macOS/homebrew-manifest.json"
 
 MANIFEST=${DEFAULT_MANIFEST}
 CHECK_ONLY=false
+SPACK_CONFIG_OUT=
+SPACK_CONFIG_TEMPLATE=${GEOS_TPL_SPACK_CONFIG_TEMPLATE:-${SCRIPT_DIR}/spack_configs/macOS/spack.yaml}
 
-# These overrides keep the production paths explicit while allowing the shell
-# tests to inject deterministic stand-ins.
-BREW_BIN=${GEOS_TPL_BREW_BIN:-/opt/homebrew/bin/brew}
+# These overrides allow the shell tests to inject deterministic stand-ins. In a
+# normal shell, Homebrew is found through PATH or its standard install paths.
+BREW_BIN=${GEOS_TPL_BREW_BIN:-}
 PLUTIL_BIN=${GEOS_TPL_PLUTIL_BIN:-/usr/bin/plutil}
-GIT_BIN=${GEOS_TPL_GIT_BIN:-/usr/bin/git}
 UNAME_BIN=${GEOS_TPL_UNAME_BIN:-/usr/bin/uname}
 SW_VERS_BIN=${GEOS_TPL_SW_VERS_BIN:-/usr/bin/sw_vers}
 XCRUN_BIN=${GEOS_TPL_XCRUN_BIN:-/usr/bin/xcrun}
@@ -24,11 +25,25 @@ CLANG_BIN=${GEOS_TPL_CLANG_BIN:-/usr/bin/clang}
 
 WORK_DIR=
 ERROR_COUNT=0
+QUALIFICATION_BREW_PREFIX=
+QUALIFICATION_CMAKE_VERSION=
+QUALIFICATION_OPENMPI_VERSION=
+QUALIFICATION_MPICH_VERSION=5.0.1
+QUALIFICATION_PERL_VERSION=
+HOST_BREW_PREFIX=
+HOST_MACOS_VERSION=
+HOST_SDK_VERSION=
+HOST_CLANG_VERSION=
+HOST_CLANG_BUILD=
+HOST_CMAKE_VERSION=
+HOST_PERL_VERSION=
+MPI_PROVIDER=
+MPI_VERSION=
 
-declare -a TAP_NAMES=()
-declare -a TAP_REMOTES=()
 declare -a FORMULA_NAMES=()
 declare -a FORMULA_VERSIONS=()
+declare -a FORMULA_VERSION_POLICIES=()
+declare -a FORMULA_MIN_VERSIONS=()
 declare -a FORMULA_PREFIXES=()
 declare -a FORMULA_SHA256S=()
 declare -a MISSING_FORMULAS=()
@@ -38,17 +53,21 @@ usage()
   cat <<'EOF'
 Usage: scripts/setupMacOS-TPL-deps.bash [options]
 
-Validate the exact macOS and Homebrew dependency set recorded in the checked-in
-manifest. By default, missing formulas are installed only after the complete
-preflight succeeds. Existing version drift is never upgraded or downgraded.
+Validate the Homebrew dependency set recorded in the checked-in manifest. Exact
+pins and minimum-version policies are applied as declared. The manifest's host
+and platform versions describe the qualification host; they are not exact
+host-version gates. By default, missing formulas are installed only after the
+complete preflight succeeds. Exact-pinned formula drift is never upgraded or
+downgraded.
 
 Options:
   --check-only          Validate without installing anything.
   --manifest PATH       Use an alternate manifest (primarily for testing).
+  --spack-config-out PATH
+                        Write a host-specific Spack environment file after
+                        validation. The output contains the Homebrew prefix
+                        and MPI provider; Uberenv discovers Apple Clang.
   -h, --help            Show this help text.
-
-Prerequisite:
-  brew tap geos-dev/geos
 EOF
 }
 
@@ -92,6 +111,24 @@ is_sha256()
   esac
 }
 
+version_at_least()
+{
+  awk -v actual="$1" -v minimum="$2" '
+    BEGIN {
+      actual_count = split(actual, actual_parts, "[.]")
+      minimum_count = split(minimum, minimum_parts, "[.]")
+      count = actual_count > minimum_count ? actual_count : minimum_count
+      for (i = 1; i <= count; ++i) {
+        actual_part = (i <= actual_count) ? actual_parts[i] + 0 : 0
+        minimum_part = (i <= minimum_count) ? minimum_parts[i] + 0 : 0
+        if (actual_part > minimum_part) exit 0
+        if (actual_part < minimum_part) exit 1
+      }
+      exit 0
+    }
+  '
+}
+
 manifest_get()
 {
   local key=$1
@@ -112,6 +149,149 @@ require_equal()
   fi
 }
 
+find_brew()
+{
+  local candidate
+
+  if [[ -n "${BREW_BIN}" ]]; then
+    return 0
+  fi
+
+  if command -v brew >/dev/null 2>&1; then
+    BREW_BIN=$(command -v brew)
+    return 0
+  fi
+
+  for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [[ -x "${candidate}" ]]; then
+      BREW_BIN=${candidate}
+      return 0
+    fi
+  done
+
+  BREW_BIN=/opt/homebrew/bin/brew
+}
+
+manifest_formula_prefix()
+{
+  local index=$1
+  local prefix=${FORMULA_PREFIXES[${index}]}
+  local suffix
+
+  # Formula prefixes in the manifest are recorded against the qualification
+  # Homebrew installation. Preserve their keg suffix when Homebrew is installed
+  # somewhere else, such as /usr/local on Intel macOS.
+  if [[ -n "${QUALIFICATION_BREW_PREFIX}" \
+        && "${prefix}" == "${QUALIFICATION_BREW_PREFIX}"/* \
+        && -n "${HOST_BREW_PREFIX}" ]]; then
+    suffix=${prefix#${QUALIFICATION_BREW_PREFIX}}
+    prefix="${HOST_BREW_PREFIX}${suffix}"
+  fi
+  printf '%s\n' "${prefix}"
+}
+
+formula_requirement()
+{
+  local index=$1
+  local name=${FORMULA_NAMES[${index}]}
+  local policy=${FORMULA_VERSION_POLICIES[${index}]}
+  local version=${FORMULA_VERSIONS[${index}]}
+  local minimum=${FORMULA_MIN_VERSIONS[${index}]}
+
+  case "${policy}" in
+    exact) printf '%s@%s\n' "${name}" "${version}" ;;
+    minimum) printf '%s>=%s\n' "${name}" "${minimum}" ;;
+    any) printf '%s\n' "${name}" ;;
+  esac
+}
+
+write_spack_config()
+{
+  local escaped_brew
+  local escaped_cmake escaped_qualification_cmake escaped_mpi
+  local escaped_openmpi escaped_mpich escaped_qualification_openmpi escaped_qualification_mpich
+  local escaped_perl escaped_qualification_perl
+  local config_mpi_version config_openmpi_version config_mpich_version
+  local generated_template generated_config mpi_config
+
+  [[ -n "${SPACK_CONFIG_OUT}" ]] || return 0
+  [[ -f "${SPACK_CONFIG_TEMPLATE}" ]] || die "Spack environment template does not exist: ${SPACK_CONFIG_TEMPLATE}"
+  [[ "${SPACK_CONFIG_OUT}" != "${SPACK_CONFIG_TEMPLATE}" ]] || die "--spack-config-out must not overwrite the Spack environment template"
+
+  case "${SPACK_CONFIG_OUT}" in
+    */*) [[ -d "${SPACK_CONFIG_OUT%/*}" ]] || die "Spack config output directory does not exist: ${SPACK_CONFIG_OUT%/*}" ;;
+  esac
+
+  escaped_brew=$(printf '%s\n' "${HOST_BREW_PREFIX}" | sed 's/[|&\\]/\\&/g')
+  escaped_cmake=$(printf '%s\n' "${HOST_CMAKE_VERSION}" | sed 's/[|&\\]/\\&/g')
+  escaped_qualification_cmake=$(printf '%s\n' "${QUALIFICATION_CMAKE_VERSION}" | sed 's/[|&\\]/\\&/g')
+  escaped_perl=$(printf '%s\n' "${HOST_PERL_VERSION}" | sed 's/[|&\\]/\\&/g')
+  escaped_qualification_perl=$(printf '%s\n' "${QUALIFICATION_PERL_VERSION}" | sed 's/[|&\\]/\\&/g')
+  config_mpi_version=${MPI_VERSION:-${QUALIFICATION_OPENMPI_VERSION}}
+  escaped_mpi=$(printf '%s\n' "${config_mpi_version}" | sed 's/[|&\\]/\\&/g')
+  escaped_qualification_openmpi=$(printf '%s\n' "${QUALIFICATION_OPENMPI_VERSION}" | sed 's/[|&\\]/\\&/g')
+  escaped_qualification_mpich=$(printf '%s\n' "${QUALIFICATION_MPICH_VERSION}" | sed 's/[|&\\]/\\&/g')
+  config_openmpi_version=${QUALIFICATION_OPENMPI_VERSION}
+  config_mpich_version=${QUALIFICATION_MPICH_VERSION}
+  if [[ "${MPI_PROVIDER}" == "open-mpi" && -n "${MPI_VERSION}" ]]; then
+    config_openmpi_version=${MPI_VERSION}
+  fi
+  if [[ "${MPI_PROVIDER}" == "mpich" && -n "${MPI_VERSION}" ]]; then
+    config_mpich_version=${MPI_VERSION}
+  fi
+  escaped_openmpi=$(printf '%s\n' "${config_openmpi_version}" | sed 's/[|&\\]/\\&/g')
+  escaped_mpich=$(printf '%s\n' "${config_mpich_version}" | sed 's/[|&\\]/\\&/g')
+  generated_template="${WORK_DIR}/spack-macos-template.yaml"
+  generated_config="${WORK_DIR}/spack-macos.yaml"
+  sed \
+    -e "s|/opt/homebrew|${escaped_brew}|g" \
+    -e "s|cmake@=${escaped_qualification_cmake}|cmake@=${escaped_cmake}|g" \
+    -e "s|perl@=${escaped_qualification_perl}|perl@=${escaped_perl}|g" \
+    -e "s|openmpi@=${escaped_qualification_openmpi}|openmpi@=${escaped_openmpi}|g" \
+    -e "s|mpich@=${escaped_qualification_mpich}|mpich@=${escaped_mpich}|g" \
+    -e 's/ os=tahoe//g' \
+    "${SPACK_CONFIG_TEMPLATE}" >"${generated_template}"
+  if ! awk \
+    -v clang_version="${HOST_CLANG_VERSION}" \
+    -v brew_prefix="${HOST_BREW_PREFIX}" '
+      /^[[:space:]]*# GEOS_TPL_APPLE_CLANG_EXTERNAL$/ {
+        found = 1
+        print "      externals:"
+        print "      - spec: \"apple-clang@=" clang_version " platform=darwin target=aarch64\""
+        print "        prefix: /usr"
+        print "        extra_attributes:"
+        print "          compilers:"
+        print "            c: /usr/bin/clang"
+        print "            cxx: /usr/bin/clang++"
+        print "          environment:"
+        print "            set:"
+        print "              AR: /usr/bin/ar"
+        print "              RANLIB: /usr/bin/ranlib"
+        print "              CMAKE_AR: /usr/bin/ar"
+        print "              CMAKE_RANLIB: /usr/bin/ranlib"
+        print "            prepend_path:"
+        print "              PATH: /usr/bin"
+        print "            remove_path:"
+        print "              PATH: " brew_prefix "/opt/binutils/bin"
+        next
+      }
+      { print }
+      END {
+        if (!found) exit 2
+      }
+    ' "${generated_template}" >"${generated_config}"; then
+    die "Spack environment template is missing the Apple Clang insertion marker"
+  fi
+  if [[ "${MPI_PROVIDER}" == "mpich" ]]; then
+    mpi_config="${WORK_DIR}/spack-macos-mpi.yaml"
+    sed "s|require: \"openmpi@=${escaped_qualification_openmpi}\"|require: \"mpich@=${escaped_mpi}\"|g" \
+      "${generated_config}" >"${mpi_config}"
+    mv "${mpi_config}" "${generated_config}"
+  fi
+  mv "${generated_config}" "${SPACK_CONFIG_OUT}"
+  echo "Wrote host-specific Spack environment: ${SPACK_CONFIG_OUT}"
+}
+
 parse_args()
 {
   while [[ $# -gt 0 ]]; do
@@ -124,6 +304,16 @@ parse_args()
         [[ $# -ge 2 ]] || die "--manifest requires a path"
         MANIFEST=$2
         shift 2
+        ;;
+      --spack-config-out)
+        [[ $# -ge 2 ]] || die "--spack-config-out requires a path"
+        SPACK_CONFIG_OUT=$2
+        shift 2
+        ;;
+      --spack-config-out=*)
+        SPACK_CONFIG_OUT=${1#*=}
+        [[ -n "${SPACK_CONFIG_OUT}" ]] || die "--spack-config-out requires a path"
+        shift
         ;;
       -h|--help)
         usage
@@ -138,8 +328,9 @@ parse_args()
 
 validate_manifest()
 {
-  local schema_version tap_count formula_count spack_built_count
-  local i j name remote version prefix sha path_count relative_path seen
+  local schema_version formula_count spack_built_count
+  local i j name version policy policy_value minimum_version prefix sha
+  local path_count relative_path seen
 
   [[ -f "${MANIFEST}" ]] || die "Manifest does not exist: ${MANIFEST}"
   "${PLUTIL_BIN}" -convert json -o - -- "${MANIFEST}" >/dev/null || die "Manifest is not valid JSON: ${MANIFEST}"
@@ -161,19 +352,6 @@ validate_manifest()
   manifest_get qualification_host.sdk_version >/dev/null
   manifest_get qualification_host.homebrew_version >/dev/null
 
-  tap_count=$(manifest_get taps)
-  is_nonnegative_integer "${tap_count}" || die "Manifest 'taps' must be an array"
-  [[ "${tap_count}" -gt 0 ]] || die "Manifest must declare at least one required tap"
-  i=0
-  while [[ ${i} -lt ${tap_count} ]]; do
-    name=$(manifest_get "taps.${i}.name")
-    remote=$(manifest_get "taps.${i}.remote")
-    [[ -n "${name}" && -n "${remote}" ]] || die "Tap ${i} has an empty name or remote"
-    TAP_NAMES[i]=${name}
-    TAP_REMOTES[i]=${remote}
-    i=$((i + 1))
-  done
-
   formula_count=$(manifest_get formulae)
   is_nonnegative_integer "${formula_count}" || die "Manifest 'formulae' must be an array"
   [[ "${formula_count}" -gt 0 ]] || die "Manifest must declare at least one formula"
@@ -181,6 +359,24 @@ validate_manifest()
   i=0
   while [[ ${i} -lt ${formula_count} ]]; do
     name=$(manifest_get "formulae.${i}.name")
+    policy=exact
+    if policy_value=$("${PLUTIL_BIN}" -extract "formulae.${i}.version_policy" raw -o - -- "${MANIFEST}" 2>/dev/null); then
+      policy=${policy_value}
+    fi
+    case "${policy}" in
+      exact|any)
+        minimum_version=
+        ;;
+      minimum)
+        minimum_version=$(manifest_get "formulae.${i}.minimum_version")
+        case "${minimum_version}" in
+          ''|*[!0-9.]*) die "Formula '${name}' has an invalid minimum_version '${minimum_version}'" ;;
+        esac
+        ;;
+      *)
+        die "Formula '${name}' has an unsupported version_policy '${policy}'"
+        ;;
+    esac
     version=$(manifest_get "formulae.${i}.brew_version")
     prefix=$(manifest_get "formulae.${i}.prefix")
     sha=$(manifest_get "formulae.${i}.formula_sha256")
@@ -219,8 +415,15 @@ validate_manifest()
 
     FORMULA_NAMES[i]=${name}
     FORMULA_VERSIONS[i]=${version}
+    FORMULA_VERSION_POLICIES[i]=${policy}
+    FORMULA_MIN_VERSIONS[i]=${minimum_version}
     FORMULA_PREFIXES[i]=${prefix}
     FORMULA_SHA256S[i]=${sha}
+    case "${name}" in
+      cmake) QUALIFICATION_CMAKE_VERSION=${version} ;;
+      open-mpi) QUALIFICATION_OPENMPI_VERSION=${version} ;;
+      perl) QUALIFICATION_PERL_VERSION=${version} ;;
+    esac
     i=$((i + 1))
   done
 
@@ -238,92 +441,68 @@ validate_manifest()
 validate_platform()
 {
   local clang_output clang_version clang_build brew_output brew_version
-  local actual_brew_prefix macos_version macos_major sdk_version sdk_major
+  local macos_major sdk_major qualification_macos_major qualification_sdk_major
+  local qualification_brew_prefix
 
+  find_brew
   [[ -x "${BREW_BIN}" ]] || die "Homebrew is required at ${BREW_BIN}; this script does not install Homebrew"
   [[ -x "${PLUTIL_BIN}" ]] || die "Required plist utility is missing: ${PLUTIL_BIN}"
-  [[ -x "${GIT_BIN}" ]] || die "Required Git executable is missing: ${GIT_BIN}"
   [[ -x "${UNAME_BIN}" && -x "${SW_VERS_BIN}" ]] || die "Required macOS platform tools are missing"
   [[ -x "${XCRUN_BIN}" && -x "${CLANG_BIN}" ]] || die "Apple Command Line Tools are required"
 
   require_equal "operating system" "$(manifest_get supported_platform.os)" "$("${UNAME_BIN}" -s)"
   require_equal "architecture" "$(manifest_get supported_platform.arch)" "$("${UNAME_BIN}" -m)"
-  macos_version=$("${SW_VERS_BIN}" -productVersion)
-  macos_major=${macos_version%%.*}
-  require_equal "macOS major version" "$(manifest_get supported_platform.macos_major)" "${macos_major}"
-  sdk_version=$("${XCRUN_BIN}" --show-sdk-version)
-  sdk_major=${sdk_version%%.*}
-  require_equal "macOS SDK major version" "$(manifest_get supported_platform.sdk_major)" "${sdk_major}"
+  HOST_MACOS_VERSION=$("${SW_VERS_BIN}" -productVersion)
+  macos_major=${HOST_MACOS_VERSION%%.*}
+  qualification_macos_major=$(manifest_get supported_platform.macos_major)
+  if [[ "${macos_major}" != "${qualification_macos_major}" ]]; then
+    echo "INFO: macOS ${HOST_MACOS_VERSION} differs from qualification host major ${qualification_macos_major}; continuing"
+  fi
+  HOST_SDK_VERSION=$("${XCRUN_BIN}" --show-sdk-version)
+  sdk_major=${HOST_SDK_VERSION%%.*}
+  qualification_sdk_major=$(manifest_get supported_platform.sdk_major)
+  if [[ "${sdk_major}" != "${qualification_sdk_major}" ]]; then
+    echo "INFO: macOS SDK ${HOST_SDK_VERSION} differs from qualification host major ${qualification_sdk_major}; continuing"
+  fi
 
   clang_output=$("${CLANG_BIN}" --version)
   clang_version=$(printf '%s\n' "${clang_output}" | sed -n 's/^Apple clang version \([^ ]*\).*/\1/p' | sed -n '1p')
   clang_build=$(printf '%s\n' "${clang_output}" | sed -n 's/^Apple clang version [^ ]* (clang-\([^)]*\)).*/\1/p' | sed -n '1p')
   [[ -n "${clang_version}" && -n "${clang_build}" ]] || record_error "Could not parse Apple Clang identity from '${CLANG_BIN} --version'"
-  require_equal "Apple Clang version" "$(manifest_get supported_platform.apple_clang_version)" "${clang_version}"
+  HOST_CLANG_VERSION=${clang_version}
+  HOST_CLANG_BUILD=${clang_build}
 
   brew_output=$("${BREW_BIN}" --version)
   brew_version=$(printf '%s\n' "${brew_output}" | sed -n 's/^Homebrew //p' | sed -n '1p')
   [[ -n "${brew_version}" ]] || record_error "Could not parse Homebrew version from '${BREW_BIN} --version'"
 
-  if ! actual_brew_prefix=$("${BREW_BIN}" --prefix); then
+  if ! HOST_BREW_PREFIX=$("${BREW_BIN}" --prefix); then
     record_error "Homebrew could not report its prefix"
   else
-    require_equal "Homebrew prefix" "$(manifest_get supported_platform.homebrew_prefix)" "${actual_brew_prefix}"
+    qualification_brew_prefix=$(manifest_get supported_platform.homebrew_prefix)
+    QUALIFICATION_BREW_PREFIX=${qualification_brew_prefix}
+    if [[ "${HOST_BREW_PREFIX}" != "${qualification_brew_prefix}" ]]; then
+      echo "INFO: Homebrew prefix is '${HOST_BREW_PREFIX}'; qualification host used '${qualification_brew_prefix}'"
+    fi
   fi
 
-  echo "Host details: macOS ${macos_version} ($("${SW_VERS_BIN}" -buildVersion)), SDK ${sdk_version}, Apple Clang build ${clang_build}, Homebrew ${brew_version}"
+  echo "Host details: macOS ${HOST_MACOS_VERSION} ($("${SW_VERS_BIN}" -buildVersion)), SDK ${HOST_SDK_VERSION}, Apple Clang ${clang_version} build ${clang_build}, Homebrew ${brew_version}"
+  echo "Compiler defaults: C/C++=Apple Clang; Fortran=Homebrew GCC"
 
   [[ ${ERROR_COUNT} -eq 0 ]] || die "Platform preflight failed with ${ERROR_COUNT} error(s); no formulas were installed"
-}
-
-validate_taps()
-{
-  local tap_output i name expected_remote repo actual_remote
-
-  if ! tap_output=$("${BREW_BIN}" tap); then
-    die "Homebrew could not list installed taps"
-  fi
-
-  i=0
-  while [[ ${i} -lt ${#TAP_NAMES[@]} ]]; do
-    name=${TAP_NAMES[${i}]}
-    expected_remote=${TAP_REMOTES[${i}]}
-    if ! printf '%s\n' "${tap_output}" | grep -F -x -q -- "${name}"; then
-      record_error "Required tap '${name}' is absent; run: brew tap ${name}"
-      i=$((i + 1))
-      continue
-    fi
-    if ! repo=$("${BREW_BIN}" --repository "${name}"); then
-      record_error "Homebrew could not locate required tap '${name}'"
-      i=$((i + 1))
-      continue
-    fi
-    if [[ ! -d "${repo}" ]]; then
-      record_error "Tap '${name}' repository does not exist at '${repo}'"
-      i=$((i + 1))
-      continue
-    fi
-    if ! actual_remote=$("${GIT_BIN}" -C "${repo}" remote get-url origin); then
-      record_error "Could not inspect Git remote for tap '${name}'"
-      i=$((i + 1))
-      continue
-    fi
-    require_equal "tap '${name}' remote" "${expected_remote}" "${actual_remote}"
-    i=$((i + 1))
-  done
-
-  [[ ${ERROR_COUNT} -eq 0 ]] || die "Tap preflight failed with ${ERROR_COUNT} error(s); no formulas were installed"
 }
 
 formula_metadata_matches()
 {
   local index=$1
-  local name expected_version expected_sha info_file formula_count
+  local name expected_version expected_sha policy minimum_version info_file formula_count
   local full_name stable revision actual_version actual_sha
 
   name=${FORMULA_NAMES[${index}]}
   expected_version=${FORMULA_VERSIONS[${index}]}
   expected_sha=${FORMULA_SHA256S[${index}]}
+  policy=${FORMULA_VERSION_POLICIES[${index}]}
+  minimum_version=${FORMULA_MIN_VERSIONS[${index}]}
   info_file="${WORK_DIR}/formula-${index}.json"
 
   if ! "${BREW_BIN}" info --json=v2 "${name}" >"${info_file}"; then
@@ -361,14 +540,26 @@ formula_metadata_matches()
     actual_version="${stable}_${revision}"
   fi
 
-  if [[ "${actual_version}" != "${expected_version}" ]]; then
-    record_error "Formula '${name}' metadata drift: expected version '${expected_version}', found '${actual_version}'"
-    return 1
-  fi
-  if [[ "${actual_sha}" != "${expected_sha}" ]]; then
-    record_error "Formula '${name}' source drift: expected checksum '${expected_sha}', found '${actual_sha}'"
-    return 1
-  fi
+  case "${policy}" in
+    exact)
+      if [[ "${actual_version}" != "${expected_version}" ]]; then
+        record_error "Formula '${name}' metadata drift: expected version '${expected_version}', found '${actual_version}'"
+        return 1
+      fi
+      if [[ "${actual_sha}" != "${expected_sha}" ]]; then
+        record_error "Formula '${name}' source drift: expected checksum '${expected_sha}', found '${actual_sha}'"
+        return 1
+      fi
+      ;;
+    minimum)
+      if ! version_at_least "${actual_version}" "${minimum_version}"; then
+        record_error "Formula '${name}' is too old: requires at least '${minimum_version}', found '${actual_version}'"
+        return 1
+      fi
+      ;;
+    any)
+      ;;
+  esac
   return 0
 }
 
@@ -391,34 +582,106 @@ installed_formula_version()
   printf '%s\n' "${fields[1]}"
 }
 
+select_mpi_provider()
+{
+  local detected_version
+
+  if detected_version=$(installed_formula_version mpich); then
+    MPI_PROVIDER=mpich
+    MPI_VERSION=${detected_version}
+    return 0
+  fi
+  if detected_version=$(installed_formula_version open-mpi); then
+    MPI_PROVIDER=open-mpi
+    MPI_VERSION=${detected_version}
+    return 0
+  fi
+
+  # OpenMPI is the fallback only when neither supported MPI is installed.
+  MPI_PROVIDER=open-mpi
+  MPI_VERSION=
+}
+
+validate_mpi_provider()
+{
+  local actual_prefix relative_path shared_library
+
+  [[ "${MPI_PROVIDER}" == "mpich" ]] || return 0
+  if [[ "${MPI_VERSION}" == "__AMBIGUOUS__" ]]; then
+    record_error "MPI formula 'mpich' has multiple installed versions"
+    return 1
+  fi
+  if ! actual_prefix=$("${BREW_BIN}" --prefix mpich); then
+    record_error "Homebrew could not report the installed prefix for 'mpich'"
+    return 1
+  fi
+  for relative_path in bin/mpicc bin/mpicxx bin/mpifort; do
+    if [[ ! -e "${actual_prefix}/${relative_path}" ]]; then
+      record_error "MPI formula 'mpich' is missing required path '${actual_prefix}/${relative_path}'"
+    fi
+  done
+  shared_library=
+  for shared_library in "${actual_prefix}"/lib/libmpi*.dylib; do
+    if [[ -e "${shared_library}" ]]; then
+      break
+    fi
+    shared_library=
+  done
+  if [[ -z "${shared_library}" ]]; then
+    record_error "MPI formula 'mpich' is missing a shared MPI library under '${actual_prefix}/lib'"
+  fi
+  [[ ${ERROR_COUNT} -eq 0 ]] || die "MPI preflight failed; no formulas were installed"
+}
+
+should_skip_formula()
+{
+  local index=$1
+  [[ "${FORMULA_NAMES[${index}]}" == "open-mpi" && "${MPI_PROVIDER}" == "mpich" ]]
+}
+
 validate_formula_installation()
 {
   local index=$1
   local allow_missing=$2
   local name expected_version expected_prefix actual_version actual_prefix
-  local path_count j relative_path
+  local policy minimum_version
+  local path_count j relative_path role_suffix
 
   name=${FORMULA_NAMES[${index}]}
   expected_version=${FORMULA_VERSIONS[${index}]}
-  expected_prefix=${FORMULA_PREFIXES[${index}]}
+  policy=${FORMULA_VERSION_POLICIES[${index}]}
+  minimum_version=${FORMULA_MIN_VERSIONS[${index}]}
+  expected_prefix=$(manifest_formula_prefix "${index}")
 
   if ! actual_version=$(installed_formula_version "${name}"); then
     if [[ "${allow_missing}" == "true" ]]; then
       MISSING_FORMULAS[${#MISSING_FORMULAS[@]}]=${name}
-      echo "MISSING: ${name}@${expected_version}"
+      echo "MISSING: $(formula_requirement "${index}")"
       return 0
     fi
-    record_error "Formula '${name}@${expected_version}' is still missing after installation"
+    record_error "Formula '${name}' is still missing after installation (requires $(formula_requirement "${index}"))"
     return 1
   fi
   if [[ "${actual_version}" == "__AMBIGUOUS__" ]]; then
     record_error "Formula '${name}' has multiple installed versions"
     return 1
   fi
-  if [[ "${actual_version}" != "${expected_version}" ]]; then
-    record_error "Formula '${name}' receipt drift: expected '${expected_version}', found '${actual_version}'"
-    return 1
-  fi
+  case "${policy}" in
+    exact)
+      if [[ "${actual_version}" != "${expected_version}" ]]; then
+        record_error "Formula '${name}' receipt drift: expected '${expected_version}', found '${actual_version}'"
+        return 1
+      fi
+      ;;
+    minimum)
+      if ! version_at_least "${actual_version}" "${minimum_version}"; then
+        record_error "Formula '${name}' receipt is too old: requires at least '${minimum_version}', found '${actual_version}'"
+        return 1
+      fi
+      ;;
+    any)
+      ;;
+  esac
 
   if ! actual_prefix=$("${BREW_BIN}" --prefix "${name}"); then
     record_error "Homebrew could not report the installed prefix for '${name}'"
@@ -427,6 +690,18 @@ validate_formula_installation()
   if [[ "${actual_prefix}" != "${expected_prefix}" ]]; then
     record_error "Formula '${name}' prefix mismatch: expected '${expected_prefix}', found '${actual_prefix}'"
     return 1
+  fi
+
+  case "${name}" in
+    cmake) HOST_CMAKE_VERSION=${actual_version} ;;
+    perl) HOST_PERL_VERSION=${actual_version} ;;
+    open-mpi)
+      MPI_VERSION=${actual_version}
+      ;;
+  esac
+  role_suffix=
+  if [[ "${name}" == "gcc" ]]; then
+    role_suffix=" [Fortran compiler only]"
   fi
 
   path_count=$(manifest_get "formulae.${index}.required_paths")
@@ -438,7 +713,7 @@ validate_formula_installation()
     fi
     j=$((j + 1))
   done
-  echo "OK: ${name}@${actual_version} (${actual_prefix})"
+  echo "OK: ${name}@${actual_version} (${actual_prefix})${role_suffix}"
   return 0
 }
 
@@ -448,8 +723,13 @@ preflight_formulae()
   MISSING_FORMULAS=()
   i=0
   while [[ ${i} -lt ${#FORMULA_NAMES[@]} ]]; do
-    # Check source identity even when the formula is already installed. This
-    # makes stale API caches and silently rewritten formulas visible drift.
+    if should_skip_formula "${i}"; then
+      i=$((i + 1))
+      continue
+    fi
+    # Check source identity for exact-pinned formulas even when already
+    # installed. This makes stale API caches and silently rewritten formulas
+    # visible drift.
     formula_metadata_matches "${i}" || true
     validate_formula_installation "${i}" true || true
     i=$((i + 1))
@@ -463,6 +743,10 @@ revalidate_formulae()
   starting_errors=${ERROR_COUNT}
   i=0
   while [[ ${i} -lt ${#FORMULA_NAMES[@]} ]]; do
+    if should_skip_formula "${i}"; then
+      i=$((i + 1))
+      continue
+    fi
     formula_metadata_matches "${i}" || true
     validate_formula_installation "${i}" false || true
     i=$((i + 1))
@@ -487,20 +771,27 @@ main()
   export HOMEBREW_NO_ENV_HINTS=1
 
   validate_platform
-  validate_taps
+  select_mpi_provider
+  validate_mpi_provider
+  if [[ -n "${MPI_VERSION}" ]]; then
+    echo "MPI provider: ${MPI_PROVIDER}@${MPI_VERSION}"
+  else
+    echo "MPI provider: open-mpi (fallback)"
+  fi
   preflight_formulae
 
   if [[ ${#MISSING_FORMULAS[@]} -gt 0 ]]; then
     if [[ "${CHECK_ONLY}" == "true" ]]; then
       die "${#MISSING_FORMULAS[@]} required formula(s) are missing; check-only mode made no changes"
     fi
-    echo "Installing exact preflighted formulas: ${MISSING_FORMULAS[*]}"
+    echo "Installing preflighted formulas: ${MISSING_FORMULAS[*]}"
     if ! "${BREW_BIN}" install "${MISSING_FORMULAS[@]}"; then
       die "Homebrew failed while installing the preflighted formula set"
     fi
   fi
 
   revalidate_formulae
+  write_spack_config
   echo "macOS Homebrew TPL dependency validation completed successfully."
 }
 

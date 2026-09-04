@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": {
-    "description": "Official Homebrew formula API metadata selected for GEOS macOS TPL qualification",
+    "description": "Official Homebrew formula API metadata and version policies selected for GEOS macOS TPL qualification",
     "as_of": "2026-09-04"
   },
   "supported_platform": {
@@ -19,12 +19,6 @@
     "sdk_version": "26.2",
     "homebrew_version": "6.0.21"
   },
-  "taps": [
-    {
-      "name": "geos-dev/geos",
-      "remote": "https://github.com/GEOS-DEV/homebrew-geos"
-    }
-  ],
   "formulae": [
     {
       "name": "gcc",
@@ -51,6 +45,7 @@
     },
     {
       "name": "open-mpi",
+      "version_policy": "any",
       "brew_version": "5.0.10",
       "formula_sha256": "c642ed42caecd2f2f26aa4232fea968583408fa54097f79acf0c9a30a299c82a",
       "prefix": "/opt/homebrew/opt/open-mpi",
@@ -64,12 +59,14 @@
       ]
     },
     {
-      "name": "geos-dev/geos/cmake@3.31.6",
-      "brew_version": "3.31.6",
-      "formula_sha256": "83150ce2f83038812850ef40904b9cc67d468f2067809a822f23be4189167712",
-      "prefix": "/opt/homebrew/opt/cmake@3.31.6",
+      "name": "cmake",
+      "version_policy": "minimum",
+      "minimum_version": "3.24",
+      "brew_version": "4.4.3",
+      "formula_sha256": "55fab0cd335d245c13704744585837a4e593aad16335097fc554df712e2dba1b",
+      "prefix": "/opt/homebrew/opt/cmake",
       "spack_package": "cmake",
-      "spack_version": "3.31.6",
+      "spack_version": "4.4.3",
       "required_paths": [
         "bin/cmake"
       ]
@@ -176,13 +173,21 @@
       "required_paths": [
         "bin/python3.14"
       ]
+    },
+    {
+      "name": "perl",
+      "version_policy": "any",
+      "brew_version": "5.44.0",
+      "formula_sha256": "19d8fe283a3699d99d4a81d521b2cf5317f5e8ad728319138518b2e803e70dcb",
+      "prefix": "/opt/homebrew/opt/perl",
+      "spack_package": "perl",
+      "spack_version": "5.44.0",
+      "required_paths": [
+        "bin/perl"
+      ]
     }
   ],
   "spack_built": [
-    {
-      "package": "perl",
-      "version": "5.42.2"
-    },
     {
       "package": "diffutils",
       "version": "3.12"

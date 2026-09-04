@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Focused, dependency-free tests for setupMacOS-TPL-deps.bash. The production
-# script runs against a fake Homebrew and fake platform tools; no real formula,
-# tap, or Homebrew state is changed.
+# script runs against a fake Homebrew and fake platform tools; no real formula
+# or Homebrew state is changed.
 
 set -u
 
@@ -180,15 +180,6 @@ else
 fi
 EOF
 
-  cat >"${FAKE_BIN}/git" <<'EOF'
-#!/bin/bash
-if [[ "${1:-}" == "-C" && "${3:-}" == "remote" && "${4:-}" == "get-url" && "${5:-}" == "origin" ]]; then
-  cat "${FAKE_BREW_STATE}/tap_remote"
-else
-  exit 2
-fi
-EOF
-
   cat >"${FAKE_BIN}/brew" <<'EOF'
 #!/bin/bash
 set -u
@@ -211,15 +202,6 @@ case "${1:-}" in
       echo "${prefix}"
     else
       echo "${prefix}/opt/$2"
-    fi
-    ;;
-  --repository)
-    [[ "${2:-}" == "geos-dev/geos" ]] || exit 1
-    cat "${state}/tap_repo"
-    ;;
-  tap)
-    if [[ -f "${state}/tap_present" ]]; then
-      echo "geos-dev/geos"
     fi
     ;;
   info)
@@ -278,7 +260,7 @@ esac
 EOF
 
   chmod +x "${FAKE_BIN}/uname" "${FAKE_BIN}/sw_vers" "${FAKE_BIN}/xcrun" \
-    "${FAKE_BIN}/clang" "${FAKE_BIN}/git" "${FAKE_BIN}/brew"
+    "${FAKE_BIN}/clang" "${FAKE_BIN}/brew"
 }
 
 write_manifest()
@@ -301,12 +283,6 @@ write_manifest()
     "sdk_version": "26.2",
     "homebrew_version": "6.0.12"
   },
-  "taps": [
-    {
-      "name": "geos-dev/geos",
-      "remote": "https://example.invalid/geos"
-    }
-  ],
   "formulae": [
     {
       "name": "alpha",
@@ -325,6 +301,37 @@ write_manifest()
       "spack_package": "beta",
       "spack_version": "2.0",
       "required_paths": ["bin/beta-tool"]
+    },
+    {
+      "name": "cmake",
+      "version_policy": "minimum",
+      "minimum_version": "3.24",
+      "brew_version": "4.4.3",
+      "formula_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "prefix": "${FAKE_PREFIX}/opt/cmake",
+      "spack_package": "cmake",
+      "spack_version": "4.4.3",
+      "required_paths": ["bin/cmake-tool"]
+    },
+    {
+      "name": "open-mpi",
+      "version_policy": "any",
+      "brew_version": "5.0.10",
+      "formula_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "prefix": "${FAKE_PREFIX}/opt/open-mpi",
+      "spack_package": "openmpi",
+      "spack_version": "5.0.10",
+      "required_paths": ["bin/open-mpi-tool"]
+    },
+    {
+      "name": "perl",
+      "version_policy": "any",
+      "brew_version": "5.44.0",
+      "formula_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "prefix": "${FAKE_PREFIX}/opt/perl",
+      "spack_package": "perl",
+      "spack_version": "5.44.0",
+      "required_paths": ["bin/perl-tool"]
     }
   ],
   "spack_built": [
@@ -337,7 +344,9 @@ EOF
 reset_state()
 {
   rm -f "${STATE}"/installed_* "${STATE}/commands.log"
-  rm -rf -- "${FAKE_PREFIX}/opt/alpha" "${FAKE_PREFIX}/opt/beta"
+  rm -rf -- "${FAKE_PREFIX}/opt/alpha" "${FAKE_PREFIX}/opt/beta" \
+    "${FAKE_PREFIX}/opt/cmake" "${FAKE_PREFIX}/opt/open-mpi" \
+    "${FAKE_PREFIX}/opt/mpich" "${FAKE_PREFIX}/opt/perl"
   printf 'Darwin\n' >"${STATE}/os"
   printf 'arm64\n' >"${STATE}/arch"
   printf '26.99.7\n' >"${STATE}/macos_version"
@@ -346,24 +355,25 @@ reset_state()
   printf '17.0.0\n' >"${STATE}/clang_version"
   printf '1700.99.1\n' >"${STATE}/clang_build"
   printf '99.7.3\n' >"${STATE}/brew_version"
-  printf 'https://example.invalid/geos\n' >"${STATE}/tap_remote"
-  mkdir -p "${STATE}/tap-repo"
-  printf '%s\n' "${STATE}/tap-repo" >"${STATE}/tap_repo"
-  : >"${STATE}/tap_present"
   set_candidate alpha 1.0 0 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   set_candidate beta 2.0 1 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  set_candidate cmake 4.4.3 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  set_candidate open-mpi 5.0.10 0 dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  set_candidate perl 5.44.0 0 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
   install_fixture alpha 1.0 alpha-tool
   install_fixture beta 2.0_1 beta-tool
+  install_fixture cmake 4.4.3 cmake-tool
+  install_fixture open-mpi 5.0.10 open-mpi-tool
+  install_fixture perl 5.44.0 perl-tool
 }
 
 run_setup()
 {
   FAKE_BREW_STATE="${STATE}" \
-  FAKE_HOMEBREW_PREFIX="${FAKE_PREFIX}" \
+  FAKE_HOMEBREW_PREFIX="${FAKE_HOST_PREFIX:-${FAKE_PREFIX}}" \
   FAKE_INSTALL_WRONG="${FAKE_INSTALL_WRONG:-0}" \
   FAKE_INSTALL_FAIL_AFTER="${FAKE_INSTALL_FAIL_AFTER:-0}" \
   GEOS_TPL_BREW_BIN="${FAKE_BIN}/brew" \
-  GEOS_TPL_GIT_BIN="${FAKE_BIN}/git" \
   GEOS_TPL_UNAME_BIN="${FAKE_BIN}/uname" \
   GEOS_TPL_SW_VERS_BIN="${FAKE_BIN}/sw_vers" \
   GEOS_TPL_XCRUN_BIN="${FAKE_BIN}/xcrun" \
@@ -411,8 +421,8 @@ test_committed_manifest()
     return
   fi
   count=$("${PLUTIL}" -extract formulae raw -o - "${REAL_MANIFEST}")
-  if [[ "${count}" != "13" ]]; then
-    echo "Expected 13 formulae, found ${count}" >"${LAST_OUTPUT}"
+  if [[ "${count}" != "14" ]]; then
+    echo "Expected 14 formulae, found ${count}" >"${LAST_OUTPUT}"
     fail "committed manifest formula count"
     return
   fi
@@ -421,7 +431,7 @@ test_committed_manifest()
   while [[ ${i} -lt ${count} ]]; do
     name=$("${PLUTIL}" -extract "formulae.${i}.name" raw -o - "${REAL_MANIFEST}")
     case "${name}" in
-      perl|diffutils|zlib) found_forbidden=true ;;
+      diffutils|zlib) found_forbidden=true ;;
     esac
     i=$((i + 1))
   done
@@ -431,10 +441,10 @@ test_committed_manifest()
     return
   fi
   spack_count=$("${PLUTIL}" -extract spack_built raw -o - "${REAL_MANIFEST}")
-  if [[ "${spack_count}" == "3" ]]; then
+  if [[ "${spack_count}" == "2" ]]; then
     pass "committed manifest schema and hybrid boundary"
   else
-    echo "Expected 3 Spack-built packages, found ${spack_count}" >"${LAST_OUTPUT}"
+    echo "Expected 2 Spack-built packages, found ${spack_count}" >"${LAST_OUTPUT}"
     fail "committed manifest schema and hybrid boundary"
   fi
 
@@ -486,20 +496,32 @@ test_committed_manifest()
     formulae.1.brew_version 0.3.34
   assert_manifest_field "readline maps its Homebrew patch release to Spack 8.3" \
     formulae.4.spack_version 8.3
+  assert_manifest_field "CMake uses the Homebrew core formula" \
+    formulae.3.name cmake
+  assert_manifest_field "CMake uses the project minimum version" \
+    formulae.3.minimum_version 3.24
+  assert_manifest_field "MPI accepts an installed OpenMPI version" \
+    formulae.2.version_policy any
   assert_manifest_field "binutils maps to the binutils Spack package" \
     formulae.11.spack_package binutils
   assert_manifest_field "Python uses the selected-for-qualification version" \
     formulae.12.brew_version 3.14.7
+  assert_file_contains "macOS defaults C/C++ to Apple Clang" \
+    "${SPACK_YAML}" '%[when=%c]c=apple-clang %[when=%cxx]cxx=apple-clang'
+  assert_file_contains "macOS reserves GCC for Fortran" \
+    "${SPACK_YAML}" 'require: "gcc@=16.2.0 languages:=fortran"'
+  assert_file_contains "macOS Spack downloads use curl" \
+    "${SPACK_YAML}" "url_fetch_method: curl"
 }
 
 create_fake_tools
 write_manifest
 test_committed_manifest
 
-# Patch/build releases newer than the recorded qualification host are accepted
-# as long as the supported major versions still match.
+# Host releases newer than the recorded qualification host are accepted. The
+# Homebrew formula versions and source checksums remain exact.
 reset_state
-expect_success "supported macOS/SDK major versions accept patch drift" run_setup --check-only
+expect_success "qualification-host macOS/SDK versions accept patch drift" run_setup --check-only
 
 reset_state
 expect_success "an exact installed contract is a no-op" run_setup
@@ -510,15 +532,65 @@ else
   cp "${STATE}/commands.log" "${LAST_OUTPUT}"
   fail "idempotent exact runs never invoke brew install"
 fi
+assert_file_contains "setup identifies Apple Clang as C/C++ default" \
+  "${LAST_OUTPUT}" "Compiler defaults: C/C++=Apple Clang; Fortran=Homebrew GCC"
+assert_file_contains "setup identifies the Fortran compiler" \
+  "${LAST_OUTPUT}" "Fortran=Homebrew GCC"
+
+reset_state
+printf '3.24.0\n' >"${STATE}/installed_cmake"
+rm -rf -- "${FAKE_PREFIX}/opt/cmake"
+mkdir -p "${FAKE_PREFIX}/opt/cmake/bin"
+: >"${FAKE_PREFIX}/opt/cmake/bin/cmake-tool"
+expect_success "CMake at the project minimum is accepted" run_setup --check-only
+
+reset_state
+printf '3.23.9\n' >"${STATE}/installed_cmake"
+rm -rf -- "${FAKE_PREFIX}/opt/cmake"
+mkdir -p "${FAKE_PREFIX}/opt/cmake/bin"
+: >"${FAKE_PREFIX}/opt/cmake/bin/cmake-tool"
+expect_failure "CMake below the project minimum is rejected" run_setup --check-only
+
+reset_state
+set_candidate cmake 4.5.0 0 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+expect_success "newer CMake metadata is accepted" run_setup --check-only
+
+reset_state
+set_candidate open-mpi 6.0.0 0 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+expect_success "newer OpenMPI metadata is accepted" run_setup --check-only
+
+reset_state
+rm -f "${STATE}/installed_open-mpi"
+rm -rf -- "${FAKE_PREFIX}/opt/open-mpi"
+printf '5.0.1\n' >"${STATE}/installed_mpich"
+mkdir -p "${FAKE_PREFIX}/opt/mpich/bin" "${FAKE_PREFIX}/opt/mpich/lib"
+: >"${FAKE_PREFIX}/opt/mpich/bin/mpicc"
+: >"${FAKE_PREFIX}/opt/mpich/bin/mpicxx"
+: >"${FAKE_PREFIX}/opt/mpich/bin/mpifort"
+: >"${FAKE_PREFIX}/opt/mpich/lib/libmpi.dylib"
+GENERATED_MPI_CONFIG="${TEST_ROOT}/generated-mpich-spack.yaml"
+expect_success "installed MPICH satisfies MPI without OpenMPI" run_setup --check-only --spack-config-out "${GENERATED_MPI_CONFIG}"
+assert_file_contains "generated config selects MPICH" "${GENERATED_MPI_CONFIG}" 'require: "mpich@=5.0.1"'
+if ! grep -F -q -- 'require: "openmpi@=' "${GENERATED_MPI_CONFIG}"; then
+  pass "generated config does not require OpenMPI when MPICH is present"
+else
+  fail "generated config does not require OpenMPI when MPICH is present"
+fi
+
+reset_state
+rm -f "${STATE}/installed_open-mpi"
+rm -rf -- "${FAKE_PREFIX}/opt/open-mpi"
+expect_success "OpenMPI is installed only as the MPI fallback" run_setup
+assert_file_contains_line "fallback install receives open-mpi" "${STATE}/commands.log" "install open-mpi"
 
 reset_state
 printf '27.0\n' >"${STATE}/macos_version"
-expect_failure "unsupported macOS major is rejected" run_setup --check-only
+expect_success "newer macOS major is accepted" run_setup --check-only
 if ! grep -q '^install ' "${STATE}/commands.log"; then
-  pass "macOS rejection performs no install"
+  pass "newer macOS check-only performs no install"
 else
   cp "${STATE}/commands.log" "${LAST_OUTPUT}"
-  fail "macOS rejection performs no install"
+  fail "newer macOS check-only performs no install"
 fi
 
 reset_state
@@ -533,13 +605,55 @@ fi
 
 reset_state
 printf '27.0\n' >"${STATE}/sdk_version"
-expect_failure "unsupported SDK major is rejected" run_setup --check-only
+expect_success "newer SDK major is accepted" run_setup --check-only
 if ! grep -q '^install ' "${STATE}/commands.log"; then
-  pass "SDK rejection performs no install"
+  pass "newer SDK check-only performs no install"
 else
   cp "${STATE}/commands.log" "${LAST_OUTPUT}"
-  fail "SDK rejection performs no install"
+  fail "newer SDK check-only performs no install"
 fi
+
+reset_state
+printf '21.0.0\n' >"${STATE}/clang_version"
+expect_success "newer Apple Clang is accepted" run_setup --check-only
+if grep -F -q -- 'Apple Clang 21.0.0 differs' "${LAST_OUTPUT}"; then
+  fail "Apple Clang qualification notice is omitted"
+else
+  pass "Apple Clang qualification notice is omitted"
+fi
+
+reset_state
+printf '21.0.0\n' >"${STATE}/clang_version"
+GENERATED_CONFIG="${TEST_ROOT}/generated-spack.yaml"
+expect_success "host-specific Spack config is generated" run_setup --check-only --spack-config-out "${GENERATED_CONFIG}"
+assert_file_contains "generated config requires Apple Clang for C/C++" "${GENERATED_CONFIG}" '%[when=%c]c=apple-clang %[when=%cxx]cxx=apple-clang'
+assert_file_contains "generated config uses detected Apple Clang" "${GENERATED_CONFIG}" "apple-clang@=21.0.0"
+if ! grep -F -q -- 'apple-clang@=17.0.0' "${GENERATED_CONFIG}"; then
+  pass "generated config does not use qualification-host Apple Clang"
+else
+  fail "generated config does not use qualification-host Apple Clang"
+fi
+assert_file_contains "generated config uses detected Perl" "${GENERATED_CONFIG}" "perl@=5.44.0"
+assert_file_contains "generated config uses detected Homebrew prefix" "${GENERATED_CONFIG}" "prefix: ${FAKE_PREFIX}/opt/openblas"
+if [[ -f "${GENERATED_CONFIG}" ]] && ! grep -F -q -- 'os=tahoe' "${GENERATED_CONFIG}"; then
+  pass "generated config has no hard-coded macOS release"
+else
+  cp "${GENERATED_CONFIG}" "${LAST_OUTPUT}"
+  fail "generated config has no hard-coded macOS release"
+fi
+
+reset_state
+FAKE_HOST_PREFIX="${TEST_ROOT}/alternate-homebrew"
+mkdir -p "${FAKE_HOST_PREFIX}/opt/alpha/bin" "${FAKE_HOST_PREFIX}/opt/beta/bin" \
+  "${FAKE_HOST_PREFIX}/opt/cmake/bin" "${FAKE_HOST_PREFIX}/opt/open-mpi/bin" \
+  "${FAKE_HOST_PREFIX}/opt/perl/bin"
+: >"${FAKE_HOST_PREFIX}/opt/alpha/bin/alpha-tool"
+: >"${FAKE_HOST_PREFIX}/opt/beta/bin/beta-tool"
+: >"${FAKE_HOST_PREFIX}/opt/cmake/bin/cmake-tool"
+: >"${FAKE_HOST_PREFIX}/opt/open-mpi/bin/open-mpi-tool"
+: >"${FAKE_HOST_PREFIX}/opt/perl/bin/perl-tool"
+expect_success "alternate Homebrew prefix is accepted" run_setup --check-only
+FAKE_HOST_PREFIX=
 
 reset_state
 rm -f "${STATE}/installed_beta"
@@ -586,20 +700,6 @@ expect_failure "formula source checksum drift is rejected" run_setup
 reset_state
 rm -f "${FAKE_PREFIX}/opt/beta/bin/beta-tool"
 expect_failure "missing required formula path is rejected" run_setup
-
-reset_state
-rm -f "${STATE}/tap_present"
-expect_failure "missing GEOS tap is rejected without auto-tapping" run_setup
-if ! grep -E -q '^tap .+' "${STATE}/commands.log"; then
-  pass "script never invokes brew tap with an argument"
-else
-  cp "${STATE}/commands.log" "${LAST_OUTPUT}"
-  fail "script never invokes brew tap with an argument"
-fi
-
-reset_state
-printf 'https://example.invalid/wrong\n' >"${STATE}/tap_remote"
-expect_failure "GEOS tap remote drift is rejected" run_setup
 
 reset_state
 rm -f "${STATE}/installed_alpha"
