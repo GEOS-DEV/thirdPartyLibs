@@ -888,6 +888,7 @@ if( ENABLE_MPI AND ENABLE_SUPERLU_DIST )
                                   -D CMAKE_Fortran_COMPILER=${MPI_Fortran_COMPILER}
                                   -D MPI_C_COMPILER=${MPI_C_COMPILER}
                                   -D MPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+                                  -D MPI_CXX_SKIP_MPICXX=ON
                                   -D CMAKE_C_STANDARD=99
                                   -D CMAKE_C_FLAGS=${SUPERLU_C_FLAGS}
                                   -D CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
