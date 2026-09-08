@@ -133,7 +133,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             depends_on('umpire+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('chai+cuda~separable_compilation cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('camp+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
-            depends_on('hypre@develop+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
+            depends_on('hypre+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
 
     with when('+rocm'):
         for gfx_ in ROCmPackage.amdgpu_targets:
@@ -141,7 +141,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             depends_on(f"umpire+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
             depends_on(f"chai+rocm~separable_compilation amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
             depends_on(f"camp+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
-            depends_on(f"hypre@develop+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
+            depends_on(f"hypre+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
 
     #
     # IO
@@ -186,19 +186,19 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("trilinos+openmp", when="+openmp")
 
     with when("+hypre"):
-        depends_on("hypre@develop +superlu-dist+mixedint+mpi", when='~cuda~rocm')
-        depends_on("hypre@develop +cuda+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+cuda')
-        depends_on("hypre@develop +rocm+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+rocm')
-        depends_on("hypre@develop ~openmp", when="~openmp")
-        depends_on("hypre@develop +caliper", when="+caliper")
-        depends_on("hypre@develop +pic", when="~shared")
-        depends_on("hypre@develop +shared", when="+shared")
+        depends_on("hypre +superlu-dist+mixedint+mpi", when='~cuda~rocm')
+        depends_on("hypre +cuda+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+cuda')
+        depends_on("hypre +rocm+superlu-dist+mixedint+mpi+umpire~unified-memory", when='+rocm')
+        depends_on("hypre ~openmp", when="~openmp")
+        depends_on("hypre +caliper", when="+caliper")
+        depends_on("hypre +pic", when="~shared")
+        depends_on("hypre +shared", when="+shared")
 
     with when("+hypredrive"):
-        depends_on("hypredrive@develop +superlu-dist")
-        depends_on("hypredrive@develop +pic", when="~shared")
-        depends_on("hypredrive@develop +shared", when="+shared")
-        depends_on("hypredrive@develop +caliper", when="+caliper")
+        depends_on("hypredrive +superlu-dist")
+        depends_on("hypredrive +pic", when="~shared")
+        depends_on("hypredrive +shared", when="+shared")
+        depends_on("hypredrive +caliper", when="+caliper")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
