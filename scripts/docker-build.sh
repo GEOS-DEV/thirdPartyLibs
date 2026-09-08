@@ -52,7 +52,7 @@ for v in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
     fi
 done
 
-docker build --progress=plain \
+docker buildx build --progress=plain \
     "${BUILDER_ARGS[@]}" \
     --build-arg HOST_CONFIG=${HOST_CONFIG} \
     --build-arg DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE} \

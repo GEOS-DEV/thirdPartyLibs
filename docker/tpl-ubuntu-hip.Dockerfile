@@ -46,7 +46,8 @@ RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
         > /etc/apt/apt.conf.d/99-llnl-ca; \
     fi && \
     ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
-    apt-get update
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 
 # Packages needed both for the TPL build and for the downstream GEOS build,
 # plus the ROCm math libraries GEOS links against.

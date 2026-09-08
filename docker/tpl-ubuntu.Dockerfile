@@ -47,6 +47,7 @@ RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
         > /etc/apt/apt.conf.d/99-llnl-ca; \
     fi && \
     apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
     DEBIAN_FRONTEND=noninteractive TZ=America/Los_Angeles \
     apt-get install -y --no-install-recommends \
         ca-certificates \
