@@ -29,11 +29,6 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
     version("0.2.0", sha256="2fe6c5b2779de41fbd294cb4647c7bbd210ec95934639117e56a790e56c32e41")
     version("0.1.0", sha256="39db73b75e37457035c64b4c8831abe716bf2f596c4ca79a32293d9bd51ca8d6")
 
-    # Match the patches used by the legacy GEOS TPL superbuild.  The HIP
-    # changes are only valid for the HIP backend.
-    patch("patches/hypredrive-cxx-linker.patch", when="@develop")
-    patch("patches/hypredrive-hip-rocsparse.patch", when="@develop+rocm")
-
     variant("shared", default=False, description="Build shared libraries")
     variant("pic", default=False, description="Build position independent code")
     variant("examples", default=False, description="Build and install example programs")

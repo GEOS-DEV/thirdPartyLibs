@@ -989,27 +989,6 @@ if( ENABLE_HYPRE )
   set( HYPRE_URL "https://github.com/hypre-space/hypre/archive/53927ee4fb68e5caf6be1957af2c3d75905b6b3d.tar.gz" )
   set( HYPRE_URL_HASH "d418846bc1466616cc22e71c4d3b855127846307bb4f4a2f4d37f046ac9c3355" )
   set( HYPRE_DEPENDS "" )
-  set( HYPRE_PATCH_FILES
-       "${CMAKE_SOURCE_DIR}/patch/hypre-mixedint-export.patch|"
-       "${CMAKE_SOURCE_DIR}/patch/hypre-tagged-innerprod.patch|"
-       "${CMAKE_SOURCE_DIR}/patch/hypre-rcm-capacity.patch|"
-       "${CMAKE_SOURCE_DIR}/patch/hypre-umpire-wrapper-lifetime.patch" )
-
-  if( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
-    # Avoid the broken legacy rocSPARSE CSR sort/ILU analysis on gfx1100.
-    # Keep classical HYPRE ILU(0) setup; only the setup-time factor migration
-    # and triangular application remain device compatible.
-    string( APPEND HYPRE_PATCH_FILES
-            "|${CMAKE_SOURCE_DIR}/patch/hypre-hip-rocsparse-sort.patch"
-            "|${CMAKE_SOURCE_DIR}/patch/hypre-hip-standard-ilu.patch" )
-  endif()
-
-  string( REPLACE ";" "" HYPRE_PATCH_FILES "${HYPRE_PATCH_FILES}" )
-  set( HYPRE_PATCH_COMMAND
-       ${CMAKE_COMMAND}
-       "-DGEOS_PATCH_STRIP:STRING=1"
-       "-DGEOS_PATCH_FILES:STRING=${HYPRE_PATCH_FILES}"
-       -P ${GEOS_TPL_PATCH_SCRIPT} )
 
   message(STATUS "Building HYPRE found at ${HYPRE_URL}")
 
@@ -1193,7 +1172,6 @@ if( ENABLE_HYPRE )
                        SOURCE_SUBDIR src
                        INSTALL_DIR ${HYPRE_DIR}
                        DEPENDS ${HYPRE_DEPENDS}
-                       PATCH_COMMAND ${HYPRE_PATCH_COMMAND}
                        LIST_SEPARATOR "^"
                        CMAKE_GENERATOR ${TPL_GENERATOR}
                        CMAKE_ARGS ${HYPRE_CMAKE_ARGS}
@@ -1216,9 +1194,6 @@ if( ENABLE_HYPREDRV )
   set( HYPREDRV_DIR "${CMAKE_INSTALL_PREFIX}/hypredrive" )
   set( HYPREDRV_URL "https://github.com/hypre-space/hypredrive/archive/00cdb36800d6754b01467a4ef62e0e4ae19e6897.tar.gz" )
   set( HYPREDRV_URL_HASH "c33212d5fb7391c81ae22ae801d387f41c2c3f293f48ccd8153845d97ba5150c" )
-  # The static SuperLU dependency is C++, while hypredrive-cli is a C target.
-  # Patch the target to use the C++ linker so its runtime is selected by CMake.
-  set( HYPREDRV_PATCH_FILES "${CMAKE_SOURCE_DIR}/patch/hypredrive-cxx-linker.patch" )
   set( HYPREDRV_C_COMPILER ${CMAKE_C_COMPILER} )
   set( HYPREDRV_C_FLAGS "-fPIC ${C_FLAGS_NO_WARNINGS} ${CMAKE_C_FLAGS_${BUILD_TYPE_UPPER}}" )
   set( HYPREDRV_HYPRE_INCLUDE_DIRS "${HYPRE_DIR}/include" )
@@ -1271,8 +1246,6 @@ if( ENABLE_HYPREDRV )
           -D CUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR} )
   elseif( ENABLE_HYPRE_DEVICE STREQUAL "HIP" )
     set( HYPREDRV_ENABLE_HIP ON )
-    string( APPEND HYPREDRV_PATCH_FILES
-            "|${CMAKE_SOURCE_DIR}/patch/hypredrive-hip-rocsparse.patch" )
     if( CHAI_BUILD_SHARED_LIBS )
       set( HYPREDRV_UMPIRE_LIBRARY_SUFFIX so )
     else()
@@ -1291,12 +1264,6 @@ if( ENABLE_HYPREDRV )
           -D CMAKE_HIP_ARCHITECTURES:STRING=${CMAKE_HIP_ARCHITECTURES}
           -D ROCM_PATH:PATH=${ROCM_PATH} )
   endif()
-
-  set( HYPREDRV_PATCH_COMMAND
-       ${CMAKE_COMMAND}
-       "-DGEOS_PATCH_STRIP:STRING=1"
-       "-DGEOS_PATCH_FILES:STRING=${HYPREDRV_PATCH_FILES}"
-       -P ${GEOS_TPL_PATCH_SCRIPT} )
 
   set( HYPREDRV_CALIPER_ARGS )
   set( HYPREDRV_ENABLE_CALIPER OFF )
@@ -1324,7 +1291,6 @@ if( ENABLE_HYPREDRV )
                        PREFIX ${PROJECT_BINARY_DIR}/hypredrive
                        INSTALL_DIR ${HYPREDRV_DIR}
                        DEPENDS hypre
-                       PATCH_COMMAND ${HYPREDRV_PATCH_COMMAND}
                        BUILD_COMMAND ${TPL_BUILD_COMMAND}
                        INSTALL_COMMAND ${TPL_INSTALL_COMMAND}
                        CMAKE_GENERATOR ${TPL_GENERATOR}
