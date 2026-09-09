@@ -76,6 +76,8 @@ spack:
 
     ####
     # external compiler
+    # -std=c++20 is required to make sure we build in c++20 for all libs
+    # -fno-char8_t cxxflags is required to build vtk
     gcc:
       externals:
       - spec: gcc@12.2.1 languages=c,c++,fortran +binutils
