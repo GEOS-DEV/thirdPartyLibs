@@ -96,11 +96,11 @@
     },
     {
       "name": "pkgconf",
-      "brew_version": "3.0.6",
-      "formula_sha256": "53cae4d107ccc45a50359ea12428bddec0ecd0ef1fe8283a3ace27cd497ef4e0",
+      "brew_version": "3.0.7",
+      "formula_sha256": "7859e6f357dbdab1077d9bba38af2e409b9f3fc7c4c06aafdc5c3d81772b9ffb",
       "prefix": "/opt/homebrew/opt/pkgconf",
       "spack_package": "pkgconf",
-      "spack_version": "3.0.6",
+      "spack_version": "3.0.7",
       "required_paths": [
         "bin/pkg-config",
         "bin/pkgconf"
