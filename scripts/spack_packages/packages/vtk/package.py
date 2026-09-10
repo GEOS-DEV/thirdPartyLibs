@@ -71,6 +71,15 @@ class Vtk(CMakePackage):
     # not promote its expected condition to a compiler warning.
     patch('9.7.0-patch/diy-fortify-macro.patch', when='@9.7.0')
 
+    # nvc++ 26.5 ICE: interpret.cpp extract_value_from_constant on the
+    # constexpr SurfaceNets tables. sha256 must match the file; changing the
+    # patch without --fresh leaves the lockfile on the old hash (7671f62).
+    patch(
+        "nvhpc-surface-nets-ice.patch",
+        sha256="f56d3979fbd1b5b344c4dd7daf660ba75071f4503d447d12548a2c09102b54cc",
+        when="@9.7.0 %nvhpc",
+    )
+
     def cmake_args(self):
         spec = self.spec
 

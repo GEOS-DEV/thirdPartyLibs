@@ -14,13 +14,13 @@
 # This file lists the package versions for geos's dependencies
 #
 packages:
-  # master - 08/02/26
+  # master - 09/08/26
   hypre:
-    require: "@git.f1374fb6182c9e730abaa82f865a87b36f9ad50a=master"
+    require: "@git.5b582610a113ede9162a5744d33873b860498a11=master"
 
-  # master - 08/02/26
+  # master - 09/08/26
   hypredrive:
-    require: "@git.98989bef31e865d738c1b678ee058bb0e5dd635e=master"
+    require: "@git.810251f40c116c5a61ce08ac1a305d23888749cc=master"
 
   # master - 04/12/20
   uncrustify:
