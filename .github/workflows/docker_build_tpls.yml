@@ -272,10 +272,85 @@ jobs:
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
       run: docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
 
-  # Convenience job - passes when all docker images are built.
+  # macOS TPLs must be built natively; Docker containers build Linux binaries.
+  build_macos:
+    name: macOS 15 - Apple Clang (arm64)
+    runs-on: macos-15
+    defaults:
+      run:
+        shell: bash
+    env:
+      HOMEBREW_NO_ANALYTICS: 1
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        submodules: true
+        lfs: true
+
+    - name: Set up Python for Uberenv
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Set up build environment
+      run: |
+        python3 -m pip install clingo
+        echo "SPACK_PYTHON=$(command -v python3)" >> "$GITHUB_ENV"
+        echo "GEOSX_TPL_DIR=$RUNNER_TEMP/geos-tpls" >> "$GITHUB_ENV"
+        echo "SPACK_CONFIG=$RUNNER_TEMP/geosx-macos-spack.yaml" >> "$GITHUB_ENV"
+
+    - name: Test macOS dependency setup
+      run: bash scripts/tests/macos_homebrew/test_setupMacOS_TPL_deps.bash
+
+    - name: Prepare Homebrew dependencies
+      run: |
+        # Refresh the disposable runner's preinstalled formulas before the
+        # macOS setup script checks them against the dependency manifest.
+        unset HOMEBREW_NO_INSTALL_UPGRADE HOMEBREW_NO_INSTALL_CLEANUP
+        brew update
+        python3 - <<'PY'
+        import json
+        import subprocess
+
+        with open('scripts/spack_configs/macOS/homebrew-manifest.json') as stream:
+            formulae = [entry['name'] for entry in json.load(stream)['formulae']]
+        installed = subprocess.check_output(['brew', 'list', '--formula'], text=True).split()
+        if 'mpich' in installed:
+            formulae.remove('open-mpi')
+        subprocess.run(['brew', 'install', *formulae], check=True)
+        subprocess.run(['brew', 'cleanup', *formulae], check=True)
+        PY
+        bash scripts/setupMacOS-TPL-deps.bash --spack-config-out "$SPACK_CONFIG" \
+          2>&1 | tee "$RUNNER_TEMP/macos-setup.log"
+
+    - name: Build macOS TPLs
+      run: |
+        python3 scripts/uberenv/uberenv.py \
+          --project-json="$GITHUB_WORKSPACE/.uberenv_config.json" \
+          --spack-env-file="$SPACK_CONFIG" \
+          --prefix="$GEOSX_TPL_DIR" \
+          --spec="~pygeosx ~docs ~openmp %c,cxx=apple-clang %fortran=gcc@16.2.0" \
+          -j 2 2>&1 | tee "$RUNNER_TEMP/macos-build.log"
+
+    - name: Upload macOS build logs and host configs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-arm64-build
+        path: |
+          ${{ runner.temp }}/macos-*.log
+          ${{ runner.temp }}/geosx-macos-spack.yaml
+          ${{ runner.temp }}/geos-tpls/spack_env/spack.yaml
+          ${{ runner.temp }}/geos-tpls/spack_env/spack.lock
+          ${{ runner.temp }}/geos-tpls/build_stage/**/spack-build-out.txt
+          ${{ github.workspace }}/*.cmake
+
+  # Convenience job - passes when all Docker images and macOS TPLs are built.
   check_that_all_images_built:
     runs-on: ubuntu-22.04
-    needs: [build_images]
+    needs: [build_images, build_macos]
     steps:
     - name: Success
       run: "true"
