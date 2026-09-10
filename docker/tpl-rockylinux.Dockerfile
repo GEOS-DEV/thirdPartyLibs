@@ -25,8 +25,7 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # (curl vs curl-minimal, etc.); here we only add things the base images
 # don't preinstall.
 RUN dnf clean all && \
-    dnf -y upgrade --refresh && \
-    (dnf -y install dnf-plugins-core || true) && \
+    dnf -y install dnf-plugins-core || true && \
     (dnf config-manager --set-enabled powertools 2>/dev/null || \
      dnf config-manager --set-enabled crb       2>/dev/null || \
      dnf config-manager --set-enabled devel     2>/dev/null || true) && \

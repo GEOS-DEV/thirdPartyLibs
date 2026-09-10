@@ -18,6 +18,7 @@ ARG BLD_DIR=$TMP_DIR/build
 ARG DOCKER_BASE_IMAGE=rocm/dev-ubuntu-24.04:6.4.3
 FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
+ARG SPEC
 
 # streak2 hosts can enable kernel FIPS mode even though this Ubuntu image has
 # no FIPS provider. Use OpenSSL's default provider for package downloads and
@@ -46,11 +47,12 @@ RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
         > /etc/apt/apt.conf.d/99-llnl-ca; \
     fi && \
     ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+    apt-get update
 
 # Packages needed both for the TPL build and for the downstream GEOS build,
-# plus the ROCm math libraries GEOS links against.
+# plus the ROCm math libraries GEOS links against. Sphinx is limited to
+# documentation builds because it pulls system Jinja2 and certifi packages
+# that can trigger host filesystem scanners.
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         wget \
         gnupg \
@@ -69,7 +71,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         python3 \
         python3-dev \
         python3-pip \
-        python3-sphinx \
         doxygen \
         pkg-config \
         xz-utils \
@@ -98,6 +99,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         rocrand-dev \
         rocthrust-dev \
         git && \
+    if printf '%s\n' "${SPEC}" | grep -Eq '(^|[[:space:]])\+docs($|[[:space:]])'; then \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3-sphinx ; \
+    fi && \
     if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
       mkdir -p /usr/local/share/ca-certificates && \
       awk 'BEGIN {n=0} /-----BEGIN/ {n++; f=sprintf("/usr/local/share/ca-certificates/llnl-%03d.crt", n)} n>0 {print > f}' \
@@ -242,7 +247,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     ghostscript \
     ninja-build \
     python3-dev \
-    python3-sphinx \
     python3-mpi4py \
     python3-scipy \
     python3-virtualenv \

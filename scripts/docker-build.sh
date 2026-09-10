@@ -42,7 +42,11 @@ if [ -n "${SPACK_BUILD_JOBS:-}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "SPACK_BU
 
 BUILDER_ARGS=()
 if [ -n "${DOCKER_BUILDER:-}" ]; then BUILDER_ARGS+=(--builder "${DOCKER_BUILDER}"); fi
-if [ "${DOCKER_LOAD:-0}" = 1 ]; then BUILDER_ARGS+=(--load); fi
+case "${DOCKER_LOAD:-1}" in
+    1) BUILDER_ARGS+=(--load) ;;
+    0) ;;
+    *) echo "DOCKER_LOAD must be 0 or 1" >&2; exit 2 ;;
+esac
 if [ -n "${DOCKER_NETWORK:-}" ]; then BUILDER_ARGS+=(--network "${DOCKER_NETWORK}"); fi
 
 # Forward proxy settings into RUN steps (BuildKit special-cases these args).
