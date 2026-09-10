@@ -317,7 +317,7 @@ jobs:
         with open('scripts/spack_configs/macOS/homebrew-manifest.json') as stream:
             formulae = [entry['name'] for entry in json.load(stream)['formulae']]
         installed = subprocess.check_output(['brew', 'list', '--formula'], text=True).split()
-        if 'mpich' in installed:
+        if 'mpich' in installed and 'open-mpi' in formulae:
             formulae.remove('open-mpi')
         subprocess.run(['brew', 'install', *formulae], check=True)
         subprocess.run(['brew', 'cleanup', *formulae], check=True)
