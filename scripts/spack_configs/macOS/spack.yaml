@@ -80,7 +80,7 @@ spack:
       require: "openblas@=0.3.34"
     pkgconfig:
       buildable: false
-      require: "pkgconf@=3.0.6"
+      require: "pkgconf@=3.0.7"
     zlib-api:
       require: "zlib@=1.3.2"
 
@@ -150,7 +150,7 @@ spack:
     pkgconf:
       buildable: false
       externals:
-      - spec: "pkgconf@=3.0.6 platform=darwin target=aarch64"
+      - spec: "pkgconf@=3.0.7 platform=darwin target=aarch64"
         prefix: /opt/homebrew/opt/pkgconf
 
     autoconf:

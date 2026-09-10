@@ -1,0 +1,45 @@
+--- a/Filters/Core/vtkSurfaceNets3DNonManifoldCases.cxx
++++ b/Filters/Core/vtkSurfaceNets3DNonManifoldCases.cxx
+@@ -8,6 +8,12 @@
+ #include <cassert>
+ #include <numeric>
+ 
++#ifdef __NVCOMPILER
++// nvc++ 26.5 ICE in extract_value_from_constant even at -O0 while evaluating
++// these constexpr tables. Drop constexpr so initialization is runtime.
++#define constexpr
++#endif
++
+ // enable when creating the metadata table
+ // #define VTK_SURFACE_NETS_3D_NON_MANIFOLD_CASES_CREATE_TABLE
+ #ifdef VTK_SURFACE_NETS_3D_NON_MANIFOLD_CASES_CREATE_TABLE
+@@ -6016,10 +6022,17 @@
+   // clang-format on
+   return { offsets, metadata };
+ }
++#ifdef __NVCOMPILER
++static const auto Result = CreateNonManifoldMetaDataPerEdgeCase();
++static const auto& Offsets = Result.first;
++static const auto& Metadata = Result.second;
++#else
+ constexpr auto Result = CreateNonManifoldMetaDataPerEdgeCase();
+ constexpr auto& Offsets = Result.first;
+ constexpr auto& Metadata = Result.second;
+ #endif
++#endif
+ VTK_ABI_NAMESPACE_END
+ }
+ 
+--- a/Filters/Core/CMakeLists.txt
++++ b/Filters/Core/CMakeLists.txt
+@@ -152,6 +152,11 @@
+ 
+ vtk_add_test_mangling(VTK::FiltersCore)
+ 
++if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
++  set_source_files_properties(vtkSurfaceNets3DNonManifoldCases.cxx PROPERTIES COMPILE_OPTIONS "-O0")
++endif()
++
+ # Add precompiled header to improve build performance
+ if(VTK_USE_PCH)
+   vtk_module_precompile_headers(VTK::FiltersCore PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/vtkFiltersCorePCH.h>")
