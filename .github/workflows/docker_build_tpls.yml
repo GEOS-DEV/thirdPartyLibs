@@ -319,8 +319,7 @@ jobs:
         installed = subprocess.check_output(['brew', 'list', '--formula'], text=True).split()
         if 'mpich' in installed and 'open-mpi' in formulae:
             formulae.remove('open-mpi')
-        subprocess.run(['brew', 'install', *formulae], check=True)
-        subprocess.run(['brew', 'cleanup', *formulae], check=True)
+        subprocess.run(['brew', 'install', '--formula', *formulae], check=True)
         PY
         bash scripts/setupMacOS-TPL-deps.bash --spack-config-out "$SPACK_CONFIG" \
           2>&1 | tee "$RUNNER_TEMP/macos-setup.log"
