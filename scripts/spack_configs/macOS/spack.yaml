@@ -8,6 +8,10 @@ spack:
     test_stage: $spack/../test_stage
     build_stage:
     - $spack/../build_stage
+    # macOS curl uses the system trust store, which handles the certificate
+    # chain presented by the network's VTK mirror path. Homebrew Python's
+    # OpenSSL urllib backend rejects that otherwise valid macOS trust chain.
+    url_fetch_method: curl
 
   # Regular TPLs do not need views
   view: false
@@ -17,146 +21,169 @@ spack:
   - ../defaults.yaml
   - ../versions.yaml
 
-  compilers:
-    - compiler:
-        spec: apple-clang@16.0.0
-        paths:
-          cc: /usr/bin/clang
-          cxx: /usr/bin/clang++
-          f77: /opt/homebrew/bin/gfortran 
-          fc: /opt/homebrew/bin/gfortran  
-        flags:
-          cppflags: -I/opt/homebrew/opt/openblas/include
-          ldflags: -L/opt/homebrew/opt/openblas/lib
-        operating_system: sequoia
-        target: aarch64
-        modules: []
-        environment:
-          set:
-            PATH: /usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
-            AR: /usr/bin/ar
-            RANLIB: /usr/bin/ranlib
-            CMAKE_AR: /usr/bin/ar
-            CMAKE_RANLIB: /usr/bin/ranlib
-        extra_rpaths: []
-    - compiler:
-        spec: apple-clang@17.0.0
-        paths:
-          cc: /usr/bin/clang
-          cxx: /usr/bin/clang++
-          f77: /opt/homebrew/bin/gfortran 
-          fc: /opt/homebrew/bin/gfortran  
-        flags:
-          cppflags: -I/opt/homebrew/opt/openblas/include
-          ldflags: -L/opt/homebrew/opt/openblas/lib
-        operating_system: sequoia
-        target: aarch64
-        modules: []
-        environment:
-          set:
-            PATH: /usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
-            AR: /usr/bin/ar
-            RANLIB: /usr/bin/ranlib
-            CMAKE_AR: /usr/bin/ar
-            CMAKE_RANLIB: /usr/bin/ranlib
-        extra_rpaths: []
-
   packages:
     all:
       target: [aarch64]
-      compiler: [apple-clang]
-      providers:
-        mpi: [openmpi]
-        blas: [openblas]
-        lapack: [openblas]
-        zlib-api: [zlib]
       variants: "~openmp"
+      # Apple Clang is the default C/C++ provider on macOS. GCC is selected
+      # only for Fortran because Apple Clang does not provide a Fortran front end.
+      require:
+      - "%[when=%c]c=apple-clang %[when=%cxx]cxx=apple-clang"
+
+    # Spack 1.2 models compilers as package externals. Apple Clang supplies
+    # C/C++, while Homebrew GCC supplies only the Fortran language virtual.
+    c:
+      require: "apple-clang"
+    cxx:
+      require: "apple-clang"
+    fortran:
+      require: "gcc@=16.2.0 languages:=fortran"
+
+    apple-clang:
+      buildable: false
+      # GEOS_TPL_APPLE_CLANG_EXTERNAL
+
+    gcc:
+      buildable: false
+      externals:
+      - spec: "gcc@=16.2.0 languages:=fortran platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/gcc
+        extra_attributes:
+          compilers:
+            fortran: /opt/homebrew/opt/gcc/bin/gfortran-16
+          environment:
+            set:
+              AR: /usr/bin/ar
+              RANLIB: /usr/bin/ranlib
+              CMAKE_AR: /usr/bin/ar
+              CMAKE_RANLIB: /usr/bin/ranlib
+            prepend_path:
+              PATH: /usr/bin
+            remove_path:
+              PATH: /opt/homebrew/opt/binutils/bin
 
     geosx:
-      variants: "+addr2line~openmp"
+      require: "+addr2line ~openmp"
 
-    openblas:
-      buildable: False
-      externals:
-        - spec: openblas@0.3.29
-          prefix: /opt/homebrew/opt/openblas
-
-    # Lock down which MPI we are using
-    openmpi:
-      buildable: False
-      externals:
-        - spec: openmpi@5.0.6
-          prefix: /opt/homebrew/opt/open-mpi
-
-    # System level packages to not build
-    cmake:
-      version: [3.29.6]
+    # Lock virtual dependencies to the matching Homebrew externals. The setup
+    # script rewrites the MPI requirement to MPICH when it is already present;
+    # otherwise OpenMPI is the fallback. zlib-api remains buildable so Spack
+    # supplies zlib instead of a nonexistent keg.
+    mpi:
       buildable: false
-      externals:
-        - spec: cmake@3.29.6
-          prefix: /opt/homebrew/opt/cmake
-    readline:
+      require: "openmpi@=5.0.10"
+    blas:
       buildable: false
-      externals:
-      - spec: readline@8.2.13
-        prefix: /opt/homebrew/opt/readline
-      
-    m4:
-      buildable: False
-      externals:
-        - spec: m4@1.4.6
-          prefix: /opt/homebrew/opt/m4
+      require: "openblas@=0.3.34"
+    lapack:
+      buildable: false
+      require: "openblas@=0.3.34"
+    pkgconfig:
+      buildable: false
+      require: "pkgconf@=3.0.6"
+    zlib-api:
+      require: "zlib@=1.3.2"
+
+    # Perl is provided by Homebrew. Diffutils and zlib are intentionally
+    # Spack-built rather than modeled as Homebrew kegs.
     perl:
       buildable: false
       externals:
-      - spec: perl@5.34.1
+      - spec: "perl@=5.44.0 platform=darwin target=aarch64"
         prefix: /opt/homebrew/opt/perl
-    pkg-config:
+    zlib:
+      buildable: true
+      require: "@=1.3.2 +pic +shared"
+    diffutils:
+      buildable: true
+      require: "@=3.12"
+
+    openblas:
       buildable: false
       externals:
-      - spec: pkg-config@2.3.0
+      - spec: >-
+          openblas@=0.3.34
+          +fortran ~ilp64 +pic +shared +static
+          +dynamic_dispatch +locking ~bignuma ~consistent_fpcsr
+          threads=openmp max_num_threads=56 symbol_suffix=none
+          platform=darwin target=aarch64
+        prefix: /opt/homebrew/opt/openblas
+
+    openmpi:
+      buildable: false
+      externals:
+      - spec: >-
+          openmpi@=5.0.10
+          +fortran +ipv6 +romio
+          ~internal-hwloc ~internal-libevent ~internal-pmix ~static
+          fabrics:=none schedulers:=sge
+          platform=darwin target=aarch64
+        prefix: /opt/homebrew/opt/open-mpi
+
+    # MPICH is accepted when it is already installed. The setup script selects
+    # the matching provider in the host-specific environment it generates.
+    mpich:
+      buildable: false
+      externals:
+      - spec: "mpich@=5.0.1 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/mpich
+
+    # Homebrew system packages. Diffutils and zlib remain Spack-built for a
+    # complete, valid prefix.
+    cmake:
+      buildable: false
+      require: "@3.24:"
+      externals:
+      - spec: "cmake@=4.4.3 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/cmake
+    readline:
+      buildable: false
+      externals:
+      - spec: "readline@=8.3 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/readline
+
+    m4:
+      buildable: false
+      externals:
+      - spec: "m4@=1.4.21 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/m4
+    pkgconf:
+      buildable: false
+      externals:
+      - spec: "pkgconf@=3.0.6 platform=darwin target=aarch64"
         prefix: /opt/homebrew/opt/pkgconf
-    diffutils:
-      buildable: False
-      externals:
-        - spec: diffutils@3.11
-          prefix: /opt/homebrew/opt/diffutils
-          
+
     autoconf:
-      buildable: False
+      buildable: false
       externals:
-        - spec: autoconf@2.72
-          prefix: /opt/homebrew/opt/autoconf
+      - spec: "autoconf@=2.73 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/autoconf
     automake:
-      buildable: False
+      buildable: false
       externals:
-        - spec: automake@1.17
-          prefix: /opt/homebrew/opt/automake
+      - spec: "automake@=1.18.1 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/automake
     libtool:
-      buildable: False
+      buildable: false
       externals:
-        - spec: libtool@2.5.4
-          prefix: /opt/homebrew/opt/libtool
+      - spec: "libtool@=2.6.2 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/libtool
     gettext:
-      buildable: False
+      buildable: false
       externals:
-        - spec: gettext@0.23.1 
-          prefix: /opt/homebrew/opt/gettext
+      - spec: "gettext@=1.0 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/gettext
 
-    addr2line:
-      buildable: False
+    binutils:
+      buildable: false
       externals:
-        - spec: addr2line@2.43.1
-          prefix: /opt/homebrew/opt/binutils
-
-    zlib:
-      buildable: False
-      externals:
-        - spec: zlib@1.3.1
-          prefix: /opt/homebrew/opt/zlib 
+      - spec: >-
+          binutils@=2.47 libs:=static
+          platform=darwin target=aarch64
+        prefix: /opt/homebrew/opt/binutils
 
     python:
       buildable: false
       externals:
-        - spec: python@3.14.3
-          prefix: /opt/homebrew/opt/python@3.14
+      - spec: "python@=3.14.7 platform=darwin target=aarch64"
+        prefix: /opt/homebrew/opt/python@3.14
