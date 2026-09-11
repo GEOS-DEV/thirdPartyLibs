@@ -181,13 +181,18 @@ jobs:
         lfs: true
 
     - name: Set up Docker Buildx
+      id: buildx_hosted
       if: matrix.RUNS_ON != 'streak2'
       uses: docker/setup-buildx-action@v4
+      with:
+        cleanup: true
 
     - name: Set up Docker Buildx
+      id: buildx_streak2
       if: matrix.RUNS_ON == 'streak2'
       uses: docker/setup-buildx-action@v4
       with:
+        cleanup: true
         driver-opts: network=host
 
     - name: Print environment
@@ -256,6 +261,8 @@ jobs:
         COMMIT: ${{ github.sha }}
         BUILD_DIR: ${{ github.workspace }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+        DOCKER_BUILDER: ${{ steps.buildx_streak2.outputs.name || steps.buildx_hosted.outputs.name }}
+        DOCKER_LOAD: 1
         DOCKER_NETWORK: ${{ matrix.RUNS_ON == 'streak2' && 'host' || '' }}
       run: bash -x ./scripts/docker-build.sh
 
@@ -271,6 +278,19 @@ jobs:
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
       run: docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+
+    - name: Remove local Docker image
+      if: always() && matrix.RUNS_ON == 'streak2'
+      env:
+        DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+        DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+      run: |
+        image="${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+        if docker image inspect "${image}" >/dev/null 2>&1; then
+          docker image rm "${image}" || echo "::warning::Failed to remove local image ${image}"
+        else
+          echo "No local image to remove: ${image}"
+        fi
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:

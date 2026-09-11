@@ -21,6 +21,7 @@ ARG DOCKER_BASE_IMAGE=ubuntu:24.04
 FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 ARG CLANG_VERSION
+ARG SPEC
 
 # streak2 hosts can enable kernel FIPS mode even though this Ubuntu image has
 # no FIPS provider. Use OpenSSL's default provider for the image's package
@@ -40,6 +41,8 @@ ENV GEOSX_TPL_DIR=$INSTALL_DIR
 # The streak2 workflow injects the LLNL CA bundle before this stage. Configure
 # APT to use that bundle before the first update, since the base image does not
 # yet trust the runner's MITM certificate and ca-certificates is installed below.
+# Sphinx is limited to documentation builds because it pulls system Jinja2 and
+# certifi packages that can trigger host filesystem scanners.
 RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
       mkdir -p /etc/apt/apt.conf.d && \
       printf '%s\n' \
@@ -56,7 +59,6 @@ RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
         openmpi-bin \
         libopenmpi-dev \
         python3-pip \
-        python3-sphinx \
         python3-dev \
         python3-venv \
         python3-virtualenv \
@@ -67,6 +69,10 @@ RUN if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
         lbzip2 \
         bzip2 \
         gnupg && \
+    if printf '%s\n' "${SPEC}" | grep -Eq '(^|[[:space:]])\+docs($|[[:space:]])'; then \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3-sphinx ; \
+    fi && \
     if [ -f /etc/ssl/certs/llnl-ca-bundle.crt ]; then \
       mkdir -p /usr/local/share/ca-certificates && \
       awk 'BEGIN {n=0} /-----BEGIN/ {n++; f=sprintf("/usr/local/share/ca-certificates/llnl-%03d.crt", n)} n>0 {print > f}' \
