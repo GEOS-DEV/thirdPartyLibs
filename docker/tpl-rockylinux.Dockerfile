@@ -169,6 +169,16 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
 # ----- Final GEOS-build image -----
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
+
+# The streak2 workflow injects the site CA bundle into the intersect stage
+# above. Published images must not ship it: remove the anchor and rebuild
+# the extracted trust store. On GitHub-hosted builds the anchor does not
+# exist and this is a no-op. Jobs running these images behind the site
+# proxy must inject the CA at container runtime instead (e.g. a volume
+# mount).
+RUN rm -f /etc/pki/ca-trust/source/anchors/ca-bundle.crt && \
+    update-ca-trust extract
+
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 COPY --from=tpl_toolchain /spack-generated.cmake /
 

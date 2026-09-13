@@ -228,6 +228,17 @@ ARG ROCM_VERSION
 # it is actually needed.
 ENV OPENSSL_CONF=""
 
+# The streak2 workflow injects the site CA bundle into the intersect stage
+# above. Published images must not ship it: remove the bundle, the apt
+# config referencing it, and its entries in the merged trust store. On
+# GitHub-hosted builds none of these files exist and this is a no-op.
+# Jobs running these images behind the site proxy must inject the CA at
+# container runtime instead (e.g. a volume mount).
+RUN rm -f /etc/ssl/certs/llnl-ca-bundle.crt \
+          /etc/apt/apt.conf.d/99-llnl-ca && \
+    rm -f /usr/local/share/ca-certificates/llnl-*.crt && \
+    update-ca-certificates
+
 COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
 
 # Extract the generated host-config
