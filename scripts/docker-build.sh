@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-env
 
 # Keep .git out of the build context. Do not clobber an existing
 # .dockerignore; local checkouts often ignore large untracked trees.
@@ -58,13 +57,13 @@ done
 
 docker buildx build --progress=plain \
     "${BUILDER_ARGS[@]}" \
-    --build-arg HOST_CONFIG=${HOST_CONFIG} \
-    --build-arg DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE} \
-    --build-arg INSTALL_DIR=${INSTALL_DIR} \
-    --build-arg SPEC="${SPEC}" \
+    --build-arg "HOST_CONFIG=${HOST_CONFIG}" \
+    --build-arg "DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE}" \
+    --build-arg "INSTALL_DIR=${INSTALL_DIR}" \
+    --build-arg "SPEC=${SPEC}" \
     "${EXTRA_BUILD_ARGS[@]}" \
-    --tag ${DOCKER_REPOSITORY}:${DOCKER_TAG} \
-    --file ${TPL_DOCKERFILE} \
+    --tag "${DOCKER_REPOSITORY}:${DOCKER_TAG}" \
+    --file "${TPL_DOCKERFILE}" \
     --label "org.opencontainers.image.created=$(date --rfc-3339=seconds)" \
     --label "org.opencontainers.image.source=https://github.com/GEOS-DEV/thirdPartyLibs" \
     --label "org.opencontainers.image.revision=${COMMIT}" \
