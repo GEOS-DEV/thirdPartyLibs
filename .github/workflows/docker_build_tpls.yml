@@ -2,6 +2,11 @@ name: Docker Build TPLs
 
 on: pull_request
 
+# Least privilege: jobs only check out the repo and build/push Docker
+# images. DockerHub auth uses dedicated secrets, not GITHUB_TOKEN.
+permissions:
+  contents: read
+
 # Cancels in-progress workflows for a PR when updated
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +21,12 @@ jobs:
   build_images:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.RUNS_ON }}
+    timeout-minutes: 360
+    # streak2 is a persistent self-hosted runner on an internal network.
+    # Only same-repo (trusted) pull requests may schedule jobs there;
+    # fork PRs still build the GitHub-hosted rows, which are disposable
+    # and receive no secrets.
+    if: matrix.RUNS_ON != 'streak2' || github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
 
     strategy:
       # In-progress jobs will not be cancelled if there is a failure
@@ -175,46 +186,52 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       with:
         submodules: true
         lfs: true
+        # Do not leave GITHUB_TOKEN in the runner's git config: streak2 is
+        # persistent and stored credentials would be readable by later jobs.
+        persist-credentials: false
 
     - name: Set up Docker Buildx
       id: buildx_hosted
       if: matrix.RUNS_ON != 'streak2'
-      uses: docker/setup-buildx-action@v4
+      uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       with:
         cleanup: true
 
     - name: Set up Docker Buildx
       id: buildx_streak2
       if: matrix.RUNS_ON == 'streak2'
-      uses: docker/setup-buildx-action@v4
+      uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       with:
         cleanup: true
         driver-opts: network=host
 
-    - name: Print environment
-      run: printenv
-
     - name: Compose DOCKER_BASE_IMAGE
       id: base
+      env:
+        DOCKER_BASE_IMAGE_OVERRIDE: ${{ matrix.DOCKER_BASE_IMAGE_OVERRIDE }}
+        DOCKER_BASE_IMAGE_REPO: ${{ matrix.DOCKER_BASE_IMAGE_REPO }}
+        DOCKER_BASE_IMAGE_TAG: ${{ matrix.DOCKER_BASE_IMAGE_TAG }}
       run: |
         # Rows that do not build on a docker_base_images image (e.g. ROCm)
         # pin their base image directly.
-        if [ -n "${{ matrix.DOCKER_BASE_IMAGE_OVERRIDE }}" ]; then
-          echo "DOCKER_BASE_IMAGE=${{ matrix.DOCKER_BASE_IMAGE_OVERRIDE }}" >> "$GITHUB_OUTPUT"
+        if [ -n "${DOCKER_BASE_IMAGE_OVERRIDE}" ]; then
+          echo "DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE_OVERRIDE}" >> "$GITHUB_OUTPUT"
         else
-          echo "DOCKER_BASE_IMAGE=${{ matrix.DOCKER_BASE_IMAGE_REPO }}:${{ matrix.DOCKER_BASE_IMAGE_TAG }}-${DOCKER_BASE_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
+          echo "DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE_REPO}:${DOCKER_BASE_IMAGE_TAG}-${DOCKER_BASE_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Inject CA certificate into Docker build
       if: matrix.RUNS_ON == 'streak2'
+      env:
+        TPL_DOCKERFILE: ${{ matrix.TPL_DOCKERFILE }}
       run: |
         set -euo pipefail
         cp /etc/pki/tls/certs/ca-bundle.crt ./ca-bundle.crt
-        dockerfile="${{ matrix.TPL_DOCKERFILE }}"
+        dockerfile="${TPL_DOCKERFILE}"
         if grep -q 'RUN dnf clean all' "${dockerfile}"; then
           sed -i '/RUN dnf clean all/i COPY ca-bundle.crt /etc/pki/ca-trust/source/anchors/ca-bundle.crt\nRUN update-ca-trust extract' "${dockerfile}"
         else
@@ -266,20 +283,25 @@ jobs:
         DOCKER_NETWORK: ${{ matrix.RUNS_ON == 'streak2' && 'host' || '' }}
       run: bash -x ./scripts/docker-build.sh
 
+    # Only trusted (same-repo) PRs authenticate and push. Fork PRs receive
+    # no secrets and only validate that the images build. Logout must never
+    # be skipped on the self-hosted runner: it defaults to true here, and
+    # the cleanup step below runs `docker logout` again with if: always().
     - name: Login to DockerHub
-      uses: docker/login-action@v4
+      if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        logout: ${{ matrix.RUNS_ON != 'streak2' }}
 
     - name: Push docker image
+      if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
       env:
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
-      run: docker push ${DOCKER_REPOSITORY}:${DOCKER_TAG}
+      run: docker push "${DOCKER_REPOSITORY}:${DOCKER_TAG}"
 
-    - name: Remove local Docker image
+    - name: Clean up streak2 state
       if: always() && matrix.RUNS_ON == 'streak2'
       env:
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
@@ -291,6 +313,11 @@ jobs:
         else
           echo "No local image to remove: ${image}"
         fi
+        # The runner is persistent: never leave DockerHub credentials or the
+        # site CA bundle in the workspace for a later (possibly untrusted)
+        # job to pick up.
+        docker logout || echo "::warning::docker logout failed"
+        rm -f ca-bundle.crt
 
   # Convenience job - passes when all docker images are built.
   check_that_all_images_built:
