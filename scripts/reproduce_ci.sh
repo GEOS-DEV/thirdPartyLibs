@@ -15,11 +15,11 @@ cd -- "${repo_root}"
 #   extra_env   space-separated KEY=VALUE pairs passed to scripts/docker-build.sh.
 MATRIX=(
 'Ubuntu 24.04 - gcc 12|docker/tpl-ubuntu.Dockerfile|24.04-gcc12|geosx/ubuntu|geosx/ubuntu24.04-gcc12|12||~pygeosx ~docs %gcc-12'
-'Ubuntu 24.04 - gcc 13 (docs)|docker/tpl-ubuntu.Dockerfile|24.04-gcc13|geosx/ubuntu|geosx/ubuntu24.04-gcc13|13||~pygeosx +docs %gcc-13'
+'Ubuntu 24.04 - gcc 13|docker/tpl-ubuntu.Dockerfile|24.04-gcc13|geosx/ubuntu|geosx/ubuntu24.04-gcc13|13||~pygeosx ~docs %gcc-13'
 'Ubuntu 24.04 - clang 19|docker/tpl-ubuntu.Dockerfile|24.04-clang19|geosx/ubuntu|geosx/ubuntu24.04-clang19||19|~pygeosx ~docs %clang-19'
 'Ubuntu 24.04 - clang 20|docker/tpl-ubuntu.Dockerfile|24.04-clang20|geosx/ubuntu|geosx/ubuntu24.04-clang20||20|~pygeosx ~docs %clang-20'
 'Rocky Linux 8 - gcc 12|docker/tpl-rockylinux.Dockerfile|8-gcc12|geosx/rockylinux|geosx/rockylinux8-gcc12|||~pygeosx ~docs %gcc-12'
-'Rocky Linux 8 - gcc 13|docker/tpl-rockylinux.Dockerfile|8-gcc13|geosx/rockylinux|geosx/rockylinux8-gcc13|||~pygeosx ~docs %gcc-13'
+'Rocky Linux 8 - gcc 13 (docs)|docker/tpl-rockylinux.Dockerfile|8-gcc13|geosx/rockylinux|geosx/rockylinux8-gcc13|||~pygeosx +docs %gcc-13'
 'Rocky Linux 8 - clang 19|docker/tpl-rockylinux.Dockerfile|8-clang19|geosx/rockylinux|geosx/rockylinux8-clang19|||~pygeosx ~docs %clang-19'
 'Rocky Linux 9 - clang 22|docker/tpl-rockylinux.Dockerfile|9-clang22|geosx/rockylinux|geosx/rockylinux9-clang22|||~pygeosx ~docs %clang-22'
 'Ubuntu 24.04 - gcc 13 + CUDA 12.9.1|docker/tpl-ubuntu.Dockerfile|24.04-gcc13-cuda12.9.1|geosx/ubuntu|geosx/ubuntu24.04-gcc13-cuda12.9.1|13||+cuda cuda_arch=86,120 ~openmp ~pygeosx ~docs %gcc-13 ^cuda@12.9.1+allow-unsupported-compilers'

@@ -181,8 +181,8 @@ spack:
     doxygen:
       buildable: false
       externals:
-      - spec: doxygen@1.8.20
-        prefix: /usr
+      - spec: doxygen@1.13.2
+        prefix: /usr/local
 
     autoconf:
       version: [2.71]
