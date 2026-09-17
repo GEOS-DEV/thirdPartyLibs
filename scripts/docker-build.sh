@@ -42,7 +42,11 @@ if [ -n "${SPACK_BUILD_JOBS:-}" ]; then EXTRA_BUILD_ARGS+=(--build-arg "SPACK_BU
 
 BUILDER_ARGS=()
 if [ -n "${DOCKER_BUILDER:-}" ]; then BUILDER_ARGS+=(--builder "${DOCKER_BUILDER}"); fi
-if [ "${DOCKER_LOAD:-0}" = 1 ]; then BUILDER_ARGS+=(--load); fi
+case "${DOCKER_LOAD:-1}" in
+    1) BUILDER_ARGS+=(--load) ;;
+    0) ;;
+    *) echo "DOCKER_LOAD must be 0 or 1" >&2; exit 2 ;;
+esac
 if [ -n "${DOCKER_NETWORK:-}" ]; then BUILDER_ARGS+=(--network "${DOCKER_NETWORK}"); fi
 
 # Forward proxy settings into RUN steps (BuildKit special-cases these args).
@@ -52,7 +56,7 @@ for v in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
     fi
 done
 
-docker build --progress=plain \
+docker buildx build --progress=plain \
     "${BUILDER_ARGS[@]}" \
     --build-arg HOST_CONFIG=${HOST_CONFIG} \
     --build-arg DOCKER_BASE_IMAGE=${DOCKER_BASE_IMAGE} \

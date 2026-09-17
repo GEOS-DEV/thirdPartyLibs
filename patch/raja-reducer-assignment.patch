@@ -1,0 +1,94 @@
+diff --git a/include/RAJA/policy/cuda/reduce.hpp b/include/RAJA/policy/cuda/reduce.hpp
+--- a/include/RAJA/policy/cuda/reduce.hpp
++++ b/include/RAJA/policy/cuda/reduce.hpp
+@@ -1123,6 +1123,43 @@
+ #endif
+   }
+
++  //! assign a reducer while preserving ownership of host and device resources
++  Reduce& operator=(const Reduce& other)
++  {
++    if (this != &other)
++    {
++      // The implicitly generated assignment operator shallow-copies the
++      // reducer state.  In particular, it overwrites an owning tally pointer
++      // and leaks the tally allocated by the destination.  It also copies the
++      // device-ownership flag, which can make two reducers free the same
++      // device allocation.  Match the copy constructor's non-owning semantics
++      // after releasing resources currently owned by the destination.
++      if (parent == this)
++      {
++        delete tally_or_val_ptr.list;
++      }
++      else if (parent == nullptr)
++      {
++        val.teardownForDevice();
++      }
++
++      parent           = other.parent;
++      tally_or_val_ptr = other.tally_or_val_ptr;
++      val              = reduce_data_type(other.val);
++
++      if (parent && tally_or_val_ptr.list)
++      {
++        if (val.setupForDevice())
++        {
++          tally_or_val_ptr.val_ptr = val.init_grid_vals(
++              tally_or_val_ptr.list->new_value(currentResource()));
++          parent = nullptr;
++        }
++      }
++    }
++    return *this;
++  }
++
+   //! apply reduction upon destruction and cleanup resources owned by this copy
+   //  on device store in pinned buffer on host
+   RAJA_HOST_DEVICE
+diff --git a/include/RAJA/policy/hip/reduce.hpp b/include/RAJA/policy/hip/reduce.hpp
+--- a/include/RAJA/policy/hip/reduce.hpp
++++ b/include/RAJA/policy/hip/reduce.hpp
+@@ -1116,6 +1116,43 @@
+ #endif
+   }
+
++  //! assign a reducer while preserving ownership of host and device resources
++  Reduce& operator=(const Reduce& other)
++  {
++    if (this != &other)
++    {
++      // The implicitly generated assignment operator shallow-copies the
++      // reducer state.  In particular, it overwrites an owning tally pointer
++      // and leaks the tally allocated by the destination.  It also copies the
++      // device-ownership flag, which can make two reducers free the same
++      // device allocation.  Match the copy constructor's non-owning semantics
++      // after releasing resources currently owned by the destination.
++      if (parent == this)
++      {
++        delete tally_or_val_ptr.list;
++      }
++      else if (parent == nullptr)
++      {
++        val.teardownForDevice();
++      }
++
++      parent           = other.parent;
++      tally_or_val_ptr = other.tally_or_val_ptr;
++      val              = reduce_data_type(other.val);
++
++      if (parent && tally_or_val_ptr.list)
++      {
++        if (val.setupForDevice())
++        {
++          tally_or_val_ptr.val_ptr = val.init_grid_vals(
++              tally_or_val_ptr.list->new_value(currentResource()));
++          parent = nullptr;
++        }
++      }
++    }
++    return *this;
++  }
++
+   //! apply reduction upon destruction and cleanup resources owned by this copy
+   //  on device store in pinned buffer on host
+   RAJA_HOST_DEVICE
