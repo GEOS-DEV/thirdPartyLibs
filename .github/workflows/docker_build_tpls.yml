@@ -33,12 +33,21 @@ jobs:
             GCC_VERSION: 12
             SPEC: "~pygeosx ~docs %gcc-12"
 
-          - name: Ubuntu 24.04 - gcc 13 (docs)
+          - name: Ubuntu 24.04 - gcc 13
             RUNS_ON: ubuntu-latest
             TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
             DOCKER_BASE_IMAGE_TAG: 24.04-gcc13
             DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
             DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13
+            GCC_VERSION: 13
+            SPEC: "~pygeosx ~docs %gcc-13"
+
+          - name: Ubuntu 24.04 - gcc 13 (docs)
+            RUNS_ON: ubuntu-latest
+            TPL_DOCKERFILE: docker/tpl-ubuntu.Dockerfile
+            DOCKER_BASE_IMAGE_TAG: 24.04-gcc13
+            DOCKER_BASE_IMAGE_REPO: geosx/ubuntu
+            DOCKER_REPOSITORY: geosx/ubuntu24.04-gcc13-docs
             GCC_VERSION: 13
             SPEC: "~pygeosx +docs %gcc-13"
 
