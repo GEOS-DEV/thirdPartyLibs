@@ -15,7 +15,8 @@ cd -- "${repo_root}"
 #   extra_env   space-separated KEY=VALUE pairs passed to scripts/docker-build.sh.
 MATRIX=(
 'Ubuntu 24.04 - gcc 12|docker/tpl-ubuntu.Dockerfile|24.04-gcc12|geosx/ubuntu|geosx/ubuntu24.04-gcc12|12||~pygeosx ~docs %gcc-12'
-'Ubuntu 24.04 - gcc 13 (docs)|docker/tpl-ubuntu.Dockerfile|24.04-gcc13|geosx/ubuntu|geosx/ubuntu24.04-gcc13|13||~pygeosx +docs %gcc-13'
+'Ubuntu 24.04 - gcc 13|docker/tpl-ubuntu.Dockerfile|24.04-gcc13|geosx/ubuntu|geosx/ubuntu24.04-gcc13|13||~pygeosx ~docs %gcc-13'
+'Ubuntu 24.04 - gcc 13 (docs)|docker/tpl-ubuntu.Dockerfile|24.04-gcc13|geosx/ubuntu|geosx/ubuntu24.04-gcc13-docs|13||~pygeosx +docs %gcc-13'
 'Ubuntu 24.04 - clang 19|docker/tpl-ubuntu.Dockerfile|24.04-clang19|geosx/ubuntu|geosx/ubuntu24.04-clang19||19|~pygeosx ~docs %clang-19'
 'Ubuntu 24.04 - clang 20|docker/tpl-ubuntu.Dockerfile|24.04-clang20|geosx/ubuntu|geosx/ubuntu24.04-clang20||20|~pygeosx ~docs %clang-20'
 'Rocky Linux 8 - gcc 12|docker/tpl-rockylinux.Dockerfile|8-gcc12|geosx/rockylinux|geosx/rockylinux8-gcc12|||~pygeosx ~docs %gcc-12'
