@@ -76,6 +76,8 @@ spack:
 
     ####
     # external compiler
+    # -std=c++20 is required to make sure we build in c++20 for all libs
+    # -fno-char8_t cxxflags is required to build vtk
     gcc:
       externals:
       - spec: gcc@12.2.1 languages=c,c++,fortran +binutils
@@ -87,7 +89,7 @@ spack:
             fortran: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
           flags:
             cflags: -march=native -mtune=native
-            cxxflags: -march=native -mtune=native
+            cxxflags: -march=native -mtune=native -std=c++20 -fno-char8_t
           operating_system: rhel8
           target: x86_64
           extra_rpaths: []
