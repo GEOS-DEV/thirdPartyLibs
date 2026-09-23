@@ -114,7 +114,7 @@ dependency set with a clean TPL build and update the manifest and macOS Spack
 configuration together.
 
 The checked-in exact formula pins and source checksums come from the official
-Homebrew formula API snapshot dated 2026-09-04 and are selected for
+Homebrew formula API snapshot dated 2026-09-23 and are selected for
 qualification. They are not yet described as qualified until a clean TPL build
 and its smoke tests pass. The manifest records the exact host used to select
 them for traceability, but macOS patch/build revisions, Apple Clang build
