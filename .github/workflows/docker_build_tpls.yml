@@ -294,8 +294,8 @@ jobs:
 
   # macOS TPLs must be built natively; Docker containers build Linux binaries.
   build_macos:
-    name: macOS 15 - Apple Clang (arm64)
-    runs-on: macos-15
+    name: macOS 26 - Apple Clang (arm64)
+    runs-on: macos-26
     defaults:
       run:
         shell: bash
