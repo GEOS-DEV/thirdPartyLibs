@@ -54,11 +54,12 @@ usage()
 Usage: scripts/setupMacOS-TPL-deps.bash [options]
 
 Validate the Homebrew dependency set recorded in the checked-in manifest. Exact
-pins and minimum-version policies are applied as declared. The manifest's host
-and platform versions describe the qualification host; they are not exact
-host-version gates. By default, missing formulas are installed only after the
-complete preflight succeeds. Exact-pinned formula drift is never upgraded or
-downgraded.
+version pins and minimum-version policies are applied as declared. The
+manifest's host and platform versions describe the qualification host; they are
+not exact host-version gates. A rewritten Homebrew formula file with the same
+version is reported and accepted. By default, missing formulas are installed
+only after the complete preflight succeeds. Exact-pinned version drift is never
+upgraded or downgraded.
 
 Options:
   --check-only          Validate without installing anything.
@@ -546,9 +547,15 @@ formula_metadata_matches()
         record_error "Formula '${name}' metadata drift: expected version '${expected_version}', found '${actual_version}'"
         return 1
       fi
-      if [[ "${actual_sha}" != "${expected_sha}" ]]; then
-        record_error "Formula '${name}' source drift: expected checksum '${expected_sha}', found '${actual_sha}'"
+      # ruby_source_checksum hashes the Homebrew formula file. Core rewrites
+      # that file for bottle rebuilds without changing the installed version.
+      # A missing checksum is incomplete metadata, not that rewrite.
+      if [[ -z "${actual_sha}" ]]; then
+        record_error "Formula '${name}' is missing ruby_source_checksum"
         return 1
+      fi
+      if [[ "${actual_sha}" != "${expected_sha}" ]]; then
+        echo "INFO: Formula '${name}' formula file checksum differs from the qualification snapshot '${expected_sha}'; version '${actual_version}' still matches"
       fi
       ;;
     minimum)
@@ -727,9 +734,8 @@ preflight_formulae()
       i=$((i + 1))
       continue
     fi
-    # Check source identity for exact-pinned formulas even when already
-    # installed. This makes stale API caches and silently rewritten formulas
-    # visible drift.
+    # Check the live formula version even when the formula is already
+    # installed. A rewritten formula file with the same version is informational.
     formula_metadata_matches "${i}" || true
     validate_formula_installation "${i}" true || true
     i=$((i + 1))

@@ -8,9 +8,11 @@ built by Spack.
 
 The setup is fail-closed for the dependency set. It does not install Homebrew,
 update Homebrew, upgrade or downgrade an installed formula, or silently accept
-a changed exact-pinned formula definition. The macOS, SDK, Apple Clang, and
+a changed exact-pinned formula version. The macOS, SDK, Apple Clang, and
 Homebrew versions recorded in the manifest identify the qualification host;
-they are reported for traceability but are not exact host-version gates.
+they are reported for traceability but are not exact host-version gates. A
+rewritten Homebrew formula file with the same version is also reported and
+accepted.
 
 ## One-time prerequisite
 
@@ -23,7 +25,7 @@ eval "$(brew shellenv)"
 
 The dependency script discovers Homebrew through `PATH` (and also checks the
 standard Apple Silicon and Intel install paths). It validates exact versions
-and source checksums for the exact-pinned formulas in the manifest. No GEOS tap
+for the exact-pinned formulas in the manifest. No GEOS tap
 or other Homebrew tap is required. CMake only has to satisfy the project
 minimum of `3.24`; an installed `mpich` or `open-mpi` satisfies the MPI
 requirement.
@@ -74,8 +76,8 @@ Installation occurs only when all of the following preflight checks pass:
 
 - the host is Darwin/arm64 and the Apple Command Line Tools are available;
 - CMake is at least `3.24`, and either `mpich` or `open-mpi` is available;
-- Homebrew reports the exact stable formula version, formula revision, and Ruby
-  source checksum for the exact-pinned formulas in the manifest;
+- Homebrew reports the exact stable formula version and formula revision for
+  the exact-pinned formulas in the manifest;
 - every formula already installed has the exact receipt version and prefix;
 - every required executable, header, and library from an installed formula is
   present.
@@ -87,8 +89,9 @@ metadata, receipts, prefixes, and required paths. A partial or changed
 installation is an error.
 
 The script exports `HOMEBREW_NO_AUTO_UPDATE=1`, so the formula metadata visible
-to the invoked Homebrew is authoritative for that run. A stale local API cache
-is reported as drift instead of being mistaken for the tested formula set.
+to the invoked Homebrew is authoritative for that run. A version that differs
+from an exact pin is rejected. A formula-file checksum that differs while the
+version still matches is printed and does not fail the run.
 
 The generated Spack environment selects the installed MPI provider and its
 concrete version. It also selects `/usr/bin/ar` and
@@ -113,25 +116,28 @@ upgrade`, an unreviewed downgrade, or `--force` linking. Qualify the newer
 dependency set with a clean TPL build and update the manifest and macOS Spack
 configuration together.
 
-The checked-in exact formula pins and source checksums come from the official
+The checked-in exact formula versions and source checksums come from the official
 Homebrew formula API snapshot dated 2026-09-23 and are selected for
 qualification. They are not yet described as qualified until a clean TPL build
 and its smoke tests pass. The manifest records the exact host used to select
 them for traceability, but macOS patch/build revisions, Apple Clang build
 revisions, Apple Clang versions, CMake versions at or above `3.24`, MPI provider
-choice, and Homebrew executable patch releases are informational rather than
-support gates. Homebrew-managed transitive dependencies are not separate Spack
-externals; the post-install executable and link-library checks are the local
-compatibility guard for this boundary.
+choice, Homebrew executable patch releases, and later rewrites of a formula
+file that keep the same version are informational rather than support gates.
+Homebrew-managed transitive dependencies are not separate Spack externals; the
+post-install executable and link-library checks are the local compatibility
+guard for this boundary.
 
 ## Updating the manifest
 
 Treat a manifest change as a toolchain change:
 
 1. obtain exact-pinned formula versions (`stable`, plus `_<revision>` when the
-   formula revision is nonzero) and `ruby_source_checksum.sha256` from
-   `brew info --json=v2` or the official formula API; keep CMake at or above
-   `3.24` and keep either `mpich` or `open-mpi` available;
+   formula revision is nonzero) from `brew info --json=v2` or the official
+   formula API when that version changes; record `ruby_source_checksum.sha256`
+   for the qualification snapshot, but do not treat a later formula-file
+   rewrite as a failure; keep CMake at or above `3.24` and keep either `mpich`
+   or `open-mpi` available;
 2. update the matching external version and prefix in the macOS Spack
    environment;
 3. run `scripts/tests/macos_homebrew/test_setupMacOS_TPL_deps.bash`;
