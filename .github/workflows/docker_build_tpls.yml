@@ -335,6 +335,13 @@ jobs:
           --spec="$SPEC" \
           -j "$SPACK_BUILD_JOBS" 2>&1 | tee "$RUNNER_TEMP/macos-build.log"
 
+    - name: Install Docker for the macOS image
+      if: matrix.RUNS_ON == 'macos-26'
+      run: |
+        brew install docker colima
+        colima start --cpu 2 --memory 4 --disk 60
+        docker info
+
     - name: Package macOS TPL image
       if: matrix.RUNS_ON == 'macos-26'
       env:
