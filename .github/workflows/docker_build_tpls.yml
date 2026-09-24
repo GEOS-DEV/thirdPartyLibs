@@ -375,11 +375,11 @@ jobs:
           "$GEOS_TPL_DIR/spack_env" \
           "$GEOS_TPL_DIR/.spack-db"
         tpl_name=$(basename "$GEOS_TPL_DIR")
-        cat > "$RUNNER_TEMP/Dockerfile" <<EOF
-FROM scratch
-COPY ${tpl_name} /opt/GEOS/${tpl_name}
-COPY spack-generated.cmake /spack-generated.cmake
-EOF
+        printf '%s\n' \
+          'FROM scratch' \
+          "COPY ${tpl_name} /opt/GEOS/${tpl_name}" \
+          'COPY spack-generated.cmake /spack-generated.cmake' \
+          > "$RUNNER_TEMP/Dockerfile"
         docker build -f "$RUNNER_TEMP/Dockerfile" -t "geosx/macos-26-apple-clang:${DOCKER_TAG}" /opt/GEOS
 
     - name: Login to DockerHub
@@ -405,6 +405,11 @@ EOF
   check_that_all_images_built:
     runs-on: ubuntu-22.04
     needs: [build_images, build_macos]
+    if: always()
     steps:
     - name: Success
-      run: "true"
+      run: |
+        echo "build_images: ${{ needs.build_images.result }}"
+        echo "build_macos: ${{ needs.build_macos.result }}"
+        test "${{ needs.build_images.result }}" = success
+        test "${{ needs.build_macos.result }}" = success
