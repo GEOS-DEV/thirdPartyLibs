@@ -321,7 +321,7 @@ jobs:
         docker_tag="${{ github.event.number }}-${{ github.run_number }}"
         echo "SPACK_PYTHON=$(command -v python3)" >> "$GITHUB_ENV"
         echo "DOCKER_TAG=${docker_tag}" >> "$GITHUB_ENV"
-        echo "GEOSX_TPL_DIR=/opt/GEOS/GEOS_TPL-${docker_tag}-${short_sha}" >> "$GITHUB_ENV"
+        echo "GEOS_TPL_DIR=/opt/GEOS/GEOS_TPL-${docker_tag}-${short_sha}" >> "$GITHUB_ENV"
         echo "SPACK_CONFIG=$RUNNER_TEMP/geosx-macos-spack.yaml" >> "$GITHUB_ENV"
         sudo mkdir -p /opt/GEOS
         sudo chown "$(id -un)" /opt/GEOS
@@ -354,7 +354,7 @@ jobs:
         python3 scripts/uberenv/uberenv.py \
           --project-json="$GITHUB_WORKSPACE/.uberenv_config.json" \
           --spack-env-file="$SPACK_CONFIG" \
-          --prefix="$GEOSX_TPL_DIR" \
+          --prefix="$GEOS_TPL_DIR" \
           --spec="~pygeosx ~docs ~openmp %c,cxx=apple-clang %fortran=gcc@16.2.0" \
           -j 2 2>&1 | tee "$RUNNER_TEMP/macos-build.log"
 
@@ -365,16 +365,16 @@ jobs:
         test -n "$host_config"
         cp "$host_config" /opt/GEOS/spack-generated.cmake
         # Drop the Spack checkout and build trees. Package prefixes recorded in
-        # the host-config stay under GEOSX_TPL_DIR, matching the Linux images.
+        # the host-config stay under GEOS_TPL_DIR, matching the Linux images.
         rm -rf \
-          "$GEOSX_TPL_DIR/bin" \
-          "$GEOSX_TPL_DIR/build_stage" \
-          "$GEOSX_TPL_DIR/builtin_spack_packages_repo" \
-          "$GEOSX_TPL_DIR/misc_cache" \
-          "$GEOSX_TPL_DIR/spack" \
-          "$GEOSX_TPL_DIR/spack_env" \
-          "$GEOSX_TPL_DIR/.spack-db"
-        tpl_name=$(basename "$GEOSX_TPL_DIR")
+          "$GEOS_TPL_DIR/bin" \
+          "$GEOS_TPL_DIR/build_stage" \
+          "$GEOS_TPL_DIR/builtin_spack_packages_repo" \
+          "$GEOS_TPL_DIR/misc_cache" \
+          "$GEOS_TPL_DIR/spack" \
+          "$GEOS_TPL_DIR/spack_env" \
+          "$GEOS_TPL_DIR/.spack-db"
+        tpl_name=$(basename "$GEOS_TPL_DIR")
         cat > "$RUNNER_TEMP/Dockerfile" <<EOF
 FROM scratch
 COPY ${tpl_name} /opt/GEOS/${tpl_name}

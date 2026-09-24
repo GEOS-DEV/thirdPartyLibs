@@ -18,7 +18,7 @@ FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
-ENV GEOSX_TPL_DIR=$INSTALL_DIR
+ENV GEOS_TPL_DIR=$INSTALL_DIR
 
 # Packages needed both for the TPL build and for the downstream GEOS build.
 # Some Rocky 8 vs 9 differences are handled by the base image already
@@ -114,7 +114,7 @@ RUN dnf -y install \
 # expected external compiler paths before Spack starts so missing compilers fail
 # directly instead of being discovered or built by Spack.
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
-    mkdir -p ${GEOSX_TPL_DIR} && \
+    mkdir -p ${GEOS_TPL_DIR} && \
     GEOSX_SPEC="${SPEC}" && \
     if [ -z "${GEOSX_SPEC}" ] || [ "${GEOSX_SPEC}" = "undefined" ]; then \
         echo "ERROR: SPEC build-arg must be supplied" >&2 ; \
@@ -149,7 +149,7 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
                 --spec '${GEOSX_SPEC}' \
                 --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
                 --project-json=${SRC_DIR}/.uberenv_config.json \
-                --prefix ${GEOSX_TPL_DIR} \
+                --prefix ${GEOS_TPL_DIR} \
                 -j ${SPACK_BUILD_JOBS} \
                 -k " ; \
     else \
@@ -157,19 +157,19 @@ RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
             --spec "${GEOSX_SPEC}" \
             --spack-env-file=${GEOSX_SPACK_ENV_FILE} \
             --project-json=${SRC_DIR}/.uberenv_config.json \
-            --prefix ${GEOSX_TPL_DIR} \
+            --prefix ${GEOS_TPL_DIR} \
             -j ${SPACK_BUILD_JOBS} \
             -k ; \
     fi && \
     rm -f lvarray* && \
     cp *.cmake /spack-generated.cmake && \
-    cd ${GEOSX_TPL_DIR} && \
+    cd ${GEOS_TPL_DIR} && \
     rm -rf bin/ build_stage/ builtin_spack_packages_repo/ misc_cache/ spack/ spack_env/ .spack-db/
 
 # ----- Final GEOS-build image -----
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
-COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
+COPY --from=tpl_toolchain $GEOS_TPL_DIR $GEOS_TPL_DIR
 COPY --from=tpl_toolchain /spack-generated.cmake /
 
 RUN dnf -y install \
