@@ -317,9 +317,14 @@ jobs:
     - name: Set up build environment
       run: |
         python3 -m pip install clingo
+        short_sha=${GITHUB_SHA:0:7}
+        docker_tag="${{ github.event.number }}-${{ github.run_number }}"
         echo "SPACK_PYTHON=$(command -v python3)" >> "$GITHUB_ENV"
-        echo "GEOSX_TPL_DIR=$RUNNER_TEMP/geos-tpls" >> "$GITHUB_ENV"
+        echo "DOCKER_TAG=${docker_tag}" >> "$GITHUB_ENV"
+        echo "GEOSX_TPL_DIR=/opt/GEOS/GEOS_TPL-${docker_tag}-${short_sha}" >> "$GITHUB_ENV"
         echo "SPACK_CONFIG=$RUNNER_TEMP/geosx-macos-spack.yaml" >> "$GITHUB_ENV"
+        sudo mkdir -p /opt/GEOS
+        sudo chown "$(id -un)" /opt/GEOS
 
     - name: Test macOS dependency setup
       run: bash scripts/tests/macos_homebrew/test_setupMacOS_TPL_deps.bash
@@ -353,6 +358,39 @@ jobs:
           --spec="~pygeosx ~docs ~openmp %c,cxx=apple-clang %fortran=gcc@16.2.0" \
           -j 2 2>&1 | tee "$RUNNER_TEMP/macos-build.log"
 
+    - name: Publish macOS TPL image
+      run: |
+        set -euo pipefail
+        host_config=$(find "$GITHUB_WORKSPACE" -maxdepth 1 -name '*.cmake' -print -quit)
+        test -n "$host_config"
+        cp "$host_config" /opt/GEOS/spack-generated.cmake
+        # Drop the Spack checkout and build trees. Package prefixes recorded in
+        # the host-config stay under GEOSX_TPL_DIR, matching the Linux images.
+        rm -rf \
+          "$GEOSX_TPL_DIR/bin" \
+          "$GEOSX_TPL_DIR/build_stage" \
+          "$GEOSX_TPL_DIR/builtin_spack_packages_repo" \
+          "$GEOSX_TPL_DIR/misc_cache" \
+          "$GEOSX_TPL_DIR/spack" \
+          "$GEOSX_TPL_DIR/spack_env" \
+          "$GEOSX_TPL_DIR/.spack-db"
+        tpl_name=$(basename "$GEOSX_TPL_DIR")
+        cat > "$RUNNER_TEMP/Dockerfile" <<EOF
+FROM scratch
+COPY ${tpl_name} /opt/GEOS/${tpl_name}
+COPY spack-generated.cmake /spack-generated.cmake
+EOF
+        docker build -f "$RUNNER_TEMP/Dockerfile" -t "geosx/macos-26-apple-clang:${DOCKER_TAG}" /opt/GEOS
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push macOS TPL image
+      run: docker push "geosx/macos-26-apple-clang:${DOCKER_TAG}"
+
     - name: Upload macOS build logs and host configs
       if: always()
       uses: actions/upload-artifact@v7
@@ -361,10 +399,7 @@ jobs:
         path: |
           ${{ runner.temp }}/macos-*.log
           ${{ runner.temp }}/geosx-macos-spack.yaml
-          ${{ runner.temp }}/geos-tpls/spack_env/spack.yaml
-          ${{ runner.temp }}/geos-tpls/spack_env/spack.lock
-          ${{ runner.temp }}/geos-tpls/build_stage/**/spack-build-out.txt
-          ${{ github.workspace }}/*.cmake
+          /opt/GEOS/spack-generated.cmake
 
   # Convenience job - passes when all Docker images and macOS TPLs are built.
   check_that_all_images_built:
