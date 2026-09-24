@@ -353,7 +353,7 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
         set -euo pipefail
-        host_config=$(find "$GITHUB_WORKSPACE" -maxdepth 1 -name '*.cmake' | head -n 1)
+        host_config=$(find "$GITHUB_WORKSPACE" -maxdepth 1 -name '*.cmake' ! -name 'lvarray-*' | head -n 1)
         test -n "$host_config"
         rm -rf \
           "$GEOS_TPL_DIR/bin" \
