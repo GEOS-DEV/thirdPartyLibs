@@ -335,23 +335,26 @@ jobs:
           --spec="$SPEC" \
           -j "$SPACK_BUILD_JOBS" 2>&1 | tee "$RUNNER_TEMP/macos-build.log"
 
-    - name: Install Docker
+    - name: Prepare image publish
       if: matrix.RUNS_ON == 'macos-26'
       run: |
-        brew install docker colima
-        colima start --cpu 2 --memory 4 --disk 60
-        docker info
+        set -euo pipefail
+        curl -fsSL -o "$RUNNER_TEMP/crane.tgz" \
+          https://github.com/google/go-containerregistry/releases/download/v0.20.6/go-containerregistry_Darwin_arm64.tar.gz
+        tar -xzf "$RUNNER_TEMP/crane.tgz" -C "$RUNNER_TEMP" crane
+        "$RUNNER_TEMP/crane" version
 
     - name: Package TPL image
       if: matrix.RUNS_ON == 'macos-26'
       env:
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
         set -euo pipefail
-        host_config=$(find "$GITHUB_WORKSPACE" -maxdepth 1 -name '*.cmake' -print -quit)
+        host_config=$(find "$GITHUB_WORKSPACE" -maxdepth 1 -name '*.cmake' | head -n 1)
         test -n "$host_config"
-        cp "$host_config" /opt/GEOS/spack-generated.cmake
         rm -rf \
           "$GEOS_TPL_DIR/bin" \
           "$GEOS_TPL_DIR/build_stage" \
@@ -361,14 +364,20 @@ jobs:
           "$GEOS_TPL_DIR/spack_env" \
           "$GEOS_TPL_DIR/.spack-db"
         tpl_name=$(basename "$GEOS_TPL_DIR")
-        printf '%s\n' \
-          'FROM scratch' \
-          "COPY ${tpl_name} /opt/GEOS/${tpl_name}" \
-          'COPY spack-generated.cmake /spack-generated.cmake' \
-          > "$RUNNER_TEMP/Dockerfile"
-        docker build -f "$RUNNER_TEMP/Dockerfile" -t "${DOCKER_REPOSITORY}:${DOCKER_TAG}" /opt/GEOS
+        stage="$RUNNER_TEMP/image-root"
+        mkdir -p "$stage/opt/GEOS"
+        mv "$GEOS_TPL_DIR" "$stage/opt/GEOS/$tpl_name"
+        cp "$host_config" "$stage/spack-generated.cmake"
+        "$RUNNER_TEMP/crane" auth login index.docker.io \
+          -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+        image="${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+        ref=$("$RUNNER_TEMP/crane" append --platform linux/arm64 \
+          -f <(tar -C "$stage" -cf - .) -t "$image")
+        "$RUNNER_TEMP/crane" mutate "$ref" \
+          -e "GEOS_TPL_DIR=/opt/GEOS/${tpl_name}" -t "$image"
 
     - name: Login to DockerHub
+      if: matrix.RUNS_ON != 'macos-26'
       uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
@@ -376,6 +385,7 @@ jobs:
         logout: ${{ matrix.RUNS_ON != 'streak2' }}
 
     - name: Push docker image
+      if: matrix.RUNS_ON != 'macos-26'
       env:
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
@@ -402,7 +412,7 @@ jobs:
         path: |
           ${{ runner.temp }}/macos-*.log
           ${{ runner.temp }}/geosx-macos-spack.yaml
-          /opt/GEOS/spack-generated.cmake
+          ${{ runner.temp }}/image-root/spack-generated.cmake
 
   # Convenience job - passes when every build_images row, including macOS, succeeds.
   check_that_all_images_built:
