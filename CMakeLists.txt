@@ -599,6 +599,7 @@ if (ENABLE_CALIPER)
                                     -D CMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                                     -D CMAKE_INSTALL_LIBDIR:PATH=lib
                                     -D BLT_SOURCE_DIR=${BLT_SOURCE_DIR}
+                                    -D ENABLE_TESTS=OFF
                        )
 
 
