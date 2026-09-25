@@ -354,7 +354,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
 
             release_flags = "-O3 -DNDEBUG"
-            if "clang" in self.compiler.cxx:
+            # Apple Clang accepts neither -mtune=native nor a useful -march=native.
+            if "clang" in self.compiler.cxx and "apple-clang" not in self.compiler.cxx:
                 release_flags += " -march=native -mtune=native"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
             reldebinf_flags = "-O2 -g -DNDEBUG"
