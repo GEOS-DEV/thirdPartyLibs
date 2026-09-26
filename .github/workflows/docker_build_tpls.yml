@@ -173,6 +173,14 @@ jobs:
             SPACK_BUILD_JOBS: 8
             SPEC: "+rocm ~uncrustify ~openmp ~pygeosx ~docs ~trilinos ~petsc amdgpu_target=gfx942 %%amdclang-19 ^caliper~papi~gotcha~sampler~libunwind~libdw"
 
+          # Built natively. The published image carries the macOS prefix; it is
+          # not a Linux container produced by docker-build.sh.
+          - name: macOS 26 - Apple Clang (arm64)
+            RUNS_ON: macos-26
+            DOCKER_REPOSITORY: geosx/macos-26-apple-clang
+            SPEC: "~pygeosx ~docs ~openmp %c,cxx=apple-clang %fortran=gcc@16.2.0"
+            SPACK_BUILD_JOBS: 2
+
     steps:
     - name: Checkout
       uses: actions/checkout@v7
@@ -182,7 +190,7 @@ jobs:
 
     - name: Set up Docker Buildx
       id: buildx_hosted
-      if: matrix.RUNS_ON != 'streak2'
+      if: matrix.RUNS_ON != 'streak2' && matrix.RUNS_ON != 'macos-26'
       uses: docker/setup-buildx-action@v4
       with:
         cleanup: true
@@ -200,6 +208,7 @@ jobs:
 
     - name: Compose DOCKER_BASE_IMAGE
       id: base
+      if: matrix.RUNS_ON != 'macos-26'
       run: |
         # Rows that do not build on a docker_base_images image (e.g. ROCm)
         # pin their base image directly.
@@ -264,9 +273,111 @@ jobs:
         DOCKER_BUILDER: ${{ steps.buildx_streak2.outputs.name || steps.buildx_hosted.outputs.name }}
         DOCKER_LOAD: 1
         DOCKER_NETWORK: ${{ matrix.RUNS_ON == 'streak2' && 'host' || '' }}
+      if: matrix.RUNS_ON != 'macos-26'
       run: bash -x ./scripts/docker-build.sh
+    - name: Set up Python for Uberenv
+      if: matrix.RUNS_ON == 'macos-26'
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Set up build environment
+      if: matrix.RUNS_ON == 'macos-26'
+      env:
+        HOMEBREW_NO_ANALYTICS: 1
+      run: |
+        python3 -m pip install clingo
+        short_sha=${GITHUB_SHA:0:7}
+        docker_tag="${{ github.event.number }}-${{ github.run_number }}"
+        echo "SPACK_PYTHON=$(command -v python3)" >> "$GITHUB_ENV"
+        echo "DOCKER_TAG=${docker_tag}" >> "$GITHUB_ENV"
+        echo "GEOS_TPL_DIR=/opt/GEOS/GEOS_TPL-${docker_tag}-${short_sha}" >> "$GITHUB_ENV"
+        echo "SPACK_CONFIG=$RUNNER_TEMP/geosx-macos-spack.yaml" >> "$GITHUB_ENV"
+        sudo mkdir -p /opt/GEOS
+        sudo chown "$(id -un)" /opt/GEOS
+
+    - name: Test dependency setup
+      if: matrix.RUNS_ON == 'macos-26'
+      run: bash scripts/tests/macos_homebrew/test_setupMacOS_TPL_deps.bash
+
+    - name: Prepare dependencies
+      if: matrix.RUNS_ON == 'macos-26'
+      env:
+        HOMEBREW_NO_ANALYTICS: 1
+      run: |
+        unset HOMEBREW_NO_INSTALL_UPGRADE HOMEBREW_NO_INSTALL_CLEANUP
+        brew update
+        python3 - <<'PY'
+        import json
+        import subprocess
+
+        with open('scripts/spack_configs/macOS/homebrew-manifest.json') as stream:
+            formulae = [entry['name'] for entry in json.load(stream)['formulae']]
+        installed = subprocess.check_output(['brew', 'list', '--formula'], text=True).split()
+        if 'mpich' in installed and 'open-mpi' in formulae:
+            formulae.remove('open-mpi')
+        subprocess.run(['brew', 'install', '--formula', *formulae], check=True)
+        PY
+        bash scripts/setupMacOS-TPL-deps.bash --spack-config-out "$SPACK_CONFIG" \
+          2>&1 | tee "$RUNNER_TEMP/macos-setup.log"
+
+    - name: Build TPLs
+      if: matrix.RUNS_ON == 'macos-26'
+      env:
+        HOMEBREW_NO_ANALYTICS: 1
+        SPEC: ${{ matrix.SPEC }}
+        SPACK_BUILD_JOBS: ${{ matrix.SPACK_BUILD_JOBS }}
+      run: |
+        python3 scripts/uberenv/uberenv.py \
+          --project-json="$GITHUB_WORKSPACE/.uberenv_config.json" \
+          --spack-env-file="$SPACK_CONFIG" \
+          --prefix="$GEOS_TPL_DIR" \
+          --spec="$SPEC" \
+          -j "$SPACK_BUILD_JOBS" 2>&1 | tee "$RUNNER_TEMP/macos-build.log"
+
+    - name: Prepare image publish
+      if: matrix.RUNS_ON == 'macos-26'
+      run: |
+        set -euo pipefail
+        curl -fsSL -o "$RUNNER_TEMP/crane.tgz" \
+          https://github.com/google/go-containerregistry/releases/download/v0.20.6/go-containerregistry_Darwin_arm64.tar.gz
+        tar -xzf "$RUNNER_TEMP/crane.tgz" -C "$RUNNER_TEMP" crane
+        "$RUNNER_TEMP/crane" version
+
+    - name: Package TPL image
+      if: matrix.RUNS_ON == 'macos-26'
+      env:
+        DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
+        DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        set -euo pipefail
+        host_config=$(find "$GITHUB_WORKSPACE" -maxdepth 1 -name '*.cmake' ! -name 'lvarray-*' | head -n 1)
+        test -n "$host_config"
+        rm -rf \
+          "$GEOS_TPL_DIR/bin" \
+          "$GEOS_TPL_DIR/build_stage" \
+          "$GEOS_TPL_DIR/builtin_spack_packages_repo" \
+          "$GEOS_TPL_DIR/misc_cache" \
+          "$GEOS_TPL_DIR/spack" \
+          "$GEOS_TPL_DIR/spack_env" \
+          "$GEOS_TPL_DIR/.spack-db"
+        tpl_name=$(basename "$GEOS_TPL_DIR")
+        stage="$RUNNER_TEMP/image-root"
+        mkdir -p "$stage/opt/GEOS"
+        mv "$GEOS_TPL_DIR" "$stage/opt/GEOS/$tpl_name"
+        cp "$host_config" "$stage/spack-generated.cmake"
+        "$RUNNER_TEMP/crane" auth login index.docker.io \
+          -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+        image="${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+        ref=$("$RUNNER_TEMP/crane" append --platform linux/arm64 \
+          -f <(tar -C "$stage" -cf - .) -t "$image")
+        "$RUNNER_TEMP/crane" mutate "$ref" \
+          -e "GEOS_TPL_DIR=/opt/GEOS/${tpl_name}" -t "$image"
 
     - name: Login to DockerHub
+      if: matrix.RUNS_ON != 'macos-26'
       uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
@@ -274,6 +385,7 @@ jobs:
         logout: ${{ matrix.RUNS_ON != 'streak2' }}
 
     - name: Push docker image
+      if: matrix.RUNS_ON != 'macos-26'
       env:
         DOCKER_REPOSITORY: ${{ matrix.DOCKER_REPOSITORY }}
         DOCKER_TAG: ${{ github.event.number }}-${{ github.run_number }}
@@ -292,10 +404,23 @@ jobs:
           echo "No local image to remove: ${image}"
         fi
 
-  # Convenience job - passes when all docker images are built.
+    - name: Upload build logs and host configs
+      if: always() && matrix.RUNS_ON == 'macos-26'
+      uses: actions/upload-artifact@v7
+      with:
+        name: macos-arm64-build
+        path: |
+          ${{ runner.temp }}/macos-*.log
+          ${{ runner.temp }}/geosx-macos-spack.yaml
+          ${{ runner.temp }}/image-root/spack-generated.cmake
+
+  # Convenience job - passes when every build_images row, including macOS, succeeds.
   check_that_all_images_built:
     runs-on: ubuntu-22.04
     needs: [build_images]
+    if: always()
     steps:
     - name: Success
-      run: "true"
+      run: |
+        echo "build_images: ${{ needs.build_images.result }}"
+        test "${{ needs.build_images.result }}" = success

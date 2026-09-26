@@ -51,19 +51,19 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("cmake@3.23:", type="build")
     depends_on("mpi")
-    depends_on("hypre@develop +mpi")
-    depends_on("hypre@develop +shared", when="+shared")
-    depends_on("hypre@develop +pic~shared", when="+pic~shared")
-    depends_on("hypre@develop +caliper", when="+caliper")
-    depends_on("hypre@develop +cuda", when="+cuda")
-    depends_on("hypre@develop +rocm", when="+rocm")
-    depends_on("hypre@develop +sycl", when="+sycl")
-    depends_on("hypre@develop +superlu-dist", when="+superlu-dist")
+    depends_on("hypre +mpi")
+    depends_on("hypre +shared", when="+shared")
+    depends_on("hypre +pic~shared", when="+pic~shared")
+    depends_on("hypre +caliper", when="+caliper")
+    depends_on("hypre +cuda", when="+cuda")
+    depends_on("hypre +rocm", when="+rocm")
+    depends_on("hypre +sycl", when="+sycl")
+    depends_on("hypre +superlu-dist", when="+superlu-dist")
 
     for feature in ("fortran", "matlab", "julia", "superlu-dist"):
-        depends_on("hypre@develop precision=double", when="+{0}".format(feature))
+        depends_on("hypre precision=double", when="+{0}".format(feature))
     for feature in ("matlab", "julia"):
-        depends_on("hypre@develop~complex", when="+{0}".format(feature))
+        depends_on("hypre~complex", when="+{0}".format(feature))
 
     requires(
         "%c,cxx=oneapi",
@@ -73,7 +73,7 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     for arch in CudaPackage.cuda_arch_values:
         depends_on(
-            "hypre@develop+cuda cuda_arch={0}".format(arch), when="+cuda cuda_arch={0}".format(arch)
+            "hypre+cuda cuda_arch={0}".format(arch), when="+cuda cuda_arch={0}".format(arch)
         )
         depends_on(
             "superlu-dist@9.2.1:+cuda cuda_arch={0}".format(arch),
@@ -82,7 +82,7 @@ class Hypredrive(CMakePackage, CudaPackage, ROCmPackage):
 
     for target in ROCmPackage.amdgpu_targets:
         depends_on(
-            "hypre@develop+rocm amdgpu_target={0}".format(target),
+            "hypre+rocm amdgpu_target={0}".format(target),
             when="+rocm amdgpu_target={0}".format(target),
         )
         depends_on(

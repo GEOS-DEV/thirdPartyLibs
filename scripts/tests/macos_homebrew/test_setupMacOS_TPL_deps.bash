@@ -518,8 +518,8 @@ create_fake_tools
 write_manifest
 test_committed_manifest
 
-# Host releases newer than the recorded qualification host are accepted. The
-# Homebrew formula versions and source checksums remain exact.
+# Host releases newer than the recorded qualification host are accepted. Exact
+# formula versions remain gates. Formula-file checksum rewrites do not.
 reset_state
 expect_success "qualification-host macOS/SDK versions accept patch drift" run_setup --check-only
 
@@ -695,7 +695,9 @@ expect_failure "formula version metadata drift is rejected" run_setup
 
 reset_state
 set_candidate beta 2.0 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-expect_failure "formula source checksum drift is rejected" run_setup
+expect_success "formula file checksum drift does not fail the build" run_setup
+assert_file_contains "checksum drift is reported" \
+  "${LAST_OUTPUT}" "formula file checksum differs from the qualification snapshot"
 
 reset_state
 rm -f "${FAKE_PREFIX}/opt/beta/bin/beta-tool"

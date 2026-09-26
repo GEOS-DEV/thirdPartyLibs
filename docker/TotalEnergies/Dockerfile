@@ -9,7 +9,7 @@ FROM $DOCKER_ROOT_IMAGE as tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
-ENV GEOSX_TPL_DIR=$INSTALL_DIR
+ENV GEOS_TPL_DIR=$INSTALL_DIR
 
 RUN yum install --disablerepo=intel-mkl-repo -y \
     ca-certificates \
@@ -51,26 +51,26 @@ ARG SPEC
 # Have to create install directory first for uberenv
 # -k flag is to ignore SSL errors
 RUN --mount=src=.,dst=$SRC_DIR,readwrite cd ${SRC_DIR} && \
-     mkdir -p ${GEOSX_TPL_DIR} && \
+     mkdir -p ${GEOS_TPL_DIR} && \
      ./scripts/uberenv/uberenv.py \
        # spack spec defined per image
        --spec "${SPEC}" \
        --spack-env-file=${SRC_DIR}/docker/total-spack.yaml \
        --project-json=.uberenv_config.json \
-       --prefix ${GEOSX_TPL_DIR} \
+       --prefix ${GEOS_TPL_DIR} \
        -k && \
 # Remove host-config generated for LvArray
      rm lvarray* && \
 # Rename and copy spack-generated host-config to root directory
      cp *.cmake /spack-generated.cmake && \
 # Remove extraneous spack files
-     cd ${GEOSX_TPL_DIR} && \
+     cd ${GEOS_TPL_DIR} && \
      rm -rf bin/ build_stage/ misc_cache/ spack/ spack_env/ .spack-db/
 
 FROM tpl_toolchain_intersect_geosx_toolchain AS geosx_toolchain
 ARG SRC_DIR
 
-COPY --from=tpl_toolchain $GEOSX_TPL_DIR $GEOSX_TPL_DIR
+COPY --from=tpl_toolchain $GEOS_TPL_DIR $GEOS_TPL_DIR
 
 # Extract the generated host-config
 COPY --from=tpl_toolchain /spack-generated.cmake /
