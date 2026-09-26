@@ -134,6 +134,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             depends_on('chai+cuda~separable_compilation cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('camp+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
             depends_on('hypre+cuda cuda_arch={0}'.format(sm_), when='cuda_arch={0}'.format(sm_))
+            depends_on('hypredrive+cuda cuda_arch={0}'.format(sm_), when='+hypredrive cuda_arch={0}'.format(sm_))
 
     with when('+rocm'):
         for gfx_ in ROCmPackage.amdgpu_targets:
@@ -142,6 +143,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
             depends_on(f"chai+rocm~separable_compilation amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
             depends_on(f"camp+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
             depends_on(f"hypre+rocm amdgpu_target={gfx_}", when=f"amdgpu_target={gfx_}")
+            depends_on(f"hypredrive+rocm amdgpu_target={gfx_}", when=f"+hypredrive amdgpu_target={gfx_}")
 
     #
     # IO
@@ -199,6 +201,8 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("hypredrive +pic", when="~shared")
         depends_on("hypredrive +shared", when="+shared")
         depends_on("hypredrive +caliper", when="+caliper")
+        depends_on("hypredrive +cuda", when="+cuda")
+        depends_on("hypredrive +rocm", when="+rocm")
 
     depends_on('petsc@3.19.4~hdf5~hypre+int64', when='+petsc')
     depends_on('petsc+ptscotch', when='+petsc+scotch')
