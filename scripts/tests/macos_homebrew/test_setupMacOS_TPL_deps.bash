@@ -238,7 +238,7 @@ case "${1:-}" in
         version="${stable}_${revision}"
       fi
       if [[ "${FAKE_INSTALL_WRONG:-0}" == "1" ]]; then
-        version=99.0
+        version=0.1
       fi
       printf '%s\n' "${version}" >"${state}/installed_${key}"
       mkdir -p "${prefix}/opt/${formula}/bin"
@@ -681,17 +681,43 @@ fi
 
 reset_state
 printf '9.9\n' >"${STATE}/installed_beta"
-expect_failure "installed receipt drift is rejected" run_setup
+expect_success "a newer installed formula is accepted" run_setup
+
+reset_state
+printf '1.2\n' >"${STATE}/installed_alpha"
+NEWER_TEMPLATE="${TEST_ROOT}/newer-alpha-template.yaml"
+NEWER_CONFIG="${TEST_ROOT}/newer-alpha-spack.yaml"
+cat >"${NEWER_TEMPLATE}" <<'EOF'
+spack:
+  packages:
+    alpha:
+      externals:
+      - spec: "alpha@=1.0 platform=darwin target=aarch64"
+    # GEOS_TPL_APPLE_CLANG_EXTERNAL
+EOF
+GEOS_TPL_SPACK_CONFIG_TEMPLATE="${NEWER_TEMPLATE}" \
+  expect_success "a newer one-to-one formula is recorded in the generated environment" \
+  run_setup --check-only --spack-config-out "${NEWER_CONFIG}"
+assert_file_contains "generated config uses the installed alpha version" \
+  "${NEWER_CONFIG}" 'alpha@=1.2'
+
+reset_state
+printf '0.9\n' >"${STATE}/installed_beta"
+expect_failure "an older installed formula is rejected" run_setup
 if ! grep -q '^install ' "${STATE}/commands.log"; then
-  pass "receipt drift prevents all installation"
+  pass "an older formula prevents all installation"
 else
   cp "${STATE}/commands.log" "${LAST_OUTPUT}"
-  fail "receipt drift prevents all installation"
+  fail "an older formula prevents all installation"
 fi
 
 reset_state
 set_candidate beta 2.1 0 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-expect_failure "formula version metadata drift is rejected" run_setup
+expect_success "newer formula metadata is accepted" run_setup
+
+reset_state
+set_candidate beta 1.0 0 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+expect_failure "older formula metadata is rejected" run_setup
 
 reset_state
 set_candidate beta 2.0 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -706,7 +732,7 @@ expect_failure "missing required formula path is rejected" run_setup
 reset_state
 rm -f "${STATE}/installed_alpha"
 rm -rf -- "${FAKE_PREFIX}/opt/alpha"
-printf '9.9\n' >"${STATE}/installed_beta"
+printf '0.9\n' >"${STATE}/installed_beta"
 expect_failure "a later preflight error prevents installing an earlier missing formula" run_setup
 if ! grep -q '^install ' "${STATE}/commands.log"; then
   pass "formula preflight is atomic"
