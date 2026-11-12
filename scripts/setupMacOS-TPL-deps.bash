@@ -46,6 +46,9 @@ declare -a FORMULA_VERSION_POLICIES=()
 declare -a FORMULA_MIN_VERSIONS=()
 declare -a FORMULA_PREFIXES=()
 declare -a FORMULA_SHA256S=()
+declare -a FORMULA_SPACK_PACKAGES=()
+declare -a FORMULA_SPACK_VERSIONS=()
+declare -a DETECTED_FORMULA_VERSIONS=()
 declare -a MISSING_FORMULAS=()
 
 usage()
@@ -53,11 +56,14 @@ usage()
   cat <<'EOF'
 Usage: scripts/setupMacOS-TPL-deps.bash [options]
 
-Validate the Homebrew dependency set recorded in the checked-in manifest. Exact
-pins and minimum-version policies are applied as declared. The manifest's host
+Validate the Homebrew dependency set recorded in the checked-in manifest.
+Qualified formula versions are minimums: an installed version at or above the
+manifest version is accepted, and an older version is rejected. The manifest is
+not a pin that must be updated every time Homebrew moves. The manifest's host
 and platform versions describe the qualification host; they are not exact
-host-version gates. By default, missing formulas are installed only after the
-complete preflight succeeds. Exact-pinned formula drift is never upgraded or
+host-version gates. A rewritten Homebrew formula file with the same version is
+reported and accepted. By default, missing formulas are installed only after
+the complete preflight succeeds. Installed formulas are neither upgraded nor
 downgraded.
 
 Options:
@@ -199,7 +205,7 @@ formula_requirement()
   local minimum=${FORMULA_MIN_VERSIONS[${index}]}
 
   case "${policy}" in
-    exact) printf '%s@%s\n' "${name}" "${version}" ;;
+    exact) printf '%s>=%s\n' "${name}" "${version}" ;;
     minimum) printf '%s>=%s\n' "${name}" "${minimum}" ;;
     any) printf '%s\n' "${name}" ;;
   esac
@@ -288,8 +294,54 @@ write_spack_config()
       "${generated_config}" >"${mpi_config}"
     mv "${mpi_config}" "${generated_config}"
   fi
+  rewrite_detected_external_versions "${generated_config}"
   mv "${generated_config}" "${SPACK_CONFIG_OUT}"
   echo "Wrote host-specific Spack environment: ${SPACK_CONFIG_OUT}"
+}
+
+# Qualified versions in the template stay in place when the installed formula
+# still matches them. A newer 1:1 Homebrew/Spack version is written into the
+# generated environment. A shorter Spack version, such as readline 8.3 for
+# Homebrew 8.3.x, stays at the qualified Spack version.
+rewrite_detected_external_versions()
+{
+  local config=$1
+  local i name brew_version spack_package spack_version detected emitted
+  local from to rewritten next
+
+  rewritten="${WORK_DIR}/spack-macos-detected.yaml"
+  cp "${config}" "${rewritten}"
+  i=0
+  while [[ ${i} -lt ${#FORMULA_NAMES[@]} ]]; do
+    name=${FORMULA_NAMES[${i}]}
+    case "${name}" in
+      cmake|open-mpi|perl)
+        i=$((i + 1))
+        continue
+        ;;
+    esac
+    detected=${DETECTED_FORMULA_VERSIONS[${i}]:-}
+    if [[ -z "${detected}" ]]; then
+      i=$((i + 1))
+      continue
+    fi
+    brew_version=${FORMULA_VERSIONS[${i}]}
+    spack_package=${FORMULA_SPACK_PACKAGES[${i}]}
+    spack_version=${FORMULA_SPACK_VERSIONS[${i}]}
+    emitted=${spack_version}
+    if [[ "${spack_version}" == "${brew_version}" ]]; then
+      emitted=${detected%%_*}
+    fi
+    if [[ "${emitted}" != "${spack_version}" ]]; then
+      from="${spack_package}@=${spack_version}"
+      to="${spack_package}@=${emitted}"
+      next="${WORK_DIR}/spack-macos-detected-next.yaml"
+      sed "s|${from}|${to}|g" "${rewritten}" >"${next}"
+      mv "${next}" "${rewritten}"
+    fi
+    i=$((i + 1))
+  done
+  mv "${rewritten}" "${config}"
 }
 
 parse_args()
@@ -330,7 +382,7 @@ validate_manifest()
 {
   local schema_version formula_count spack_built_count
   local i j name version policy policy_value minimum_version prefix sha
-  local path_count relative_path seen
+  local path_count relative_path seen spack_package spack_version
 
   [[ -f "${MANIFEST}" ]] || die "Manifest does not exist: ${MANIFEST}"
   "${PLUTIL_BIN}" -convert json -o - -- "${MANIFEST}" >/dev/null || die "Manifest is not valid JSON: ${MANIFEST}"
@@ -398,8 +450,8 @@ validate_manifest()
     # These fields are consumed by the Spack configuration rather than this
     # installer, but validating them prevents the manifest from drifting into a
     # partial or ambiguous mapping.
-    manifest_get "formulae.${i}.spack_package" >/dev/null
-    manifest_get "formulae.${i}.spack_version" >/dev/null
+    spack_package=$(manifest_get "formulae.${i}.spack_package")
+    spack_version=$(manifest_get "formulae.${i}.spack_version")
 
     path_count=$(manifest_get "formulae.${i}.required_paths")
     is_nonnegative_integer "${path_count}" || die "Formula '${name}' required_paths must be an array"
@@ -419,6 +471,9 @@ validate_manifest()
     FORMULA_MIN_VERSIONS[i]=${minimum_version}
     FORMULA_PREFIXES[i]=${prefix}
     FORMULA_SHA256S[i]=${sha}
+    FORMULA_SPACK_PACKAGES[i]=${spack_package}
+    FORMULA_SPACK_VERSIONS[i]=${spack_version}
+    DETECTED_FORMULA_VERSIONS[i]=
     case "${name}" in
       cmake) QUALIFICATION_CMAKE_VERSION=${version} ;;
       open-mpi) QUALIFICATION_OPENMPI_VERSION=${version} ;;
@@ -542,13 +597,23 @@ formula_metadata_matches()
 
   case "${policy}" in
     exact)
+      if ! version_at_least "${actual_version}" "${expected_version}"; then
+        record_error "Formula '${name}' is older than qualified version '${expected_version}', found '${actual_version}'"
+        return 1
+      fi
       if [[ "${actual_version}" != "${expected_version}" ]]; then
-        record_error "Formula '${name}' metadata drift: expected version '${expected_version}', found '${actual_version}'"
+        echo "INFO: Formula '${name}' version '${actual_version}' is newer than qualified '${expected_version}'; accepted"
+        return 0
+      fi
+      # ruby_source_checksum hashes the Homebrew formula file. Core rewrites
+      # that file for bottle rebuilds without changing the installed version.
+      # A missing checksum is incomplete metadata, not that rewrite.
+      if [[ -z "${actual_sha}" ]]; then
+        record_error "Formula '${name}' is missing ruby_source_checksum"
         return 1
       fi
       if [[ "${actual_sha}" != "${expected_sha}" ]]; then
-        record_error "Formula '${name}' source drift: expected checksum '${expected_sha}', found '${actual_sha}'"
-        return 1
+        echo "INFO: Formula '${name}' formula file checksum differs from the qualification snapshot '${expected_sha}'; version '${actual_version}' still matches"
       fi
       ;;
     minimum)
@@ -668,9 +733,12 @@ validate_formula_installation()
   fi
   case "${policy}" in
     exact)
-      if [[ "${actual_version}" != "${expected_version}" ]]; then
-        record_error "Formula '${name}' receipt drift: expected '${expected_version}', found '${actual_version}'"
+      if ! version_at_least "${actual_version}" "${expected_version}"; then
+        record_error "Formula '${name}' is older than qualified version '${expected_version}', found '${actual_version}'"
         return 1
+      fi
+      if [[ "${actual_version}" != "${expected_version}" ]]; then
+        echo "INFO: Formula '${name}' version '${actual_version}' is newer than qualified '${expected_version}'; accepted"
       fi
       ;;
     minimum)
@@ -682,6 +750,7 @@ validate_formula_installation()
     any)
       ;;
   esac
+  DETECTED_FORMULA_VERSIONS[index]=${actual_version}
 
   if ! actual_prefix=$("${BREW_BIN}" --prefix "${name}"); then
     record_error "Homebrew could not report the installed prefix for '${name}'"
@@ -727,9 +796,8 @@ preflight_formulae()
       i=$((i + 1))
       continue
     fi
-    # Check source identity for exact-pinned formulas even when already
-    # installed. This makes stale API caches and silently rewritten formulas
-    # visible drift.
+    # Check the live formula version even when the formula is already
+    # installed. A rewritten formula file with the same version is informational.
     formula_metadata_matches "${i}" || true
     validate_formula_installation "${i}" true || true
     i=$((i + 1))
