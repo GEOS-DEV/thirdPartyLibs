@@ -96,11 +96,11 @@
     },
     {
       "name": "pkgconf",
-      "brew_version": "3.0.7",
-      "formula_sha256": "aa4787b4c8af3925054fb55ae38c9ce16cea5325ce5788e2d1c6cec514f30f5c",
+      "brew_version": "3.0.10",
+      "formula_sha256": "824cd395375109bfca1aa408774c9c91214ca7d7792c555b1a9fa0635f78893c",
       "prefix": "/opt/homebrew/opt/pkgconf",
       "spack_package": "pkgconf",
-      "spack_version": "3.0.7",
+      "spack_version": "3.0.10",
       "required_paths": [
         "bin/pkg-config",
         "bin/pkgconf"
@@ -119,11 +119,11 @@
     },
     {
       "name": "automake",
-      "brew_version": "1.19",
-      "formula_sha256": "706ee509ee3d3a4bc05999b0695f0998cddedeb7d534699bf721ebb0ee4ec487",
+      "brew_version": "1.20",
+      "formula_sha256": "fd49f6cfdd0ad97d54234b888fef404bc371c1cb5023034e2a75f51dfba5454e",
       "prefix": "/opt/homebrew/opt/automake",
       "spack_package": "automake",
-      "spack_version": "1.18.1",
+      "spack_version": "1.20",
       "required_paths": [
         "bin/automake"
       ]
@@ -165,11 +165,11 @@
     },
     {
       "name": "python@3.14",
-      "brew_version": "3.14.7",
-      "formula_sha256": "0165e2f65d6b237155d0fb089a6b27259fd85e0fa7582c6ee293df587346cfee",
+      "brew_version": "3.14.10",
+      "formula_sha256": "4405bf6ed114f7974d24860d56540cac51bf24d108ba356f0f586ca100cc46fa",
       "prefix": "/opt/homebrew/opt/python@3.14",
       "spack_package": "python",
-      "spack_version": "3.14.7",
+      "spack_version": "3.14.10",
       "required_paths": [
         "bin/python3.14"
       ]

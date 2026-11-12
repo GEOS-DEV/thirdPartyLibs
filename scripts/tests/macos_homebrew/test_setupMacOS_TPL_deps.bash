@@ -505,7 +505,7 @@ test_committed_manifest()
   assert_manifest_field "binutils maps to the binutils Spack package" \
     formulae.11.spack_package binutils
   assert_manifest_field "Python uses the selected-for-qualification version" \
-    formulae.12.brew_version 3.14.7
+    formulae.12.brew_version 3.14.10
   assert_file_contains "macOS defaults C/C++ to Apple Clang" \
     "${SPACK_YAML}" '%[when=%c]c=apple-clang %[when=%cxx]cxx=apple-clang'
   assert_file_contains "macOS reserves GCC for Fortran" \
