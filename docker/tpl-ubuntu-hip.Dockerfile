@@ -29,8 +29,10 @@ ENV OPENSSL_FORCE_FIPS_MODE=0 \
 
 # Install directory provided as a docker build argument; forwarded via ENV
 # (GEOS_TPL_DIR is part of the image contract consumed by GEOS).
+# GEOSX_TPL_DIR remains as a compatibility alias until those consumers are updated.
 ARG INSTALL_DIR
-ENV GEOS_TPL_DIR=$INSTALL_DIR
+ENV GEOS_TPL_DIR=$INSTALL_DIR \
+    GEOSX_TPL_DIR=$INSTALL_DIR
 
 # ROCm parameters
 ARG AMDGPU_TARGET=gfx942

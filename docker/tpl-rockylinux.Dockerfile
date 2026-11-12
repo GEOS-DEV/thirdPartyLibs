@@ -18,7 +18,9 @@ FROM ${DOCKER_BASE_IMAGE} AS tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
-ENV GEOS_TPL_DIR=$INSTALL_DIR
+# GEOSX_TPL_DIR remains as a compatibility alias until GEOS consumers are updated.
+ENV GEOS_TPL_DIR=$INSTALL_DIR \
+    GEOSX_TPL_DIR=$INSTALL_DIR
 
 # Packages needed both for the TPL build and for the downstream GEOS build.
 # Some Rocky 8 vs 9 differences are handled by the base image already

@@ -9,7 +9,9 @@ FROM $DOCKER_ROOT_IMAGE as tpl_toolchain_intersect_geosx_toolchain
 ARG SRC_DIR
 
 ARG INSTALL_DIR
-ENV GEOS_TPL_DIR=$INSTALL_DIR
+# GEOSX_TPL_DIR remains as a compatibility alias until GEOS consumers are updated.
+ENV GEOS_TPL_DIR=$INSTALL_DIR \
+    GEOSX_TPL_DIR=$INSTALL_DIR
 
 RUN yum install -y \
     ca-certificates \

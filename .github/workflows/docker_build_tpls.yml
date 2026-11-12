@@ -374,7 +374,9 @@ jobs:
         ref=$("$RUNNER_TEMP/crane" append --platform linux/arm64 \
           -f <(tar -C "$stage" -cf - .) -t "$image")
         "$RUNNER_TEMP/crane" mutate "$ref" \
-          -e "GEOS_TPL_DIR=/opt/GEOS/${tpl_name}" -t "$image"
+          -e "GEOS_TPL_DIR=/opt/GEOS/${tpl_name}" \
+          -e "GEOSX_TPL_DIR=/opt/GEOS/${tpl_name}" \
+          -t "$image"
 
     - name: Login to DockerHub
       if: matrix.RUNS_ON != 'macos-26'
