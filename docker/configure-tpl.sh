@@ -10,8 +10,8 @@ if [ -z "$BLD_DIR" ]; then
   exit 1
 fi
 
-if [ -z "$GEOSX_TPL_DIR" ]; then
-  echo "Environment variable \"GEOSX_TPL_DIR\" is undefined."
+if [ -z "$GEOS_TPL_DIR" ]; then
+  echo "Environment variable \"GEOS_TPL_DIR\" is undefined."
   exit 1
 fi
 
@@ -24,6 +24,6 @@ python3 $SRC_DIR/scripts/config-build.py \
 --hostconfig $SRC_DIR/$HOST_CONFIG \
 --buildtype Release \
 --buildpath $BLD_DIR \
---installpath $GEOSX_TPL_DIR \
+--installpath $GEOS_TPL_DIR \
 -DNUM_PROC=$(nproc) \
 $*

@@ -80,7 +80,7 @@ spack:
       require: "openblas@=0.3.34"
     pkgconfig:
       buildable: false
-      require: "pkgconf@=3.0.6"
+      require: "pkgconf@=3.0.10"
     zlib-api:
       require: "zlib@=1.3.2"
 
@@ -150,7 +150,7 @@ spack:
     pkgconf:
       buildable: false
       externals:
-      - spec: "pkgconf@=3.0.6 platform=darwin target=aarch64"
+      - spec: "pkgconf@=3.0.10 platform=darwin target=aarch64"
         prefix: /opt/homebrew/opt/pkgconf
 
     autoconf:
@@ -161,7 +161,7 @@ spack:
     automake:
       buildable: false
       externals:
-      - spec: "automake@=1.18.1 platform=darwin target=aarch64"
+      - spec: "automake@=1.20 platform=darwin target=aarch64"
         prefix: /opt/homebrew/opt/automake
     libtool:
       buildable: false
@@ -185,5 +185,5 @@ spack:
     python:
       buildable: false
       externals:
-      - spec: "python@=3.14.7 platform=darwin target=aarch64"
+      - spec: "python@=3.14.10 platform=darwin target=aarch64"
         prefix: /opt/homebrew/opt/python@3.14
