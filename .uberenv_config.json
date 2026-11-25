@@ -8,8 +8,8 @@
 "spack_url": "https://github.com/spack/spack",
 "spack_commit": "3e19345b6e12f5ff1b874f4059622fc6a1fd804a",
 "spack_commit_note": "v1.2.2 (Jul 20th 2026)",
-"spack_packages_commit": "9bb5e217dd9f9233991e0b4ceb407849588a0fa4",
-"spack_packages_note": "Aug 20th 2026",
+"spack_packages_commit": "11fcac9e2f69257b655ed4bd10e89859109c5273",
+"spack_packages_note": "Nov 24th 2026",
 "spack_setup_clingo": 0,
 "spack_allow_compiler_mixing": true
 }

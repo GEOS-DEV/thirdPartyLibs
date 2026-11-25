@@ -117,10 +117,6 @@ spack:
 
     # %% compiler propagation stops at build-only dependency edges.  Keep the
     # host-side libraries in the HIP graph on the AMD compiler as well.
-    blt:
-      require:
-      - '%c,cxx=rocmcc@6.4.3'
-
     chai:
       require:
       - '%c,cxx=rocmcc@6.4.3'
