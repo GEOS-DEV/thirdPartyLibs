@@ -20,7 +20,7 @@ packages:
 
   # master - 11/24/26
   hypredrive:
-    require: "@git.03c18fb94df8e4cd15a8f56c44c2746d64d779ea=master"
+    require: "@git.2fdcfa4ab93a0d33d7a030a6fec2d8e9f33503d4=master"
 
   # master - 04/12/20
   uncrustify:
