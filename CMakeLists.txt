@@ -262,8 +262,8 @@ endif()
 ################################
 set( HDF5_DEPENDENCIES "" )
 set(HDF5_DIR "${CMAKE_INSTALL_PREFIX}/hdf5")
-set(HDF5_URL "https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_1.tar.gz")
-set(HDF5_URL_HASH "e6dde173c2d243551922d23a0387a79961205b018502e6a742acb30b61bc2d5f")
+set(HDF5_URL "https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-1.14.6.tar.gz")
+set(HDF5_URL_HASH "e4defbac30f50d64e1556374aa49e574417c9e72c6b1de7a4ff88c4b1bea6e9b")
 message(STATUS "Building HDF5 found at ${HDF5_URL}")
 
 if( ${ENABLE_MPI} )
@@ -387,8 +387,8 @@ list(APPEND build_list conduit )
 # SILO
 ################################
 set(SILO_DIR "${CMAKE_INSTALL_PREFIX}/silo")
-set(SILO_URL "https://github.com/LLNL/Silo/releases/download/4.11.1/silo-4.11.1-bsd.tar.xz")
-set(SILO_URL_HASH "51ccfdf3c09dfc98c7858a0a6f08cc3b2a07ee3c4142ee6482ba7b24e314c2aa")
+set(SILO_URL "https://github.com/LLNL/Silo/releases/download/4.12.0/Silo-4.12.0.tar.xz")
+set(SILO_URL_HASH "bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0")
 message(STATUS "Building SILO found at ${SILO_URL}")
 
 string(REPLACE ";" " " HDF5_C_FLAGS_STR "${HDF5_C_FLAGS}")
@@ -431,8 +431,8 @@ list(APPEND build_list silo )
 
 
 set(RAJA_DIR "${CMAKE_INSTALL_PREFIX}/raja")
-set(RAJA_URL "https://github.com/LLNL/RAJA/releases/download/v2026.07.0/RAJA-v2026.07.0.tar.gz")
-set(RAJA_URL_HASH "2774a569f19a7d8e37d1e166d197c828c6b614e7f8ef6d16ccbfb144b8284d02")
+set(RAJA_URL "https://github.com/LLNL/RAJA/releases/download/v2026.07.1/RAJA-v2026.07.1.tar.gz")
+set(RAJA_URL_HASH "25fa81d2b7567d09c6419700d577460f298cbab75d5d922cb4ca138d35a4847d")
 
 
 message(STATUS "Building RAJA found at ${RAJA_URL}")
@@ -517,8 +517,8 @@ list(APPEND build_list raja )
 # CHAI
 ################################
 set(CHAI_DIR "${CMAKE_INSTALL_PREFIX}/chai")
-set(CHAI_URL "https://github.com/LLNL/CHAI/releases/download/v2026.07.0/chai-v2026.07.0.tar.gz")
-set(CHAI_URL_HASH "a03616ab5488d9d816d2ef007559c2ad7da988f82c0b7d7ddf9f8931518d99d8")
+set(CHAI_URL "https://github.com/LLNL/CHAI/releases/download/v2026.07.1/chai-v2026.07.1.tar.gz")
+set(CHAI_URL_HASH "eefd57c7f168736abb8ab2c585a3eb8a73ba6a7a0766a99e4c1eecc3c4ac1975")
 message(STATUS "Building CHAI found at ${CHAI_URL}")
 
 ExternalProject_Add( chai
@@ -604,8 +604,8 @@ if (ENABLE_CALIPER)
 
 
     set(CALIPER_DIR "${CMAKE_INSTALL_PREFIX}/caliper")
-    set(CALIPER_URL "https://github.com/LLNL/Caliper/archive/refs/tags/v2.14.0.tar.gz")
-    set(CALIPER_URL_HASH "b42c35dfbe485960dd326033893dae37ac00d9807c5c3e6b5b1f396bc4af273f")
+    set(CALIPER_URL "https://github.com/LLNL/Caliper/archive/refs/tags/v2.15.0.tar.gz")
+    set(CALIPER_URL_HASH "6951d084679314f0466bbf2c3df7afde6e75b1539fdfda5aaf6bd72a5459a98f")
     message(STATUS "Building Caliper found at ${CALIPER_URL}")
 
     set(CALIPER_WITH_CUPTI OFF)

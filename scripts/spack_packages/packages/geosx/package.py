@@ -102,10 +102,10 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     #
     # Performance portability
     #
-    raja_suite_version="2026.07.0"
-    chai_suite_version="2026.07.0"
-    camp_suite_version="2026.07.1"
-    umpire_suite_version="2026.07.1"
+    raja_suite_version="2026.07.1"
+    chai_suite_version="2026.07.1"
+    camp_suite_version="2026.07.2"
+    umpire_suite_version="2026.07.2"
     depends_on(f"raja @{raja_suite_version} ~examples~exercises~shared")
     depends_on(f"chai @{chai_suite_version} +raja~examples~shared")
     depends_on(f"camp @{camp_suite_version}")
@@ -154,7 +154,7 @@ class Geosx(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('conduit@0.9.5 ~test~fortran~hdf5_compat+shared')
 
     depends_on('adiak@0.4.0 ~shared', when='+caliper')
-    depends_on('caliper@2.14.0 ~gotcha~sampler~libunwind~libdw', when='+caliper')
+    depends_on('caliper@2.15.0 ~gotcha~sampler~libunwind~libdw', when='+caliper')
 
     depends_on('pugixml@1.13 ~shared')
 
